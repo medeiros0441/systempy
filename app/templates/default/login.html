@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% load static  %}
+{% block content %}
+
+<form method="POST" action="{% url 'login' %}" class="form-signin   container mx-auto mt-5">
+    <p class=" text-center mb-3  Font-Gliker fw-border text-white mx-auto  " style="font-size:50px">{ SMW }</span>
+    <h1 class=" text-center mb-3 fw-normal text-white   mx-auto  ">Acessar Conta</h1>
+        {% csrf_token %}
+
+
+        <div class="form-floating mb-2">
+          <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
+          <input type="email" class="form-control" autocomplete="off" id="email" name="email" value="{{ email_saved }}">
+          <label for="emaill">E-mail </label>
+        <div class="invalid-feedback">Por favor, insira um Email válido.</div>
+      </div>
+        <div class="form-floating mb-2">
+          <input type="password" name="password" id="password_fake" class="hidden" autocomplete="off" style="display: none;">
+          <input type="password" class="form-control" autocomplete="off" id="senha" name="senha" value="{{ email_saved }}" >
+          <label for="senha">Senha</label>
+          <div class="invalid-feedback" id="senha-feedback"></div>
+        </div>
+  
+      <div class="form-check text-start my-3 text-white">
+        <input class="form-check-input" type="checkbox" value="on"  {% if checkbox_login == "on" %} checked {% endif %} autocomplete="off" id="flexCheckDefault"  name="flexCheckDefault">
+        <label class="form-check-label" for="flexCheckDefault">
+          lembre-me
+        </label>
+      </div>
+      <button class="btn btn-primary w-100 py-2" type="submit">Entrar</button>
+      <p class="mt-5 mb-3 text-white  text-center">© { SMW } 2024</p>
+    </form>
+
+
+
+  <script>
+    window.onload = function() {
+      var elemento = document.getElementById('btn-login-nav');
+      if (elemento) {
+          elemento.style.display = 'none';
+      }
+  };
+  </script>
+
+{% endblock %}

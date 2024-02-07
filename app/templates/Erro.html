@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #666;
+        }
+        .error-list {
+            text-align: left;
+            margin-top: 20px;
+        }
+        .error-list li {
+            margin-bottom: 10px;
+        }
+        .error-message {
+            color: #ff6347;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ocorreu um erro!</h1>
+        <p>Desculpe-nos pelo inconveniente. Abaixo está um resumo do erro:</p>
+        <ul class="error-list">
+            <li><span class="error-message">Erro:</span> {{ error_message }}</li>
+        </ul>
+        <p>Por favor, tente novamente mais tarde ou entre em contato conosco para obter assistência.</p>
+    </div>
+</body>
+</html>

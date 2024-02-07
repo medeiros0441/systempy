@@ -1,0 +1,133 @@
+{% extends '../base_cliente.html' %}
+{% block title %}cadastro usuario{% endblock %}
+
+{% block content %}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Cadastro de Usuário</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="form_cadastro" autocomplete="off" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="form-floating mb-2">
+                            <input type="text" class="form-control input" value="{{ usuario.nome_completo }}" id="nome_completo" name="nome_completo" required>
+                            <label for="nome_completo">Nome Responsável:</label>
+                            <div class="invalid-feedback">
+                                Por favor, insira o nome.
+                            </div>
+                        </div>
+                        
+                        <div class="form-floating mb-2">
+                            <select class="form-control" id="nivel_usuario" name="nivel_usuario">
+                                <option value="0" {% if usuario.nivel_usuario == 0 %} selected {% endif %}>Selecione</option>
+                                <option value="1" {% if usuario.nivel_usuario == 1 %} selected {% endif %}>Adminstrador</option>
+                                <option value="2" {% if usuario.nivel_usuario == 2 %} selected {% endif %}>Gerente</option>
+                                <option value="3" {% if usuario.nivel_usuario == 3 %} selected {% endif %}>Colaborador</option>
+                            </select>
+                            <label for="nivel_usuario">Nível de Usuário:</label>
+                        </div>
+                    
+                        <div class="form-floating mb-2">
+                            <select class="form-control" id="status" name="status">
+                                <option value="Ativo" {% if usuario.status == 'Ativo' %} selected {% endif %}>Ativo</option>
+                                <option value="Bloqueado" {% if usuario.status == 'Bloqueado' %} selected {% endif %}>Bloqueado</option>
+                            </select>
+                            <label for="status">Status:</label>
+                        </div>
+                    
+                        <div class="form-floating mb-2">
+                            <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
+                            <input type="email" class="form-control input" id="email_responsavel" value="{{ usuario.email }}" name="email_responsavel">
+                            <label for="email_responsavel">E-mail do Responsável</label>
+                            <div class="invalid-feedback">Por favor, insira um Email válido.</div>
+                        </div>
+                    
+                        <div class="form-floating mb-2">
+                            <input type="password" name="password" id="password_fake" class="hidden" autocomplete="off" style="display: none;">
+                            <input type="password" class="form-control input  {% if not usuario.id_usuario > 0 %} disabled{% endif %}" id="senha"
+                                autocomplete="off" name="senha" 
+                                oninput="validarSenha()"  >
+                            <label for="senha">Senha</label>
+                            <div class="invalid-feedback" id="senha-feedback"></div>
+                        </div>
+                    
+                        <button type="button" class="btn mx-auto btn-primary" onclick='ValidateInputs()'>
+                            {% if usuario.id_usuario > 0 %} Editar {% else %} Cadastrar {% endif %}
+                        </button>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script >  
+    var email_responsavel =   document.getElementById('email_responsavel');
+   email_responsavel.addEventListener('blur', function() {
+     // Pega o valor do campo de e-mail
+     var email = email_responsavel.value;
+ 
+     // Expressão regular para validar o formato do e-mail
+     var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+ 
+     // Verifica se o e-mail corresponde à expressão regular
+     if (!emailRegex.test(email)) {
+         // Adiciona a classe 'is-invalid' para sinalizar erro de validação
+         email_responsavel.classList.add('is-invalid');
+     } else {
+         // Remove a classe 'is-invalid' se o e-mail for válido
+         email_responsavel.classList.remove('is-invalid');
+     }
+ });
+
+    function ValidateInputs(){
+    var nome_completo =   document.getElementById('nome_completo');
+    var nivel_usuario =   document.getElementById('nivel_usuario');
+    var email_responsavel =   document.getElementById('email_responsavel');
+    var senha =   document.getElementById('senha');
+    // Verifica se os campos estão preenchidos
+   if(email_responsavel.classList.contains("is-invalid") || senha.classList.contains("is-invalid")){
+    alertCustomer('Por favor, preencha corretamente os campos');
+    return false;
+    }else if(nivel_usuario.value === '1'){
+        alertCustomer('Por favor, selecione uma opção do campo nivel de usuario');
+    }else  if (nome_completo === '' || email_responsavel === '' || senha === '') {
+    alertCustomer('Por favor, preencha todos os campos  antes de prosseguir.');
+    return false;
+    }else{
+    document.getElementById('form_cadastro').submit();
+    return true;
+    }
+}
+
+function validarSenha() {
+    var senhaInput = document.getElementById("senha");
+    var senha = senhaInput.value;
+    var senhaFeedback = document.getElementById("senha-feedback");
+  
+    // Lógica de validação da senha
+    if (senha.length < 8) {
+        senhaFeedback.innerHTML = "A senha deve ter no mínimo 8 caracteres.";
+        senhaInput.classList.add("is-invalid");
+    } else if (!/[A-Z]/.test(senha)) {
+        senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra maiúscula.";
+        senhaInput.classList.add("is-invalid");
+    } else if (!/[a-z]/.test(senha)) {
+        senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra minúscula.";
+        senhaInput.classList.add("is-invalid");
+    } else if (!/[0-9]/.test(senha)) {
+        senhaFeedback.innerHTML = "A senha deve conter pelo menos um número.";
+        senhaInput.classList.add("is-invalid");
+    } else {
+        senhaFeedback.innerHTML = "";
+        senhaInput.classList.remove("is-invalid");
+    }
+  }
+  
+  </script>
+
+{% endblock %}

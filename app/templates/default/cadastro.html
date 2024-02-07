@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% block title %}Cadastro{% endblock %}
+
+{% block content %}
+    
+
+
+
+<form method="post" id="form_cadastro"  class=" container mx-auto my-4 " action="{% url 'cadastro' %}">
+  {% csrf_token %}
+  <div class="   card " id="container1">
+    <div class="card-header text-center">
+      <h1 class="-title fs-5 text-black" >Cadastro Empresa</h1>
+  </div>
+  <div class="card-body">
+
+    <div class="form-floating mb-2">
+      <input type="text" class="form-control" id="nome_empresa" name="nome_empresa"  >
+      <label for="nome_empresa">Nome da Empresa</label>
+  </div>
+  <div class="form-floating mb-2">
+    <input type="text" class="form-control cnpj-mask" id="nro_cnpj" name="nro_cnpj">
+    <label for="nro_cnpj">Número do CNPJ</label>
+    <div class="invalid-feedback">Por favor, insira um CNPJ válido.</div>
+</div>
+  <div class="form-floating mb-2">
+      <input type="text" class="form-control" id="razao_social_empresa" name="razao_social_empresa"  >
+      <label for="razao_social_empresa">Razão Social da Empresa</label>
+  </div>
+</div>
+  <div class="  card-footer d-flex justify-content-center">
+
+    <button onclick="hideContainer1()"  type="button" class="btn btn-primary btn-md">Proximo</button>
+  </div>
+</div>
+  
+  <div class="    card  d-none  " id="container2">
+    <div class="card-header text-center">
+      <h1 class="-title fs-5 text-back" >Cadastro Responsavel</h1>
+  </div>
+  <div class="card-body">
+
+    <div class="form-floating mb-2">
+      <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel"  >
+      <label for="nome_responsavel">Nome do Responsável</label>
+  </div>
+  
+  <div class="form-floating mb-2">
+      <input type="text" class="form-control" id="cargo_responsavel" name="cargo_responsavel"  >
+      <label for="cargo_responsavel">Cargo do Responsável</label>
+  </div>
+  
+  <div class="form-floating mb-2">
+    <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
+    <input type="email" class="form-control" id="email_responsavel" name="email_responsavel"  >
+      <label for="email_responsavel">E-mail do Responsável</label>
+    <div class="invalid-feedback">Por favor, insira um Email válido.</div>
+  </div>
+  
+  <div class="form-floating mb-2">
+      <input type="text" class="form-control telefone-mask" id="telefone_responsavel" name="telefone_responsavel"  >
+      <label for="telefone_responsavel">Telefone do Responsável</label>
+  </div>
+  <div class="form-floating mb-2">
+    <input type="text" class="form-control cpf-mask" id="nro_cpf" name="nro_cpf">
+    <label for="nro_cpf">Número do CPF</label>
+    <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
+</div><div class="form-floating mb-2">
+  <input type="password" name="password" id="password_fake" class="hidden" autocomplete="off" style="display: none;">
+  <input type="password" class="form-control" id="senha" name="senha" oninput="validarSenha()">
+  <label for="senha">Senha</label>
+  <div class="invalid-feedback" id="senha-feedback"></div>
+</div>
+
+
+</div>
+  <div class="  card-footer d-flex justify-content-between">
+    <button type="button"  onclick="validateContainer2()"  class="btn order-2 btn-primary btn-md">Finalizar</button>
+    <button onclick="hideContainer2()"    class="btn btn-secondary btn-md  order-1">Voltar</button>
+  </div>
+</div>
+  </form>
+ 
+<script>
+  var cnpjInput = document.getElementById('nro_cnpj');
+
+  // Adiciona um listener para o evento de mudança (blur)
+  cnpjInput.addEventListener('blur', function() {
+      // Pega o valor do campo de CNPJ
+      var cnpj = cnpjInput.value.replace(/\D/g, '');
+
+      // Expressão regular para validar o formato do CNPJ
+      var cnpjRegex = /^\d{14}$/;
+
+      // Verifica se o CNPJ corresponde à expressão regular
+      if (!cnpjRegex.test(cnpj) || !validarCnpj(cnpj)) {
+          // Adiciona a classe 'is-invalid' para sinalizar erro de validação
+          cnpjInput.classList.add('is-invalid');
+      } else {
+          // Remove a classe 'is-invalid' se o CNPJ for válido
+          cnpjInput.classList.remove('is-invalid');
+
+      }
+  });
+  function hideContainer1() {
+    // Realiza a validação antes de prosseguir para o próximo container
+    if (validateContainer1()) {
+      document.getElementById('container1').classList.add('d-none');
+      document.getElementById('container2').classList.remove('d-none');
+      ValidateInputs();
+    }  
+  }
+  
+  function hideContainer2() {
+    // Apenas oculta o segundo container e exibe o primeiro
+    document.getElementById('container2').classList.add('d-none');
+    document.getElementById('container1').classList.remove('d-none');
+  }
+
+  // Função para validar os campos do primeiro container
+  function validateContainer1() {
+    var razao_social_empresa = document.getElementById('razao_social_empresa').value.trim(); 
+    var nome_empresa = document.getElementById('nome_empresa').value.trim(); 
+    var nro_cnpj = document.getElementById('nro_cnpj').value.trim();
+
+    
+    // Verifica se os campos estão preenchidos
+    if(cnpjInput.classList.contains("is-invalid")){
+      alertCustomer('Por favor, preencha corretamente o campo CNPJ para prosseguir');
+      return false;
+    }else if (nome_empresa === '' || nro_cnpj === '' || razao_social_empresa === '') {
+      alertCustomer('Por favor, preencha todos os campos do primeiro container antes de prosseguir.');
+      return false;
+    }
+    
+
+    return true;
+  }
+  
+  // Função para validar os campos do segundo container
+  function validateContainer2() {
+    var email_responsavel = document.getElementById('email_responsavel').value.trim(); 
+    var nome_responsavel = document.getElementById('nome_responsavel').value.trim();
+    var cargo_responsavel = document.getElementById('cargo_responsavel').value.trim();
+    var telefone_responsavel = document.getElementById('telefone_responsavel').value.trim();
+    var senha = document.getElementById('senha');
+
+    if(senha.classList.contains("is-invalid")) {
+      alertCustomer('campo senha está invalido.');
+      return false;
+    }
+    if (senha.value == '' || senha.value == null){
+      alertCustomer('campo senha está vazio');
+      return false;
+    }
+   var cpfInput = document.getElementById('nro_cpf');
+   var email_responsavel =   document.getElementById('email_responsavel');
+    // Verifica se os campos estão preenchidos
+    if(email_responsavel.classList.contains("is-invalid") || cpfInput.classList.contains("is-invalid")){
+      alertCustomer('Por favor, preencha corretamente os campos');
+      return false;
+    }
+    else
+    if (nome_responsavel === '' || cargo_responsavel === '' || email_responsavel === '' || telefone_responsavel === '') {
+      alertCustomer('Por favor, preencha todos os campos  antes de prosseguir.');
+      return false;
+    }else{
+      document.getElementById('form_cadastro').submit();
+      return true;
+  }
+}
+
+function ValidateInputs(){
+   var cpfInput = document.getElementById('nro_cpf');
+   var email_responsavel =   document.getElementById('email_responsavel');
+  email_responsavel.addEventListener('blur', function() {
+    // Pega o valor do campo de e-mail
+    var email = email_responsavel.value;
+
+    // Expressão regular para validar o formato do e-mail
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Verifica se o e-mail corresponde à expressão regular
+    if (!emailRegex.test(email)) {
+        // Adiciona a classe 'is-invalid' para sinalizar erro de validação
+        email_responsavel.classList.add('is-invalid');
+    } else {
+        // Remove a classe 'is-invalid' se o e-mail for válido
+        email_responsavel.classList.remove('is-invalid');
+    }
+});
+   // Seleciona o campo de CPF
+
+   // Adiciona um listener para o evento de mudança (blur)
+   cpfInput.addEventListener('blur', function() {
+       // Pega o valor do campo de CPF
+       var cpf = cpfInput.value.replace(/\D/g, '');
+
+       // Verifica se o CPF é válido
+       if (!validarCpf(cpf)) {
+           // Adiciona a classe 'is-invalid' para sinalizar erro de validação
+           cpfInput.classList.add('is-invalid');
+       } else {
+           // Remove a classe 'is-invalid' se o CPF for válido
+           cpfInput.classList.remove('is-invalid');
+       }
+   });
+
+}
+
+ // Função para validar o CNPJ
+ function validarCnpj(cnpj) {
+  cnpj = cnpj.replace(/[^\d]+/g,'');
+
+  if(cnpj == '') return false;
+
+  if (cnpj.length != 14)
+      return false;
+
+  // Elimina CNPJs inválidos conhecidos
+  if (cnpj == "00000000000000" || 
+      cnpj == "11111111111111" || 
+      cnpj == "22222222222222" || 
+      cnpj == "33333333333333" || 
+      cnpj == "44444444444444" || 
+      cnpj == "55555555555555" || 
+      cnpj == "66666666666666" || 
+      cnpj == "77777777777777" || 
+      cnpj == "88888888888888" || 
+      cnpj == "99999999999999")
+      return false;
+
+  // Valida DVs
+  tamanho = cnpj.length - 2
+  numeros = cnpj.substring(0,tamanho);
+  digitos = cnpj.substring(tamanho);
+  soma = 0;
+  pos = tamanho - 7;
+  for (i = tamanho; i >= 1; i--) {
+    soma += numeros.charAt(tamanho - i) * pos--;
+    if (pos < 2)
+          pos = 9;
+  }
+  resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+  if (resultado != digitos.charAt(0))
+      return false;
+
+  tamanho = tamanho + 1;
+  numeros = cnpj.substring(0,tamanho);
+  soma = 0;
+  pos = tamanho - 7;
+  for (i = tamanho; i >= 1; i--) {
+    soma += numeros.charAt(tamanho - i) * pos--;
+    if (pos < 2)
+          pos = 9;
+  }
+  resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+  if (resultado != digitos.charAt(1))
+        return false;
+        
+  return true;
+}
+
+ // Função para validar o CPF
+ function validarCpf(cpf) {
+  cpf = cpf.replace(/[^\d]+/g,'');
+
+  if(cpf == '') return false;
+
+  // Elimina CPFs inválidos conhecidos
+  if (cpf.length != 11 || 
+      cpf == "00000000000" || 
+      cpf == "11111111111" || 
+      cpf == "22222222222" || 
+      cpf == "33333333333" || 
+      cpf == "44444444444" || 
+      cpf == "55555555555" || 
+      cpf == "66666666666" || 
+      cpf == "77777777777" || 
+      cpf == "88888888888" || 
+      cpf == "99999999999")
+      return false;
+
+  // Valida 1o digito
+  add = 0;
+  for (i=0; i < 9; i ++)
+      add += parseInt(cpf.charAt(i)) * (10 - i);
+  rev = 11 - (add % 11);
+  if (rev == 10 || rev == 11)
+      rev = 0;
+  if (rev != parseInt(cpf.charAt(9)))
+      return false;
+
+  // Valida 2o digito
+  add = 0;
+  for (i = 0; i < 10; i ++)
+      add += parseInt(cpf.charAt(i)) * (11 - i);
+  rev = 11 - (add % 11);
+  if (rev == 10 || rev == 11)
+      rev = 0;
+  if (rev != parseInt(cpf.charAt(10)))
+      return false;
+  return true;
+}
+function validarSenha() {
+  var senhaInput = document.getElementById("senha");
+  var senha = senhaInput.value;
+  var senhaFeedback = document.getElementById("senha-feedback");
+
+  // Lógica de validação da senha
+  if (senha.length < 8) {
+      senhaFeedback.innerHTML = "A senha deve ter no mínimo 8 caracteres.";
+      senhaInput.classList.add("is-invalid");
+  } else if (!/[A-Z]/.test(senha)) {
+      senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra maiúscula.";
+      senhaInput.classList.add("is-invalid");
+  } else if (!/[a-z]/.test(senha)) {
+      senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra minúscula.";
+      senhaInput.classList.add("is-invalid");
+  } else if (!/[0-9]/.test(senha)) {
+      senhaFeedback.innerHTML = "A senha deve conter pelo menos um número.";
+      senhaInput.classList.add("is-invalid");
+  } else {
+      senhaFeedback.innerHTML = "";
+      senhaInput.classList.remove("is-invalid");
+  }
+}
+
+</script>
+{% endblock %}
