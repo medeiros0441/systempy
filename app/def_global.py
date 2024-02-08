@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from .models.usuario import Usuario
-
 from .models.empresa import Empresa
+from .models.usuario import Usuario
+from django.shortcuts import render, redirect
+from django.contrib.auth.hashers import check_password, make_password
 
 
 def criar_alerta_js(texto):
@@ -54,3 +56,125 @@ def cpf_existe(cpf):
 
 def cnpj_existe(cnpj):
     return Empresa.objects.filter(nro_cnpj=cnpj).exists()
+
+
+from django.http import JsonResponse
+
+
+def enviar_codigo(request, email):
+    enviado_com_sucesso, erro = verificar_email_e_enviar_codigo(request, email)
+    
+    if enviado_com_sucesso:
+        return JsonResponse({"mensagem": "Código enviado com sucesso!"})
+    else:
+        if erro == "usuario_nao_existe":
+            return JsonResponse({"erro": "O usuário com o e-mail fornecido não existe."}, status=404)
+        else:
+            return JsonResponse({"erro": "Ocorreu um erro ao enviar o código."}, status=500)
+
+
+
+def confirmar_codigo(request, codigo):
+    codigo_armazenado = request.session["codigo_senha_recuperacao"]
+    if codigo_armazenado == codigo:
+        return JsonResponse({"mensagem": "Código confirmado com sucesso!"})
+    else:
+        return JsonResponse({"erro": "Codigo Invalido"}, status=404)
+
+
+def atualizar_senha(request, nova_senha):
+    status = RecuperacaoSenha(request, nova_senha)
+    if status:
+        return JsonResponse({"mensagem": "Senha atualizada com sucesso!"})
+    else:
+        return JsonResponse({"erro": "Erro interno Invalido"}, status=400)
+
+
+from .processador.config_email import enviar_email
+from random import choices
+from django.core.exceptions import ObjectDoesNotExist
+
+
+def verificar_email_e_enviar_codigo(request, email):
+
+    try:
+        # Verificar se o usuário com o e-mail fornecido existe no banco de dados
+        usuario = Usuario.objects.get(email=email)
+
+        # Gerar um número com 6 dígitos
+        codigo = (
+            "".join(choices("0123456789", k=3))
+            + "-"
+            + "".join(choices("0123456789", k=3))
+        )
+        request.session["codigo_senha_recuperacao"] = codigo
+        request.session["id_usuario"] = usuario.id_usuario
+
+        # Enviar o código para o e-mail do usuário
+        assunto = "Código de Recuperação de Senha"
+        mensagem = f"Seu código de recuperação de senha é: {codigo}"
+        enviar_email(
+            destinatario=email,
+            assunto=assunto,
+            NomeCliente=usuario.primeiro_nome,
+            TextIntroducao=mensagem,
+        )
+
+        # Retornar True para indicar que o código foi enviado com sucesso
+        return True, None
+
+    except ObjectDoesNotExist:
+        # Lidar com o caso em que o usuário não existe
+        # Por exemplo, você pode retornar False ou lançar uma exceção personalizada
+          return False, "usuario_nao_existe"
+
+    except Exception as e:
+        # Lidar com outros erros inesperados
+        print("Erro ao verificar e-mail e enviar código:", e)
+        return False, "erro_interno"
+
+
+def RecuperacaoSenha(request, senha_nova):
+    id = request.session["id_usuario"]
+    usuario = Usuario.objects.filter(id_usuario=id).first()
+    if usuario:
+        if senha_nova is None or senha_nova == "":
+            return render(
+                request,
+                "default/login.html",
+                {
+                    "alerta_js": criar_alerta_js("campo senha está vazio"),
+                },
+            )
+
+        else:
+            senha_hash = make_password(senha_nova)
+            usuario = Usuario.objects.get(id_usuario=id)
+            usuario.senha = senha_hash
+            usuario.save()
+            request.session["senha_hash"] = senha_hash
+            request.session["id_usuario"] = usuario.id_usuario
+
+            assunto = "Senha Alterada."
+            mensagem = f"Sua Senha foi  Alterado com Sucesso."
+            enviar_email(
+                destinatario=usuario.email,
+                assunto=assunto,
+                NomeCliente=usuario.primeiro_nome,
+                TextIntroducao=mensagem,
+            )
+            return render(
+                request,
+                "default/login.html",
+                {
+                    "alerta_js": criar_alerta_js("operação concluida com sucesso."),
+                },
+            )
+    return render(
+        request,
+        "default/login.html",
+        {
+            "alerta_js": criar_alerta_js("operação concluida com sucesso."),
+        },
+    )
+ 

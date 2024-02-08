@@ -5,7 +5,38 @@
 
  // Máscara para telefone
  $('.telefone-mask').mask('(00) 0000-00000');
- 
+ $('.codigo-mask').mask('000-000');
+ function chamarFuncaoPython(DefName, data, callback) {
+  // Fazer uma requisição AJAX para o backend
+  $.ajax({
+    url: DefName,
+    type: 'GET',
+    data: data,
+    success: function(response) {
+      // Manipular a resposta do backend, se necessário
+      console.log('Função Python chamada com sucesso!');
+      console.log('Resposta:', response);
+      callback({ success: true, data: response }); // Chamando o callback com sucesso e dados
+    },
+    error: function(xhr, status, error) {
+      // Lidar com erros de requisição, se houver
+      console.error('Erro ao chamar a função Python:', error);
+
+      if (xhr.status === 404) {
+        // Se o recurso não foi encontrado
+        callback({ success: false, error: xhr.responseJSON.erro });
+      } else if (xhr.status === 500) {
+        // Se houve um erro interno do servidor
+        callback({ success: false, error: 'Erro interno do servidor (500)' });
+      } else {
+        // Outros erros não especificados
+        callback({ success: false, error: 'Erro desconhecido: ' + error });
+      }
+    }
+  });
+}
+
+
 //alerta customizado
 function alertCustomer(text) {
 

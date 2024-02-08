@@ -27,20 +27,27 @@
         <label class="form-check-label" for="flexCheckDefault">
           lembre-me
         </label>
-      </div>
+      <a type="button" class="link link-whiter float-end" data-bs-toggle="modal" data-bs-target="#ModalRecuperarSenha">
+        recuperar senha
+      </a>
+    </div>
+
       <button class="btn btn-primary w-100 py-2" type="submit">Entrar</button>
+       
       <p class="mt-5 mb-3 text-white  text-center">© { SMW } 2024</p>
     </form>
 
 
-
+    {% include './senha_update.html' %}
   <script>
     window.onload = function() {
       var elemento = document.getElementById('btn-login-nav');
       if (elemento) {
           elemento.style.display = 'none';
       }
-  };
+      var myModal = new bootstrap.Modal(document.getElementById('ModalRecuperarSenha'));
+ 
+    };
   </script>
 
 {% endblock %}

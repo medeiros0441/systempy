@@ -5,10 +5,10 @@ from datetime import timedelta
 from ..models.usuario import Usuario
 from ..def_global import erro, criar_alerta_js
 from django.shortcuts import render, redirect
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 
 MAX_TENTATIVAS_INVALIDAS = (
-    3  # Número máximo de tentativas de login inválidas permitidas
+    3  # Número máximo de tentativas de login inválidas permitidas7
 )
 TEMPO_BLOQUEIO = 5  # Tempo de bloqueio em minutos após atingir o número máximo de tentativas inválidas
 

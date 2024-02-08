@@ -1,0 +1,236 @@
+
+{% load static  %}
+ 
+  
+<div class="modal fade" id="ModalRecuperarSenha" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header ">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">Recuperação de Senha</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="body1">
+            <div  class="row mb-2 text-center">
+            <img  src="{% static 'img/Undraw/undraw_emails_6uqr.svg' %}"   class="image-fluid   mx-auto" height="200" />
+            <div class="">confirme seu email</div>
+          </div>
+            <div class="form-floating mb-2">
+                <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
+                <input type="email" class="form-control" autocomplete="off" id="email_recuperacao" name="email_recuperacao" oninput="validarEmail()" value="{{ email_saved }}">
+                <label for="emaill">E-mail </label>
+              <div class="invalid-feedback  ms-2">Por favor, insira um Email válido.</div>
+            </div>
+        </div>
+        <div class="modal-body" id="body2" style="display: none;">
+            <div  class="row mb-2 text-center">
+            <img  src="{% static 'img/Undraw/undraw_emails_6uqr.svg' %}"   class="image-fluid   mx-auto" height="200" />
+            <div class="">confirme seu email com o codigo que foi enviado. </div>
+        </div>
+            <div class="form-floating mb-2">
+                <input type="text" class="form-control codigo-mask" autocomplete="off" id="codigo_recuperacao" name="codigo_recuperacao"  >
+                <label for="codigo_recuperacao">Codigo</label>
+            </div>
+        </div>
+        <div class="modal-body" id="body3" style="display: none;">
+            <div  class="row mb-2 text-center">
+            <img  src="{% static 'img/Undraw/undraw_emails_6uqr.svg' %}"   class="image-fluid   mx-auto" height="200" />
+            </div>
+            <div class="form-floating mb-2" >
+                <input type="password" name="password" id="password_fake" class="hidden" autocomplete="off" style="display: none;">
+                <input type="password" class="form-control" id="senha_recuperacao1" name="senha_recuperacao1" oninput="validarSenha()">
+                <label for="senha">Senha</label>
+                <div class="invalid-feedback  ms-2" id="senha-feedback1"></div>
+              </div><div class="form-floating mb-2">
+                <input type="password" name="password" id="password_fake" class="hidden" autocomplete="off" style="display: none;">
+                <input type="password" class="form-control" id="senha_recuperacao2" name="senha_recuperacao2" oninput="validarSenha2()">
+                <label for="senha">Senha Confirmar</label>
+                <div class="invalid-feedback ms-2" id="senha-feedback2"></div>
+              </div>
+        </div>
+        <div class="modal-body" id="body4" style="display: none;">
+            <div  class="row  mb-2 text-center">
+            <img  src="{% static 'img/Undraw/undraw_emails_6uqr.svg' %}"   class="image-fluid   mx-auto" height="200" />
+                <label for="senha">Senha Alterada.</label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn mx-auto btn-sm btn-primary" id="btnValidateModals" onclick="validateModal1()">Avançar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    var btnValidateModals = document.getElementById('btnValidateModals');
+
+    function validateModal1() {
+      var email_recuperacao = document.getElementById('email_recuperacao');
+      if (email_recuperacao.classList.contains("is-invalid")) {
+          alertCustomer('Campo Email está inválido.');
+          return false;
+      }
+      if (email_recuperacao.value.trim() == '') {
+          alertCustomer('Campo Email está vazio');
+          return false;
+      } else {
+          var DefName = '/enviar-codigo/' + email_recuperacao.value.trim() + '/';
+          btnValidateModals.style.display = "none";
+        chamarFuncaoPython(DefName, {}, function(result) {
+        //tirando vibilidade para evitar varios clicks
+          if (result.success) {
+            var body1 = document.getElementById('body1');
+            body1.style.display = "none"; // Corrigido estilo de exibição
+            var body2 = document.getElementById('body2');
+            body2.style.display = "block"; // Corrigido estilo de exibição
+            btnValidateModals.onclick = validateModal2; // Corrigida atribuição de função onclick
+            console.clear();
+            btnValidateModals.style.display = "block";
+          } else {
+            btnValidateModals.style.display = "block";
+            console.clear();
+            console.error('Erro ao chamar a função Python:', result.error);
+            alertCustomer(result.error);
+          }
+        });
+      }
+  }
+
+  function validateModal2() {
+      var codigo_recuperacao = document.getElementById('codigo_recuperacao');
+      if (codigo_recuperacao.value.trim() == '') {
+          alertCustomer('Campo código está vazio');
+          return false;
+      } else {
+          var codigo = codigo_recuperacao.value.trim(); // Removido parêntese extra
+          var DefName = '/confirmar-codigo/' + codigo + '/';
+          btnValidateModals.style.display = "none";
+          chamarFuncaoPython(DefName, {}, function(result) {
+             //tirando vibilidade para evitar varios clicks
+           if (result.success) {
+              var body2 = document.getElementById('body2');
+              body2.style.display = "none"; // Corrigido estilo de exibição
+              var body3 = document.getElementById('body3');
+              body3.style.display = "block"; // Corrigido estilo de exibição
+              btnValidateModals.onclick = validateModal3; // Corrigida atribuição de função onclick
+              console.clear();
+              btnValidateModals.style.display = "block";
+
+            }else {
+              console.clear();
+            btnValidateModals.style.display = "block";
+
+            console.error('Erro ao chamar a função Python:', result.error);
+            alertCustomer(result.error);
+          }
+        });
+      }
+  }
+
+  function validateModal3() {
+      var senha_recuperacao1 = document.getElementById('senha_recuperacao1');
+      var senha_recuperacao2 = document.getElementById('senha_recuperacao2');
+      if (senha_recuperacao1.value.trim() == '') {
+          alertCustomer('Campo Senha está vazio');
+          return false;
+      }else
+      if  (senha_recuperacao1.classList.contains("is-invalid")) {
+          alertCustomer('Campo Senha está inválido.');
+          return false;
+      }else if (senha_recuperacao2.value.trim() == '') {
+        alertCustomer('Campo Confirmar senha está vazio');
+        return false;
+    }else
+    if (senha_recuperacao2.classList.contains("is-invalid")) {
+        alertCustomer('Campo confirmar senha está inválido.');
+        return false;
+    } else {
+          var novaSenha = senha_recuperacao2.value.trim(); // Corrigido nome da variável
+          var DefName = '/atualizar-senha/' + novaSenha + '/';
+          btnValidateModals.style.display = "none";
+          chamarFuncaoPython(DefName, {}, function(result) {
+              //tirando vibilidade para evitar varios clicks
+          if (result.success) {
+              var body3 = document.getElementById('body3');
+              body3.style.display = "none"; // Corrigido estilo de exibição
+              var body4 = document.getElementById('body4');
+              body4.style.display = "block"; // Corrigido estilo de exibição
+              btnValidateModals.innerHTML = "Finalizar"
+              btnValidateModals.onclick = validateModal4; // Corrigida atribuição de função onclick
+              console.clear();
+
+            }else {
+              console.clear();
+
+              console.error('Erro ao chamar a função Python:', result.error);
+              alertCustomer(result.error);
+            }
+            btnValidateModals.style.display = "block";
+            
+
+        });
+      }
+  }
+
+  function validateModal4() {
+    window.location.href = "/login";
+  }
+
+  function validarEmail() {
+    var email_responsavel =   document.getElementById('email_recuperacao');
+    email_responsavel.addEventListener('blur', function() {
+      // Pega o valor do campo de e-mail
+      var email = email_responsavel.value;
+
+      // Expressão regular para validar o formato do e-mail
+      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      // Verifica se o e-mail corresponde à expressão regular
+      if (!emailRegex.test(email)) {
+          // Adiciona a classe 'is-invalid' para sinalizar erro de validação
+          email_responsavel.classList.add('is-invalid');
+      } else {
+          // Remove a classe 'is-invalid' se o e-mail for válido
+          email_responsavel.classList.remove('is-invalid');
+      }
+});
+
+}
+function validarSenha() {
+    var senhaInput = document.getElementById("senha_recuperacao1");
+    var senha = senhaInput.value;
+    var senhaFeedback = document.getElementById("senha-feedback1");
+  
+    // Lógica de validação da senha
+    if (senha.length < 8) {
+        senhaFeedback.innerHTML = "A senha deve ter no mínimo 8 caracteres.";
+        senhaInput.classList.add("is-invalid");
+    } else if (!/[A-Z]/.test(senha)) {
+        senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra maiúscula.";
+        senhaInput.classList.add("is-invalid");
+    } else if (!/[a-z]/.test(senha)) {
+        senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra minúscula.";
+        senhaInput.classList.add("is-invalid");
+    } else if (!/[0-9]/.test(senha)) {
+        senhaFeedback.innerHTML = "A senha deve conter pelo menos um número.";
+        senhaInput.classList.add("is-invalid");
+    } else {
+        senhaFeedback.innerHTML = "";
+        senhaInput.classList.remove("is-invalid");
+    }
+  }
+  
+
+function validarSenha2() {
+  var senhaInput2 = document.getElementById("senha_recuperacao2");
+  var senha = senhaInput2.value;
+  var senhaFeedback2 = document.getElementById("senha-feedback2");
+  var senhaInput1 = document.getElementById("senha_recuperacao1").value;
+
+  if (senha != senhaInput1) {
+      senhaFeedback2.innerHTML = "Os valores estão diferentes";
+        senhaInput2.classList.add("is-invalid");
+    } else {
+        senhaFeedback2.innerHTML = "";
+        senhaInput2.classList.remove("is-invalid");
+    }
+}
+  </script>

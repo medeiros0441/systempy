@@ -20,5 +20,13 @@ class Usuario(models.Model):
         Empresa, on_delete=models.CASCADE, db_column="fk_empresa"
     )
 
+    @property
+    def primeiro_nome(self):
+        # Separar o nome completo em partes usando espaços como delimitadores
+        partes_nome = self.nome_completo.split()
+
+        # Retorna apenas o primeiro nome, se houver, caso contrário, retorna uma string vazia
+        return partes_nome[0] if partes_nome else ""
+
     class Meta:
         db_table = "smw_usuario"

@@ -23,6 +23,7 @@ from app.view.views_cliente import (
     lista_clientes,
     lista_galoes,
 )
+from app.def_global import enviar_codigo, atualizar_senha, confirmar_codigo
 
 app_name = "app"
 
@@ -64,4 +65,8 @@ urlpatterns = [
         name="editar_usuario",
     ),
     path("usuarios/<int:id_usuario>/excluir/", excluir_usuario, name="excluir_usuario"),
+    # funçoes
+    path("enviar-codigo/<str:email>/", enviar_codigo, name="enviar_codigo"),
+    path("confirmar-codigo/<str:codigo>/", confirmar_codigo, name="confirmar_codigo"),
+    path("atualizar-senha/<str:nova_senha>/", atualizar_senha, name="atualizar_senha"),
 ]
