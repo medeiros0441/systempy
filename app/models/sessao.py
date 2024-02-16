@@ -3,7 +3,7 @@ from django.utils import timezone
 from .usuario import Usuario
 
 
-class SessaoUsuario(models.Model):
+class Sessao(models.Model):
     id_sessao = models.AutoField(primary_key=True, db_column="id_sessao")
     ip_sessao = models.CharField(max_length=100, db_column="ip_sessao")
     descricao = models.CharField(max_length=100, db_column="descricao")

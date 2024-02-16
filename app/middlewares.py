@@ -26,7 +26,7 @@ class ClienteDefaultMiddleware:
 
 
 from django.utils.deprecation import MiddlewareMixin
-from .models import SessaoUsuario
+from .models.sessao import Sessao
 from django.utils import timezone
 
 
@@ -38,7 +38,7 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
                 ip_cliente = request.META.get("REMOTE_ADDR")
                 navegador_cliente = request.META.get("HTTP_USER_AGENT")
                 # Atualizar os dados do cliente no banco de dados
-                sessao_usuario, created = SessaoUsuario.objects.get_or_create(
+                sessao_usuario, created = Sessao.objects.get_or_create(
                     usuario=id_usuario
                 )
                 sessao_usuario.ip_cliente = ip_cliente
@@ -49,7 +49,7 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
         if request.session.get("id_usuario"):
             # Se o usuário está autenticado, atualize a última atividade ou faça outras ações de saída
             id_usuario = request.session.get("id_usuario")
-            sessao_usuario = SessaoUsuario.objects.get(usuario=id_usuario)
+            sessao_usuario = Sessao.objects.get(usuario=id_usuario)
             sessao_usuario.ultima_atividade = timezone.now()
             sessao_usuario.save()
         return response

@@ -45,7 +45,7 @@ MIDDLEWARE_django = [
 
 MIDDLEWARE_app = [
     # Outros middlewares...
-    "app.middlewares.ClienteDefaultMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "app.middlewares.AtualizarDadosClienteMiddleware",
 ]
 MIDDLEWARE = MIDDLEWARE_app + MIDDLEWARE_django
@@ -67,8 +67,7 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = "systempy.wsgi.application"
+WSGI_APPLICATION = "setup.wsgi.application"
 
 
 # Database
