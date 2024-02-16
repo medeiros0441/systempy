@@ -12,11 +12,11 @@ class Loja(models.Model):
     horario_operacao = models.CharField(
         max_length=50, db_column="horario_operacao", null=True
     )
-    fk_empresa = models.ForeignKey(
+    empresa = models.ForeignKey(
         Empresa, on_delete=models.CASCADE, db_column="fk_empresa"
     )
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
     class Meta:
-        db_table = "smw_loja"
+        db_table = "wms_loja"

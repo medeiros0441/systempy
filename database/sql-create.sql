@@ -28,6 +28,20 @@ CREATE TABLE smw_usuario (
     ultimo_login DATETIME NULL,
     fk_empresa INTEGER NOT NULL FOREIGN KEY (fk_empresa) REFERENCES smw_empresa (id_empresa)
 )
+
+CREATE TABLE smw_sessao_usuario (
+    id_sessao  int PRIMARY KEY IDENTITY(1, 1),
+    ip_sessao VARCHAR(100),
+    descricao VARCHAR(100),
+    pagina_atual VARCHAR(200),
+    time_iniciou DATETIME DEFAULT CURRENT_TIMESTAMP,
+    time_finalizou DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status BOOLEAN null,
+    date_time_insert DATETIME not NULL,
+    date_time_update DATETIME NULL,
+    fk_usuario INT not null   FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario)
+);
+
 -- Tabela produto
 
 CREATE TABLE [smw_loja] (

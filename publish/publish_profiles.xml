@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<publishData>
+    <publishProfile profileName="wmsolutions - Web Deploy" publishMethod="MSDeploy" publishUrl="wmsolutions.scm.azurewebsites.net:443" msdeploySite="wmsolutions" userName="$wmsolutions" userPWD="0cqa74ujdW2SQYoWey4F7ehkw6rHpQQBznQZNmsgwkXrx99CliuByto14mPN" destinationAppUrl="https://wmsolutions.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites">
+        <databases />
+    </publishProfile>
+    <publishProfile profileName="wmsolutions - FTP" publishMethod="FTP" publishUrl="ftps://waws-prod-cq1-025.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="wmsolutions\$wmsolutions" userPWD="0cqa74ujdW2SQYoWey4F7ehkw6rHpQQBznQZNmsgwkXrx99CliuByto14mPN" destinationAppUrl="https://wmsolutions.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites">
+        <databases />
+    </publishProfile>
+    <publishProfile profileName="wmsolutions - Zip Deploy" publishMethod="ZipDeploy" publishUrl="wmsolutions.scm.azurewebsites.net:443" userName="$wmsolutions" userPWD="0cqa74ujdW2SQYoWey4F7ehkw6rHpQQBznQZNmsgwkXrx99CliuByto14mPN" destinationAppUrl="https://wmsolutions.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites">
+        <databases />
+    </publishProfile>
+</publishData>

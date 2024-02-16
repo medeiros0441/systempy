@@ -10,12 +10,12 @@ class Cliente(models.Model):
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
     tipo_cliente = models.CharField(max_length=50)
-    fk_endereco = models.ForeignKey(
+    endereco = models.ForeignKey(
         Endereco, on_delete=models.CASCADE, db_column="fk_endereco"
     )
-   
+
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
     class Meta:
-        db_table = "smw_cliente"
+        db_table = "wms_cliente"

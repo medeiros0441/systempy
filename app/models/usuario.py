@@ -11,12 +11,11 @@ class Usuario(models.Model):
     insert = models.DateTimeField(db_column="date_time_insert", default=timezone.now)
     update = models.DateTimeField(db_column="date_time_update", null=True)
     nivel_usuario = models.IntegerField(db_column="nivel_usuario")
-    status_acesso = models.CharField(
-        max_length=20, db_column="status_acesso", null=True
-    )
+    status_acesso = models.BooleanField(default=False, db_column="status_acesso")
+
     email = models.EmailField(max_length=255, db_column="email")
     ultimo_login = models.DateTimeField(db_column="ultimo_login", null=True)
-    fk_empresa = models.ForeignKey(
+    empresa = models.ForeignKey(
         Empresa, on_delete=models.CASCADE, db_column="fk_empresa"
     )
 
@@ -29,4 +28,4 @@ class Usuario(models.Model):
         return partes_nome[0] if partes_nome else ""
 
     class Meta:
-        db_table = "smw_usuario"
+        db_table = "wms_usuario"

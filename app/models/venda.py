@@ -14,22 +14,22 @@ class Venda(models.Model):
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
     descricao = models.TextField(db_column="descricao")
-    fk_usuario = models.ForeignKey(
+    usuario = models.ForeignKey(
         Usuario, on_delete=models.CASCADE, db_column="fk_usuario"
     )
-    fk_loja = models.ForeignKey("Loja", on_delete=models.CASCADE, db_column="fk_loja")
-    fk_cliente = models.ForeignKey(
+    loja = models.ForeignKey("Loja", on_delete=models.CASCADE, db_column="fk_loja")
+    cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, db_column="fk_cliente"
     )
 
     class Meta:
-        db_table = "smw_venda"
+        db_table = "wms_venda"
 
 
 class VendaProduto(models.Model):
     id_venda_produto = models.AutoField(primary_key=True, db_column="id_venda_produto")
-    fk_venda = models.ForeignKey(Venda, on_delete=models.CASCADE, db_column="fk_venda")
-    fk_produto = models.ForeignKey(
+    venda = models.ForeignKey(Venda, on_delete=models.CASCADE, db_column="fk_venda")
+    produto = models.ForeignKey(
         Produto, on_delete=models.CASCADE, db_column="fk_produto"
     )
     quantidade = models.IntegerField()
@@ -38,4 +38,4 @@ class VendaProduto(models.Model):
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
     class Meta:
-        db_table = "smw_venda_produto"
+        db_table = "wms_venda_produto"

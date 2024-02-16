@@ -31,10 +31,10 @@ class InscricaoGestao(models.Model):
     status = models.BooleanField(db_column="status_inscricao")
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
-    fk_plano_gestao = models.ForeignKey(
+    plano_gestao = models.ForeignKey(
         PlanoGestao, on_delete=models.CASCADE, db_column="fk_plano_gestao"
     )
-    fk_empresa = models.ForeignKey(
+    empresa = models.ForeignKey(
         Empresa, on_delete=models.CASCADE, db_column="fk_empresa"
     )
 
@@ -48,7 +48,7 @@ class HistoricoCliente(models.Model):
     descricao_evento = models.CharField(max_length=500, db_column="descricao_evento")
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
-    fk_empresa = models.ForeignKey(
+    empresa = models.ForeignKey(
         Empresa,
         on_delete=models.CASCADE,
         db_column="fk_empresa",
@@ -70,7 +70,7 @@ class ConfiguracaoPlataforma(models.Model):
     )
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
-    fk_empresa = models.ForeignKey(
+    empresa = models.ForeignKey(
         Empresa,
         on_delete=models.CASCADE,
         db_column="dk_empresa",
@@ -101,7 +101,7 @@ class Registro(models.Model):
     nivel = models.CharField(max_length=255, db_column="nivel")
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
-    fk_sessao = models.ForeignKey(
+    sessao = models.ForeignKey(
         Sessao,
         on_delete=models.CASCADE,
         related_name="registros",

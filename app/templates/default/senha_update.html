@@ -6,13 +6,13 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header ">
-          <h1 class="modal-title fs-5" id="staticBackdropLabel">Recuperação de Senha</h1>
+          <h1 class="modal-title  fs-4 font-monospace" id="staticBackdropLabel">Recuperação de Senha</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="body1">
             <div  class="row mb-2 text-center">
-            <img  src="{% static 'img/Undraw/undraw_emails_6uqr.svg' %}"   class="image-fluid   mx-auto" height="200" />
-            <div class="">confirme seu email</div>
+            <img  src="{% static 'img/undraw/undraw_emails_6uqr.svg' %}"   class="image-fluid   mx-auto" height="150" />
+            <div class="fs-3 font-monospace">confirme seu email</div>
           </div>
             <div class="form-floating mb-2">
                 <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
@@ -21,20 +21,22 @@
               <div class="invalid-feedback  ms-2">Por favor, insira um Email válido.</div>
             </div>
         </div>
-        <div class="modal-body" id="body2" style="display: none;">
+        <div class="modal-body" id="body2" style="display: none ;">
             <div  class="row mb-2 text-center">
-            <img  src="{% static 'img/Undraw/undraw_emails_6uqr.svg' %}"   class="image-fluid   mx-auto" height="200" />
-            <div class="">confirme seu email com o codigo que foi enviado. </div>
+            <img  src="{% static 'img/undraw/undraw_mailbox_re_dvds.svg' %}"   class="image-fluid   mx-auto" height="150" />
+            <div class="fs-3 font-monospace">confirme seu email com o codigo que foi enviado. </div>
         </div>
-            <div class="form-floating mb-2">
-                <input type="text" class="form-control codigo-mask" autocomplete="off" id="codigo_recuperacao" name="codigo_recuperacao"  >
-                <label for="codigo_recuperacao">Codigo</label>
-            </div>
+            <div class="input-group mb-3">
+                   <input   maxlength="7" id="codigo_recuperacao" name="codigo_recuperacao"  tabindex="1" class="form-control codigo-mask"  type="text" placeholder="confirme seu email..." aria-label="Btnrenviar">
+                 <span id="" class=" small ms-3 " style="color:Red;display:none;">O campo é obrigatório</span>
+               <input type="button" onclick="ReenviarCodigo()" name="Btnrenviar" value="Reenviar" id="Btnrenviar" tabindex="3" class="btn btn-outline-secondary" data-bs-toggle="Btnrenviar">
+           </div>
         </div>
-        <div class="modal-body" id="body3" style="display: none;">
+        <div class="modal-body" id="body3" style="display:none  ;">
             <div  class="row mb-2 text-center">
-            <img  src="{% static 'img/Undraw/undraw_emails_6uqr.svg' %}"   class="image-fluid   mx-auto" height="200" />
-            </div>
+            <img  src="{% static 'img/undraw/undraw_mail_sent_re_0ofv.svg' %}"   class="image-fluid   mx-auto" height="150" />
+            <div class="fs-3 font-monospace">confirme seu email com o codigo que foi enviado. </div>
+          </div>
             <div class="form-floating mb-2" >
                 <input type="password" name="password" id="password_fake" class="hidden" autocomplete="off" style="display: none;">
                 <input type="password" class="form-control" id="senha_recuperacao1" name="senha_recuperacao1" oninput="validarSenha()">
@@ -47,9 +49,9 @@
                 <div class="invalid-feedback ms-2" id="senha-feedback2"></div>
               </div>
         </div>
-        <div class="modal-body" id="body4" style="display: none;">
+        <div class="modal-body" id="body4" style="display:none  ;">
             <div  class="row  mb-2 text-center">
-            <img  src="{% static 'img/Undraw/undraw_emails_6uqr.svg' %}"   class="image-fluid   mx-auto" height="200" />
+            <img  src="{% static 'img/undraw/undraw_confirmed_re_sef7.svg' %}"   class="image-fluid   mx-auto" height="150" />
                 <label for="senha">Senha Alterada.</label>
             </div>
         </div>
@@ -83,6 +85,7 @@
             body2.style.display = "block"; // Corrigido estilo de exibição
             btnValidateModals.onclick = validateModal2; // Corrigida atribuição de função onclick
             console.clear();
+            alertCustomer("codigo enviado.");
             btnValidateModals.style.display = "block";
           } else {
             btnValidateModals.style.display = "block";
@@ -93,7 +96,35 @@
         });
       }
   }
+  function  ReenviarCodigo(){
+    var email_recuperacao = document.getElementById('email_recuperacao');
+    if (email_recuperacao.value.trim() == '') {
+      alertCustomer('Campo Email está vazio');
+      return false;
+      var body1 = document.getElementById('body1');
+      body1.style.display = "block"; // Corrigido estilo de exibição
+      var body2 = document.getElementById('body2');
+      body2.style.display = "none"; // Corrigido estilo de exibição
+      btnValidateModals.onclick = validateModal1; // Corrigida atribuição de função onclick
+      console.clear();
+  } else {
+    var DefName = '/enviar-codigo/' + email_recuperacao.value.trim() + '/';
+        btnValidateModals.style.display = "none";
+      chamarFuncaoPython(DefName, {}, function(result) {
+      //tirando vibilidade para evitar varios clicks
+        if (result.success) {
+          alertCustomer("Novo codigo enviado.");
+          console.clear();
+          btnValidateModals.style.display = "block";
 
+        } else {
+          console.clear();
+          console.error('Erro ao chamar a função Python:', result.error);
+          alertCustomer(result.error);
+        }
+      });
+    }
+  }
   function validateModal2() {
       var codigo_recuperacao = document.getElementById('codigo_recuperacao');
       if (codigo_recuperacao.value.trim() == '') {

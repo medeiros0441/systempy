@@ -16,7 +16,7 @@ class Produto(models.Model):
     )
     fabricante = models.CharField(max_length=100, db_column="fabricante")
     descricao = models.TextField(db_column="descricao")
-    fk_loja = models.ForeignKey(Loja, on_delete=models.CASCADE, db_column="fk_loja")
+    loja = models.ForeignKey(Loja, on_delete=models.CASCADE, db_column="fk_loja")
 
     class Meta:
-        db_table = "smw_produto"
+        db_table = "wms_produto"

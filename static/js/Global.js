@@ -4,7 +4,7 @@
  $('.cpf-mask').mask('000.000.000-00');
 
  // Máscara para telefone
- $('.telefone-mask').mask('(00) 0000-00000');
+ $('.telefone-mask').mask('+55 (00) 0000-00000');
  $('.codigo-mask').mask('000-000');
  function chamarFuncaoPython(DefName, data, callback) {
   // Fazer uma requisição AJAX para o backend
@@ -91,4 +91,5 @@ function alertCustomer(text) {
     setTimeout(() => {
       toastContainer.removeChild(toastElement);
     }, 5000); // Tempo em milissegundos, ajuste conforme necessário
+  
   }

@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect
 from .models.usuario import Usuario
 from .models.empresa import Empresa
-from .models.usuario import Usuario
-from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
+from .processador.config_email import enviar_email
+from random import choices
+from django.core.exceptions import ObjectDoesNotExist
+import random
+import string
 
 
 def criar_alerta_js(texto):
@@ -22,10 +25,6 @@ def script_js(function):
     </script>
     """
     return script
-
-
-import random
-import string
 
 
 def erro(request, error_message):
@@ -63,15 +62,18 @@ from django.http import JsonResponse
 
 def enviar_codigo(request, email):
     enviado_com_sucesso, erro = verificar_email_e_enviar_codigo(request, email)
-    
+
     if enviado_com_sucesso:
         return JsonResponse({"mensagem": "Código enviado com sucesso!"})
     else:
         if erro == "usuario_nao_existe":
-            return JsonResponse({"erro": "O usuário com o e-mail fornecido não existe."}, status=404)
+            return JsonResponse(
+                {"erro": "O usuário com o e-mail fornecido não existe."}, status=404
+            )
         else:
-            return JsonResponse({"erro": "Ocorreu um erro ao enviar o código."}, status=500)
-
+            return JsonResponse(
+                {"erro": "Ocorreu um erro ao enviar o código."}, status=500
+            )
 
 
 def confirmar_codigo(request, codigo):
@@ -88,11 +90,6 @@ def atualizar_senha(request, nova_senha):
         return JsonResponse({"mensagem": "Senha atualizada com sucesso!"})
     else:
         return JsonResponse({"erro": "Erro interno Invalido"}, status=400)
-
-
-from .processador.config_email import enviar_email
-from random import choices
-from django.core.exceptions import ObjectDoesNotExist
 
 
 def verificar_email_e_enviar_codigo(request, email):
@@ -126,7 +123,7 @@ def verificar_email_e_enviar_codigo(request, email):
     except ObjectDoesNotExist:
         # Lidar com o caso em que o usuário não existe
         # Por exemplo, você pode retornar False ou lançar uma exceção personalizada
-          return False, "usuario_nao_existe"
+        return False, "usuario_nao_existe"
 
     except Exception as e:
         # Lidar com outros erros inesperados
@@ -177,4 +174,10 @@ def RecuperacaoSenha(request, senha_nova):
             "alerta_js": criar_alerta_js("operação concluida com sucesso."),
         },
     )
- 
+
+
+def get_status(request):
+    id_usuario = request.session.get("id_usuario")
+    usuario = Usuario.objects.get(id_usuario=id_usuario)
+
+    return True

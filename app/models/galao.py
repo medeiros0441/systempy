@@ -16,33 +16,33 @@ class Galao(models.Model):
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
     class Meta:
-        db_table = "smw_galao"
+        db_table = "wms_galao"
 
 
 class GestaoGalao(models.Model):
     id_gestao_galao = models.AutoField(primary_key=True, db_column="id_gestao_galao")
-    fk_galao_saiu = models.ForeignKey(
+    galao_saiu = models.ForeignKey(
         Galao,
         on_delete=models.CASCADE,
         db_column="fk_galao_saiu",
         related_name="galao_saiu_set",
         null=True,
     )
-    fk_galao_entrando = models.ForeignKey(
+    galao_entrando = models.ForeignKey(
         Galao,
         on_delete=models.CASCADE,
         db_column="fk_galao_entrando",
         related_name="galao_entrando_set",
         null=True,
     )
-    fk_cliente = models.ForeignKey(
+    cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, db_column="fk_cliente", null=True
     )
-    fk_venda = models.ForeignKey(
+    venda = models.ForeignKey(
         Venda, on_delete=models.CASCADE, db_column="fk_venda", null=True
     )
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
     class Meta:
-        db_table = "smw_gestaogalao"
+        db_table = "wms_gestaogalao"

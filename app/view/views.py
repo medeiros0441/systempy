@@ -6,8 +6,7 @@ from .view_autenticacao import autenticar_usuario
 
 
 def home(request):
-    alerta_js = criar_alerta_js("Olá seja Bem vindo")
-    return render(request, "default/home.html", {"alerta_js": alerta_js})
+    return render(request, "default/home.html")
 
 
 def sobre(request):

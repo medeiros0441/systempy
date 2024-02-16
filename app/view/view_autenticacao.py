@@ -40,8 +40,9 @@ def autenticar_usuario(request, email, senha_digitada):
                 usuario.save()
                 # Armazena os dados do usuário na sessão
                 request.session["id_usuario"] = usuario.id_usuario
-                request.session["id_empresa"] = usuario.fk_empresa
+                request.session["id_empresa"] = usuario.empresa.id_empresa
                 request.session["nivel_usuario"] = usuario.nivel_usuario
+                request.session["status_acesso"] = usuario.status_acesso
 
                 # Reseta o contador de tentativas inválidas
                 request.session["tentativas_invalidas"] = 0

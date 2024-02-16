@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Clientes{% endblock %}
+
+{% block content %}
+<div class="my-5 container-xl mx-auto">
+    <h2>Lista de Clientes</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">Rua</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for cliente in clientes %}
+            <tr>
+                <th scope="row"><strong>{{ cliente.nome_cliente }}</strong></th>
+                <td><strong>{{ cliente.telefone }}</strong></td>
+                <td><strong>{{ cliente.endereco.rua }}</strong></td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Ações do Cliente">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="window.location.href='{% url 'editar_cliente' cliente.id_cliente %}'">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="window.location.href='{% url 'excluir_cliente' cliente.id_cliente %}'">
+                            <i class="bi bi-trash"></i> Excluir
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

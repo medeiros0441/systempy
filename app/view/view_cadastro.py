@@ -124,7 +124,7 @@ def criar_user(empresa, senha):
             nivel_usuario=1,
             status_acesso="Ativo",
             email=empresa.email,
-            fk_empresa=empresa,
+            empresa=empresa,
         )
 
         return True

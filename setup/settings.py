@@ -6,10 +6,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MIDDLEWARE = [
-    # Outros middlewares...
-    "app.middleware.ClienteDefaultMiddleware",
-]
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -26,8 +22,8 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
 ]
 THIRD_PARTY_APPS = [
-     "crispy_forms",
-     "crispy_bootstrap5",
+    "crispy_forms",
+    "crispy_bootstrap5",
 ]
 # Application definition
 
@@ -37,7 +33,7 @@ MY_APPS = [
 ]
 INSTALLED_APPS = MY_APPS + THIRD_PARTY_APPS + DJANGO_APPS
 
-MIDDLEWARE = [
+MIDDLEWARE_django = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -46,6 +42,13 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+MIDDLEWARE_app = [
+    # Outros middlewares...
+    "app.middlewares.ClienteDefaultMiddleware",
+    "app.middlewares.AtualizarDadosClienteMiddleware",
+]
+MIDDLEWARE = MIDDLEWARE_app + MIDDLEWARE_django
 
 ROOT_URLCONF = "setup.urls"
 
@@ -65,32 +68,31 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "setup.wsgi.application"
+WSGI_APPLICATION = "systempy.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+from pathlib import Path
 
+# Define o diretório base do projeto
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Configuração do banco de dados
 DATABASES = {
-    "default": config(
-        "DATABASE_URL",
-        default=f'sqlite:///{BASE_DIR / "bd.sqlite3"}',
-        cast=db_url,
-    )
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "wmsdatabase",
+        "PASSWORD": "dmmZhUCBWvcMxIMuriHO",
+        "HOST": "wms.cnkmy2e26ipt.us-east-1.rds.amazonaws.com",
+        "PORT": "5432",  # Porta padrão para PostgreSQL
+    },
+    "test": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "test_db.sqlite3",
+    },
 }
-# DATABASES = {
-#   "default": {
-#      "ENGINE": "sql_server.pyodbc",
-#       "NAME": "BDTemporario",  # Nome do banco de dados
-# "USER": "medeiros0441_SQLLogin_1",  # Usuário do banco de dados
-#   "PASSWORD": "pqj6fw5pvi",  # Senha do banco de dados
-# "HOST": "BDTemporario.mssql.somee.com",  # Host do banco de dados
-#   "PORT": "",  # Porta padrão do SQL Server (opcional)
-#   "OPTIONS": {
-#       "driver": "ODBC Driver 17 for SQL Server",  # Driver ODBC para SQL Server
-#   },
-# }
-# }
 
 
 # Password validation
@@ -139,3 +141,25 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
+import xml.etree.ElementTree as ET
+
+# Define o caminho para o arquivo de publicação
+PUBLISH_PROFILES_XML_PATH = "publish/publish_profiles.xml"
+
+
+# Lê os dados do arquivo de publicação
+def read_publish_profiles():
+    tree = ET.parse(PUBLISH_PROFILES_XML_PATH)
+    root = tree.getroot()
+
+    # Itera sobre os elementos de publicação
+    for profile in root.findall("publishProfile"):
+        profile_name = profile.get("profileName")
+        publish_method = profile.get("publishMethod")
+        publish_url = profile.get("publishUrl")
+        # ... você pode processar outros atributos conforme necessário
+        print(
+            f"Profile Name: {profile_name}, Publish Method: {publish_method}, Publish URL: {publish_url}"
+        )

@@ -14,4 +14,4 @@ class Endereco(models.Model):
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
     class Meta:
-        db_table = "smw_endereco"
+        db_table = "wms_endereco"
