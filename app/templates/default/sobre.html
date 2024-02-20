@@ -1,6 +1,184 @@
 {% extends 'base.html' %}
 {% block title %}Sobre-nós{% endblock %}
+{% load static  %}
 
 {% block content %}
+<div class="container-fluid p-4 " style="background:var(--tema-blue);margin-top:-9px">
+     <div class="row featurette container mx-auto p-2 text-light">
+         <div class=" clearfix">
+         
+   
+        <h1 class="featurette-heading fw-normal lh-1 text-center font-monospace fs-4 fw-bold mnA offcanvas-title" style="color: var(--black);font-size:20px">Sobre a Water Management Solutions </h1>
+      <p class="font-monospace small font-weight-light text-center" style=" font-size:15px">
+          A Water Management Solutions é uma empresa focada na inovação e excelência em gestão de distribuidoras de água. 
+          Nosso compromisso é simplificar e aprimorar os processos comerciais por meio de soluções tecnológicas avançadas.
+           Com uma equipe de profissionais dedicados, unimos tecnologia e empreendedorismo para criar ferramentas que transformam a operação das empresas.
+            Combinamos anos de experiência no desenvolvimento de software com um profundo entendimento das necessidades do mercado para oferecer soluções eficazes.
+             Valorizamos a transparência, confiabilidade e a satisfação do cliente, construindo relacionamentos sólidos e oferecendo suporte personalizado.
+          Na Water Management Solutions, somos parceiros na jornada rumo ao sucesso, proporcionando insights valiosos e suporte contínuo.
+</p>
+             <div class="float-md-end mb-3 ms-md-3 ">
+<img src="{% static 'img/logo/5.png' %}" class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto object-fit-fill   rounded    " width="300" height="300">
+          </div>
+<h1 class="font-monospace fs-4 fw-bold mnA offcanvas-title" style="color: var(--white);">Nossa Missão</h1>
 
+<p class="font-monospace small font-weight-light" style=" font-size:15px">
+     Na Water Management Solutions, nossa missão é revolucionar a gestão das distribuidoras de água por meio de soluções tecnológicas inovadoras.
+      Comprometemo-nos a simplificar os processos do seu negócio, 
+      oferecendo ferramentas avançadas para um controle completo das operações. 
+      Buscamos proporcionar uma experiência de gestão transparente e eficiente,
+      capacitando os empresários a atingirem novos patamares de sucesso.
+</p>
+<h1 class="font-monospace fs-4 fw-bold mnA offcanvas-title" style="color: var(--laranja);font-size:20px">O Que Fazemos</h1>
+               <p class="font-monospace small font-weight-light" style=" font-size:15px">Na Water Management Solutions, oferecemos uma plataforma completa para otimizar a gestão de distribuidoras de água.
+                     Por meio de nossa assinatura, proporcionamos um gerenciamento eficaz de um ou mais comércios,
+                     com recursos para controle de estoque, acompanhamento de vendas, gestão de produtos e clientes,
+                      além de análises mensais de lucro e despesas. Com nossa tecnologia inovadora,
+                       oferecemos uma visão abrangente dos negócios, 
+                    facilitando a tomada de decisões estratégicas e impulsionando o crescimento. </p>
+   </div> 
+   </div> 
+     <hr class="featurette-divider"> 
+     <div class="row featurette  text-light font-monospace ">
+   <div class="col-md-7 order-md-2">
+       <h1 class=" lh-2 font-monospac">Samuel medeiros</h1>
+ <h2 class="featurette-heading fw-bolder lh-2 font-monospac" style="color: black;font-size:15px">"Sou protagonista em uma história cujo Deus é o autor"</h2>
+     <p class="lead" style=" font-size:15px">Samuel Medeiros, um desenvolvedor especializado em .NET e formado em Tecnologia da Informação pelo SENAC, é a mente por trás da inovadora plataforma de gestão de distribuidoras de água.
+           O projeto teve origem durante sua jornada na Gota Azul,
+            uma empresa renomada no ramo de comércio de água.
+             A visão empreendedora de Samuel identificou uma oportunidade única enquanto trabalhava no desenvolvimento do software.
+              Ele transformou essa visão em uma realidade comercial de sucesso. Para conhecer mais sobre suas conquistas e o impacto de sua visão no mercado de trabalho,
+               siga-o nas redes sociais.</p>
+<div class="col-12 text-center"> 
+   <a class="text-decoration-none  " href="https://www.linkedin.com/in/samuelmedeirosbc/" target="_blank"> 
+     <i   fill="currentColor" class="bi me-2  bi-linkedin mx-auto figure-img"  width="24" height="24"   ></i>
+        </a>
+   <a class="text-decoration-none " href="https://www.instagram.com/osamuel.medeiros/" target="_blank"> 
+     <i   fill="currentColor" class="bi me-2 bi-instagram mx-auto figure-img"  width="24" height="24" ></i>
+        </a>
+</div>
+   
+   </div>
+   <div class="col-md-5 order-1 my-1">
+<img src="{% static 'img/logo/5.png' %}" class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto object-fit-fill   rounded    " width="300" height="300">
+
+   </div>
+ </div>
+ </div>
+ <div class="custom-shape-divider-top-1708368195">
+     <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+         <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path>
+     </svg>
+ </div>
+ <form class="row  p-sm-4 container mx-auto" method="post" id="form" >
+    {% csrf_token %}
+            
+            <div class=" py-5">
+                <i class="bi me-2  bi-envelope figure-img"  width="25" height="25" fill="currentColor" ></i>
+                <label class="menu">
+                    <a style="color: black;" class=" text-uppercase font-monospace card-title" id="#Contato">E-mail</a>
+                </label>
+                <hr>
+                <div class="form-floating mb-3">
+                    <input name="txtNome" type="text" id="txtNome" class="form-control" placeholder="name">
+                    <label for="txtNome" class="form-label  text-secondary">Nome</label>
+                    <span id="avisoNome" class=" ms-2   mt-2 small text-uppercase font-monospace" style="color:Red;font-size:15px;display:none;">Campo Nome é obrigatório!</span>
+                </div>
+                <div class="form-floating mb-3">
+                    <input name="txtEmail" type="text" maxlength="100" id="txtEmail" class="form-control" placeholder="email">
+                    <label for="txtEmail" class="form-label text-secondary">E-mail</label>
+                    <span id="avisoEmail" class="ms-2  mt-2 small text-uppercase font-monospace" style="color:Red;font-size:15px;display:none;">O E-mail é inválido!</span>
+                </div>
+                <div class="form-floating mb-3">
+                    <input name="txtTelefone" type="text" maxlength="14" id="txtTelefone" class="form-control telefone-mask" placeholder="telefone">
+                    <label for="txtTelefone" class="form-label text-secondary">WhatsApp</label>
+                    <span id="avisoTelefone" class="ms-2 mt-2 small text-uppercase font-monospace" style="color:Red;font-size:15px;display:none;">Campo WhatsApp é invalido</span>
+                </div>
+                <div class="form-floating mb-3">
+                    <textarea name="txtMensagem" rows="2" cols="20" maxlength="1000" id="txtMensagem" class="form-control" placeholder="mensagem" style="height:200px;"></textarea>
+                    <label for="txtMensagem" class="form-label text-secondary">Mensagem</label>
+                    <span id="avisoMensagem" class="ms-2 mt-2 small text-uppercase font-monospace" style="color:Red;font-size:15px;display:none;">Campo Mensagem é obrigatório</span>
+                </div>
+                <input type="button" name="Btncancelar" value="limpar" onclick="limparFormulario();" id="Btncancelar" class="btn btn-outline-secondary btn-sm order-2 float-end mx-2  my-1  ">
+                <input type="button" name="BtnEnviar" value="Enviar" onclick="validate();" id="BtnEnviar" class="btn text-white btn-lg float-start order-1 " style="background:var(--tema-blue)">
+            </div>
+    </form>
+
+<script>
+    
+    function validate() {
+     // Obter os valores dos inputs
+     var nome = document.getElementById('txtNome').value;
+     var email = document.getElementById('txtEmail').value;
+     var telefone = document.getElementById('txtTelefone').value;
+     var mensagem = document.getElementById('txtMensagem').value;
+     // Resetar todos os campos para o estado inicial
+     resetarCampos();
+     // Verificar se algum campo está vazio e aplicar validações
+        var isValid = true;
+        // Verificar o campo Nome
+        if (nome === '') {
+            document.getElementById('avisoNome').style.display = 'block';
+            document.getElementById('txtNome').classList.add('is-invalid');
+            isValid = false;
+        }
+        // Validar o formato do email
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.match(emailRegex)) {
+            document.getElementById('avisoEmail').style.display = 'block';
+            document.getElementById('txtEmail').classList.add('is-invalid');
+            isValid = false;
+        }
+            // Validar o formato do telefone com a máscara
+        var telefoneRegex = /^\+\d{2}\s\(\d{2}\)\s\d{4}-\d{5}$/;
+        if (!telefone.match(telefoneRegex)) {
+            document.getElementById('avisoTelefone').style.display = 'block';
+            document.getElementById('txtTelefone').classList.add('is-invalid');
+            isValid = false;
+        }
+
+    
+        // Verificar se a mensagem está vazia
+        if (mensagem === '') {
+            document.getElementById('avisoMensagem').style.display = 'block';
+            document.getElementById('txtMensagem').classList.add('is-invalid');
+            isValid = false;
+        }
+
+
+        if(isValid){
+            document.getElementById('form').submit();
+        }
+    }
+    // Função para resetar todos os campos e ocultar mensagens de erro
+    function resetarCampos() {
+        var campos = ['txtNome', 'txtEmail', 'txtTelefone', 'txtMensagem'];
+        campos.forEach(function(campo) {
+            document.getElementById(campo).classList.remove('is-invalid');
+            document.getElementById('aviso' + campo.charAt(3).toUpperCase() + campo.slice(4)).style.display = 'none';
+        });
+    }
+    
+    function limparFormulario() {
+        // Limpar os valores dos campos de entrada
+        document.getElementById("txtNome").value = "";
+        document.getElementById("txtEmail").value = "";
+        document.getElementById("txtTelefone").value = "";
+        document.getElementById("txtMensagem").value = "";
+
+        // Remover a classe "is-invalid" dos campos de entrada, se estiver presente
+        document.getElementById("txtNome").classList.remove("is-invalid");
+        document.getElementById("txtEmail").classList.remove("is-invalid");
+        document.getElementById("txtTelefone").classList.remove("is-invalid");
+        document.getElementById("txtMensagem").classList.remove("is-invalid");
+
+        // Também é possível esconder os avisos de validação ao limpar o formulário
+        document.getElementById("avisoNome").style.display = "none";
+        document.getElementById("avisoEmail").style.display = "none";
+        document.getElementById("avisoTelefone").style.display = "none";
+        document.getElementById("avisoMensagem").style.display = "none";
+    }
+
+</script>
+     
      {% endblock %}

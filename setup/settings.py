@@ -1,17 +1,47 @@
 from pathlib import Path
-from decouple import config, Csv
 from dj_database_url import parse as db_url
+from pathlib import Path
+from decouple import config, Csv
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY")
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", cast=bool, default=False)
+# Specify the full path to the .env file
+ENV_FILE = BASE_DIR / ".env"
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
+from django.core.exceptions import ImproperlyConfigured
+
+try:
+
+    SECRET_KEY = config(
+        "SECRET_KEY",
+        default="p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol",
+        cast=str,
+    )
+    DEBUG = config("DEBUG", default=True, cast=bool)
+    ALLOWED_HOSTS = ["wmsolutions.azurewebsites.net", "*"]
+
+    # Database
+    DATABASES = {
+        "default": {
+            "ENGINE": config(
+                "DB_ENGINE", default="django.db.backends.postgresql", cast=str
+            ),
+            "NAME": config("DB_NAME", default="postgres", cast=str),
+            "USER": config("DB_USER", default="wmsdatabase", cast=str),
+            "PASSWORD": config("DB_PASSWORD", default="dmmZhUCBWvcMxIMuriHO", cast=str),
+            "HOST": config(
+                "DB_HOST",
+                default="wms.cnkmy2e26ipt.us-east-1.rds.amazonaws.com",
+                cast=str,
+            ),
+            "PORT": config("DB_PORT", default=5432, cast=int),
+        }
+    }
+
+except ImproperlyConfigured as e:
+    print(f"Erro de configuração: {e}")
 
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -25,12 +55,17 @@ THIRD_PARTY_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
 ]
-# Application definition
+
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MY_APPS = [
     # integracao do app
     "app",
 ]
+
 INSTALLED_APPS = MY_APPS + THIRD_PARTY_APPS + DJANGO_APPS
 
 MIDDLEWARE_django = [
@@ -44,7 +79,8 @@ MIDDLEWARE_django = [
 ]
 
 MIDDLEWARE_app = [
-    # Outros middlewares...
+    "django.middleware.security.SecurityMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "app.middlewares.AtualizarDadosClienteMiddleware",
 ]
@@ -69,34 +105,6 @@ TEMPLATES = [
 ]
 WSGI_APPLICATION = "setup.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-from pathlib import Path
-
-# Define o diretório base do projeto
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Configuração do banco de dados
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "wmsdatabase",
-        "PASSWORD": "dmmZhUCBWvcMxIMuriHO",
-        "HOST": "wms.cnkmy2e26ipt.us-east-1.rds.amazonaws.com",
-        "PORT": "5432",  # Porta padrão para PostgreSQL
-    },
-    "test": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "test_db.sqlite3",
-    },
-}
-
-
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -113,9 +121,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = "pt-BR"
 
 TIME_ZONE = "America/Sao_Paulo"
@@ -126,39 +131,12 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = "/assents/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
-
-
-import xml.etree.ElementTree as ET
-
-# Define o caminho para o arquivo de publicação
-PUBLISH_PROFILES_XML_PATH = "publish/publish_profiles.xml"
-
-
-# Lê os dados do arquivo de publicação
-def read_publish_profiles():
-    tree = ET.parse(PUBLISH_PROFILES_XML_PATH)
-    root = tree.getroot()
-
-    # Itera sobre os elementos de publicação
-    for profile in root.findall("publishProfile"):
-        profile_name = profile.get("profileName")
-        publish_method = profile.get("publishMethod")
-        publish_url = profile.get("publishUrl")
-        # ... você pode processar outros atributos conforme necessário
-        print(
-            f"Profile Name: {profile_name}, Publish Method: {publish_method}, Publish URL: {publish_url}"
-        )

@@ -10,7 +10,7 @@
   // Fazer uma requisição AJAX para o backend
   $.ajax({
     url: DefName,
-    type: 'GET',
+    type: 'POST',
     data: data,
     success: function(response) {
       // Manipular a resposta do backend, se necessário

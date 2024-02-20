@@ -3,6 +3,7 @@
     --tema-black: #000000;
     --tema-blue: #0d1b2a;
     --tema-white: #FFFFFF;
+    --tema-verde: #33da00;
     --siglas-empresa: "{ WMS }";
     --name-empresa: "Water Management Solutions";
     --font-path: "../font/GLIKER-FAMILY/";
@@ -79,3 +80,43 @@ font-weight: normal; /* Padrão para o corpo do documento (Regular) */
 .content {
     flex: 1;
   }
+
+
+
+  .custom-shape-divider-top-1708368195 {
+    
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+}
+
+.custom-shape-divider-top-1708368195 svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 110px;
+    transform: rotateY(180deg);
+}
+
+.custom-shape-divider-top-1708368195 .shape-fill {
+    fill: #0D1B2A;
+}
+
+.custom-shape-divider-bottom-1708368458 {
+   
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+}
+
+.custom-shape-divider-bottom-1708368458 svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 102px;
+}
+
+.custom-shape-divider-bottom-1708368458 .shape-fill {
+    fill: #0D1B2A;
+}

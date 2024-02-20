@@ -3,14 +3,50 @@ from ..def_global import criar_alerta_js, erro
 from django.utils import timezone
 from .view_cadastro import cadastro_empresa
 from .view_autenticacao import autenticar_usuario
-
+from ..processador.config_email import enviar_email
 
 def home(request):
     return render(request, "default/home.html")
 
 
 def sobre(request):
-    return render(request, "default/sobre.html")
+
+    if request.method == "POST":
+        try:
+            # Obter os dados do formulário POST
+            nome = request.POST.get("txtNome")
+            telefone = request.POST.get("txtTelefone")
+            email = request.POST.get("txtEmail")
+            mensagem = request.POST.get("txtMensagem")
+
+            # Construir a mensagem do e-mail
+            mensagem_modelo = (
+                f"Contato via Site\n"
+                f"Nome: {nome}\n"
+                f"WhatsApp: {telefone}\n"
+                f"E-mail: {email}\n"
+            )
+
+            # Enviar o # Enviar o e-mail para o destinatário
+            enviar_email(
+                destinatario="medeiros0442@gmail.com",
+                assunto="Contato via site WMS",
+                NomeCliente=nome,
+                TextIntroducao=mensagem_modelo,
+                TextContainer2=mensagem,
+            )
+
+            return render(
+                request,
+                "default/sobre.html",
+                {"alerta_js": criar_alerta_js("Mensagem Enviada.")},
+            )
+        except Exception as e:
+            mensagem_erro = str(e)
+        return erro(request, mensagem_erro)
+    else:
+        return render(request, "default/sobre.html")
+ 
 
 
 def cadastro(request):

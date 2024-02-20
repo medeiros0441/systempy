@@ -17,8 +17,8 @@ class Sessao(models.Model):
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
     usuario = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, db_column="fk_usuario"
+        Usuario, on_delete=models.CASCADE, db_column="fk_usuario", null=True
     )
 
     class Meta:
-        db_table = "wms_sessao_usuario"
+        db_table = "wms_sessao"

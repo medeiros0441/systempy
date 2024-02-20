@@ -49,7 +49,11 @@ from app.view.views_galao import (
 )
 
 from app.view.sessao import status_off, status_on
-from app.def_global import enviar_codigo, atualizar_senha, confirmar_codigo
+from app.def_global import (
+    enviar_codigo,
+    atualizar_senha,
+    confirmar_codigo,
+)
 
 app_name = "app"
 
