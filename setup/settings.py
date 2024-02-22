@@ -130,11 +130,18 @@ USE_I18N = True
 USE_TZ = True
 
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+import os
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "/assents/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+if DEBUG:
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static'),
+    ]
+else:
+   STATIC_ROOT = os.path.join(BASE_DIR, "static")  
+pass
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

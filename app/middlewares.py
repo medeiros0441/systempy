@@ -30,16 +30,17 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
                 status=True,
             )
 
-        # Se a página atual for diferente da cadastrada, atualiza com a nova página
-        if sessao_usuario.pagina_atual != request.path:
-            sessao_usuario.pagina_atual = request.path
-            sessao_usuario.time_finalizou = timezone.now()
-            sessao_usuario.save()
+        
 
         # Se o ID do usuário for diferente do atual, atualiza com o novo ID
         if sessao_usuario.usuario_id != id_usuario and id_usuario > 0:
             sessao_usuario.usuario_id = id_usuario
             sessao_usuario.save()
+             # Se a página atual for diferente da cadastrada, atualiza com a nova página
+            if sessao_usuario.pagina_atual != request.path:
+                sessao_usuario.pagina_atual = request.path
+                sessao_usuario.time_finalizou = timezone.now()
+                sessao_usuario.save()
 
         # Define o cookie isCliente baseado no ID do usuário
         if id_usuario > 0:

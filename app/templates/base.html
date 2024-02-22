@@ -32,7 +32,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav  ms-auto">
                      
-                        {% if request.session.id_empresa is not None and request.session.id_usuario is None and request.session.status_acesso is not None %}
+        {% if request.session.isCliente == False and request.session.id_usuario == 0 %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'home' %}">inicio</a>
                 </li> <li class="nav-item">
@@ -47,8 +47,7 @@
                     Login 
                 </a>
             </li>
-            
-        {% else %} 
+        {% elif request.session.nivel_usuario <= 2 %} 
              <li class="nav-item">
                             <a class="nav-link" href="{% url 'home' %}">inicio</a>
                         </li>

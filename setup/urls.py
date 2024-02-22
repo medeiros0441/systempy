@@ -54,6 +54,9 @@ from app.def_global import (
     atualizar_senha,
     confirmar_codigo,
 )
+from django.conf import settings
+from django.conf.urls.static import static
+from app.view.assinante import home as a_home
 
 app_name = "app"
 
@@ -64,6 +67,7 @@ urlpatterns = [
     path("login/", login, name="login"),
     path("sobre/", sobre, name="sobre"),
     path("Erro/", erro, name="Erro"),
+    path("assinante/", a_home, name="assinante"),
     # empresa
     path("empresas/", listar_empresas, name="listar_empresas"),
     path("empresas/criar/", criar_empresa, name="criar_empresa"),
@@ -128,4 +132,4 @@ urlpatterns = [
     path("atualizar-senha/<str:nova_senha>/", atualizar_senha, name="atualizar_senha"),
     path("api/status_on/", status_on, name="status_on"),
     path("api/status_off/", status_off, name="status_off"),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

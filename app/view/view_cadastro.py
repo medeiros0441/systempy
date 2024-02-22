@@ -86,7 +86,7 @@ def cadastro_empresa(request):
             elif empresa:
                 string_value = criar_user(empresa, senha_hash)
                 if string_value is True:
-                    return redirect("listar_empresas")
+                    return redirect("login")
                 else:
                     # Se não foi possível criar o usuário, exiba uma mensagem de erro na tela
                     return erro(request, string_value)
@@ -122,7 +122,7 @@ def criar_user(empresa, senha):
             nome_usuario=novo_nome_usuario,
             senha=senha,
             nivel_usuario=1,
-            status_acesso="Ativo",
+            status_acesso=True,
             email=empresa.email,
             empresa=empresa,
         )

@@ -47,7 +47,7 @@ def autenticar_usuario(request, email, senha_digitada):
                 # Reseta o contador de tentativas inválidas
                 request.session["tentativas_invalidas"] = 0
                 request.session["tempo_bloqueio_expirado"] = None
-                return redirect("home_cliente")
+                return redirect("assinante")
             else:
                 # Aumenta o contador de tentativas inválidas
                 request.session.setdefault("tentativas_invalidas", 0)

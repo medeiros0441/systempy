@@ -19,7 +19,7 @@ from django.contrib.auth.hashers import make_password, check_password
 def listar_usuarios(request):
     usuarios = Usuario.objects.all()
     return render(
-        request, "usuario/listar_usuario.html", {"usuarios": usuarios}
+        request, "usuario/lista_usuario.html", {"usuarios": usuarios}
     )
 
 
