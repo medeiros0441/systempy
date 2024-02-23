@@ -135,13 +135,13 @@ import os
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "/assents/"
+
 if DEBUG:
     STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, 'static'),
+        os.path.join(BASE_DIR, "static"),
     ]
 else:
-   STATIC_ROOT = os.path.join(BASE_DIR, "static")  
-pass
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
