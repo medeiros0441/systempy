@@ -6,6 +6,20 @@ from .models.sessao import Sessao
 from django.utils import timezone
 from django.http import HttpRequest
 
+from app.models.usuario import Usuario
+
+
+# def isAssinante(request):
+#   isUsuario = request.GET.get("id_usuario")
+
+#   if isUsuario and int(isUsuario) > 0:
+#       usuario = Usuario.objects.get(id_usuario=isUsuario)
+#       if usuario.status_acesso == False:
+#           return False
+#       return True
+
+#    return False
+
 
 class AtualizarDadosClienteMiddleware(MiddlewareMixin):
     def process_request(self, request: HttpRequest):
@@ -30,13 +44,11 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
                 status=True,
             )
 
-        
-
         # Se o ID do usuário for diferente do atual, atualiza com o novo ID
         if sessao_usuario.usuario_id != id_usuario and id_usuario > 0:
             sessao_usuario.usuario_id = id_usuario
             sessao_usuario.save()
-             # Se a página atual for diferente da cadastrada, atualiza com a nova página
+            # Se a página atual for diferente da cadastrada, atualiza com a nova página
             if sessao_usuario.pagina_atual != request.path:
                 sessao_usuario.pagina_atual = request.path
                 sessao_usuario.time_finalizou = timezone.now()
@@ -56,4 +68,8 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             sessao_usuario = Sessao.objects.get(usuario_id=id_usuario)
             sessao_usuario.time_finalizou = timezone.now()
             sessao_usuario.save()
+
         return response
+
+    #   if isAssinante(request) == False:
+    # return render(request, "default/sobre.html", {"alerta_js": criar_alerta_js("Você precisa autenticar-se")})

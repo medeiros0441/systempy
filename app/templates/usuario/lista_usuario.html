@@ -18,7 +18,15 @@
         {% for usuario in usuarios %}
         <tr>
             <th scope="row">  <strong> {{ usuario.nome_completo }}  </strong> </th>
-            <td><strong>  {{ usuario.status_acesso }}</strong></p></td>
+            <td><strong>  
+                
+                {% if usuario.status_acesso %}
+                    Ativo
+                {% else %}
+                    Desativado
+                {% endif %}
+
+            </strong></p></td>
             <td><strong>
                 {% if usuario.nivel_usuario == 1 %}
                 Administrador 
