@@ -24,8 +24,8 @@
                         <div class="form-floating mb-2">
                             <select class="form-control" id="nivel_usuario" name="nivel_usuario">
                                 <option value="0" >selecione</option>
-                                <option value="2" {% if usuario.nivel_usuario == '2' %} selected {% endif %}>Gerente</option>
-                                <option value="3" {% if usuario.nivel_usuario == '3'%} selected {% endif %}>Colaborador</option>
+                                <option value="2" {% if usuario.nivel_usuario == 2 %} selected {% endif %}>Gerente</option>
+                                <option value="3" {% if usuario.nivel_usuario == 3 %} selected {% endif %}>Colaborador</option>
                             </select>
                         
                             <label for="nivel_usuario">Nível de Usuário:</label>
@@ -33,8 +33,8 @@
                     
                         <div class="form-floating mb-2">
                             <select class="form-control" id="status" name="status" value="{{ usuario.status_acesso }}">
-                                <option value="Ativo"  >Ativo</option>
-                                <option value="Bloqueado"  >Bloqueado</option>
+                                <option value="True"  >Ativo</option>
+                                <option value="False"  >Bloqueado</option>
                             </select>
                             <label for="status">Status:</label>
                         </div>

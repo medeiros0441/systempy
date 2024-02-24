@@ -15,12 +15,19 @@ from django.utils import timezone
 from ..models.empresa import Empresa
 from django.contrib.auth.hashers import make_password, check_password
 
+from django.shortcuts import render
+from ..models.usuario import Usuario
 
-def listar_usuarios(request):
-    usuarios = Usuario.objects.all()
-    return render(
-        request, "usuario/lista_usuario.html", {"usuarios": usuarios}
-    )
+
+def listar_usuarios(request, alerta_js=None):
+    id_empresa = request.session.get("id_empresa")
+    usuarios = Usuario.objects.filter(empresa=id_empresa)
+    context = {"usuarios": usuarios}
+
+    if alerta_js:
+        context["alerta_js"] = criar_alerta_js(alerta_js)
+
+    return render(request, "usuario/lista_usuario.html", context)
 
 
 # Detalhes de um usuário específico
@@ -50,7 +57,7 @@ def cadastrar_usuario(request, id_usuario=0):
             nome_completo=request.POST.get("nome_completo"),
             senha=request.POST.get("senha"),
             nivel_usuario=request.POST.get("nivel_usuario"),
-            status_acesso=request.POST.get("status"),
+            status_acesso=bool(request.POST.get("status")),
             email=request.POST.get("email_responsavel"),
         )
         senha_hash = make_password(formulario.senha)
@@ -104,11 +111,11 @@ def cadastrar_usuario(request, id_usuario=0):
                         status_acesso=formulario.status_acesso,
                         email=formulario.email,
                         empresa=empresa,
+                        insert=timezone.now(),
                     )
                     return redirect(
-                        request,
-                        "listar_usuario",
-                        {"alerta": criar_alerta_js("Usuario cadastrado.")},
+                        "listar_usuarios_com_alerta",
+                        alerta_js="Usuário cadastrado com sucesso!",
                     )
             except Exception as e:
                 mensagem_erro = str(e)
@@ -127,7 +134,7 @@ from ..processador.config_email import enviar_email
 
 
 def editar_usuario(request, id_usuario):
-    caminho_html = "/usario/cadastro_usuario.html"
+    caminho_html = "usuario/editar_usuario.html"
     if id_usuario > 0:
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         empresa_id = request.session.get("id_empresa")
@@ -138,7 +145,7 @@ def editar_usuario(request, id_usuario):
                 nome_completo=request.POST.get("nome_completo"),
                 senha=request.POST.get("senha"),
                 nivel_usuario=request.POST.get("nivel_usuario"),
-                status_acesso=request.POST.get("status"),
+                status_acesso=bool(request.POST.get("status")),
                 email=request.POST.get("email_responsavel"),
             )
             email_existe = email_existe(formulario.email)
@@ -197,13 +204,12 @@ def editar_usuario(request, id_usuario):
                         usuario.nome_completo = formulario.nome_completo
                         usuario.status_acesso = formulario.status_acesso
                         usuario.email = formulario.email
-                        usuario.data_atualizacao = timezone.now()
+                        usuario.update = timezone.now()
 
                         usuario.save()
                         return redirect(
-                            request,
-                            "listar_usuario",
-                            {"alerta": criar_alerta_js("Usuario Atualizado.")},
+                            "listar_usuarios_com_alerta",
+                            alerta_js="Usuário Editado com sucesso!",
                         )
                     except Exception as e:
                         mensagem_erro = str(e)
@@ -235,36 +241,39 @@ def editar_usuario(request, id_usuario):
             )
 
 
-@csrf_exempt
-def excluir_usuario(request, usuario_id):
-    usuario = get_object_or_404(Usuario, id_usuario=usuario_id)
+from django.urls import reverse
 
-    if request.method == "DELETE":
+
+def excluir_usuario(request, id_usuario):
+    usuario = Usuario.objects.get(id_usuario=id_usuario)
+    if usuario:
         usuario.delete()
-        return JsonResponse({"mensagem": "Usuário excluído com sucesso!"})
+        return redirect(
+            "listar_usuarios_com_alerta", alerta_js="Usuário excluído com sucesso!"
+        )
     else:
-        return JsonResponse({"mensagem": "Método não permitido"}, status=405)
+        return redirect(
+            "listar_usuarios_com_alerta", alerta_js="Erro ao excluír Usuário!"
+        )
 
 
 def bloquear_usuario(request, id_usuario):
     usuario = Usuario.objects.get(id_usuario=id_usuario)
-    usuario.status = "Bloqueado"
+    usuario.status_acesso = False
+    usuario.update = timezone.now()
     usuario.save()
     return redirect(
-        request,
-        "usuario/listar_usuarios",
-        {"alerta_js": criar_alerta_js("Usuario Bloquado.")},
+        "listar_usuarios_com_alerta", alerta_js="Usuário bloqueado com sucesso!"
     )
 
 
-def ativar_usuario(request, id):
-    usuario = Usuario.objects.get(id=id)
-    usuario.status = "Ativo"
+def ativar_usuario(request, id_usuario):
+    usuario = Usuario.objects.get(id_usuario=id_usuario)
+    usuario.status_acesso = True
+    usuario.update = timezone.now()
     usuario.save()
     return redirect(
-        request,
-        "usuario/listar_usuarios",
-        {"alerta_js": criar_alerta_js("Usuario Ativo.")},
+        "listar_usuarios_com_alerta", alerta_js="Usuário ativado com sucesso!"
     )
 
 

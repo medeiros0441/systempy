@@ -19,7 +19,7 @@ try:
         default="p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol",
         cast=str,
     )
-    DEBUG = config("DEBUG", default=True, cast=bool)
+    DEBUG = config("DEBUG", default=False, cast=bool)
     ALLOWED_HOSTS = ["wmsolutions.azurewebsites.net", "*"]
 
     # Database
@@ -135,8 +135,11 @@ import os
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "assents/"
+if DEBUG:
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

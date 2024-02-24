@@ -44,10 +44,14 @@ from app.view.views_usuario import (
     excluir_usuario,
     ativar_usuario,
     bloquear_usuario,
+    editar_usuario,
 )
 
 url_usuario = [  # usuarios
     path("usuarios/", listar_usuarios, name="listar_usuarios"),
+    path(
+        "usuarios/<str:alerta_js>/", listar_usuarios, name="listar_usuarios_com_alerta"
+    ),
     path(
         "usuarios/bloquear/<int:id_usuario>/'",
         bloquear_usuario,
@@ -58,7 +62,7 @@ url_usuario = [  # usuarios
     path("usuarios/<int:id_usuario>/", detalhes_usuario, name="detalhes_usuario"),
     path(
         "usuarios/<int:id_usuario>/editar_usuario/",
-        cadastrar_usuario,
+        editar_usuario,
         name="editar_usuario",
     ),
     path("usuarios/<int:id_usuario>/excluir/", excluir_usuario, name="excluir_usuario"),
@@ -74,9 +78,9 @@ from app.view.views_loja import (
 url_loja = [
     # lojas
     path("lojas/", lista_lojas, name="lista_lojas"),
-    path("lojas/editar/<int:loja_id>/", editar_loja, name="editar_loja"),
-    path("lojas/selecionar/<int:loja_id>/", selecionar_loja, name="selecionar_loja"),
-    path("lojas/excluir/<int:loja_id>/", excluir_loja, name="excluir_loja"),
+    path("lojas/editar/<int:id_loja>/", editar_loja, name="editar_loja"),
+    path("lojas/selecionar/<int:id_loja>/", selecionar_loja, name="selecionar_loja"),
+    path("lojas/excluir/<int:id_loja>/", excluir_loja, name="excluir_loja"),
 ]
 
 

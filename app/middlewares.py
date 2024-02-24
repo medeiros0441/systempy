@@ -1,5 +1,5 @@
 # middleware.py
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from .def_global import erro, criar_alerta_js
 from django.utils.deprecation import MiddlewareMixin
 from .models.sessao import Sessao
@@ -7,7 +7,6 @@ from django.utils import timezone
 from django.http import HttpRequest
 
 from app.models.usuario import Usuario
-
 
 # def isAssinante(request):
 #   isUsuario = request.GET.get("id_usuario")
@@ -65,6 +64,10 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
         if request.session.get("id_usuario"):
             # Se o usuário está autenticado, atualize a última atividade no banco de dados
             id_usuario = request.session.get("id_usuario")
+            usuario = get_object_or_404(Usuario, pk=id_usuario)
+            empresa = usuario.empresa
+            if empresa.id_empresa:
+                request.session["id_empresa"] = int(empresa.id_empresa)
             sessao_usuario = Sessao.objects.get(usuario_id=id_usuario)
             sessao_usuario.time_finalizou = timezone.now()
             sessao_usuario.save()
