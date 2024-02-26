@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from ..models.galao import Galao
 
 
-def lista_galoes(request):
+def lista_galao(request):
     if (
         request.session.get("id_empresa", 0) != 0
         and request.session.get("id_usuario", 0) != 0

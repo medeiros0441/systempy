@@ -50,9 +50,6 @@ from app.view.views_usuario import (
 url_usuario = [  # usuarios
     path("usuarios/", listar_usuarios, name="listar_usuarios"),
     path(
-        "usuarios/<str:alerta_js>/", listar_usuarios, name="listar_usuarios_com_alerta"
-    ),
-    path(
         "usuarios/bloquear/<int:id_usuario>/'",
         bloquear_usuario,
         name="bloquear_usuario",
@@ -66,6 +63,9 @@ url_usuario = [  # usuarios
         name="editar_usuario",
     ),
     path("usuarios/<int:id_usuario>/excluir/", excluir_usuario, name="excluir_usuario"),
+    path(
+        "usuarios/<str:alerta_js>/", listar_usuarios, name="listar_usuarios_com_alerta"
+    ),
 ]
 
 from app.view.views_loja import (
@@ -139,17 +139,35 @@ url_cliente = [  # clientes
 ]
 
 from app.view.views_galao import (
-    lista_galoes,
+    lista_galao,
     editar_galao,
     selecionar_galao,
     excluir_galao,
 )
 
 url_galao = [  ##galoes
-    path("galoes/", lista_galoes, name="lista_galoes"),
-    path("galoes/editar/<int:galao_id>/", editar_galao, name="editar_galo"),
-    path("galoes/selecionar/<int:galao_id>/", selecionar_galao, name="selecionar_galo"),
-    path("galoes/excluir/<int:galao_id>/", excluir_galao, name="excluir_galo"),
+    path("galoes/", lista_galao, name="lista_galao"),
+    path("galoes/editar/<int:galao_id>/", editar_galao, name="editar_galao"),
+    path(
+        "galoes/selecionar/<int:galao_id>/", selecionar_galao, name="selecionar_galao"
+    ),
+    path("galoes/excluir/<int:galao_id>/", excluir_galao, name="excluir_galao"),
+]
+
+from app.view.views_endereco import (
+    criar_endereco,
+    lista_endereco,
+    selecionar_endereco,
+    editar_endereco,
+    delete_endereco,
+)
+
+url_endereco = [
+    path("endereco/", lista_endereco, name="lista_endereco"),
+    path("endereco/criar/", criar_endereco, name="criar_endereco"),
+    path("endereco/<int:pk>/", selecionar_endereco, name="selecionar_endereco"),
+    path("endereco/<int:pk>/editar/", editar_endereco, name="editar_endereco "),
+    path("endereco/<int:pk>/excluir/", delete_endereco, name="delete_endereco"),
 ]
 
 from app.def_global import (
@@ -175,6 +193,7 @@ urlpatterns = (
     + url_produto
     + url_loja
     + url_cliente
+    + url_endereco
     + url_galao
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 )

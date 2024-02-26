@@ -6,6 +6,8 @@
  // Máscara para telefone
  $('.telefone-mask').mask('+55 (00) 0000-00000');
  $('.codigo-mask').mask('000-000');
+ $('.cep-mask').mask('0000-0000');
+ 
  function chamarFuncaoPython(DefName, data, callback) {
   // Fazer uma requisição AJAX para o backend
   $.ajax({

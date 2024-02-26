@@ -48,7 +48,7 @@ def detalhes_usuario(request, usuario_id):
     return render(request, "usuario/select_usuario.html", {"data": data})
 
 
-def cadastrar_usuario(request, id_usuario=0):
+def cadastrar_usuario(request):
     caminho_html = "usuario/cadastro_usuario.html"
 
     if request.method == "POST":
@@ -56,7 +56,7 @@ def cadastrar_usuario(request, id_usuario=0):
         formulario = Usuario(
             nome_completo=request.POST.get("nome_completo"),
             senha=request.POST.get("senha"),
-            nivel_usuario=request.POST.get("nivel_usuario"),
+            nivel_usuario=int(request.POST.get("nivel_usuario")),
             status_acesso=bool(request.POST.get("status")),
             email=request.POST.get("email_responsavel"),
         )
@@ -79,9 +79,10 @@ def cadastrar_usuario(request, id_usuario=0):
             " ", ""
         ).lower()  # Remove espaços e converte para minúsculas
         # Se o nome de usuário já estiver em uso, adicionamos um número aleatório ao final
-        verificar_uso = usuario_existe(nome_usuario)
-        while verificar_uso:
-            nome_usuario + gerar_numero_aleatorio()
+        nome_usuario
+        usuario_existe(nome_usuario)
+        while usuario_existe(nome_usuario):
+            nome_usuario = nome_usuario + gerar_numero_aleatorio()
 
         id_empresa = request.session.get("id_empresa")
 
@@ -101,7 +102,7 @@ def cadastrar_usuario(request, id_usuario=0):
                 empresa = Empresa.objects.get(pk=id_empresa)
 
                 # Verificar se id_usuario é zero antes de criar um novo usuário
-                if id_usuario == 0:
+                if empresa.id_empresa > 0:
                     # Criar um novo usuário com a instância da empresa
                     usuario_new = Usuario.objects.create(
                         nome_completo=formulario.nome_completo,
@@ -141,16 +142,37 @@ def editar_usuario(request, id_usuario):
 
         if request.method == "POST":
 
+            nivel_usuario_str = request.POST.get("nivel_usuario")
+
+            # Inicializa um valor padrão
+            valor = 1
+
+            # Verifica se nivel_usuario_str não é None e se é maior que 1
+            if nivel_usuario_str is not None and int(nivel_usuario_str) > 1:
+                valor = int(nivel_usuario_str)
+            status_acesso_str = request.POST.get("status")
+            if status_acesso_str is not None:
+                status_acesso = bool(status_acesso_str)
+            else:
+                status_acesso = True
+            # Cria o objeto do formulário
             formulario = Usuario(
                 nome_completo=request.POST.get("nome_completo"),
                 senha=request.POST.get("senha"),
-                nivel_usuario=request.POST.get("nivel_usuario"),
-                status_acesso=bool(request.POST.get("status")),
+                nivel_usuario=valor,
+                status_acesso=status_acesso,
                 email=request.POST.get("email_responsavel"),
             )
-            email_existe = email_existe(formulario.email)
+            # verificamos está em uso caso esteja.. verificamos se é
+            # utilizado pelo usuario que está salvando os
+            EmailisUtilizado = email_existe(formulario.email)
+            if EmailisUtilizado:
+                User = Usuario.objects.get(email=formulario.email)
+                if User.id_usuario == usuario.id_usuario:
+                    EmailisUtilizado = False
+
             # se o  email existir mas se for do usuario atual vamos ignorar o aviso de existencia
-            if email_existe and id_usuario == usuario.id_usuario:
+            if EmailisUtilizado == False:
                 # caso o cliente tenha alterado o email vamos autenticar enviando um codigo para a confirmação
                 ##se a sneha for alterada geremos a senha hash e
                 # passamos para o model usuario para, a alterao
@@ -185,18 +207,6 @@ def editar_usuario(request, id_usuario):
                             "usuario": formulario,
                         },
                     )
-                # email é diferente e já existe.
-                if formulario.email == usuario.email:
-                    return render(
-                        request,
-                        caminho_html,
-                        {
-                            "alerta_js": criar_alerta_js(
-                                "Email já está cadastro, coloque outro."
-                            ),
-                            "usuario": formulario,
-                        },
-                    )
                 # Verifica se os campos obrigatórios estão preenchidos
                 if formulario.nome_completo and formulario.nivel_usuario and empresa_id:
                     try:
@@ -214,7 +224,6 @@ def editar_usuario(request, id_usuario):
                     except Exception as e:
                         mensagem_erro = str(e)
                         return erro(request, mensagem_erro)
-
             else:
                 return render(
                     request,

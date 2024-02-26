@@ -21,18 +21,20 @@
                             </div>
                         </div>
                         
-                        <div class="form-floating mb-2">
-                            <select class="form-control" id="nivel_usuario" name="nivel_usuario">
-                                <option value="0" >selecione</option>
+                        <div  class="form-floating mb-2"   >
+                            <select class="form-control  "  {% if usuario.nivel_usuario == 1 %} disabled {% endif %} id="nivel_usuario" name="nivel_usuario"  >
+                                <option value="0" >Selecione</option>{% if usuario.nivel_usuario != 1 %} 
+                                <option value="1" {% if usuario.nivel_usuario == 1 %} selected {% endif %}>Administrador</option>
+                                {% endif %}
                                 <option value="2" {% if usuario.nivel_usuario == 2 %} selected {% endif %}>Gerente</option>
-                                <option value="3" {% if usuario.nivel_usuario == 3%} selected {% endif %}>Colaborador</option>
+                                <option value="3" {% if usuario.nivel_usuario == 3 %} selected {% endif %}>Colaborador</option>
                             </select>
                         
                             <label for="nivel_usuario">Nível de Usuário:</label>
                         </div>
                     
                         <div class="form-floating mb-2">
-                            <select class="form-control" id="status" name="status" value="{{ usuario.status_acesso }}">
+                            <select class="form-control" id="status" name="status" {% if usuario.nivel_usuario == 1 %} disabled {% endif %}  value="{{ usuario.status_acesso }}">
                                 <option value="Ativo"  >Ativo</option>
                                 <option value="Bloqueado"  >Bloqueado</option>
                             </select>
@@ -92,7 +94,7 @@
    if(email_responsavel.classList.contains("is-invalid") || senha.classList.contains("is-invalid")){
     alertCustomer('Por favor, preencha corretamente os campos');
     return false;
-    }else if(nivel_usuario.value === '1'){
+    }else if(nivel_usuario.value === '0'){
         alertCustomer('Por favor, selecione uma opção do campo nivel de usuario');
     }else  if (nome_completo === '' || email_responsavel === '' || senha === '') {
     alertCustomer('Por favor, preencha todos os campos  antes de prosseguir.');

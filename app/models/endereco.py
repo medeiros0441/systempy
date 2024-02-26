@@ -8,7 +8,7 @@ class Endereco(models.Model):
     numero = models.CharField(max_length=10, null=True, blank=True)
     cidade = models.CharField(max_length=100)
     estado = models.CharField(max_length=50)
-    codigo_postal = models.CharField(max_length=15)
+    codigo_postal = models.CharField(max_length=30)
     descricao = models.TextField()
     insert = models.DateTimeField(db_column="date_time_insert", default=timezone.now)
     update = models.DateTimeField(db_column="date_time_update", null=True)

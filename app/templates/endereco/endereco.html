@@ -1,0 +1,81 @@
+<div class="modal fade" id="modalEndereco" tabindex="-1" aria-labelledby="modalEnderecoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEnderecoLabel">Criação/Edição de Endereço</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formEndereco">
+            {% csrf_token %}
+            <input type="hidden" id="id_endereco" name="id_endereco">
+            <div class="mb-3">
+                <label for="codigo_postal" class="form-label">Código Postal</label>
+                <input type="text" class="form-control" id="codigo_postal" name="codigo_postal" required>
+              </div>
+            <div class="mb-3">
+              <label for="rua" class="form-label">Rua</label>
+              <input type="text" class="form-control" id="rua" name="rua" required>
+            </div>
+            <div class="mb-3">
+              <label for="numero" class="form-label">Número</label>
+              <input type="text" class="form-control" id="numero" name="numero">
+            </div>
+            <div class="mb-3">
+              <label for="cidade" class="form-label">Cidade</label>
+              <input type="text" class="form-control" id="cidade" name="cidade" required>
+            </div>
+            <div class="mb-3">
+              <label for="estado" class="form-label">Estado</label>
+              <input type="text" class="form-control" id="estado" name="estado" required>
+            </div>
+             
+            <div class="mb-3">
+              <label for="descricao" class="form-label">Descrição</label>
+              <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+            </div>
+            <!-- Adicione aqui os campos adicionais do seu modelo, se houver -->
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-primary" id="btnSalvarEndereco">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<script>
+    // Função global para buscar dados do CEP e preencher campos do formulário
+    function preencherCamposComCEP(cep) {
+        // Verifique se o CEP foi fornecido
+        if (!cep) {
+            alert('Por favor, forneça um CEP válido.');
+            return;
+        }
+
+        // Faça uma requisição GET para a API de consulta de CEP
+        $.get('https://viacep.com.br/ws/' + cep + '/json/', function(data) {
+            // Verifique se os dados foram retornados corretamente
+            if (!data.erro) {
+                // Preencha os campos do formulário com os dados retornados
+                $('#rua').val(data.logradouro);
+                $('#cidade').val(data.localidade);
+                $('#estado').val(data.uf);
+                $('#codigo_postal').val(data.cep);
+                // Você pode adicionar mais campos aqui, se necessário
+            } else {
+                alert('CEP não encontrado.');
+            }
+        });
+    }
+
+    // Exemplo de como usar a função preencherCamposComCEP
+    $(document).ready(function() {
+        $('#btnBuscarCEP').click(function() {
+            var cep = $('#cep').val();
+            preencherCamposComCEP(cep);
+        });
+    });
+</script>
