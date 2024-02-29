@@ -11,8 +11,6 @@ class EnderecoForm(forms.ModelForm):
         super(EnderecoForm, self).__init__(*args, **kwargs)
 
         # Adiciona classes, atributos adicionais e limites de caracteres aos widgets dos campos
-        self.fields["cidade"].widget.attrs["disabled"] = "disabled"
-        self.fields["estado"].widget.attrs["disabled"] = "disabled"
         self.fields["codigo_postal"].widget.attrs[
             "class"
         ] = "form-control cep-mask input"
@@ -23,12 +21,13 @@ class EnderecoForm(forms.ModelForm):
         self.fields["codigo_postal"].widget.attrs["maxlength"] = 30
         self.fields["descricao"].widget.attrs[
             "maxlength"
-        ] = None  # Remover essa linha se houver um limite específico para a descrição
+        ] = 100  # Limite específico para a descrição
 
         for field_name in self.fields:
-            self.fields[field_name].widget.attrs.update(
-                {
-                    "class": "form-control input",
-                    "required": "required",
-                }
+            # Verifica se já existem classes no widget
+            existing_classes = self.fields[field_name].widget.attrs.get("class", "")
+            # Adiciona as novas classes sem remover as existentes
+            self.fields[field_name].widget.attrs["class"] = (
+                existing_classes + " form-control input"
             )
+            self.fields[field_name].widget.attrs["required"] = "required"

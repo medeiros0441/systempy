@@ -115,7 +115,7 @@ def cadastrar_usuario(request):
                         insert=timezone.now(),
                     )
                     return redirect(
-                        "listar_usuarios_com_alerta",
+                        "listar_usuarios_alerta",
                         alerta_js="Usuário cadastrado com sucesso!",
                     )
             except Exception as e:
@@ -218,7 +218,7 @@ def editar_usuario(request, id_usuario):
 
                         usuario.save()
                         return redirect(
-                            "listar_usuarios_com_alerta",
+                            "listar_usuarios_alerta",
                             alerta_js="Usuário Editado com sucesso!",
                         )
                     except Exception as e:
@@ -258,12 +258,10 @@ def excluir_usuario(request, id_usuario):
     if usuario:
         usuario.delete()
         return redirect(
-            "listar_usuarios_com_alerta", alerta_js="Usuário excluído com sucesso!"
+            "listar_usuarios_alerta", alerta_js="Usuário excluído com sucesso!"
         )
     else:
-        return redirect(
-            "listar_usuarios_com_alerta", alerta_js="Erro ao excluír Usuário!"
-        )
+        return redirect("listar_usuarios_alerta", alerta_js="Erro ao excluír Usuário!")
 
 
 def bloquear_usuario(request, id_usuario):
@@ -272,7 +270,7 @@ def bloquear_usuario(request, id_usuario):
     usuario.update = timezone.now()
     usuario.save()
     return redirect(
-        "listar_usuarios_com_alerta", alerta_js="Usuário bloqueado com sucesso!"
+        "listar_usuarios_alerta", alerta_js="Usuário bloqueado com sucesso!"
     )
 
 
@@ -281,9 +279,7 @@ def ativar_usuario(request, id_usuario):
     usuario.status_acesso = True
     usuario.update = timezone.now()
     usuario.save()
-    return redirect(
-        "listar_usuarios_com_alerta", alerta_js="Usuário ativado com sucesso!"
-    )
+    return redirect("listar_usuarios_alerta", alerta_js="Usuário ativado com sucesso!")
 
 
 def autenticar_usuario(email, senha):

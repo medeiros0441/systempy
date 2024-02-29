@@ -81,7 +81,19 @@
                             </div>
                         </li>
                        
-
+                        <li class="nav-item dropdown">
+                            <div class="btn-group">
+                                <a class="nav-link" href="{% url 'lista_endereco' %}">Endereços</a>
+                            <button type="button" class="nav-link   dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
+                                <li><a class="dropdown-item" href="{% url 'lista_endereco' %}">Listar Endereços</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'criar_endereco' %}">Cadastrar Endereços</a></li>
+                            </ul>
+                            </div>
+                        </li>
                     {% endif %} 
 
                         <li class="nav-item">

@@ -1,12 +1,12 @@
 
  // Máscara para CNPJ
- $('.cnpj-mask').mask('00.000.000/0000-00', {reverse: true});
+ $('.cnpj-mask').mask('00.000.000/0000-00');
  $('.cpf-mask').mask('000.000.000-00');
 
  // Máscara para telefone
  $('.telefone-mask').mask('+55 (00) 0000-00000');
  $('.codigo-mask').mask('000-000');
- $('.cep-mask').mask('0000-0000');
+ $('.cep-mask').mask('00000-000');
  
  function chamarFuncaoPython(DefName, data, callback) {
   // Fazer uma requisição AJAX para o backend
@@ -76,6 +76,9 @@ function alertCustomer(text) {
     // Criar o corpo do toast
     const toastBody = document.createElement('div');
     toastBody.classList.add('toast-body');
+    toastBody.classList.add('bg-white');
+    toastBody.classList.add('rounded-bottom');
+    toastBody.classList.add('shadow-lg');
     toastBody.innerText = text;
 
     // Montar a estrutura do toast
@@ -92,6 +95,6 @@ function alertCustomer(text) {
     // Remover o toast após um tempo padrão (por exemplo, 5 segundos)
     setTimeout(() => {
       toastContainer.removeChild(toastElement);
-    }, 5000); // Tempo em milissegundos, ajuste conforme necessário
+    }, 10000); // Tempo em milissegundos, ajuste conforme necessário
   
   }

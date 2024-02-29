@@ -8,9 +8,9 @@ from ..models.produto import Loja, Produto
 
 def lista_lojas(request):
     if (
-        request.session.get("id_empresa", 0) != 0
-        and request.session.get("id_usuario", 0) != 0
-        and request.session.get("status_acesso", "") == "ativo"
+        request.session.get("id_empresa")
+        and request.session.get("id_usuario") 
+        and request.session.get("status_acesso") == True
     ):
         # Lógica para listar as lojas
         return HttpResponse("Lista de lojas")

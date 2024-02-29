@@ -1,0 +1,182 @@
+
+{% block content %}
+ 
+  
+<!-- Modal -->
+<div class="modal fade" id="ModalEndereco" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog  modal-md modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title fw-bold font-monospace" id="enderecoModalLabel" >
+            {% if endereco %} Detalhes do Endereço{% endif%}
+            {% if form %} Formulario do Endereço{% endif%}
+        </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            {% if endereco %} 
+            <div class="form-group">
+                <label for="text_rua">Rua:</label>
+                <span id="text_rua">{{ endereco.rua }}</span>
+              </div>
+              <div class="form-group">
+                <label for="text_numero">Número:</label>
+                <span id="text_numero">{{ endereco.numero }}</span>
+              </div>
+              <div class="form-group">
+                <label for="text_codigo_postal">Código Postal:</label>
+                <span id="text_codigo_postal">{{ endereco.codigo_postal }}</span>
+              </div>
+              <div class="form-group">
+                <label for="text_cidade">Cidade:</label>
+                <span id="text_cidade">{{ endereco.cidade }}</span>
+              </div>
+              <div class="form-group">
+                <label for="text_estado">Estado:</label>
+                <span id="text_estado">{{ endereco.estado }}</span>
+              </div>
+              <div class="form-group">
+                <label for="text_descricao">Descrição:</label>
+                <span id="text_descricao">{{ endereco.descricao }}</span>
+              </div>
+              {% endif%}
+            {% if form %}   
+            <form method="post" id="form_cadastro" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="form-floating mb-2 "  >
+                    {{ form.codigo_postal }}
+                    <label for="id_codigo_postal">Código Postal</label>
+                    <div class="invalid-feedback">
+                        {{ form.codigo_postal.errors }}
+                    </div>
+                </div>
+                <div class="form-floating mb-2">
+                    {{ form.rua }}
+                    <label for="id_rua">Rua</label>
+                    <div class="invalid-feedback">
+                        {{ form.rua.errors }}
+                    </div>
+                </div>
+                
+                <div class="form-floating mb-2">
+                    {{ form.numero }}
+                    <label for="id_numero">Número</label>
+                    <div class="invalid-feedback">
+                        {{ form.numero.errors }}
+                    </div>
+                </div>
+                
+                <div class="form-floating mb-2 " disabled >
+                    {{ form.cidade }}
+                    <label for="id_cidade">Cidade</label>
+                    <div class="invalid-feedback">
+                        {{ form.cidade.errors }}
+                    </div>
+                </div>
+                
+                <div class="form-floating mb-2" disabled  >
+                    {{ form.estado }}
+                    <label for="id_estado">Estado</label>
+                    <div class="invalid-feedback">
+                        {{ form.estado.errors }}
+                    </div>
+                </div>
+                
+                <div class="form-floating mb-2">
+                    {{ form.descricao }}
+                    <label for="id_descricao">Descrição</label>
+                    <div class="invalid-feedback">
+                        {{ form.descricao.errors }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" onclick="validateForm();">Cadastrar</button>
+            </form>
+            {% endif%}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+ 
+<script>
+
+     
+    
+      function validateForm() {
+        // Pega os valores dos campos
+        var cep = document.getElementById("id_codigo_postal").value;
+        var rua = document.getElementById("id_rua").value;
+        var numero = document.getElementById("id_numero").value;
+        var cidade = document.getElementById("id_cidade").value;
+        var estado = document.getElementById("id_estado").value;
+        var descricao = document.getElementById("id_descricao").value;
+        // Verifica se os campos obrigatórios estão preenchidos
+        if (cep.trim() === '') {
+          alertCustomer('Por favor, preencha o campo Código Postal.');
+          event.preventDefault(); // Impede o envio do formulário
+          status = false;
+        }
+        if (rua.trim() === '') {
+          alertCustomer('Por favor, preencha o campo Rua.');
+          event.preventDefault(); // Impede o envio do formulário
+          status = false;
+        }
+        if (numero.trim() === '') {
+          alertCustomer('Por favor, preencha o campo Número.');
+          event.preventDefault(); // Impede o envio do formulário
+          status = false;
+        }
+        if (cidade.trim() === '') {
+            alertCustomer('Por favor, preencha o campo Cidade.');
+            event.preventDefault(); // Impede o envio do formulário
+            status = false;
+        }
+        if (estado.trim() === '') {
+            alertCustomer('Por favor, preencha o campo Estado.');
+            event.preventDefault(); // Impede o envio do formulário
+            status = false;
+        }
+        
+        if(status){
+           document.getElementById('form_cadastro').submit();
+         return true;
+      }
+    }
+
+  // Função para buscar o endereço com base no CEP
+function buscarEnderecoPorCEP() {
+    // Pega o valor do campo de CEP
+    var cep = document.getElementById("id_codigo_postal").value;
+    
+    // Remove qualquer caractere que não seja um número
+    cep = cep.replace(/\D/g, '');
+
+    // Verifica se o CEP tem a quantidade correta de dígitos
+    if (cep.length === 8) {
+        // Faz a requisição para o serviço que retorna os detalhes do endereço
+        fetch('https://viacep.com.br/ws/' + cep + '/json/')
+        .then(response => response.json())
+        .then(data => {
+            // Preenche os campos do formulário com os dados do endereço
+            document.getElementById("id_rua").value = data.logradouro;
+            document.getElementById("id_cidade").value = data.localidade;
+            document.getElementById("id_estado").value = data.uf;
+            document.getElementById("id_numero").focus(); // Muda o foco para o campo de número
+        })
+        .catch(error => {
+            console.error('Erro ao buscar endereço:', error);
+        });
+    } else {
+        alertCustomer('CEP inválido. Por favor, insira um CEP válido.');
+    }
+}
+
+// Adiciona um event listener para chamar a função ao sair do campo de CEP
+if (document.getElementById("id_codigo_postal")) {
+  document.getElementById("id_codigo_postal").addEventListener("blur", buscarEnderecoPorCEP);
+}
+
+</script>
+
+{% endblock %}

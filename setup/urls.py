@@ -63,9 +63,7 @@ url_usuario = [  # usuarios
         name="editar_usuario",
     ),
     path("usuarios/<int:id_usuario>/excluir/", excluir_usuario, name="excluir_usuario"),
-    path(
-        "usuarios/<str:alerta_js>/", listar_usuarios, name="listar_usuarios_com_alerta"
-    ),
+    path("usuarios/<str:alerta_js>/", listar_usuarios, name="listar_usuarios_alerta"),
 ]
 
 from app.view.views_loja import (
@@ -164,10 +162,11 @@ from app.view.views_endereco import (
 
 url_endereco = [
     path("endereco/", lista_endereco, name="lista_endereco"),
-    path("endereco/criar/", criar_endereco, name="criar_endereco"),
+    path("endereco/criar", criar_endereco, name="criar_endereco"),
     path("endereco/<int:pk>/", selecionar_endereco, name="selecionar_endereco"),
-    path("endereco/<int:pk>/editar/", editar_endereco, name="editar_endereco "),
+    path("endereco/<int:pk>/editar/", editar_endereco, name="editar_endereco"),
     path("endereco/<int:pk>/excluir/", delete_endereco, name="delete_endereco"),
+    path("endereco/<str:alerta_js>/", lista_endereco, name="lista_endereco_alerta"),
 ]
 
 from app.def_global import (
