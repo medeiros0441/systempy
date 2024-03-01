@@ -5,17 +5,7 @@
 {% block content %}
 {% include 'endereco/modal_endereco.html' %}
 
-
-<script>
-  // Abrir o modal se a variável indicar que deve ser aberto automaticamente
-  {% if open_modal %}
-  document.addEventListener('DOMContentLoaded', function() {
-      var myModal = new bootstrap.Modal(document.getElementById('ModalEndereco'));
-      myModal.show();
-  });
-  {% endif %}
-
-</script>
+ 
 
 <div class="my-5 container-xl mx-auto ">
     <div class="d-flex justify-content-between">
@@ -23,7 +13,7 @@
             <h2>Lista de Endereços</h2>
         </div>
         <div class="d-flex align-items-center">
-            <a  type="button"  href="endereco/criar/"   class="btn text-secondary border-0" >
+            <a  type="button"  href="{% url 'criar_endereco' %}"   class="btn text-secondary border-0" >
                 Cadastrar Endereço
                 <i class="bi bi-plus pe-1 pt-2 d-inline-block" style="font-size: 1.3rem;"></i>
             </a>
@@ -39,7 +29,7 @@
             <th scope="col">Rua</th>
             <th scope="col">Número</th>
             <th scope="col">Bairro</th>
-            <th scope="col">Ações</th>
+            <th scope="col" class="text-end">Ações</th>
           </tr>
         </thead>
         <tbody class="table-group-divider">
@@ -52,7 +42,7 @@
             <td><strong>
               {{  endereco.bairro }} 
             <td> 
-                <div class="btn-group" role="group" aria-label="Ações do Usuário">
+                <div class="btn-group float-end" role="group" aria-label="Ações do Usuário">
                     <div class="btn-group" role="group" aria-label="Ações do Usuário">
                  
                       <a href="{% url 'selecionar_endereco' endereco.id_endereco %}" class="btn btn-success btn-sm">
@@ -73,4 +63,15 @@
         </tbody>
       </table>
     </div>
+
+  <script>
+    // Abrir o modal se a variável indicar que deve ser aberto automaticamente
+    {% if open_modal %}
+    document.addEventListener('DOMContentLoaded', function() {
+        var myModal = new bootstrap.Modal(document.getElementById('ModalEndereco'));
+        myModal.show();
+    });
+    {% endif %}
+
+  </script>
         {% endblock %}

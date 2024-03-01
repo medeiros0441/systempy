@@ -18,9 +18,6 @@ class Loja(models.Model):
     empresa = models.ForeignKey(
         Empresa, on_delete=models.CASCADE, db_column="fk_empresa"
     )
-    endereco = models.ForeignKey(
-        Endereco, on_delete=models.CASCADE, db_column="fk_endereco", null=True
-    )
-
+    endereco = models.ForeignKey(Endereco, on_delete=models.CASCADE, db_column="fk_endereco", null=True)
     class Meta:
         db_table = "wms_loja"

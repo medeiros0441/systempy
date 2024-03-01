@@ -8,11 +8,11 @@
  $('.codigo-mask').mask('000-000');
  $('.cep-mask').mask('00000-000');
  
- function chamarFuncaoPython(DefName, data, callback) {
+ function chamarFuncaoPython(DefName, data, callback, Type ="POST") {
   // Fazer uma requisição AJAX para o backend
   $.ajax({
     url: DefName,
-    type: 'POST',
+    type: Type,
     data: data,
     success: function(response) {
       // Manipular a resposta do backend, se necessário

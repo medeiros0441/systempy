@@ -1,17 +1,20 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from ..models.endereco import Endereco
 from ..forms.EnderecoForm import EnderecoForm
-
 from ..def_global import criar_alerta_js
+from django.contrib import messages
+from ..static import Alerta
 
 
-def lista_endereco(request, alerta_js=None):
+def lista_endereco(request, context=None):
+    if context is None:
+        context = {}
+
     enderecos = Endereco.objects.all()
-    context = {
-        "enderecos": enderecos,
-    }
-    if alerta_js:
-        context["alerta_js"] = criar_alerta_js(alerta_js)
+    context["enderecos"] = enderecos
+    alerta = Alerta.get_mensagem()
+    if alerta:
+        context["alerta_js"] = criar_alerta_js(alerta)
 
     return render(request, "endereco/lista_endereco.html", context)
 
@@ -21,28 +24,19 @@ def criar_endereco(request):
         form = EnderecoForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect(
-                "lista_endereco_alerta", alerta_js="Cadastrado com Sucesso."
-            )
+            Alerta.set_mensagem("Cadastrado com Sucesso.")
+            return redirect("lista_endereco")
+
         else:
-            erro = form.errors
-            return render(
-                request,
-                "endereco/lista_endereco.html",
-                {"open_modal": True, "form": form, "alerta_js": criar_alerta_js(erro)},
-            )
+            return lista_endereco(request, {"open_modal": True, "form": form})
     else:
         form = EnderecoForm()
-    return render(
-        request, "endereco/lista_endereco.html", {"open_modal": True, "form": form}
-    )
+        return lista_endereco(request, {"open_modal": True, "form": form})
 
 
 def selecionar_endereco(request, pk):
     endereco = get_object_or_404(Endereco, pk=pk)
-    return render(
-        request, "endereco/lista_endereco.html", {"open_modal": True, "form": endereco}
-    )
+    return lista_endereco(request, {"open_modal": True, "endereco": endereco})
 
 
 def editar_endereco(request, pk):
@@ -51,19 +45,16 @@ def editar_endereco(request, pk):
         form = EnderecoForm(request.POST, instance=endereco)
         if form.is_valid():
             form.save()
-            return redirect(
-                "lista_endereco_alerta", alerta_js="erro, Ao excluir endereço"
-            )
+            Alerta.set_mensagem("Endereço Editado")
+            return redirect("lista_endereco")
+
     else:
         form = EnderecoForm(instance=endereco)
-    return render(
-        request, "endereco/lista_endereco.html", {"open_modal": True, "form": form}
-    )
+        return lista_endereco(request, None, {"open_modal": True, "form": form})
 
 
 def delete_endereco(request, pk):
     endereco = get_object_or_404(Endereco, pk=pk)
-    if request.method == "POST":
-        endereco.delete()
-        return redirect("lista_endereco_alerta")
-    return redirect("lista_endereco_alerta", alerta_js="erro, Ao excluir endereço")
+    endereco.delete()
+    Alerta.set_mensagem("Endereço excluído com sucesso.")
+    return redirect("lista_endereco")

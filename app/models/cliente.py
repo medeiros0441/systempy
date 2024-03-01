@@ -13,7 +13,7 @@ class Cliente(models.Model):
     tipo_cliente = models.CharField(max_length=50,null=True)
     descricao_cliente = models.CharField(max_length=300,null=True)
     endereco = models.ForeignKey(
-        Endereco, on_delete=models.CASCADE, db_column="fk_endereco"
+        Endereco, on_delete=models.CASCADE, db_column="fk_endereco",null=True
     )
 
     class Meta:

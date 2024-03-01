@@ -162,7 +162,7 @@ from app.view.views_endereco import (
 
 url_endereco = [
     path("endereco/", lista_endereco, name="lista_endereco"),
-    path("endereco/criar", criar_endereco, name="criar_endereco"),
+    path("endereco/criar/", criar_endereco, name="criar_endereco"),
     path("endereco/<int:pk>/", selecionar_endereco, name="selecionar_endereco"),
     path("endereco/<int:pk>/editar/", editar_endereco, name="editar_endereco"),
     path("endereco/<int:pk>/excluir/", delete_endereco, name="delete_endereco"),
