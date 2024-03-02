@@ -2,7 +2,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from ..models.endereco import Endereco
 from ..forms.EnderecoForm import EnderecoForm
 from ..def_global import criar_alerta_js
-from django.contrib import messages
 from ..static import Alerta
 
 
@@ -50,7 +49,7 @@ def editar_endereco(request, pk):
 
     else:
         form = EnderecoForm(instance=endereco)
-        return lista_endereco(request, None, {"open_modal": True, "form": form})
+        return lista_endereco(request, {"open_modal": True, "form": form})
 
 
 def delete_endereco(request, pk):

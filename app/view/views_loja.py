@@ -1,54 +1,70 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from ..def_global import erro
+from django.shortcuts import render, get_object_or_404, redirect
+from ..models.loja import Loja
+from ..forms.LojaForm import LojaForm
+from ..def_global import criar_alerta_js, erro
+from ..static import Alerta, UserInfo
 
 
-from ..models.produto import Loja, Produto
+def lista_loja(request, context=None):
+    id_empresa = UserInfo.get_id_empresa(request)
+    id_usuario = UserInfo.get_id_usuario(request)
 
+    if id_empresa != 0 and id_usuario != 0:
+        if context is None:
+            context = {}
 
-def lista_lojas(request):
-    if (
-        request.session.get("id_empresa")
-        and request.session.get("id_usuario") 
-        and request.session.get("status_acesso") == True
-    ):
-        # Lógica para listar as lojas
-        return HttpResponse("Lista de lojas")
+        try:
+            lojas = Loja.objects.get(empresa=id_empresa)
+            context["lojas"] = lojas
+        except Loja.DoesNotExist:
+            # Caso a loja não exista, simplesmente não adicionamos nada ao contexto.
+            pass
+
+        alerta = Alerta.get_mensagem()
+        if alerta:
+            context["alerta_js"] = criar_alerta_js(alerta)
+
+        return render(request, "loja/lista_loja.html", context)
     else:
         return erro(request, "Você não está autorizado a fazer esta requisição.")
 
 
-def editar_loja(request, loja_id):
-    if (
-        request.session.get("id_empresa", 0) != 0
-        and request.session.get("id_usuario", 0) != 0
-        and request.session.get("status_acesso", "") == "ativo"
-    ):
-        # Lógica para editar a loja com id=loja_id
-        return HttpResponse(f"Editando a loja {loja_id}")
+def criar_loja(request):
+    if request.method == "POST":
+        form = LojaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            Alerta.set_mensagem("Cadastrado com Sucesso.")
+            return redirect("lista_loja")
+
+        else:
+            return lista_loja(request, {"open_modal": True, "form": form})
     else:
-        return erro(request, "Você não está autorizado a fazer esta requisição.")
+        form = LojaForm()
+        return lista_loja(request, {"open_modal": True, "form": form})
 
 
-def selecionar_loja(request, loja_id):
-    if (
-        request.session.get("id_empresa", 0) != 0
-        and request.session.get("id_usuario", 0) != 0
-        and request.session.get("status_acesso", "") == "ativo"
-    ):
-        # Lógica para selecionar a loja com id=loja_id
-        return HttpResponse(f"Selecionando a loja {loja_id}")
+def selecionar_loja(request, pk):
+    loja = get_object_or_404(Loja, pk=pk)
+    return lista_loja(request, {"open_modal": True, "loja": loja})
+
+
+def editar_loja(request, pk):
+    loja = get_object_or_404(Loja, pk=pk)
+    if request.method == "POST":
+        form = LojaForm(request.POST, instance=loja)
+        if form.is_valid():
+            form.save()
+            Alerta.set_mensagem("Loja Editado")
+            return redirect("lista_loja")
+
     else:
-        return erro(request, "Você não está autorizado a fazer esta requisição.")
+        form = LojaForm(instance=loja)
+        return lista_loja(request, {"open_modal": True, "form": form})
 
 
-def excluir_loja(request, loja_id):
-    if (
-        request.session.get("id_empresa", 0) != 0
-        and request.session.get("id_usuario", 0) != 0
-        and request.session.get("status_acesso", "") == "ativo"
-    ):
-        # Lógica para excluir a loja com id=loja_id
-        return HttpResponse(f"Excluindo a loja {loja_id}")
-    else:
-        return erro(request, "Você não está autorizado a fazer esta requisição.")
+def delete_loja(request, pk):
+    loja = get_object_or_404(Loja, pk=pk)
+    loja.delete()
+    Alerta.set_mensagem("Loja excluído com sucesso.")
+    return redirect("lista_loja")

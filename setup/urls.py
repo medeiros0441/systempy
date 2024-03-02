@@ -67,18 +67,20 @@ url_usuario = [  # usuarios
 ]
 
 from app.view.views_loja import (
-    lista_lojas,
+    lista_loja,
     editar_loja,
     selecionar_loja,
-    excluir_loja,
+    delete_loja,
+    criar_loja,
 )
 
 url_loja = [
     # lojas
-    path("lojas/", lista_lojas, name="lista_lojas"),
+    path("lojas/", lista_loja, name="lista_loja"),
+    path("lojas/criar", criar_loja, name="criar_loja"),
     path("lojas/editar/<int:id_loja>/", editar_loja, name="editar_loja"),
     path("lojas/selecionar/<int:id_loja>/", selecionar_loja, name="selecionar_loja"),
-    path("lojas/excluir/<int:id_loja>/", excluir_loja, name="excluir_loja"),
+    path("lojas/excluir/<int:id_loja>/", delete_loja, name="excluir_loja"),
 ]
 
 

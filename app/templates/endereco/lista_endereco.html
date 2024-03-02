@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Lista de Usuários{% endblock %}
+{% block title %}Lista de Endereços{% endblock %}
 
 {% block content %}
 {% include 'endereco/modal_endereco.html' %}
@@ -46,13 +46,13 @@
                     <div class="btn-group" role="group" aria-label="Ações do Usuário">
                  
                       <a href="{% url 'selecionar_endereco' endereco.id_endereco %}" class="btn btn-success btn-sm">
-                        <i class="bi bi-unlock"></i> Visualizar
+                        <i class="bi bi-eye me-1"></i> Detalhes
                     </a>
                     <a href="{% url 'editar_endereco' endereco.id_endereco %}" class="btn btn-warning btn-sm">
-                      <i class="bi bi-pencil"></i>Editar
+                      <i class="bi bi-pencil  me-1"></i>Editar
                     </a>
                     <a href="{% url 'delete_endereco' endereco.id_endereco %}" class="btn btn-danger btn-sm">
-                            <i class="bi bi-trash"></i> Excluir
+                            <i class="bi bi-trash  me-1"></i> Excluir
                         </a>
                           
                            

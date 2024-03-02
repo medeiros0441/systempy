@@ -69,14 +69,14 @@
 
                         <li class="nav-item dropdown">
                             <div class="btn-group">
-                                <a class="nav-link" href="{% url 'lista_lojas' %}">Lojas</a>
+                                <a class="nav-link" href="{% url 'lista_loja' %}">Lojas</a>
                             <button type="button" class="nav-link   dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span class="visually-hidden">Toggle Dropdown</span>
                             </button>
                             <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                <li><a class="dropdown-item" href="{% url 'lista_lojas' %}">Listar Lojas</a></li>
+                                <li><a class="dropdown-item" href="{% url 'lista_loja' %}">Listar Lojas</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'lista_lojas' %}">Cadastrar loja</a></li>
+                            <li><a class="dropdown-item" href="{% url 'lista_loja' %}">Cadastrar loja</a></li>
                             </ul>
                             </div>
                         </li>
@@ -104,9 +104,9 @@
                                 <span class="visually-hidden">Toggle Dropdown</span>
                             </button>
                             <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                <li><a class="dropdown-item" href="{% url 'lista_lojas' %}">Listar Produtos</a></li>
+                                <li><a class="dropdown-item" href="{% url 'lista_loja' %}">Listar Produtos</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'lista_lojas' %}">Cadastrar Produtos</a></li>
+                            <li><a class="dropdown-item" href="{% url 'lista_loja' %}">Cadastrar Produtos</a></li>
                             </ul>
                             </div>
                             
@@ -119,9 +119,9 @@
                                     <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
                                 <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                    <li><a class="dropdown-item" href="{% url 'lista_lojas' %}">Listar Vendas</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'lista_loja' %}">Listar Vendas</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'lista_lojas' %}">Cadastrar Vendas</a></li>
+                                <li><a class="dropdown-item" href="{% url 'lista_loja' %}">Cadastrar Vendas</a></li>
                                 </ul>
                                 </div>
                              </li>
@@ -147,9 +147,9 @@
                                         <span class="visually-hidden">Toggle Dropdown</span>
                                     </button>
                                     <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                        <li><a class="dropdown-item" href="{% url 'lista_lojas' %}">Listar Galões</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'lista_loja' %}">Listar Galões</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{% url 'lista_lojas' %}">Cadastrar Galões</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'lista_loja' %}">Cadastrar Galões</a></li>
                                     </ul>
                                     </div>
                         </li>
@@ -181,10 +181,10 @@
                 <div class="col-12">
                     <p class="footer-title m-1  d-inline-flex border-bottom text-white">Páginas</p>
                     <ul class="list-unstyled footer-links m-0">
-                        <li><a href="../home" class="text-secondary    text-decoration-none">Home</a></li>
-                        <li><a href="../sobre" class="text-secondary   text-decoration-none">Sobre-nós</a></li>
-                        <li><a href="../login" class="text-secondary     text-decoration-none">Login</a></li>
-                        <li><a href="../cadastro" class="text-secondary  text-decoration-none">Cadastre-se</a></li>
+                        <li><a href="{% url 'home' %}" class="text-secondary    text-decoration-none">Home</a></li>
+                        <li><a href="{% url 'sobre'%}" class="text-secondary   text-decoration-none">Sobre-nós</a></li>
+                        <li><a href="{% url 'login' %}" class="text-secondary     text-decoration-none">Login</a></li>
+                        <li><a href="{% url 'cadastro' %}" class="text-secondary  text-decoration-none">Cadastre-se</a></li>
                     </ul>
                 </div> 
                 <a class="navbar-brand col-12 m-1  btn-sm " href="../home">

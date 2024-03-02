@@ -30,7 +30,8 @@ class EnderecoForm(forms.ModelForm):
         self.fields["codigo_postal"].widget.attrs["maxlength"] = 30
         self.fields["descricao"].widget.attrs[
             "maxlength"
-        ] = 100  # Limite específico para a descrição
+        ] = 100
+        self.fields["descricao"].required = False  # Limite específico para a descrição
         for field_name in self.fields:
             # Verifica se já existem classes no widget
             existing_classes = self.fields[field_name].widget.attrs.get("class", "")
@@ -39,4 +40,4 @@ class EnderecoForm(forms.ModelForm):
                 existing_classes + " form-control input"
             )
             self.fields[field_name].widget.attrs["required"] = "required"
-        self.fields["descricao"].required = False
+         

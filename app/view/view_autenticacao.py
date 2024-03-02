@@ -6,6 +6,7 @@ from ..models.usuario import Usuario
 from ..def_global import erro, criar_alerta_js
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
+from ..static import Alerta, UserInfo
 
 MAX_TENTATIVAS_INVALIDAS = (
     3  # Número máximo de tentativas de login inválidas permitidas7
@@ -35,6 +36,7 @@ def autenticar_usuario(request, email, senha_digitada):
             senha_correta = check_password(senha_digitada, usuario.senha)
 
             if senha_correta:
+                UserInfo.set_id_usuario(request,email, senha_digitada)
                 # Atualiza o último login do usuário
                 usuario.ultimo_login = timezone.now()
                 usuario.save()
@@ -47,7 +49,7 @@ def autenticar_usuario(request, email, senha_digitada):
                 # Reseta o contador de tentativas inválidas
                 request.session["tentativas_invalidas"] = 0
                 request.session["tempo_bloqueio_expirado"] = None
-                return redirect("assinante")
+                return redirect("homeAssinante")
             else:
                 # Aumenta o contador de tentativas inválidas
                 request.session.setdefault("tentativas_invalidas", 0)
