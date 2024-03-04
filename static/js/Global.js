@@ -98,3 +98,37 @@ function alertCustomer(text) {
     }, 10000); // Tempo em milissegundos, ajuste conforme necessário
   
   }
+
+  // Função para buscar o endereço com base no CEP
+  function buscarEnderecoPorCEP() {
+    // Pega o valor do campo de CEP
+    var cep = document.getElementById("id_codigo_postal").value;
+    
+    // Remove qualquer caractere que não seja um número
+    cep = cep.replace(/\D/g, '');
+
+    // Verifica se o CEP tem a quantidade correta de dígitos
+    if (cep.length === 8) {
+        // Faz a requisição para o serviço que retorna os detalhes do endereço
+        fetch('https://viacep.com.br/ws/' + cep + '/json/')
+        .then(response => response.json())
+        .then(data => {
+            // Preenche os campos do formulário com os dados do endereço
+            document.getElementById("id_rua").value = data.logradouro;
+            document.getElementById("id_bairro").value = data.bairro;
+            document.getElementById("id_cidade").value = data.localidade;
+            document.getElementById("id_estado").value = data.uf;
+            document.getElementById("id_numero").focus(); // Muda o foco para o campo de número
+        })
+        .catch(error => {
+            console.error('Erro ao buscar endereço:', error);
+        });
+    } else {
+        alertCustomer('CEP inválido. Por favor, insira um CEP válido.');
+    }
+}
+
+// Adiciona um event listener para chamar a função ao sair do campo de CEP
+if (document.getElementById("id_codigo_postal")) {
+  document.getElementById("id_codigo_postal").addEventListener("blur", buscarEnderecoPorCEP);
+}

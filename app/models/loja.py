@@ -9,9 +9,17 @@ class Loja(models.Model):
     numero_telefone = models.CharField(
         max_length=15, db_column="numero_telefone", null=True
     )
-    horario_operacao = models.CharField(
-        max_length=50, db_column="horario_operacao", null=True
-    )
+
+
+    horario_operacao_inicio = models.TimeField(null=True, blank=True, db_column="horario_operacao_inicio" )
+    horario_operacao_fim = models.TimeField(null=True, blank=True,   db_column="horario_operacao_fim")
+    segunda = models.BooleanField(default=False, db_column="segunda")
+    terca = models.BooleanField(default=False, db_column="terca")
+    quarta = models.BooleanField(default=False, db_column="quarta")
+    quinta = models.BooleanField(default=False, db_column="quinta")
+    sexta = models.BooleanField(default=False, db_column="sexta")
+    sabado = models.BooleanField(default=False, db_column="sabado")
+    domingo = models.BooleanField(default=False, db_column="domingo")
 
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)

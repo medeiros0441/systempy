@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from ..models.loja import Loja
 from ..forms.LojaForm import LojaForm
+from ..forms.EnderecoForm import EnderecoForm
 from ..def_global import criar_alerta_js, erro
 from ..static import Alerta, UserInfo
 
@@ -40,8 +41,11 @@ def criar_loja(request):
         else:
             return lista_loja(request, {"open_modal": True, "form": form})
     else:
-        form = LojaForm()
-        return lista_loja(request, {"open_modal": True, "form": form})
+        formloja = LojaForm()
+        form = EnderecoForm()
+        return lista_loja(
+            request, {"open_modal": True, "form_endereco": form, "form_loja": formloja}
+        )
 
 
 def selecionar_loja(request, pk):

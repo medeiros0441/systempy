@@ -115,86 +115,61 @@
   
  
 <script>
+ 
+  document.addEventListener('DOMContentLoaded', function () {
+    // Seletor do formulário
+    const form = document.getElementById('form_cadastro');
 
-     
-    
-      function validateForm() {
-        // Pega os valores dos campos
-        var cep = document.getElementById("id_codigo_postal").value;
-        var rua = document.getElementById("id_rua").value;
-        var numero = document.getElementById("id_numero").value;
-        var bairro = document.getElementById("id_bairro").value;
-        var cidade = document.getElementById("id_cidade").value;
-        var estado = document.getElementById("id_estado").value;
-        var descricao = document.getElementById("id_descricao").value;
-       // Variável para armazenar mensagens de erro
-    var errorMessages = [];
+    form.addEventListener('submit', function (event) {
+        event.preventDefault(); // Evita o envio padrão do formulário
 
-    // Verifica se os campos obrigatórios estão preenchidos
-    if (cep.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Código Postal.');
-    }
-    if (rua.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Rua.');
-    }
-    if (numero.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Número.');
-    }
-    if (bairro.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Bairro.');
-    }
-    if (cidade.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Cidade.');
-    }
-    if (estado.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Estado.');
-    }
+        // Resetando classes de validação
+        resetValidationClasses();
 
-    // Exibe um único alerta contendo todas as mensagens de erro
-    if (errorMessages.length > 0) {
-        alertCustomer(errorMessages.join('\n'));
-        event.preventDefault(); // Impede o envio do formulário
-        return false;
-    } else {
-        document.getElementById('form_cadastro').submit();
-        return true;
-    }
-    }
+        // Verificando campos vazios e checkbox não marcados
+        if (!validateForm()) {
+            // Se a validação falhar, adicione classes de validação Bootstrap aos campos
+            applyValidationClasses();
+        } else {
+            // Se a validação for bem-sucedida, você pode enviar o formulário ou executar outras ações aqui
+            form.submit();
+        }
+    });
 
-  // Função para buscar o endereço com base no CEP
-function buscarEnderecoPorCEP() {
-    // Pega o valor do campo de CEP
-    var cep = document.getElementById("id_codigo_postal").value;
-    
-    // Remove qualquer caractere que não seja um número
-    cep = cep.replace(/\D/g, '');
-
-    // Verifica se o CEP tem a quantidade correta de dígitos
-    if (cep.length === 8) {
-        // Faz a requisição para o serviço que retorna os detalhes do endereço
-        fetch('https://viacep.com.br/ws/' + cep + '/json/')
-        .then(response => response.json())
-        .then(data => {
-            // Preenche os campos do formulário com os dados do endereço
-            document.getElementById("id_rua").value = data.logradouro;
-            document.getElementById("id_bairro").value = data.bairro;
-            document.getElementById("id_cidade").value = data.localidade;
-            document.getElementById("id_estado").value = data.uf;
-            document.getElementById("id_numero").focus(); // Muda o foco para o campo de número
-        })
-        .catch(error => {
-            console.error('Erro ao buscar endereço:', error);
+    function resetValidationClasses() {
+        const inputs = form.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.classList.remove('is-invalid');
         });
-    } else {
-        alertCustomer('CEP inválido. Por favor, insira um CEP válido.');
     }
-}
 
-// Adiciona um event listener para chamar a função ao sair do campo de CEP
-if (document.getElementById("id_codigo_postal")) {
-  document.getElementById("id_codigo_postal").addEventListener("blur", buscarEnderecoPorCEP);
-}
+    function validateForm() {
+        // Verifica se os campos estão preenchidos ou os checkboxes estão marcados 
+        const rua = form.querySelector('#id_rua').value.trim();
+        const numero = form.querySelector('#id_numero').value.trim();
+        const bairro = form.querySelector('#id_bairro').value.trim();
+        const cidade = form.querySelector('#id_cidade').value.trim();
+        const estado = form.querySelector('#id_estado').value.trim();
+        const descricao = form.querySelector('#id_descricao').value.trim();
 
+        // Adicione suas próprias condições de validação conforme necessário
+        if (  rua === '' || numero === '' || bairro === '' || cidade === '' || estado === '' ) {
+            return false; // Formulário inválido
+        }
+
+        return true; // Formulário válido
+    }
+
+    function applyValidationClasses() {
+        const inputs = form.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            if (input.value.trim() === '') {
+                input.classList.add('is-invalid');
+            }
+        });
+    }
+}); 
+ 
 </script>
 
 {% endblock %}

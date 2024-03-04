@@ -1,6 +1,6 @@
 
 {% block content %}
- 
+  
   
 <!-- Modal -->
 <div class="modal fade" id="ModalLoja" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -8,171 +8,260 @@
       <div class="modal-content">
         <div class="modal-header">
         <h5 class="modal-title fw-bold font-monospace" id="lojaModalLabel" >
-            {% if loja %} Detalhes do Loja{% endif%}
-            {% if form %} Formulario do Loja{% endif%}
+            {% if inputs_loja %} Detalhes do Loja{% endif%}
+            {% if form_loja %} Formulario do Loja{% endif%}
         </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body fonrt-monospace">
-            {% if loja %} 
+            {% if inputs_loja %} 
             <div class="form-group">
                 <label for="nome_loja" class="fw-bold">Nome da Loja</label>
-                <span id="nome_loja">{{ loja.nome_loja }}</span>
+                <span id="nome_loja">{{ inputs_loja.nome_loja }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="numero_telefone">Número Telefone:</label>
-                <span id="numero_telefone">{{ loja.numero_telefone }}</span>
+                <span id="numero_telefone">{{ inputs_loja.numero_telefone }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="horario_operacao">Horario de Operacao</label>
-                <span id="horario_operacao">{{ loja.horario_operacao }}</span>
+                <span id="horario_operacao">{{ inputs_loja.horario_operacao }}</span>
               </div>
               <hr /> 
               <div class="form-group">
                 <label for="text_rua" class="fw-bold">Rua:</label>
-                <span id="text_rua">{{ loja.endereco.rua }}</span>
+                <span id="text_rua">{{ inputs_endereco.rua }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="text_numero">Número:</label>
-                <span id="text_numero">{{ loja.endereco.numero }}</span>
+                <span id="text_numero">{{ inputs_endereco.numero }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="text_codigo_postal">Código Postal:</label>
-                <span id="text_codigo_postal">{{ loja.endereco.codigo_postal }}</span>
+                <span id="text_codigo_postal">{{ inputs_endereco.codigo_postal }}</span>
               </div>
 
               <div class="form-group">
                 <label  class="fw-bold" for="text_cidade">Bairro:</label>
-                <span id="text_cidade">{{ loja.endereco.bairro }}</span>
+                <span id="text_cidade">{{ inputs_endereco.bairro }}</span>
               </div>
               <div class="form-group">
                 <label class="fw-bold"  for="text_cidade">Cidade:</label>
-                <span id="text_cidade">{{ loja.endereco.cidade }}</span>
+                <span id="text_cidade">{{ inputs_endereco.cidade }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="text_estado">Estado:</label>
-                <span id="text_estado">{{ loja.endereco.estado }}</span>
+                <span id="text_estado">{{ inputs_endereco.estado }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold"  for="text_descricao">Descrição:</label>
-                <span id="text_descricao">{{ loja.endereco.descricao }}</span>
+                <span id="text_descricao">{{ inputs_endereco.descricao }}</span>
               </div>
              
               {% endif%}
-            {% if form %}   
+            {% if form_loja %}   
             <form method="post" id="form_cadastro" class="needs-validation" novalidate>
                 {% csrf_token %}
                 <div class="form-floating mb-2 ">
-                    {{ form.nome_loja }}
-                    <label for="id_nome_loja">de um nome  para referenciar a loja:</label>
+                    {{ form_loja.nome_loja }}
+                    <label for="id_nome_loja">nome para referenciar a form_loja:</label>
                 </div>
                 <div class="form-floating mb-2 ">
-                    {{ form.rua }}
-                    <label for="id_rua">Rua</label>
+                    {{ form_loja.numero_telefone }}
+                    <label for="id_numero_telefone">Telefone</label>
                     <div class="invalid-feedback">
-                        {{ form.rua.errors }}
                     </div>
                 </div>
-
-                <div class="form-floating mb-2  ">
-                  {{ form.codigo_postal }}
-                  <label for="id_codigo_postal">Código Postal</label>
-                  <div class="invalid-feedback">
-                      {{ form.codigo_postal.errors }}
-                  </div>
+<div class="form-group">
+    <label>Dias da Semana:</label>
+    <div class="row">
+        <div class="col-6 col-md-4">
+            <div class="form-check">
+                {{ form_loja.segunda }}
+                <label class="form-check-label" for="id_segunda">Segunda-feira</label>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="form-check">
+                {{ form_loja.terca }}
+                <label class="form-check-label" for="id_terca">Terça-feira</label>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="form-check">
+                {{ form_loja.quarta }}
+                <label class="form-check-label" for="id_quarta">Quarta-feira</label>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="form-check">
+                {{ form_loja.quinta }}
+                <label class="form-check-label" for="id_quinta">Quinta-feira</label>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="form-check">
+                {{ form_loja.sexta }}
+                <label class="form-check-label" for="id_sexta">Sexta-feira</label>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="form-check">
+                {{ form_loja.sabado }}
+                <label class="form-check-label" for="id_sabado">Sábado</label>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="form-check">
+                {{ form_loja.domingo }}
+                <label class="form-check-label" for="id_domingo">Domingo</label>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+              <div class="form-group">
+                <div class="row">
+                    <div class="col">
+                        <div class="form-floating mb-2">
+                    {{ form_loja.horario_operacao_inicio }}
+                        <label for="horario_operacao_inicio">Horário de Operação:</label>
+                    </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-floating mb-2">
+                           {{ form_loja.horario_operacao_fim   }}
+                             <label for="horario_operacao_fim">Horário de Fim:</label>
+                        </div>
+                    </div>
+                </div>
               </div>
-              
+            
+             
+              <p class="form-title font-monospace " >Endereço</p>
               <div class="form-floating mb-2 ">
-                  {{ form.rua }}
+                  {{ form_endereco.rua }}
                   <label for="id_rua">Rua</label>
               </div>
               
               <div class="form-floating mb-2  ">
-                  {{ form.numero }}
+                  {{ form_endereco.numero }}
                   <label for="id_numero">Número</label>
               
               </div>
               
               <div class="form-floating mb-2  ">
-                  {{ form.bairro }}
+                  {{ form_endereco.bairro }}
                   <label for="id_bairro">Bairro</label>
                 
               </div>
               
-              <div class="form-floating mb-2 {% if form.cidade.errors %}has-error{% endif %}">
-                  {{ form.cidade }}
+              <div class="form-floating mb-2  ">
+                  {{ form_endereco.cidade }}
                   <label for="id_cidade">Cidade</label>
-                  <div class="invalid-feedback">
-                      {{ form.cidade.errors }}
-                  </div>
               </div>
               
               <div class="form-floating mb-2  ">
-                  {{ form.estado }}
+                  {{ form_endereco.estado }}
                   <label for="id_estado">Estado</label>
                   
               </div>
               
               <div class="form-floating mb-2  ">
-                  {{ form.descricao }}
+                  {{ form_endereco.descricao }}
                   <label for="id_descricao">Descrição</label>
               </div>
               
-                <button type="submit" class="btn btn-primary mx-auto " onclick="validateForm();">Salvar</button>
+                <button type="submit" class="btn btn-primary mx-auto " onclick="applyValidationClasses();">Salvar</button>
             </form>
             {% endif%}
         </div>
       </div>
     </div>
   </div>
-  
- 
+  <style>
+    
+    .form-check input[type="checkbox"] {
+        vertical-align: middle; /* Alinha verticalmente os inputs */
+        margin-right: 5px; /* Ajusta a margem direita para separar o input do label */
+    }
+
+    .form-check-label {
+        vertical-align: middle; /* Alinha verticalmente os labels */
+    }
+</style>
+
 <script>
 
-     
-    
-      function validateForm() {
-        // Pega os valores dos campos
-        var cep = document.getElementById("id_codigo_postal").value;
-        var rua = document.getElementById("id_rua").value;
-        var numero = document.getElementById("id_numero").value;
-        var bairro = document.getElementById("id_bairro").value;
-        var cidade = document.getElementById("id_cidade").value;
-        var estado = document.getElementById("id_estado").value;
-        var descricao = document.getElementById("id_descricao").value;
-       // Variável para armazenar mensagens de erro
-    var errorMessages = [];
+    document.addEventListener('DOMContentLoaded', function () {
+        // Alterar o tipo do campo "horario_operacao_inicio" para "time"
+        var inicioInput = document.getElementById('horario_operacao_inicio');
+        inicioInput.type = 'time';
 
-    // Verifica se os campos obrigatórios estão preenchidos
-    if (cep.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Código Postal.');
-    }
-    if (rua.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Rua.');
-    }
-    if (numero.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Número.');
-    }
-    if (bairro.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Bairro.');
-    }
-    if (cidade.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Cidade.');
-    }
-    if (estado.trim() === '') {
-        errorMessages.push('Por favor, preencha o campo Estado.');
+        // Alterar o tipo do campo "horario_operacao_fim" para "time"
+        var fimInput = document.getElementById('horario_operacao_fim');
+        fimInput.type = 'time';});
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Seletor do formulário
+    const form = document.getElementById('form_cadastro');
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault(); // Evita o envio padrão do formulário
+
+        // Resetando classes de validação
+        resetValidationClasses();
+
+        // Verificando campos vazios e checkbox não marcados
+        if (!validateForm()) {
+            // Se a validação falhar, adicione classes de validação Bootstrap aos campos
+            applyValidationClasses();
+        } else {
+            // Se a validação for bem-sucedida, você pode enviar o formulário ou executar outras ações aqui
+            form.submit();
+        }
+    });
+
+    function resetValidationClasses() {
+        const inputs = form.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.classList.remove('is-invalid');
+        });
     }
 
-    // Exibe um único alerta contendo todas as mensagens de erro
-    if (errorMessages.length > 0) {
-        alertCustomer(errorMessages.join('\n'));
-        event.preventDefault(); // Impede o envio do formulário
-        return false;
-    } else {
-        document.getElementById('form_cadastro').submit();
-        return true;
+    function validateForm() {
+        // Verifica se os campos estão preenchidos ou os checkboxes estão marcados
+        const nomeLoja = form.querySelector('#id_nome_loja').value.trim();
+        const numeroTelefone = form.querySelector('#id_numero_telefone').value.trim();
+        const diasSemana = form.querySelectorAll('input[name^="dias_da_semana"]:checked');
+        const startTime = form.querySelector('#startTime').value.trim();
+        const endTime = form.querySelector('#endTime').value.trim();
+        const rua = form.querySelector('#id_rua').value.trim();
+        const numero = form.querySelector('#id_numero').value.trim();
+        const bairro = form.querySelector('#id_bairro').value.trim();
+        const cidade = form.querySelector('#id_cidade').value.trim();
+        const estado = form.querySelector('#id_estado').value.trim();
+        const descricao = form.querySelector('#id_descricao').value.trim();
+
+        // Adicione suas próprias condições de validação conforme necessário
+        if (nomeLoja === '' || numeroTelefone === '' || diasSemana.length === 0 || startTime === '' || endTime === '' || rua === '' || numero === '' || bairro === '' || cidade === '' || estado === '' ) {
+            return false; // Formulário inválido
+        }
+
+        return true; // Formulário válido
     }
+
+    function applyValidationClasses() {
+        const inputs = form.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            if (input.value.trim() === '') {
+                input.classList.add('is-invalid');
+            }
+        });
     }
+}); 
+
+
  
 </script>
 
