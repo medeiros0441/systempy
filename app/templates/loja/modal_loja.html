@@ -8,54 +8,64 @@
       <div class="modal-content">
         <div class="modal-header">
         <h5 class="modal-title fw-bold font-monospace" id="lojaModalLabel" >
-            {% if inputs_loja %} Detalhes do Loja{% endif%}
+            {% if text_loja %} Detalhes do Loja{% endif%}
             {% if form_loja %} Formulario do Loja{% endif%}
         </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body fonrt-monospace">
-            {% if inputs_loja %} 
+        <div class="modal-body  fonrt-monospace"  style="font-size: 0.8rem;">
+            {% if text_loja %} 
             <div class="form-group">
-                <label for="nome_loja" class="fw-bold">Nome da Loja</label>
-                <span id="nome_loja">{{ inputs_loja.nome_loja }}</span>
+                <label for="nome_loja" class="fw-bold">Nome da Loja:</label>
+                <span id="nome_loja">{{ text_loja.nome_loja }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="numero_telefone">Número Telefone:</label>
-                <span id="numero_telefone">{{ inputs_loja.numero_telefone }}</span>
+                <span id="numero_telefone">{{ text_loja.numero_telefone }}</span>
               </div>
               <div class="form-group">
-                <label  class="fw-bold" for="horario_operacao">Horario de Operacao</label>
-                <span id="horario_operacao">{{ inputs_loja.horario_operacao }}</span>
-              </div>
-              <hr /> 
+                <label  class="fw-bold" for="horario_operacao">Horario de Operacao:</label>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-calendar-day"></i> Segunda-feira: {% if text_loja.segunda %}Aberto das {{ text_loja.horario_operacao_inicio|time:"H:i" }} às {{ text_loja.horario_operacao_fim|time:"H:i" }}{% else %}Fechado{% endif %}</li>
+                    <li><i class="bi bi-calendar-day"></i> Terça-feira: {% if text_loja.terca %}Aberto das {{ text_loja.horario_operacao_inicio|time:"H:i" }} às {{ text_loja.horario_operacao_fim|time:"H:i" }}{% else %}Fechado{% endif %}</li>
+                    <li><i class="bi bi-calendar-day"></i> Quarta-feira: {% if text_loja.quarta %}Aberto das {{ text_loja.horario_operacao_inicio|time:"H:i" }} às {{ text_loja.horario_operacao_fim|time:"H:i" }}{% else %}Fechado{% endif %}</li>
+                    <li><i class="bi bi-calendar-day"></i> Quinta-feira: {% if text_loja.quinta %}Aberto das {{ text_loja.horario_operacao_inicio|time:"H:i" }} às {{ text_loja.horario_operacao_fim|time:"H:i" }}{% else %}Fechado{% endif %}</li>
+                    <li><i class="bi bi-calendar-day"></i> Sexta-feira: {% if text_loja.sexta %}Aberto das {{ text_loja.horario_operacao_inicio|time:"H:i" }} às {{ text_loja.horario_operacao_fim|time:"H:i" }}{% else %}Fechado{% endif %}</li>
+                    <li><i class="bi bi-calendar-day"></i> Sábado: {% if text_loja.sabado %}Aberto das {{ text_loja.horario_operacao_inicio|time:"H:i" }} às {{ text_loja.horario_operacao_fim|time:"H:i" }}{% else %}Fechado{% endif %}</li>
+                    <li><i class="bi bi-calendar-day"></i> Domingo: {% if text_loja.domingo %}Aberto das {{ text_loja.horario_operacao_inicio|time:"H:i" }} às {{ text_loja.horario_operacao_fim|time:"H:i" }}{% else %}Fechado{% endif %}</li>
+                </ul>
+               </div>
+       
+               <p class="form-title font-monospace mb-1 mt-2 fw-bolder" >Endereço</p>
+               <hr class="fw-border text-black mt-0 mb-2" >
               <div class="form-group">
                 <label for="text_rua" class="fw-bold">Rua:</label>
-                <span id="text_rua">{{ inputs_endereco.rua }}</span>
+                <span id="text_rua">{{ text_endereco.rua }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="text_numero">Número:</label>
-                <span id="text_numero">{{ inputs_endereco.numero }}</span>
+                <span id="text_numero">{{ text_endereco.numero }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="text_codigo_postal">Código Postal:</label>
-                <span id="text_codigo_postal">{{ inputs_endereco.codigo_postal }}</span>
+                <span id="text_codigo_postal">{{ text_endereco.codigo_postal }}</span>
               </div>
 
               <div class="form-group">
                 <label  class="fw-bold" for="text_cidade">Bairro:</label>
-                <span id="text_cidade">{{ inputs_endereco.bairro }}</span>
+                <span id="text_cidade">{{ text_endereco.bairro }}</span>
               </div>
               <div class="form-group">
                 <label class="fw-bold"  for="text_cidade">Cidade:</label>
-                <span id="text_cidade">{{ inputs_endereco.cidade }}</span>
+                <span id="text_cidade">{{ text_endereco.cidade }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="text_estado">Estado:</label>
-                <span id="text_estado">{{ inputs_endereco.estado }}</span>
+                <span id="text_estado">{{ text_endereco.estado }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold"  for="text_descricao">Descrição:</label>
-                <span id="text_descricao">{{ inputs_endereco.descricao }}</span>
+                <span id="text_descricao">{{ text_endereco.descricao }}</span>
               </div>
              
               {% endif%}
@@ -64,55 +74,53 @@
                 {% csrf_token %}
                 <div class="form-floating mb-2 ">
                     {{ form_loja.nome_loja }}
-                    <label for="id_nome_loja">nome para referenciar a form_loja:</label>
+                    <label for="id_nome_loja" style="font-size: 0.8rem;">nome para referenciar a loja:</label>
                 </div>
                 <div class="form-floating mb-2 ">
                     {{ form_loja.numero_telefone }}
-                    <label for="id_numero_telefone">Telefone</label>
-                    <div class="invalid-feedback">
-                    </div>
+                    <label for="id_numero_telefone" style="font-size: 0.8rem;">Telefone</label>
                 </div>
 <div class="form-group">
     <label>Dias da Semana:</label>
     <div class="row">
         <div class="col-6 col-md-4">
-            <div class="form-check">
+            <div class="form-check py-0 p-1 m-0">
                 {{ form_loja.segunda }}
                 <label class="form-check-label" for="id_segunda">Segunda-feira</label>
             </div>
         </div>
         <div class="col-6 col-md-4">
-            <div class="form-check">
+            <div class="form-check py-0 p-1 m-0">
                 {{ form_loja.terca }}
                 <label class="form-check-label" for="id_terca">Terça-feira</label>
             </div>
         </div>
         <div class="col-6 col-md-4">
-            <div class="form-check">
+            <div class="form-check py-0 p-1 m-0">
                 {{ form_loja.quarta }}
                 <label class="form-check-label" for="id_quarta">Quarta-feira</label>
             </div>
         </div>
         <div class="col-6 col-md-4">
-            <div class="form-check">
+            <div class="form-check py-0 p-1 m-0">
                 {{ form_loja.quinta }}
                 <label class="form-check-label" for="id_quinta">Quinta-feira</label>
             </div>
         </div>
         <div class="col-6 col-md-4">
-            <div class="form-check">
+            <div class="form-check py-0 p-1 m-0">
                 {{ form_loja.sexta }}
                 <label class="form-check-label" for="id_sexta">Sexta-feira</label>
             </div>
         </div>
         <div class="col-6 col-md-4">
-            <div class="form-check">
+            <div class="form-check py-0 p-1 m-0">
                 {{ form_loja.sabado }}
                 <label class="form-check-label" for="id_sabado">Sábado</label>
             </div>
         </div>
         <div class="col-6 col-md-4">
-            <div class="form-check">
+            <div class="form-check py-0 p-1 m-0">
                 {{ form_loja.domingo }}
                 <label class="form-check-label" for="id_domingo">Domingo</label>
             </div>
@@ -122,24 +130,27 @@
  
               <div class="form-group">
                 <div class="row">
-                    <div class="col">
+                    <div class="col p-1">
                         <div class="form-floating mb-2">
                     {{ form_loja.horario_operacao_inicio }}
-                        <label for="horario_operacao_inicio">Horário de Operação:</label>
+                        <label for="horario_operacao_inicio" style="font-size: 0.8rem;">Horário de inicio:</label>
                     </div>
                     </div>
-                    <div class="col">
+                    <div class="col p-1">
                         <div class="form-floating mb-2">
                            {{ form_loja.horario_operacao_fim   }}
-                             <label for="horario_operacao_fim">Horário de Fim:</label>
+                             <label for="horario_operacao_fim" style="font-size: 0.8rem;" >Horário de Fim:</label>
                         </div>
                     </div>
                 </div>
               </div>
-            
-             
-              <p class="form-title font-monospace " >Endereço</p>
+              <p class="form-title font-monospace mb-1 mt-2 fw-bolder" >Endereço</p>
+              <hr class="fw-border text-black mt-0 mb-2" >
               <div class="form-floating mb-2 ">
+                {{ form_endereco.codigo_postal  }}
+                <label for="codigo_postal">Codigo Postal</label>
+            </div>
+               <div class="form-floating mb-2 ">
                   {{ form_endereco.rua }}
                   <label for="id_rua">Rua</label>
               </div>
@@ -172,7 +183,7 @@
                   <label for="id_descricao">Descrição</label>
               </div>
               
-                <button type="submit" class="btn btn-primary mx-auto " onclick="applyValidationClasses();">Salvar</button>
+                <button type="submit" class="btn btn-primary mx-auto " >Salvar</button>
             </form>
             {% endif%}
         </div>
@@ -190,79 +201,82 @@
         vertical-align: middle; /* Alinha verticalmente os labels */
     }
 </style>
-
-<script>
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Alterar o tipo do campo "horario_operacao_inicio" para "time"
-        var inicioInput = document.getElementById('horario_operacao_inicio');
-        inicioInput.type = 'time';
-
-        // Alterar o tipo do campo "horario_operacao_fim" para "time"
-        var fimInput = document.getElementById('horario_operacao_fim');
-        fimInput.type = 'time';});
-
-  document.addEventListener('DOMContentLoaded', function () {
-    // Seletor do formulário
-    const form = document.getElementById('form_cadastro');
-
-    form.addEventListener('submit', function (event) {
-        event.preventDefault(); // Evita o envio padrão do formulário
-
-        // Resetando classes de validação
-        resetValidationClasses();
-
-        // Verificando campos vazios e checkbox não marcados
-        if (!validateForm()) {
-            // Se a validação falhar, adicione classes de validação Bootstrap aos campos
-            applyValidationClasses();
-        } else {
-            // Se a validação for bem-sucedida, você pode enviar o formulário ou executar outras ações aqui
-            form.submit();
-        }
-    });
-
-    function resetValidationClasses() {
-        const inputs = form.querySelectorAll('.form-control');
-        inputs.forEach(input => {
-            input.classList.remove('is-invalid');
-        });
-    }
-
-    function validateForm() {
-        // Verifica se os campos estão preenchidos ou os checkboxes estão marcados
-        const nomeLoja = form.querySelector('#id_nome_loja').value.trim();
-        const numeroTelefone = form.querySelector('#id_numero_telefone').value.trim();
-        const diasSemana = form.querySelectorAll('input[name^="dias_da_semana"]:checked');
-        const startTime = form.querySelector('#startTime').value.trim();
-        const endTime = form.querySelector('#endTime').value.trim();
-        const rua = form.querySelector('#id_rua').value.trim();
-        const numero = form.querySelector('#id_numero').value.trim();
-        const bairro = form.querySelector('#id_bairro').value.trim();
-        const cidade = form.querySelector('#id_cidade').value.trim();
-        const estado = form.querySelector('#id_estado').value.trim();
-        const descricao = form.querySelector('#id_descricao').value.trim();
-
-        // Adicione suas próprias condições de validação conforme necessário
-        if (nomeLoja === '' || numeroTelefone === '' || diasSemana.length === 0 || startTime === '' || endTime === '' || rua === '' || numero === '' || bairro === '' || cidade === '' || estado === '' ) {
-            return false; // Formulário inválido
-        }
-
-        return true; // Formulário válido
-    }
-
-    function applyValidationClasses() {
-        const inputs = form.querySelectorAll('.form-control');
+{% if form_loja %}   
+    <script>
+   
+            function applyValidationClasses(form) {
+        const inputs = form.querySelectorAll('.form-control-validate');
         inputs.forEach(input => {
             if (input.value.trim() === '') {
-                input.classList.add('is-invalid');
+                // Ignora a validação para o campo descricao
+                if (input.id !== 'id_descricao') {
+                    input.classList.add('is-invalid');
+                }
             }
         });
     }
-}); 
 
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('form_cadastro');
+        
+        if( document.getElementById('horario_operacao_inicio')){
+            // Alterar o tipo do campo "horario_operacao_inicio" para "time"
+            document.getElementById('horario_operacao_inicio').type = 'time';
+    
+            // Alterar o tipo do campo "horario_operacao_fim" para "time"
+            document.getElementById('horario_operacao_fim').type = 'time';
+        }
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
 
- 
+            resetValidationClasses(form);
+
+            if (validateForm(form)) {
+                form.submit();
+            } else {
+                applyValidationClasses(form);
+            }
+        });
+
+        const inputs = form.querySelectorAll('.form-control-validate');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                resetValidationClass(input);
+            });
+        });
+
+        // ... (seu código existente para configurar o tipo do input 'time') ...
+
+        function resetValidationClasses(form) {
+            const inputs = form.querySelectorAll('.form-control-validate');
+            inputs.forEach(input => {
+                resetValidationClass(input);
+            });
+        }
+
+        function resetValidationClass(input) {
+            input.classList.remove('is-invalid');
+        }
+
+        function validateForm(form) {
+            const nomeLoja = form.querySelector('#id_nome_loja').value.trim();
+            const numeroTelefone = form.querySelector('#id_numero_telefone').value.trim();
+
+            const rua = form.querySelector('#id_rua').value.trim();
+            const numero = form.querySelector('#id_numero').value.trim();
+            const bairro = form.querySelector('#id_bairro').value.trim();
+            const cidade = form.querySelector('#id_cidade').value.trim();
+            const estado = form.querySelector('#id_estado').value.trim();
+            // Ajuste na validação para ignorar o campo descricao
+            if (nomeLoja === '' || numeroTelefone === '' ||  rua === '' || numero === '' || bairro === '' || cidade === '' || estado === ''  ) {
+                return false;
+            }else{
+                return true;
+            }
+
+        }
+    });
 </script>
+{% endif%}
 
 {% endblock %}

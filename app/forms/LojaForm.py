@@ -25,18 +25,21 @@ class LojaForm(forms.ModelForm):
             "sexta",
             "sabado",
             "domingo",
-            "empresa",
-            "endereco",
         ]
 
     def __init__(self, *args, **kwargs):
         super(LojaForm, self).__init__(*args, **kwargs)
         # Adiciona classes CSS aos campos do formulário
         for field_name in self.fields:
-            self.fields[field_name].widget.attrs["class"] = "form-control"
+            self.fields[field_name].widget.attrs[
+                "class"
+            ] = "    form-control-validate form-control"
 
         # Adiciona etiquetas flutuantes para os campos de horário
-        self.fields["numero_telefone"].widget.attrs["class"] = "form-control mask-telefone"
+        self.fields["numero_telefone"].widget.attrs[
+            "class"
+        ] = "form-control telefone-mask form-control-validate"
+        self.fields["horario_operacao_inicio"].widget.attrs["value"] = "00:00"
         self.fields["horario_operacao_inicio"].widget.attrs["type"] = "time"
         self.fields["horario_operacao_inicio"].widget.attrs[
             "id"
@@ -45,6 +48,7 @@ class LojaForm(forms.ModelForm):
             "name"
         ] = "horario_operacao_inicio"
 
+        self.fields["horario_operacao_fim"].widget.attrs["value"] = "00:00"
         self.fields["horario_operacao_fim"].widget.attrs["type"] = "time"
         self.fields["horario_operacao_fim"].widget.attrs["id"] = "horario_operacao_fim"
         self.fields["horario_operacao_fim"].widget.attrs[

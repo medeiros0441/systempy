@@ -1,3 +1,6 @@
+from django.shortcuts import render, get_object_or_404, redirect
+
+
 class Alerta:
     _mensagem = None
 
@@ -23,8 +26,8 @@ class UserInfo:
             usuario = Usuario.objects.get(email=email)
             # Verifica se a senha fornecida corresponde ao hash armazenado
             if check_password(senha, usuario.senha):
-                request.session['id_usuario'] = usuario.id_usuario
-                request.session['id_empresa'] = usuario.empresa.id_empresa
+                request.session["id_usuario"] = usuario.id_usuario
+                request.session["id_empresa"] = usuario.empresa.id_empresa
                 return True, "Usuário autenticado com sucesso."
             else:
                 return False, "Senha inválida"
@@ -33,15 +36,19 @@ class UserInfo:
 
     @staticmethod
     def get_id_usuario(request):
-        return request.session.get('id_usuario')
+        return request.session.get("id_usuario")
 
     @staticmethod
-    def get_id_empresa(request):
-        return request.session.get('id_empresa')
+    def get_id_empresa(request, isRequerido=False):
+        id_empresa = request.session.get("id_empresa")
+        if isRequerido == True and id_empresa is None:
+            Alerta.set_mensagem("Vôce precisa Fazer o login.")
+            return redirect("/home")
+        return id_empresa
 
     @staticmethod
     def clear_user_info(request):
-        if 'id_usuario' in request.session:
-            del request.session['id_usuario']
-        if 'id_empresa' in request.session:
-            del request.session['id_empresa']
+        if "id_usuario" in request.session:
+            del request.session["id_usuario"]
+        if "id_empresa" in request.session:
+            del request.session["id_empresa"]

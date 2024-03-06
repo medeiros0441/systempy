@@ -9,49 +9,41 @@
 
 <div class="my-5 container-xl mx-auto ">
     <div class="d-flex justify-content-between">
-        <div>
-            <h2>Lista de Loja</h2>
-        </div>
-        <div class="d-flex align-items-center">
-            <a  type="button"  href="{% url 'criar_loja' %}"   class="btn text-secondary border-0" >
-                Cadastrar Loja
+            <span   class=" font-monospace fw-border my-auto" style="font-size: 1.3rem;">Lista de Loja</span>
+            <a  type="button"  href="{% url 'criar_loja' %}"   class="m-0 p-0 text-secondary border-0 text-decoration-none"  style="font-size: 0.7rem;" >
+         Cadastrar Loja  
                 <i class="bi bi-plus pe-1 pt-2 d-inline-block" style="font-size: 1.3rem;"></i>
             </a>
-
-
-        </div>
     </div>
-    
-    
-    <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Nome loja</th>
-            <th scope="col">Número Telefone</th>
-            <th scope="col">Bairro</th>
-            <th scope="col" class="text-end">Ações</th>
-          </tr>
-        </thead>
-        <tbody class="table-group-divider">
-        {% for loja in lojas %}
-        <tr>
-            <th scope="row"> 
-               <td>{{ loja.nome_loja }}</td>
-                <td>{{  loja.numero }}</td>
-            <td> {{  loja.endereco.bairro }} </td>
-              <td class="text-end"> 
-                <div class="btn-group float-end" role="group" aria-label="Ações do Usuário">
-                    <div class="btn-group" role="group" aria-label="Ações do Usuário">
-                    <a href="{% url 'selecionar_loja' loja.id_loja %}" class="btn btn-success btn-sm"> <i class="bi bi-eye me-1"></i> Detalhes </a>
-                    <a href="{% url 'editar_loja' loja.id_loja %}" class="btn btn-warning btn-sm"> <i class="bi bi-pencil  me-1"></i>Editar </a>
-                    <a href="{% url 'delete_loja' loja.id_loja %}" class="btn btn-danger btn-sm"> <i class="bi bi-trash  me-1"></i> Excluir </a>
-                    </div>  
-                  </div>
-                </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+
+        <table class="table table-hover table-responsive table-sm  ">
+            <thead>
+                <tr>
+                    <th scope="col" class="text-start" style="font-size: 0.7rem;">Nome loja</th>
+                    <th scope="col" class=" d-none d-sm-table-cell order-1 text-start" style="font-size: 0.7rem;">Número Telefone</th>
+                    <th scope="col" class=" d-none d-sm-table-cell order-2 text-start" style="font-size: 0.7rem;">Bairro</th>
+                    <th scope="col" class="text-end" style="font-size: 0.7rem;">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                {% for loja in lojas %}
+                <tr>
+                    <td style="font-size: 0.8rem;">{{ loja.nome_loja }}</td>
+                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-1 text-start">{{ loja.numero_telefone }}</td>
+                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-2 text-start">{{ loja.endereco.bairro }}</td>
+                    <td class="text-end">
+                        <div class="btn-group" role="group" aria-label="Ações do Usuário">
+                            <a href="{% url 'selecionar_loja' loja.id_loja %}" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i> Detalhes</a>
+                            <a href="{% url 'editar_loja' loja.id_loja %}" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi  bi-pencil me-1"></i>Editar</a>
+                            <a href="{% url 'excluir_loja' loja.id_loja %}" class="btn btn-danger btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-trash me-1"></i> Excluir</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
     </div>
 
   <script>
