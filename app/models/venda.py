@@ -2,9 +2,15 @@ from django.db import models
 from .usuario import Usuario
 from .cliente import Cliente
 from .produto import Produto
+import uuid
 
 
 class Venda(models.Model):
+    id_venda = (
+        models.UUIDField(
+            primary_key=True, default=uuid.uuid4, db_column="id_venda", editable=False
+        ),
+    )
     data_venda = models.DateField(db_column="data_venda")
     valor_total = models.DecimalField(
         max_digits=10, decimal_places=2, db_column="valor_total"
@@ -27,13 +33,18 @@ class Venda(models.Model):
 
 
 class VendaProduto(models.Model):
-    id_venda_produto = models.AutoField(primary_key=True, db_column="id_venda_produto")
+    id_venda_produto = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        db_column="id_venda_produto",
+        editable=False,
+    )
+
     venda = models.ForeignKey(Venda, on_delete=models.CASCADE, db_column="fk_venda")
     produto = models.ForeignKey(
-        Produto, on_delete=models.CASCADE, db_column="fk_produto"
+        Produto, on_delete=models.CASCADE, to_field="id_produto", db_column="fk_produto"
     )
     quantidade = models.IntegerField()
-    id_venda_produto = models.AutoField(primary_key=True, db_column="id_venda_produto")
     insert = models.DateTimeField(db_column="date_time_insert")
     update = models.DateTimeField(db_column="date_time_update", null=True)
 

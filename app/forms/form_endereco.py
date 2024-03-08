@@ -2,7 +2,7 @@ from django import forms
 from ..models.endereco import Endereco
 
 
-class EnderecoForm(forms.ModelForm):
+class Endereco(forms.ModelForm):
     class Meta:
         model = Endereco
         fields = [
@@ -16,7 +16,7 @@ class EnderecoForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, **kwargs):
-        super(EnderecoForm, self).__init__(*args, **kwargs)
+        super(Endereco, self).__init__(*args, **kwargs)
 
         # Adiciona classes, atributos adicionais e limites de caracteres aos widgets dos campos
         self.fields["codigo_postal"].widget.attrs[

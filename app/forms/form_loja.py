@@ -2,7 +2,7 @@ from django import forms
 from ..models.loja import Loja
 
 
-class LojaForm(forms.ModelForm):
+class Loja(forms.ModelForm):
     segunda = forms.BooleanField(label="Segunda-feira", required=False)
     terca = forms.BooleanField(label="Terça-feira", required=False)
     quarta = forms.BooleanField(label="Quarta-feira", required=False)
@@ -28,7 +28,7 @@ class LojaForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, **kwargs):
-        super(LojaForm, self).__init__(*args, **kwargs)
+        super(Loja, self).__init__(*args, **kwargs)
         # Adiciona classes CSS aos campos do formulário
         for field_name in self.fields:
             self.fields[field_name].widget.attrs[

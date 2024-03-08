@@ -7,7 +7,9 @@
  $('.telefone-mask').mask('+55 (00) 0000-00000');
  $('.codigo-mask').mask('000-000');
  $('.cep-mask').mask('00000-000');
- 
+ $('.quantidade-mask').mask('00000000');
+ $('.money-mask').mask('R$ 000.000.000,00', {reverse: true,});
+
  function chamarFuncaoPython(DefName, data, callback, Type ="POST") {
   // Fazer uma requisição AJAX para o backend
   $.ajax({

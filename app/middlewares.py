@@ -71,7 +71,9 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             sessao_usuario = Sessao.objects.get(usuario_id=id_usuario)
             sessao_usuario.time_finalizou = timezone.now()
             sessao_usuario.save()
-
+            if id_usuario > 0:
+                request.session["isCliente"] = True
+                request.session["id_usuario"] = id_usuario
         return response
 
     #   if isAssinante(request) == False:

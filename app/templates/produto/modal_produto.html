@@ -1,0 +1,149 @@
+
+{% block content %}
+  
+  
+<!-- Modal -->
+<div class="modal fade" id="ModalProduto" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog  modal-md modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title fw-bold font-monospace" id="lojaModalLabel" >
+            {% if text_produto %} Detalhes do Produto{% endif%}
+            {% if form_produto %} Formulario do Produto{% endif%}
+        </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body  fonrt-monospace"  style="font-size: 0.8rem;">
+            {% if text_loja %} 
+            <div class="form-group">
+                <label for="text_nome_produto" class="fw-bold">Nome do produto:</label>
+                <span id="nome_produto">{{ text_produto.nome }}</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="text_quantidade_atual_estoque" class="fw-bold">Quantidade Atual no Estoque:</label>
+                <span id="quantidade_atual_estoque">{{ text_produto.quantidade_atual_estoque }}</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="text_quantidade_minima_estoque" class="fw-bold">Quantidade Mínima no Estoque:</label>
+                <span id="quantidade_minima_estoque">{{ text_produto.quantidade_minima_estoque }}</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="text_preco_compra" class="fw-bold">Preço de Compra:</label>
+                <span id="preco_compra">{{ text_produto.preco_compra }}</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="text_preco_venda" class="fw-bold">Preço de Venda:</label>
+                <span id="preco_venda">{{ text_produto.preco_venda }}</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="text_fabricante" class="fw-bold">Fabricante:</label>
+                <span id="fabricante">{{ text_produto.fabricante }}</span>
+            </div>
+            
+
+              {% endif%}
+            {% if form_produto %}   
+            <form method="post" id="form_cadastro" class="needs-validation" novalidate>
+               {% csrf_token %}
+
+
+
+    <div class="form-floating mb-2">
+        {{ form_produto.loja }}
+        <label for="id_loja" style="font-size: 0.8rem;">Loja:</label>
+    </div>
+    <div class="form-floating mb-2">
+        {{ form_produto.nome }}
+        <label for="id_nome" style="font-size: 0.8rem;">Nome:</label>
+    </div>
+
+ 
+    <div class="form-group">
+        <div class="row">
+            <div class="col p-1">
+                <div class="form-floating mb-2">
+                    {{ form_produto.quantidade_atual_estoque }}
+        <label for="id_quantidade_atual_estoque" style="font-size: 0.8rem;">Quantidade Atual no Estoque:</label>
+            </div>
+            </div>
+            <div class="col p-1">
+                <div class="form-floating mb-2">
+                    {{ form_produto.quantidade_minima_estoque }}
+                    <label for="id_quantidade_minima_estoque" style="font-size: 0.8rem;">Quantidade Mínima no Estoque:</label>
+                 </div>
+            </div>
+        </div>
+      </div>
+
+
+    <div class="form-floating mb-2">
+        {{ form_produto.fabricante }}
+        <label for="id_fabricante" style="font-size: 0.8rem;">Fabricante:</label>
+    </div> 
+
+      <div class="form-group">
+        <div class="row">
+            <div class="col p-1">
+                <div class="form-floating mb-2">
+                    {{ form_produto.preco_compra_fake }}
+                    <label for="id_preco_compra_fake" style="font-size: 0.8rem;">Preço de Compra:</label>
+                </div>
+            </div>
+            <div class="col p-1">
+                <div class="form-floating mb-2">
+                    {{ form_produto.preco_venda_fake }}
+                    <label for="id_preco_venda_fake" style="font-size: 0.8rem;">Preço de Venda:</label>
+                   </div>
+            </div>
+        </div>
+      </div>  
+
+                <button type="submit" class="btn btn-primary mx-auto btn-md" >Salvar</button>
+            </form>
+
+<script>
+    document.getElementById('form_cadastro').addEventListener('submit', function(event) {
+        var form = event.target;
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            form.classList.add('was-validated');
+        }
+        else {
+            form.classList.remove('was-validated');
+        }
+
+        // Validação personalizada para o campo de preço de compra
+        var precoCompraInput = document.getElementById('id_preco_compra');
+        if (precoCompraInput.value < 0) {
+            precoCompraInput.classList.add('is-invalid');
+        }
+        else {
+            precoCompraInput.classList.remove('is-invalid');
+            precoCompraInput.classList.add('is-valid');
+        }
+
+        // Validação personalizada para o campo de preço de venda
+        var precoVendaInput = document.getElementById('id_preco_venda');
+        if (precoVendaInput.value < 0) {
+            precoVendaInput.classList.add('is-invalid');
+        }
+        else {
+            precoVendaInput.classList.remove('is-invalid');
+            precoVendaInput.classList.add('is-valid');
+        }
+    });
+</script>
+            {% endif%}
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}

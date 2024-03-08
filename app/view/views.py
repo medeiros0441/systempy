@@ -4,9 +4,21 @@ from django.utils import timezone
 from .view_cadastro import cadastro_empresa
 from .view_autenticacao import autenticar_usuario
 from ..processador.config_email import enviar_email
+from ..static import Alerta, UserInfo
 
-def home(request):
-    return render(request, "default/home.html")
+
+def home(request, context=None):
+    id_empresa = UserInfo.get_id_empresa(request)
+    id_usuario = UserInfo.get_id_usuario(request)
+
+    if context is None:
+        context = {}
+
+    alerta = Alerta.get_mensagem()
+    if alerta:
+        context["alerta_js"] = criar_alerta_js(alerta)
+
+    return render(request, "default/home.html", context)
 
 
 def sobre(request):
@@ -46,7 +58,6 @@ def sobre(request):
         return erro(request, mensagem_erro)
     else:
         return render(request, "default/sobre.html")
- 
 
 
 def cadastro(request):

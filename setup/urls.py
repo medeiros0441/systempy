@@ -67,7 +67,7 @@ url_usuario = [  # usuarios
 ]
 
 from app.view.views_loja import (
-    lista_loja,
+    lista_lojas,
     editar_loja,
     selecionar_loja,
     excluir_loja,
@@ -76,7 +76,7 @@ from app.view.views_loja import (
 
 url_loja = [
     # lojas
-    path("lojas/", lista_loja, name="lista_loja"),
+    path("lojas/", lista_lojas, name="lista_lojas"),
     path("lojas/criar", criar_loja, name="criar_loja"),
     path("lojas/editar/<int:id_loja>/", editar_loja, name="editar_loja"),
     path("lojas/selecionar/<int:id_loja>/", selecionar_loja, name="selecionar_loja"),
@@ -86,6 +86,7 @@ url_loja = [
 
 from app.view.views_produto import (
     lista_produtos,
+    criar_produto,
     editar_produto,
     selecionar_produto,
     excluir_produto,
@@ -93,13 +94,16 @@ from app.view.views_produto import (
 
 url_produto = [  # produtos
     path("produtos/", lista_produtos, name="lista_produtos"),
-    path("produtos/editar/<int:produto_id>/", editar_produto, name="editar_produto"),
+    path("produtos/editar/<uuid:id_produto>/", editar_produto, name="editar_produto"),
+    path("produtos/criar/", criar_produto, name="criar_produto"),
     path(
-        "produtos/selecionar/<int:produto_id>/",
+        "produtos/selecionar/<uuid:id_produto>/",
         selecionar_produto,
         name="selecionar_produto",
     ),
-    path("produtos/excluir/<int:produto_id>/", excluir_produto, name="excluir_produto"),
+    path(
+        "produtos/excluir/<uuid:id_produto>/", excluir_produto, name="excluir_produto"
+    ),
 ]
 
 from app.view.views_venda import (
@@ -111,11 +115,12 @@ from app.view.views_venda import (
 
 url_venda = [  # vendas
     path("vendas/", lista_vendas, name="lista_vendas"),
-    path("vendas/editar/<int:venda_id>/", editar_venda, name="editar_venda"),
+    path("vendas/criar/", editar_venda, name="criar_venda"),
+    path("vendas/editar/<uuid:id_venda>/", editar_venda, name="editar_venda"),
     path(
-        "vendas/selecionar/<int:venda_id>/", selecionar_venda, name="selecionar_venda"
+        "vendas/selecionar/<uuid:id_venda>/", selecionar_venda, name="selecionar_venda"
     ),
-    path("vendas/excluir/<int:venda_id>/", excluir_venda, name="excluir_venda"),
+    path("vendas/excluir/<uuid:id_venda>/", excluir_venda, name="excluir_venda"),
 ]
 
 from app.view.views_cliente import (
@@ -146,7 +151,8 @@ from app.view.views_galao import (
 )
 
 url_galao = [  ##galoes
-    path("galoes/", lista_galao, name="lista_galao"),
+    path("galoes/", lista_galao, name="lista_galoes"),
+    path("galoes/criar", editar_galao, name="criar_galao"),
     path("galoes/editar/<int:galao_id>/", editar_galao, name="editar_galao"),
     path(
         "galoes/selecionar/<int:galao_id>/", selecionar_galao, name="selecionar_galao"
@@ -156,19 +162,18 @@ url_galao = [  ##galoes
 
 from app.view.views_endereco import (
     criar_endereco,
-    lista_endereco,
+    lista_enderecos,
     selecionar_endereco,
     editar_endereco,
     delete_endereco,
 )
 
 url_endereco = [
-    path("endereco/", lista_endereco, name="lista_endereco"),
+    path("endereco/", lista_enderecos, name="lista_enderecos"),
     path("endereco/criar/", criar_endereco, name="criar_endereco"),
     path("endereco/<int:pk>/", selecionar_endereco, name="selecionar_endereco"),
     path("endereco/<int:pk>/editar/", editar_endereco, name="editar_endereco"),
     path("endereco/<int:pk>/excluir/", delete_endereco, name="delete_endereco"),
-    path("endereco/<str:alerta_js>/", lista_endereco, name="lista_endereco_alerta"),
 ]
 
 from app.def_global import (
