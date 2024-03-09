@@ -10,10 +10,13 @@
 <div class="my-5 container-xl mx-auto ">
     <div class="d-flex justify-content-between">
             <span   class=" font-monospace fw-border my-auto" style="font-size: 1.3rem;">Lista de Produtos</span>
-            <a  type="button"  href="{% url 'criar_produto' %}"   class="m-0 p-0 text-secondary border-0 text-decoration-none"  style="font-size: 0.7rem;" >
-         Cadastrar Produto  
-                <i class="bi bi-plus pe-1 pt-2 d-inline-block" style="font-size: 1.3rem;"></i>
-            </a>
+          
+          
+          
+          
+<a type="button"  href="{% url 'acrescentar_produto' %}" id="btnAcrescentar" class="btn btn-success btn-sm ms-auto me-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-box-arrow-in-up me-1"></i> Acrescentar Quantidade de Produto </a>
+
+<a  type="button"  href="{% url 'criar_produto' %}"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Novo Produto</a>
     </div>
 
 

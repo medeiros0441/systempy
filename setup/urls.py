@@ -90,11 +90,13 @@ from app.view.views_produto import (
     editar_produto,
     selecionar_produto,
     excluir_produto,
+    acrescentar_produto,
 )
 
 url_produto = [  # produtos
     path("produtos/", lista_produtos, name="lista_produtos"),
     path("produtos/editar/<uuid:id_produto>/", editar_produto, name="editar_produto"),
+    path("produtos/acrescentar/", acrescentar_produto, name="acrescentar_produto"),
     path("produtos/criar/", criar_produto, name="criar_produto"),
     path(
         "produtos/selecionar/<uuid:id_produto>/",

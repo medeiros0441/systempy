@@ -3,6 +3,7 @@ from ..def_global import criar_alerta_js, erro
 from django.http import HttpResponse
 from ..static import Alerta, UserInfo
 from ..models.produto import Produto
+from ..models.loja import Loja
 from ..forms.form_produto import ProdutoForm as Form
 
 
@@ -57,6 +58,9 @@ def editar_produto(request, id_produto):
     try:
         # Obter o produto existente pelo ID
         produto = Produto.objects.get(id_produto=id_produto)
+        id_empresa = UserInfo.get_id_empresa(request, True)
+        if produto.empresa.id_empresa != id_empresa:
+            return erro(request, "Vôce nao tem permissão para acessar o produto")
 
         if request.method == "POST":
             form_produto = Form(request.POST, instance=produto, request=request)
@@ -90,9 +94,67 @@ def editar_produto(request, id_produto):
         return erro(request, mensagem_erro)
 
 
-def selecionar_produto(request, produto_id):
+def acrescentar_produto(request):
+    try:
 
-    return False
+        id_empresa = UserInfo.get_id_empresa(request, True)
+        produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa)
+        for produto in produtos:
+            if produto.loja.empresa.id_empresa != id_empresa:
+                return erro(request, "Você não tem permissão para acessar este produto")
+
+        if request.method == "POST":
+            # Obtém os dados do formulário
+            id_produto = request.POST.get("id_produto")
+            id_loja = request.POST.get("id_loja")
+            quantidade_acrescentar = int(request.POST.get("id_quantidade_acrescentar"))
+
+            # Verifica se os valores são válidos
+            if not id_produto or not id_loja or quantidade_acrescentar < 0:
+                Alerta.set_mensagem("Valores inválidos fornecidos no formulário")
+                loja_list = Loja.objects.filter(empresa__id_empresa=id_empresa)
+                return lista_produtos(
+                    request,
+                    {"open_modal": True, "produtos_list": produtos, "lojas": loja_list},
+                )
+
+            produto = Produto.objects.get(id_produto=id_produto)
+            if produto.loja.empresa.id_empresa != id_empresa:
+                return erro(request, "Você não tem permissão para acessar este produto")
+            produto.quantidade_atual_estoque += quantidade_acrescentar
+            produto.save()
+            Alerta.set_mensagem("Produto acrescentado com sucesso.")
+            loja_list = Loja.objects.filter(empresa__id_empresa=id_empresa)
+            return redirect("acrescentar_produto")
+        else:
+
+            loja_list = Loja.objects.filter(empresa__id_empresa=id_empresa)
+            return lista_produtos(
+                request,
+                {"open_modal": True, "produtos_list": produtos, "lojas": loja_list},
+            )
+    except Produto.DoesNotExist:
+        Alerta.set_mensagem("Produtos não encontrado.")
+        return redirect("lista_produtos")
+    except Exception as e:
+        mensagem_erro = str(e)
+        return erro(request, mensagem_erro)
+
+
+def selecionar_produto(request, id_produto):
+    try:
+        produto = Produto.objects.get(id_produto=id_produto)
+        if produto:
+            return lista_produtos(
+                request,
+                {"open_modal": True, "text_produto": produto},
+            )
+    except Produto.DoesNotExist:
+        Alerta.set_mensagem("Produto não encontrado.")
+        return redirect("lista_produtos")
+    except Exception as e:
+        mensagem_erro = str(e)
+        return erro(request, mensagem_erro)
 
 
 def excluir_produto(request, id_produto):

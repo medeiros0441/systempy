@@ -36,7 +36,9 @@ class Produto(models.Model):
     )
     tipo = models.IntegerField(db_column="tipo_produto", null=True)
     insert = models.DateTimeField(db_column="date_time_insert", default=timezone.now)
-    update = models.DateTimeField(db_column="date_time_update", null=True)
+    update = models.DateTimeField(
+        db_column="date_time_update", default=timezone.now, null=True
+    )
     preco_compra = models.DecimalField(
         max_digits=10,
         decimal_places=2,

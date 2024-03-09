@@ -26,7 +26,9 @@ class Loja(models.Model):
     domingo = models.BooleanField(default=False, db_column="domingo")
 
     insert = models.DateTimeField(db_column="date_time_insert", default=timezone.now)
-    update = models.DateTimeField(db_column="date_time_update", null=True)
+    update = models.DateTimeField(
+        db_column="date_time_update", default=timezone.now, null=True
+    )
     empresa = models.ForeignKey(
         Empresa, on_delete=models.CASCADE, db_column="fk_empresa"
     )

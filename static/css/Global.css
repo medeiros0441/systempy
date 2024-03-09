@@ -4,7 +4,7 @@
     --tema-black: #000000;
     --tema-blue: #0d1b2a;
     --tema-white: #FFFFFF;
-    --tema-verde: #33da00;
+    --tema-verde: #1f7e02;
     --siglas-empresa: "{ WMS }";
     --name-empresa: "Water Management Solutions";
     --font-path: "../font/GLIKER-FAMILY/";
@@ -120,4 +120,6 @@ font-weight: normal; /* Padrão para o corpo do documento (Regular) */
 
 .custom-shape-divider-bottom-1708368458 .shape-fill {
     fill: #0D1B2A;
-}
+}@import url("https://fonts.googleapis.com/css?family=Lato");
+
+ 

@@ -97,7 +97,7 @@ function alertCustomer(text) {
     // Remover o toast após um tempo padrão (por exemplo, 5 segundos)
     setTimeout(() => {
       toastContainer.removeChild(toastElement);
-    }, 10000); // Tempo em milissegundos, ajuste conforme necessário
+    }, 100000); // Tempo em milissegundos, ajuste conforme necessário
   
   }
 
@@ -134,3 +134,5 @@ function alertCustomer(text) {
 if (document.getElementById("id_codigo_postal")) {
   document.getElementById("id_codigo_postal").addEventListener("blur", buscarEnderecoPorCEP);
 }
+
+ 
