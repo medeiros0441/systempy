@@ -2,8 +2,7 @@ from django.shortcuts import render, redirect
 from ..def_global import criar_alerta_js, erro
 from django.http import HttpResponse
 from ..static import Alerta, UserInfo
-from ..models.produto import Produto
-from ..models.loja import Loja
+from ..models import Loja, Produto
 from ..forms.form_produto import ProdutoForm as Form
 
 

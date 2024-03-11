@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from ..models.endereco import Endereco
-from ..forms.form_endereco import Endereco as EnderecoForm
+from ..models import Endereco
+from ..forms import EnderecoForm
 from ..def_global import criar_alerta_js
 from ..static import Alerta
 

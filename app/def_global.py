@@ -181,3 +181,40 @@ def get_status(request):
     usuario = Usuario.objects.get(id_usuario=id_usuario)
 
     return True
+
+
+from .models import Sessao
+
+
+def obter_dados_localizacao_ipinfo(ip, requests):
+    # Chave de API do ipinfo.io
+    api_key = "7a622c40229db0"
+
+    # URL da API ipinfo.io
+    url = f"http://ipinfo.io/{ip}?token={api_key}"
+
+    try:
+        # Fazendo uma solicitação GET para a API ipinfo.io
+        response = requests.get(url)
+
+        # Verifica se a solicitação foi bem-sucedida (código de status HTTP 200)
+        if response.status_code == 200:
+            # Parseia os dados JSON da resposta
+            data = response.json()
+            sessao = Sessao.objects.create(
+                ip_sessao=ip,
+                cidade=data.get("city"),
+                regiao=data.get("region"),
+                pais=data.get("country"),
+                latitude=float(data.get("loc", "").split(",")[0]),
+                longitude=float(data.get("loc", "").split(",")[1]),
+                codigo_postal=data.get("postal"),
+                organizacao=data.get("org"),
+            )
+
+        else:
+            # Se a solicitação falhar, imprime o status da resposta
+            print(f"Erro: {response.status_code}")
+
+    except Exception as e:
+        print(f"Erro ao obter dados de localização: {e}")

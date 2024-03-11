@@ -2,24 +2,30 @@
 from django.shortcuts import redirect, get_object_or_404
 from .def_global import erro, criar_alerta_js
 from django.utils.deprecation import MiddlewareMixin
-from .models.sessao import Sessao
 from django.utils import timezone
 from django.http import HttpRequest
+from app.models import Usuario ,Log,Sessao
+from django.utils import timezone
+from django.conf import settings
 
-from app.models.usuario import Usuario
+class ErrorLoggingMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-# def isAssinante(request):
-#   isUsuario = request.GET.get("id_usuario")
+    def __call__(self, request):
+        response = self.get_response(request)
+        return response
 
-#   if isUsuario and int(isUsuario) > 0:
-#       usuario = Usuario.objects.get(id_usuario=isUsuario)
-#       if usuario.status_acesso == False:
-#           return False
-#       return True
-
-#    return False
-
-
+    def process_exception(self, request, exception):
+        if not settings.DEBUG:  # Verifica se o modo de depuração está ativado
+            # Registra o erro no modelo Log
+            Log.objects.create(
+                tipo='Erro',
+                origem=request.path,
+                descricao=str(exception),
+                usuario=request.user if request.user.is_authenticated else None,
+                ip_usuario=request.sessao['ip_usuario']
+            )
 class AtualizarDadosClienteMiddleware(MiddlewareMixin):
     def process_request(self, request: HttpRequest):
         ip_cliente = request.META.get("REMOTE_ADDR")
@@ -27,7 +33,11 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
 
         # Obtém o ID do usuário da sessão
         id_usuario = request.session.get("id_usuario")
-
+        
+        request.session["ip_cliente"] = ip_cliente
+        request.session["navegador_cliente"] = navegador_cliente
+        
+        
         # Se o ID do usuário não estiver presente, define como 0
         if id_usuario is None:
             id_usuario = 0

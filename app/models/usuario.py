@@ -1,9 +1,11 @@
 from django.db import models
 from .empresa import Empresa
 from django.utils import timezone
+import uuid
 
 
 class Usuario(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False)
     id_usuario = models.AutoField(primary_key=True, db_column="id_usuario")
     nome_completo = models.CharField(max_length=255, db_column="nome_completo")
     nome_usuario = models.CharField(max_length=50, db_column="nome_usuario")

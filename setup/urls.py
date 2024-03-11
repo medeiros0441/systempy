@@ -162,7 +162,7 @@ url_galao = [  ##galoes
     path("galoes/excluir/<int:galao_id>/", excluir_galao, name="excluir_galao"),
 ]
 
-from app.view.views_endereco import (
+from app.view import (
     criar_endereco,
     lista_enderecos,
     selecionar_endereco,
@@ -190,6 +190,38 @@ url_funcJs = [  # funçoes js
     path("atualizar-senha/<str:nova_senha>/", atualizar_senha, name="atualizar_senha"),
     path("api/status_on/", status_on, name="status_on"),
     path("api/status_off/", status_off, name="status_off"),
+]
+
+from app.view import (
+    ConfiguracaoListView,
+    ConfiguracaoCreateView,
+    ConfiguracaoUpdateView,
+    ConfiguracaoDeleteView,
+    ConfiguracaoDetailView,
+)
+
+url_configuracao = [
+    path("configuracao/", ConfiguracaoListView.as_view(), name="configuracao_list"),
+    path(
+        "configuracao/create/",
+        ConfiguracaoCreateView.as_view(),
+        name="configuracao_create",
+    ),
+    path(
+        "configuracao/<uuid:pk>/",
+        ConfiguracaoDetailView.as_view(),
+        name="configuracao_detail",
+    ),
+    path(
+        "configuracao/<uuid:pk>/update/",
+        ConfiguracaoUpdateView.as_view(),
+        name="configuracao_update",
+    ),
+    path(
+        "configuracao/<uuid:pk>/delete/",
+        ConfiguracaoDeleteView.as_view(),
+        name="configuracao_delete",
+    ),
 ]
 urlpatterns = (
     url_default

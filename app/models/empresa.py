@@ -1,8 +1,11 @@
 from django.db import models
 from django.utils import timezone
+import uuid
 
 
 class Empresa(models.Model):
+
+    id = models.UUIDField(default=uuid.uuid4, editable=False)
     id_empresa = models.AutoField(primary_key=True, db_column="id_empresa")
     nome_empresa = models.TextField(db_column="nome_empresa")
     nro_cnpj = models.TextField(db_column="nro_cnpj_empresa")

@@ -83,7 +83,8 @@ MIDDLEWARE_app = [
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "app.middlewares.AtualizarDadosClienteMiddleware",
-]
+    "app.middlewares.ErrorLoggingMiddleware",
+] 
 MIDDLEWARE = MIDDLEWARE_app + MIDDLEWARE_django
 
 ROOT_URLCONF = "setup.urls"

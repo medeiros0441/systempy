@@ -16,6 +16,15 @@ class Sessao(models.Model):
     insert = models.DateTimeField(db_column="date_time_insert", default=timezone.now)
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
+    # Novos campos para dados de localização
+    cidade = models.CharField(max_length=100, blank=True, null=True, db_column="cidade")
+    regiao = models.CharField(max_length=100, blank=True, null=True, db_column="regiao")
+    pais = models.CharField(max_length=100, blank=True, null=True, db_column="pais")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, db_column="latitude")
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, db_column="longitude")
+    codigo_postal = models.CharField(max_length=20, blank=True, null=True, db_column="codigo_postal")
+    organizacao = models.CharField(max_length=200, blank=True, null=True, db_column="organizacao")
+    
     usuario = models.ForeignKey(
         Usuario, on_delete=models.CASCADE, db_column="fk_usuario", null=True
     )

@@ -1,10 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from ..models.loja import Loja
-from ..forms.form_loja import Loja as LojaForm
-from ..forms.form_endereco import Endereco as EnderecoForm
+from ..forms import LojaForm, EnderecoForm
 from ..def_global import criar_alerta_js, erro
 from ..static import Alerta, UserInfo
-from ..models.empresa import Empresa
+from ..models import Empresa, Loja
 
 
 def lista_lojas(request, context=None):

@@ -2,7 +2,7 @@ from django import forms
 from ..models.loja import Loja
 
 
-class Loja(forms.ModelForm):
+class LojaForm(forms.ModelForm):
     segunda = forms.BooleanField(label="Segunda-feira", required=False)
     terca = forms.BooleanField(label="Terça-feira", required=False)
     quarta = forms.BooleanField(label="Quarta-feira", required=False)

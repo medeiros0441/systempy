@@ -19,18 +19,18 @@
     
     <table class="table">
         <thead>
-          <tr>
+          <tr class="font-monospace text-start" style="font-size: 0.8rem;">
             <th scope="col">Nome Responsavel</th>
             <th scope="col">Status</th>
             <th scope="col">Nivel usuario</th>
-            <th scope="col">Ações</th>
+            <th scope="col" class="text-end">Ações</th>
           </tr>
         </thead>
         <tbody class="table-group-divider">
         {% for usuario in usuarios %}
-        <tr>
-            <th scope="row">  <strong> {{ usuario.nome_completo }}  </strong> </th>
-            <td><strong>  
+        <tr class="font-monospace text-start" style="font-size: 0.8rem;">
+            <td scope="row">  {{ usuario.nome_completo }} </td>
+            <td>
                 
                 {% if usuario.status_acesso %}
                     Ativo
@@ -38,16 +38,16 @@
                     Desativado
                 {% endif %}
 
-            </strong></p></td>
-            <td><strong>
+           </td>
+            <td>
                 {% if usuario.nivel_usuario == 1 %}
                 Administrador 
                 {% elif usuario.nivel_usuario == 2 %}
                 Gerente
             {% elif usuario.nivel_usuario == 3 %}
                 Colaborador
-            {% endif %}</strong></td>
-            <td> 
+            {% endif %}</td>
+            <td class="text-end">
                 <div class="btn-group" role="group" aria-label="Ações do Usuário">
                     <div class="btn-group" role="group" aria-label="Ações do Usuário">
                         <button type="button" class="btn btn-primary btn-sm" onclick="window.location.href='{% url 'editar_usuario' usuario.id_usuario %}'">

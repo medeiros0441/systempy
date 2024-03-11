@@ -1,9 +1,12 @@
 from django.db import models
 from django.utils import timezone
+import uuid
 
 
 class Endereco(models.Model):
     id_endereco = models.AutoField(primary_key=True, db_column="id_endereco")
+
+    id = models.UUIDField(default=uuid.uuid4, editable=False)
     rua = models.CharField(max_length=255, db_column="rua")
     numero = models.CharField(db_column="numero", max_length=10, null=True, blank=True)
     bairro = models.CharField(db_column="bairro", max_length=100)

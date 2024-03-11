@@ -1,0 +1,131 @@
+
+{% block content %}
+  
+  
+<!-- Modal -->
+<div class="modal fade" id="ModalUsuario" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog  modal-md modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title fw-bold font-monospace" id="lojaModalLabel" >
+            {% if text_usuario %} Detalhes do Usuario{% endif%}
+            {% if form_usuario %} Formulario do Usuario{% endif%}
+        </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body  font-monospace"   >
+            {% if text_usuario %} 
+                <div class="form-group">
+                    <label for="text_nome_usuario" class="fw-bold">Nome do usuario:</label>
+                    <span id="nome_usuario">{{ text_usuario.nome }}</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="text_quantidade_atual_estoque" class="fw-bold">Quantidade Atual no Estoque:</label>
+                    <span id="quantidade_atual_estoque">{{ text_usuario.quantidade_atual_estoque_f }}</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="text_quantidade_minima_estoque" class="fw-bold">Quantidade Mínima no Estoque:</label>
+                    <span id="quantidade_minima_estoque">{{ text_usuario.quantidade_minima_estoque_f }}</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="text_preco_compra" class="fw-bold">Preço de Compra:</label>
+                    <span id="preco_compra">{{ text_usuario.preco_compra_f }}</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="text_preco_venda" class="fw-bold">Preço de Venda:</label>
+                    <span id="preco_venda">{{ text_usuario.preco_venda_f }}</span>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="text_fabricante" class="fw-bold">Fabricante:</label>
+                    <span id="fabricante">{{ text_usuario.fabricante }}</span>
+                </div>
+
+               <span class="  fw-bold font-monospace " style="font-size: 1.0rem;"   >Detalhes da Loja </span>
+               <hr class="fw-border text-black mt-0 mb-1" >
+               <div class="form-group">
+                    <label for="nome_loja" class="fw-bold">Nome da Loja:</label>
+                    <span id="nome_loja">{{ text_usuario.loja.nome_loja }}</span>
+                </div>
+                <div class="form-group">
+                    <label  class="fw-bold" for="numero_telefone">Número Telefone:</label>
+                    <span id="numero_telefone">{{ text_usuario.loja.numero_telefone }}</span>
+                </div>
+              {% endif%}
+   
+
+
+          {% if form_usuario %}   
+        <form method="post" id="form_cadastro" class="needs-validation" novalidate>
+           {% csrf_token %}
+
+
+
+<div class="form-floating mb-2">
+    {{ form_usuario.loja }}
+    <label for="id_loja" style="font-size: 0.8rem;">Loja:</label>
+</div>
+<!-- Botões -->
+
+
+<div class="form-floating mb-2">
+    {{ form_usuario.nome }}
+    <label for="id_nome" style="font-size: 0.8rem;">Nome:</label>
+</div>
+
+
+<div class="form-group">
+    <div class="row">
+        <div class="col p-1">
+            <div class="form-floating mb-2">
+                {{ form_usuario.quantidade_atual_estoque }}
+    <label for="id_quantidade_atual_estoque" style="font-size: 0.8rem;">Quantidade Atual no Estoque:</label>
+        </div>
+        </div>
+        <div class="col p-1">
+            <div class="form-floating mb-2">
+                {{ form_usuario.quantidade_minima_estoque }}
+                <label for="id_quantidade_minima_estoque" style="font-size: 0.8rem;">Quantidade Mínima no Estoque:</label>
+             </div>
+        </div>
+    </div>
+  </div>
+
+
+<div class="form-floating mb-2">
+    {{ form_usuario.fabricante }}
+    <label for="id_fabricante" style="font-size: 0.8rem;">Fabricante:</label>
+</div> 
+
+  <div class="form-group">
+    <div class="row">
+        <div class="col p-1">
+            <div class="form-floating mb-2">
+                {{ form_usuario.preco_compra_fake }}
+                <label for="id_preco_compra_fake" style="font-size: 0.8rem;">Preço de Compra:</label>
+            </div>
+        </div>
+        <div class="col p-1">
+            <div class="form-floating mb-2">
+                {{ form_usuario.preco_venda_fake }}
+                <label for="id_preco_venda_fake" style="font-size: 0.8rem;">Preço de Venda:</label>
+               </div>
+        </div>
+    </div>
+  </div>  
+
+            <button type="submit" class="btn btn-primary mx-auto btn-md" >Salvar</button>
+        </form>
+
+        {% endif%}
+    </div>
+  </div>
+</div>
+</div>
+
+
+{% endblock %}
