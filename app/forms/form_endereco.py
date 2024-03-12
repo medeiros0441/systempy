@@ -16,7 +16,7 @@ class EnderecoForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, **kwargs):
-        super(Endereco, self).__init__(*args, **kwargs)
+        super(EnderecoForm, self).__init__(*args, **kwargs)
 
         # Adiciona classes, atributos adicionais e limites de caracteres aos widgets dos campos
         self.fields["codigo_postal"].widget.attrs[

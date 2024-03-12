@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from ..models.sessao import Sessao
+from ..models import Sessao, Usuario
 from django.http import JsonResponse
 from django.utils import timezone
+from django.shortcuts import render
+import requests
 
 
 def sessao_usuario_list(request):
@@ -117,6 +119,58 @@ def atualizar_sessao_usuario(request, user_id):
         else:
             return JsonResponse(
                 {"message": "Sessao do usuario nao encontrada"}, status=404
+            )
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+def criar_sessao(request):
+    try:
+        ip_address = request.META.get("REMOTE_ADDR")
+        # Supondo que o IP seja enviado via POST
+
+        # Chave de API do ipinfo.io
+        api_key = "7a622c40229db0"
+
+        # URL da API ipinfo.io
+        ipinfo_url = f"https://ipinfo.io/{ip_address}?token={api_key}"
+
+        # Realizar uma solicitação GET para o serviço IPinfo para obter informações de localização
+        response = requests.get(ipinfo_url)
+        data = response.json()
+
+        # Verificar se a solicitação foi bem-sucedida e se há informações de localização disponíveis
+        if response.status_code == 200:
+            cidade = data.get("city")
+            regiao = data.get("region")
+            pais = data.get("country")
+
+            codigo_postal = data.get("postal")
+            organizacao = data.get("org")
+
+            # Obtendo a descrição do usuário (HTTP_USER_AGENT)
+            descricao = request.META.get("HTTP_USER_AGENT", "")
+            # Criar uma nova instância de Sessao com as informações obtidas
+            sessao = Sessao.objects.create(
+                ip_sessao=ip_address,
+                descricao=descricao,
+                status=True,
+                cidade=cidade,
+                regiao=regiao,
+                pais=pais,
+                codigo_postal=codigo_postal,
+                organizacao=organizacao,
+            )
+
+            return JsonResponse(
+                {"success": True, "message": "Sessão criada com sucesso!"}
+            )
+        else:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Falha ao obter informações de localização.",
+                }
             )
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)

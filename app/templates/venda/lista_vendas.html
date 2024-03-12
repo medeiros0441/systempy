@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Vendas{% endblock %}
+
+{% block content %}
+{% include 'venda/modal_venda.html' %}
+
+ 
+
+<div class="my-5 container-xl mx-auto ">
+    <div class="d-flex justify-content-between">
+            <span   class=" font-monospace fw-border my-auto" style="font-size: 1.3rem;">Lista de Vendas</span>
+          
+          
+          
+          
+<a type="button"  href="{% url 'acrescentar_venda' %}" id="btnAcrescentar" class="btn btn-success btn-sm ms-auto me-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-box-arrow-in-up me-1"></i> Acrescentar Venda </a>
+
+<a  type="button"  href="{% url 'criar_venda' %}"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Novo Venda</a>
+    </div>
+
+
+        <table class="table table-hover table-responsive table-sm  ">
+            <thead>
+                <tr>
+                    <th scope="col" class="text-start " style="font-size: 0.7rem;">Nome</th>
+                    <th scope="col" class=" d-none d-sm-table-cell order-1 text-start" style="font-size: 0.7rem;">Quantidade Atual</th>
+                    <th scope="col" class=" d-none d-sm-table-cell order-2 text-start" style="font-size: 0.7rem;">Valor</th>
+                    <th scope="col" class="text-end" style="font-size: 0.7rem;">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                {% for venda in vendas %}
+                <tr>
+                    <td style="font-size: 0.8rem;">{{ venda.nome }}</td>
+                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-1 text-start">{{ venda.quantidade_atual_estoque_f }}</td>
+                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-2 text-start">{{ venda.preco_venda_f }}</td>
+                    <td class="text-end">
+                        <div class="btn-group" role="group" aria-label="Ações do Usuário">
+                            <a href="{% url 'selecionar_venda' venda.id_venda %}" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i> Detalhes</a>
+                            <a href="{% url 'editar_venda' venda.id_venda %}" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi  bi-pencil me-1"></i>Editar</a>
+                            <a href="{% url 'excluir_venda' venda.id_venda %}" class="btn btn-danger btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-trash me-1"></i> Excluir</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    </div>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Define a variável para controlar a ordem atual da classificação
+            var ascending = false;
+    
+            // Adiciona um ouvinte de evento de clique para cada cabeçalho da coluna
+            $('th').click(function() {
+                // Obtém o índice da coluna clicada
+                var columnIndex = $(this).index();
+    
+                // Obtém a matriz das linhas da tabela
+                var rows = $('tbody').find('tr').get();
+    
+                // Ordena as linhas com base no conteúdo da coluna clicada
+                rows.sort(function(rowA, rowB) {
+                    var cellA = $(rowA).children('td').eq(columnIndex).text().toUpperCase();
+                    var cellB = $(rowB).children('td').eq(columnIndex).text().toUpperCase();
+                    
+                    if (columnIndex === 0 || columnIndex === 3) {
+                        return ascending ? (cellA < cellB ? -1 : 1) : (cellA > cellB ? -1 : 1);
+                    } else {
+                        return ascending ? parseFloat(cellA) - parseFloat(cellB) : parseFloat(cellB) - parseFloat(cellA);
+                    }
+                });
+    
+                // Reorganiza as linhas na tabela
+                $.each(rows, function(index, row) {
+                    $('tbody').append(row);
+                });
+    
+                // Alterna a ordem da classificação
+                ascending = !ascending;
+            });
+        });
+    // Abrir o modal se a variável indicar que deve ser aberto automaticamente
+    {% if open_modal %}
+    document.addEventListener('DOMContentLoaded', function() {
+        var myModal = new bootstrap.Modal(document.getElementById('ModalVenda'));
+        myModal.show();
+    });
+    {% endif %}
+
+  </script>
+        {% endblock %}

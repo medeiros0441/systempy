@@ -7,7 +7,7 @@ from ..def_global import criar_alerta_js, erro
 from ..models import Venda
 
 
-def lista_vendas(request, context=None, id_loja=0):
+def lista_vendas(request, context=None, id_loja=None):
 
     id_empresa = UserInfo.get_id_empresa(request, True)
     if context is None:
@@ -17,11 +17,16 @@ def lista_vendas(request, context=None, id_loja=0):
         context["alerta_js"] = criar_alerta_js(alerta)
 
     try:
-        produtos = Venda.objects.filter(loja__empresa__id_empresa=id_empresa)
-        context["produtos"] = produtos
+        if id_loja is None:
+            vendas = Venda.objects.filter(loja__empresa__id_empresa=id_empresa)
+        else:
+            vendas = Venda.objects.filter(
+                loja__empresa__id_empresa=id_empresa, loja_id_loja=id_loja
+            )
+        context["vendas"] = vendas
     except Venda.DoesNotExist:
         pass
-    return render(request, "produto/lista_produtos.html", context)
+    return render(request, "venda/lista_vendas.html", context)
 
 
 def editar_venda(request, venda_id):

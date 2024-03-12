@@ -65,3 +65,13 @@ from .view_configuracao import (
     ConfiguracaoListView,
     ConfiguracaoUpdateView,
 )
+from .sessao import (
+    sessao_usuario_list,
+    sessao_usuario_detail,
+    sessao_usuario_delete,
+    atualizar_sessao_usuario,
+    status_on,
+    status_off,
+    get_sessao_usuario,
+    criar_sessao,
+)

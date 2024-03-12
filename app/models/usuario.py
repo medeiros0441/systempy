@@ -6,19 +6,32 @@ import uuid
 
 class Usuario(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False)
-    id_usuario = models.AutoField(primary_key=True, db_column="id_usuario")
-    nome_completo = models.CharField(max_length=255, db_column="nome_completo")
-    nome_usuario = models.CharField(max_length=50, db_column="nome_usuario")
-    senha = models.CharField(max_length=200, db_column="senha")
-    insert = models.DateTimeField(db_column="date_time_insert", default=timezone.now)
-    update = models.DateTimeField(db_column="date_time_update", null=True)
-    nivel_usuario = models.IntegerField(db_column="nivel_usuario")
-    status_acesso = models.BooleanField(default=False, db_column="status_acesso")
+    id_usuario = models.AutoField(
+        primary_key=True,
+    )
+    nome_completo = models.CharField(
+        max_length=255,
+    )
+    nome_usuario = models.CharField(
+        max_length=50,
+    )
+    senha = models.CharField(
+        max_length=200,
+    )
+    insert = models.DateTimeField(default=timezone.now)
+    update = models.DateTimeField(null=True)
+    nivel_usuario = models.IntegerField()
+    status_acesso = models.BooleanField(
+        default=False,
+    )
 
-    email = models.EmailField(max_length=255, db_column="email")
-    ultimo_login = models.DateTimeField(db_column="ultimo_login", null=True)
+    email = models.EmailField(
+        max_length=255,
+    )
+    ultimo_login = models.DateTimeField(null=True)
     empresa = models.ForeignKey(
-        Empresa, on_delete=models.CASCADE, db_column="fk_empresa"
+        Empresa,
+        on_delete=models.CASCADE,
     )
 
     @property
@@ -28,6 +41,3 @@ class Usuario(models.Model):
 
         # Retorna apenas o primeiro nome, se houver, caso contrário, retorna uma string vazia
         return partes_nome[0] if partes_nome else ""
-
-    class Meta:
-        db_table = "wms_usuario"

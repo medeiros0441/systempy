@@ -13,11 +13,11 @@ class Log(models.Model):
         max_length=100
     )  # Origem do log (nome do módulo, função, etc.)
     descricao = models.TextField()  # Descrição do log
-    insert = models.DateTimeField(db_column="date_time_insert", default=timezone.now)
-    update = models.DateTimeField(
-        db_column="date_time_update", default=timezone.now, null=True
-    )
+    insert = models.DateTimeField(default=timezone.now)
+    update = models.DateTimeField(default=timezone.now, null=True)
     usuario = models.ForeignKey(
-        Usuario, on_delete=models.SET_NULL, null=True, db_column="id"
+        Usuario,
+        on_delete=models.SET_NULL,
+        null=True,
     )
     ip_usuario = models.CharField(max_length=50, blank=True, null=True)  # IP do cliente

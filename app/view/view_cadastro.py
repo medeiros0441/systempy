@@ -13,6 +13,7 @@ from ..def_global import (
 from django.utils import timezone
 
 from django.contrib.auth.hashers import make_password
+from ..static import Alerta, UserInfo
 
 
 def validacao(campos):
@@ -86,6 +87,7 @@ def cadastro_empresa(request):
             elif empresa:
                 string_value = criar_user(empresa, senha_hash)
                 if string_value is True:
+
                     return redirect("login")
                 else:
                     # Se não foi possível criar o usuário, exiba uma mensagem de erro na tela

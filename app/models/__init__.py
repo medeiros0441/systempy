@@ -9,3 +9,4 @@ from .venda import Venda
 from .historico import Historico
 from .log import Log
 from .configuracao import Configuracao
+from .cliente import Cliente

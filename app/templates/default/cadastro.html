@@ -4,83 +4,86 @@
 {% block content %}
     
 
+ 
 
+<form method="post" id="form_cadastro"  class=" modal-body   container form-signin    mx-auto my-4 " action="{% url 'cadastro' %}">
+  <div class="  mx-sm-5  -4 modal-signin modal-body">
+<div class="modal-content">
 
-<form method="post" id="form_cadastro"  class=" container mx-auto my-4 " action="{% url 'cadastro' %}">
-  {% csrf_token %}
+    {% csrf_token %}
   <div class="   card " id="container1">
-    <div class="card-header text-center">
-      <h1 class="-title fs-5 text-black" >Cadastro Empresa</h1>
-  </div>
-  <div class="card-body">
+      <div class="card-header text-center">
+        <h1 class="-title fs-5 text-black" >Cadastro Empresa</h1>
+    </div>
+    <div class="card-body">
 
+      <div class="form-floating mb-2">
+        <input type="text" class="form-control" id="nome_empresa" name="nome_empresa"  >
+        <label for="nome_empresa">Nome da Empresa</label>
+    </div>
     <div class="form-floating mb-2">
-      <input type="text" class="form-control" id="nome_empresa" name="nome_empresa"  >
-      <label for="nome_empresa">Nome da Empresa</label>
+      <input type="text" class="form-control cnpj-mask" id="nro_cnpj" name="nro_cnpj">
+      <label for="nro_cnpj">Número do CNPJ</label>
+      <div class="invalid-feedback">Por favor, insira um CNPJ válido.</div>
   </div>
-  <div class="form-floating mb-2">
-    <input type="text" class="form-control cnpj-mask" id="nro_cnpj" name="nro_cnpj">
-    <label for="nro_cnpj">Número do CNPJ</label>
-    <div class="invalid-feedback">Por favor, insira um CNPJ válido.</div>
-</div>
   <div class="form-floating mb-2">
       <input type="text" class="form-control" id="razao_social_empresa" name="razao_social_empresa"  >
       <label for="razao_social_empresa">Razão Social da Empresa</label>
   </div>
 </div>
-  <div class="  card-footer d-flex justify-content-center">
-
-    <button onclick="hideContainer1()"  type="button" class="btn btn-primary btn-md">Proximo</button>
-  </div>
+<div class="  card-footer d-flex justify-content-center">
+  <button onclick="hideContainer1()"  type="button" class="btn btn-primary btn-md">Proximo</button>
 </div>
-  
-  <div class="    card  d-none  " id="container2">
-    <div class="card-header text-center">
-      <h1 class="-title fs-5 text-back" >Cadastro Responsavel</h1>
-  </div>
-  <div class="card-body">
+</div>
 
-    <div class="form-floating mb-2">
-      <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel"  >
-      <label for="nome_responsavel">Nome do Responsável</label>
+<div class="    card  d-none  " id="container2">
+<div class="card-header text-center">
+  <h1 class="-title fs-5 text-back" >Cadastro Responsavel</h1>
+</div>
+<div class="card-body">
+
+<div class="form-floating mb-2">
+  <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel"  >
+  <label for="nome_responsavel">Nome do Responsável</label>
+</div>
+
+<div class="form-floating mb-2">
+  <input type="text" class="form-control" id="cargo_responsavel" name="cargo_responsavel"  >
+  <label for="cargo_responsavel">Cargo do Responsável</label>
+</div>
+
+<div class="form-floating mb-2">
+<input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
+<input type="email" class="form-control" id="email_responsavel" name="email_responsavel"  >
+  <label for="email_responsavel">E-mail do Responsável</label>
+<div class="invalid-feedback">Por favor, insira um Email válido.</div>
+</div>
+
+<div class="form-floating mb-2">
+  <input type="text" class="form-control telefone-mask" id="telefone_responsavel" name="telefone_responsavel"  >
+  <label for="telefone_responsavel">Telefone do Responsável</label>
+</div>
+<div class="form-floating mb-2">
+<input type="text" class="form-control cpf-mask" id="nro_cpf" name="nro_cpf">
+<label for="nro_cpf">Número do CPF</label>
+<div class="invalid-feedback">Por favor, insira um CPF válido.</div>
   </div>
-  
   <div class="form-floating mb-2">
-      <input type="text" class="form-control" id="cargo_responsavel" name="cargo_responsavel"  >
-      <label for="cargo_responsavel">Cargo do Responsável</label>
-  </div>
-  
-  <div class="form-floating mb-2">
-    <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
-    <input type="email" class="form-control" id="email_responsavel" name="email_responsavel"  >
-      <label for="email_responsavel">E-mail do Responsável</label>
-    <div class="invalid-feedback">Por favor, insira um Email válido.</div>
-  </div>
-  
-  <div class="form-floating mb-2">
-      <input type="text" class="form-control telefone-mask" id="telefone_responsavel" name="telefone_responsavel"  >
-      <label for="telefone_responsavel">Telefone do Responsável</label>
-  </div>
-  <div class="form-floating mb-2">
-    <input type="text" class="form-control cpf-mask" id="nro_cpf" name="nro_cpf">
-    <label for="nro_cpf">Número do CPF</label>
-    <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
-</div><div class="form-floating mb-2">
   <input type="password" name="password" id="password_fake" class="hidden" autocomplete="off" style="display: none;">
   <input type="password" class="form-control" id="senha" name="senha" oninput="validarSenha()">
   <label for="senha">Senha</label>
   <div class="invalid-feedback" id="senha-feedback"></div>
-</div>
-
-
-</div>
-  <div class="  card-footer d-flex justify-content-between">
-    <button type="button"  onclick="validateContainer2()"  class="btn order-2 btn-primary btn-md">Finalizar</button>
-    <button onclick="hideContainer2()"    class="btn btn-secondary btn-md  order-1">Voltar</button>
   </div>
 </div>
-  </form>
- 
+<div class="  card-footer d-flex justify-content-between">
+<button type="button"  onclick="validateContainer2()"  class="btn order-2 btn-primary btn-md">Finalizar</button>
+<button onclick="hideContainer2()"    class="btn btn-secondary btn-md  order-1">Voltar</button>
+</div>
+</div>
+</div>
+</div>
+</form>
+
 <script>
   var cnpjInput = document.getElementById('nro_cnpj');
 

@@ -1,6 +1,5 @@
 from django import forms
-from ..models.produto import Produto
-from ..models.loja import Loja
+from ..models import Produto,Loja
 from ..static import UserInfo
 from decimal import Decimal
 
