@@ -17,9 +17,9 @@ def lista_vendas(request, context=None, id_loja=0):
         context["alerta_js"] = criar_alerta_js(alerta)
 
     try:
-        produtos = Vendas.objects.filter(loja__empresa__id_empresa=id_empresa)
+        produtos = Venda.objects.filter(loja__empresa__id_empresa=id_empresa)
         context["produtos"] = produtos
-    except Produto.DoesNotExist:
+    except Venda.DoesNotExist:
         pass
     return render(request, "produto/lista_produtos.html", context)
 
