@@ -1,9 +1,4 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views import View
-from ..models.usuario import Usuario
-from django.http import HttpResponse
 from ..def_global import (
     criar_alerta_js,
     erro,
@@ -11,19 +6,21 @@ from ..def_global import (
     gerar_numero_aleatorio,
     usuario_existe,
 )
+from ..static import Alerta, UserInfo
 from django.utils import timezone
-from ..models.empresa import Empresa
 from django.contrib.auth.hashers import make_password, check_password
-
 from django.shortcuts import render
-from ..models.usuario import Usuario
+from ..models import Usuario, Empresa
 
 
-def listar_usuarios(request, alerta_js=None):
-    id_empresa = request.session.get("id_empresa")
+def listar_usuarios(request, context=None):
+    id_empresa = UserInfo.get_id_empresa(request)
+
     usuarios = Usuario.objects.filter(empresa=id_empresa)
-    context = {"usuarios": usuarios}
-
+    if context is None:
+        context = {}
+    context["usuarios"] = usuarios
+    alerta_js = Alerta.get_mensagem()
     if alerta_js:
         context["alerta_js"] = criar_alerta_js(alerta_js)
 
@@ -37,15 +34,18 @@ def detalhes_usuario(request, usuario_id):
         "id_usuario": usuario.id_usuario,
         "nome_completo": usuario.nome_completo,
         "nome_usuario": usuario.nome_usuario,
-        "senha": usuario.senha,
-        "data_insercao": usuario.data_insercao,
-        "data_atualizacao": usuario.data_atualizacao,
+        "data_insercao": usuario.insert,
+        "data_atualizacao": usuario.update,
         "nivel_usuario": usuario.nivel_usuario,
-        "status": usuario.status,
+        "status": usuario.status_acesso,
         "email": usuario.email,
         "ultimo_login": usuario.ultimo_login,
     }
     return render(request, "usuario/select_usuario.html", {"data": data})
+
+
+from .view_configuracao import criar_configuracoes_padrao
+from ..models import Configuracao
 
 
 def cadastrar_usuario(request):
@@ -114,9 +114,10 @@ def cadastrar_usuario(request):
                         empresa=empresa,
                         insert=timezone.now(),
                     )
+                    criar_configuracoes_padrao(usuario_new)
+                    Alerta.set_mensagem("Usuário cadastrado com sucesso!")
                     return redirect(
-                        "listar_usuarios_alerta",
-                        alerta_js="Usuário cadastrado com sucesso!",
+                        "listar_usuarios",
                     )
             except Exception as e:
                 mensagem_erro = str(e)
@@ -128,7 +129,45 @@ def cadastrar_usuario(request):
                 {"alerta": criar_alerta_js("erro ao recuperar dados.")},
             )
     else:
-        return render(request, caminho_html)
+        list = list_configuracoes_padrao2()
+        return render(request, caminho_html, {"list_configuracao": list})
+
+
+def list_configuracoes_padrao2():
+
+    nomes_classes = [
+        "Usuario",
+        "Empresa",
+        "Endereco",
+        "Galao",
+        "Loja",
+        "Produto",
+        "Sessao",
+        "Venda",
+        "Historico",
+        "Log",
+        "Configuracao",
+        "Cliente",
+    ]
+
+    list_configuracao = []
+
+    for nome_classe in nomes_classes:
+        titulo = f"Gerenciamento de {nome_classe}"
+        descricao_interna = (
+            f"Controle de {nome_classe.lower()}, editar, alterar, criar..."
+        )
+        descricao = f"Permitir acesso ao Painel de {nome_classe}, isso inclui criar, editar, remover, entre outros."
+        status_acesso = False
+        configuracao = Configuracao(
+            titulo=titulo,
+            descricao_interna=descricao_interna,
+            descricao=descricao,
+            status_acesso=status_acesso,
+        )
+        list_configuracao.append(configuracao)
+
+    return list_configuracao
 
 
 from ..processador.config_email import enviar_email
@@ -158,95 +197,31 @@ def editar_usuario(request, id_usuario):
             # Cria o objeto do formulário
             formulario = Usuario(
                 nome_completo=request.POST.get("nome_completo"),
-                senha=request.POST.get("senha"),
                 nivel_usuario=valor,
                 status_acesso=status_acesso,
-                email=request.POST.get("email_responsavel"),
             )
-            # verificamos está em uso caso esteja.. verificamos se é
-            # utilizado pelo usuario que está salvando os
-            EmailisUtilizado = email_existe(formulario.email)
-            if EmailisUtilizado:
-                User = Usuario.objects.get(email=formulario.email)
-                if User.id_usuario == usuario.id_usuario:
-                    EmailisUtilizado = False
-
-            # se o  email existir mas se for do usuario atual vamos ignorar o aviso de existencia
-            if EmailisUtilizado == False:
-                # caso o cliente tenha alterado o email vamos autenticar enviando um codigo para a confirmação
-                ##se a sneha for alterada geremos a senha hash e
-                # passamos para o model usuario para, a alterao
-                if usuario.senha != formulario.senha:
-                    senha_hash = make_password(formulario.senha)
-                    usuario.senha = senha_hash
-
-                if formulario.email != usuario.email:
-                    assunto = "Email Alterado."
-                    mensagem = f"Olá,{usuario.primeiro_nome}  Seu Email Alterado da plataforma SMW."
-                    enviar_email(
-                        destinatario=usuario.email,
-                        assunto=assunto,
-                        NomeCliente=usuario.primeiro_nome,
-                        TextIntroducao=mensagem,
+            # Verifica se os campos obrigatórios estão preenchidos
+            if formulario.nome_completo and formulario.nivel_usuario and empresa_id:
+                try:
+                    usuario.nivel_usuario = int(formulario.nivel_usuario)
+                    usuario.nome_completo = formulario.nome_completo
+                    usuario.status_acesso = formulario.status_acesso
+                    usuario.update = timezone.now()
+                    usuario.save()
+                    Alerta.set_mensagem("Usuário Editado com sucesso!")
+                    return redirect(
+                        "listar_usuarios",
                     )
-                    assunto = "Email inserido."
-                    mensagem = f"Olá, {usuario.primeiro_nome} Seu Email foi inserido na plataforma SMW."
-                    enviar_email(
-                        destinatario=formulario.email,
-                        assunto=assunto,
-                        NomeCliente=usuario.primeiro_nome,
-                        TextIntroducao=mensagem,
-                    )
-                    return render(
-                        request,
-                        caminho_html,
-                        {
-                            "alerta_js": criar_alerta_js(
-                                "você alterou o email. foi enviado um codigo para a verificacão."
-                            ),
-                            "usuario": formulario,
-                        },
-                    )
-                # Verifica se os campos obrigatórios estão preenchidos
-                if formulario.nome_completo and formulario.nivel_usuario and empresa_id:
-                    try:
-                        usuario.nivel_usuario = int(formulario.nivel_usuario)
-                        usuario.nome_completo = formulario.nome_completo
-                        usuario.status_acesso = formulario.status_acesso
-                        usuario.email = formulario.email
-                        usuario.update = timezone.now()
-
-                        usuario.save()
-                        return redirect(
-                            "listar_usuarios_alerta",
-                            alerta_js="Usuário Editado com sucesso!",
-                        )
-                    except Exception as e:
-                        mensagem_erro = str(e)
-                        return erro(request, mensagem_erro)
-            else:
-                return render(
-                    request,
-                    caminho_html,
-                    {
-                        "alerta_js": criar_alerta_js(
-                            "Email já está cadastro, coloque outro."
-                        ),
-                        "usuario": formulario,
-                    },
-                )
+                except Exception as e:
+                    mensagem_erro = str(e)
+                    return erro(request, mensagem_erro)
             # usuario nao é post. verifica se o id dele é o mesmo que o do usuario
         elif usuario.empresa.id_empresa == empresa_id:
             return render(request, caminho_html, {"usuario": usuario})
         else:  # Se o id do empresa não corresponder ao id do usuário,
-            # retornar uma resposta de erro
-            return render(
-                "listar_usuario",
-                {
-                    "alerta_js": criar_alerta_js(
-                        "Você não tem permissão para acessar este usuário."
-                    )
-                },
+            Alerta.set_mensagem("Você não tem permissão para acessar este usuário.")
+            return redirect(
+                "listar_usuarios",
             )
 
 
@@ -257,11 +232,15 @@ def excluir_usuario(request, id_usuario):
     usuario = Usuario.objects.get(id_usuario=id_usuario)
     if usuario:
         usuario.delete()
+        Alerta.set_mensagem("Usuário excluído com sucesso!")
         return redirect(
-            "listar_usuarios_alerta", alerta_js="Usuário excluído com sucesso!"
+            "listar_usuarios",
         )
     else:
-        return redirect("listar_usuarios_alerta", alerta_js="Erro ao excluír Usuário!")
+        Alerta.set_mensagem("Erro ao excluír Usuário!")
+        return redirect(
+            "listar_usuarios",
+        )
 
 
 def bloquear_usuario(request, id_usuario):
@@ -269,8 +248,10 @@ def bloquear_usuario(request, id_usuario):
     usuario.status_acesso = False
     usuario.update = timezone.now()
     usuario.save()
+
+    Alerta.set_mensagem("Usuário bloqueado com sucesso!")
     return redirect(
-        "listar_usuarios_alerta", alerta_js="Usuário bloqueado com sucesso!"
+        "listar_usuarios",
     )
 
 
@@ -279,12 +260,15 @@ def ativar_usuario(request, id_usuario):
     usuario.status_acesso = True
     usuario.update = timezone.now()
     usuario.save()
-    return redirect("listar_usuarios_alerta", alerta_js="Usuário ativado com sucesso!")
+    Alerta.set_mensagem("Usuário ativado com sucesso!")
+    return redirect(
+        "listar_usuarios",
+    )
 
 
 def autenticar_usuario(email, senha):
     try:
-        usuario = Usuario.objects.get(email=email)
+        usuario = Usuario.objects.get(email__iexact=email)
         if check_password(senha, usuario.senha):
             return usuario
     except Usuario.DoesNotExist:

@@ -43,7 +43,7 @@ class UserInfo:
         id_empresa = request.session.get("id_empresa")
         if isRequerido == True and id_empresa is None:
             Alerta.set_mensagem("Vôce precisa Fazer o login.")
-            return redirect("/home")
+            return None
         return id_empresa
     
     @staticmethod

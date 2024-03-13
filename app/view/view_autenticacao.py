@@ -36,7 +36,7 @@ def autenticar_usuario(request, email, senha_digitada):
             senha_correta = check_password(senha_digitada, usuario.senha)
 
             if senha_correta:
-                UserInfo.set_id_usuario(request,email, senha_digitada)
+                UserInfo.set_id_usuario(request, email, senha_digitada)
                 # Atualiza o último login do usuário
                 usuario.ultimo_login = timezone.now()
                 usuario.save()

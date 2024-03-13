@@ -8,6 +8,7 @@ from app.models import Usuario, Log, Sessao
 from django.utils import timezone
 from django.conf import settings
 from .view import criar_sessao
+from .static import UserInfo
 
 
 class ErrorLoggingMiddleware:
@@ -31,6 +32,7 @@ class ErrorLoggingMiddleware:
 
 
 class AtualizarDadosClienteMiddleware(MiddlewareMixin):
+    # process_request é chamado antes da view ser executada e recebe apenas a solicitação.
     def process_request(self, request: HttpRequest):
         try:
 
@@ -71,27 +73,42 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             else:
                 request.session["isCliente"] = False
 
+            urls_sem_verificacao = [
+                "",
+                "/home",
+                "/cadastro/",
+                "/login/",
+                "/sobre/",
+                "/Erro/",
+            ]
+            # Verifica se a URL atual não está na lista de URLs sem verificação
+            if request.path not in urls_sem_verificacao:
+                id_empresa = UserInfo.get_id_empresa(request, True)
+                if id_empresa is None:
+                    return redirect("login")
+
         except Exception as e:
             # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
             return erro(request, f"Erro durante a autenticação: {str(e)}")
 
+    # process_response é chamado após a view ser executada e recebe a resposta gerada
     def process_response(self, request, response):
         try:
-            if request.session.get("id_usuario"):
-                # Se o usuário está autenticado, atualize a última atividade no banco de dados
-                id_usuario = request.session.get("id_usuario")
+            id_usuario = request.session.get("id_usuario", 0)
+            if id_usuario > 0:
+
                 usuario = get_object_or_404(Usuario, pk=id_usuario)
                 empresa = usuario.empresa
                 if empresa.id_empresa:
                     request.session["id_empresa"] = int(empresa.id_empresa)
-                sessao = Sessao.objects.get(usuario_id=id_usuario)
+                ip = request.META.get("REMOTE_ADDR")
+                sessao = Sessao.objects.filter(ip_sessao=ip).first()
+                sessao.usuario = usuario
                 sessao.time_finalizou = timezone.now()
                 sessao.save()
-                if id_usuario > 0:
-                    request.session["isCliente"] = True
-                    request.session["id_usuario"] = id_usuario
+                request.session["isCliente"] = True
+                request.session["id_usuario"] = id_usuario
             return response
-
         except Exception as e:
             # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
             return erro(request, f"Erro durante a autenticação: {str(e)}")

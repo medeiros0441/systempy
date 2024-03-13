@@ -54,7 +54,22 @@
                             <label for="senha">Senha</label>
                             <div class="invalid-feedback" id="senha-feedback"></div>
                         </div>
-                        <div class="col-12 mx-auto">
+                      
+                        <div class="list-group">
+                            {% for configuracao in list_configuracao %}
+                            <label class="list-group-item d-flex gap-2">
+                                <input class="form-check-input flex-shrink-0 my-auto" type="checkbox" name="status" value="{{ configuracao.status }}" checked>
+                                <input type="hidden" name="titulo" value="{{ configuracao.titulo }}">
+                                <input type="hidden" name="descricao" value="{{ configuracao.descricao_interna }}">
+                                <span>
+                                    {{ configuracao.titulo }}
+                                    <small class="d-block text-body-secondary">{{ configuracao.descricao }}</small>
+                                </span>
+                            </label>  
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="container modal-footer">
                       
                         <button type="button" class="btn btn-md mx-auto btn-primary" onclick='ValidateInputs()'>
                             Cadastrar  

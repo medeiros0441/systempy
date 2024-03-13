@@ -19,4 +19,3 @@ class Empresa(models.Model):
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(null=True)
 
-    

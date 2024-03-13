@@ -72,70 +72,40 @@ def cadastro(request):
         return erro(request, mensagem_erro)
 
 
-
-
-def login(request,context=None):
-      
-    
+def login(request, context=None):
     try:
-        
         alerta = Alerta.get_mensagem()
         if alerta:
-            context["alerta_js"] = criar_alerta_js(alerta)  
-            
-            # Obtém o estado do checkbox a partir da sessão
-            checkbox_login = request.session.get("checkbox_login", "off")
+            context["alerta_js"] = criar_alerta_js(alerta)
 
-            if request.method == "POST":
-                # Se a requisição for POST, tenta obter os dados de email, senha e checkbox
-                email = request.POST.get("email")
-                senha = request.POST.get("senha")
-                valor_checkbox = request.POST.get("flexCheckDefault")
+        # Obtém o estado do checkbox a partir da sessão
+        checkbox_login = request.session.get("checkbox_login", "off")
 
-                if valor_checkbox == "on":
-                    # Se o checkbox estiver marcado, atualiza o estado da sessão
-                    request.session["checkbox_login"] = "on"
-                else:
-                    # Se o checkbox não estiver marcado, limpa os dados da sessão relacionados ao login
-                    request.session.pop("email", None)
-                    request.session.pop("senha", None)
-                    request.session.pop("checkbox_login", None)
+        if request.method == "POST":
+            # Se a requisição for POST, tenta obter os dados de email, senha e checkbox
+            email = request.POST.get("email")
+            senha = request.POST.get("senha")
+            valor_checkbox = request.POST.get("flexCheckDefault")
 
-                # Chama a função para autenticar o usuário com os dados fornecidos
-                return autenticar_usuario(request, email, senha)
+            if valor_checkbox == "on":
+                request.session["email_saved"] = email
+                request.session["senha_saved"] = senha
+                request.session["checkbox_login"] = "on"
             else:
-                # Se a requisição não for POST, verifica se existem dados de login armazenados na sessão
-                if "email" in request.session and "senha" in request.session:
-                    # Preenche os campos do formulário com os dados armazenados na sessão
-                    email_saved = request.session["email"]
-                    senha_saved = request.session["senha"]
+                request.session.pop("email_saved", None)
+                request.session.pop("senha_saved", None)
+                request.session.pop("checkbox_login", None)
 
-                    if checkbox_login == "on":
-                        # Se o checkbox estava marcado na última sessão, mantém marcado
-                        request.session["checkbox_login"] = "on"
-                    else:
-                        # Se o checkbox não estava marcado na última sessão, mantém desmarcado
-                        request.session["checkbox_login"] = "off"
+            # Chama a função para autenticar o usuário com os dados fornecidos
+            return autenticar_usuario(request, email, senha)
+        elif checkbox_login == "on":
+            # Se a requisição não for POST, verifica se existem dados de login armazenados na sessão
+            email_saved = request.session.get("email_saved", None)
+            senha_saved = request.session.get("senha_saved", None)
+            if email_saved is not None and senha_saved is not None:
+                return autenticar_usuario(request, email_saved, senha_saved)
 
-                    # Renderiza o template com os dados do formulário
-                    return render(
-                        request,
-                        "default/login.html",
-                        {
-                            "checkbox_login": checkbox_login,
-                            "email_saved": email_saved,
-                            "senha_saved": senha_saved,
-                        },context
-                    )
-                else:
-                    # Se não houver dados de login na sessão, renderiza o template sem preenchimento
-                    return render(
-                        request,
-                        "default/login.html",
-                        {
-                            "checkbox_login": checkbox_login
-                        },context
-                    )
+        return render(request, "default/login.html", context)
     except Exception as e:
         # Trata exceções
         mensagem_erro = str(e)

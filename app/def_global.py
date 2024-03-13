@@ -37,24 +37,24 @@ def gerar_numero_aleatorio(tamanho=4):
 
 
 def email_existe(email):
-    return Usuario.objects.filter(email=email).exists()
+    return Usuario.objects.filter(email__iexact=email).exists()
 
 
 def usuario_existe(usuario):
-    return Usuario.objects.filter(nome_usuario=usuario).exists()
+    return Usuario.objects.filter(nome_usuario__iexact=usuario).exists()
 
 
 def telefone_existe(telefone):
-    return Empresa.objects.filter(telefone=telefone).exists()
+    return Empresa.objects.filter(telefone__iexact=telefone).exists()
 
 
 def cpf_existe(cpf):
-    Empresa.objects.filter(nro_cpf=cpf).exists()
+    Empresa.objects.filter(nro_cpf__iexact=cpf).exists()
     return
 
 
 def cnpj_existe(cnpj):
-    return Empresa.objects.filter(nro_cnpj=cnpj).exists()
+    return Empresa.objects.filter(nro_cnpj__iexact=cnpj).exists()
 
 
 from django.http import JsonResponse
