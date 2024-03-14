@@ -30,6 +30,7 @@ class Produto(models.Model):
     )
     quantidade_atual_estoque = models.IntegerField(null=True)
     quantidade_minima_estoque = models.IntegerField(null=True)
+    codigo = models.IntegerField(null=True)
     tipo = models.IntegerField(null=True)
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(default=timezone.now, null=True)

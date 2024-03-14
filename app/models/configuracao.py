@@ -12,6 +12,7 @@ class Configuracao(models.Model):
         Usuario,
         on_delete=models.CASCADE,null=True
     )
+    codigo = models.IntegerField(null=True)
     titulo = models.TextField(blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
     descricao_interna = models.TextField(blank=True, null=True)

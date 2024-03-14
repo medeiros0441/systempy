@@ -37,6 +37,9 @@ def validacao(campos):
     return texto_alerta.replace("\n", "\\n")  # Substituir quebras de linha por '\n'
 
 
+from .view_configuracao import criar_configuracoes_padrao, list_configuracoes_padrao
+
+
 def cadastro_empresa(request):
     try:
         if request.method == "POST":
@@ -87,7 +90,7 @@ def cadastro_empresa(request):
             elif empresa:
                 string_value = criar_user(empresa, senha_hash)
                 if string_value is True:
-
+                    
                     return redirect("login")
                 else:
                     # Se não foi possível criar o usuário, exiba uma mensagem de erro na tela
@@ -128,7 +131,8 @@ def criar_user(empresa, senha):
             email=empresa.email,
             empresa=empresa,
         )
-
+        list = list_configuracoes_padrao(novo_usuario)
+        criar_configuracoes_padrao(list)
         return True
     except Exception as e:
         mensagem_erro = str(e)

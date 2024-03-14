@@ -3,10 +3,12 @@
 {% block title %}Lista de Usuários{% endblock %}
 
 {% block content %}
+{% include 'usuario/modal_usuario.html' %}
+
 <div class="my-5 container-xl mx-auto ">
     <div class="d-flex justify-content-between">
         <div>
-            <h2>Lista de Usuários</h2>
+            <h2 class=" font-monospace fw-border my-auto" style="font-size: 1.3rem;">Lista de Usuários</h2>
         </div>
         <div class="d-flex align-items-center">
             <a href="{% url 'cadastrar_usuario' %}" class="btn text-secondary border-0" >
@@ -51,19 +53,20 @@
                 <div class="btn-group" role="group" aria-label="Ações do Usuário">
                     <div class="btn-group" role="group" aria-label="Ações do Usuário">
                         <button type="button" class="btn btn-primary btn-sm" onclick="window.location.href='{% url 'editar_usuario' usuario.id_usuario %}'">
-                            <i class="bi bi-pencil"></i> Editar
+                            <i class="bi bi-pencil"></i> 
                         </button>
                         {% if usuario.nivel_usuario != 1 %}
-                        <a href="{% url 'excluir_usuario' usuario.id_usuario %}" class="btn btn-danger btn-sm">
-                            <i class="bi bi-trash"></i> Excluir
-                        </a>
+                        <button type="button"    class="btn btn-danger btn-sm" onclick="abrirModalConfirmacao('{{ usuario.id }}', 'excluir_usuario', 'Excluir Usuário', 'Tem certeza que deseja excluir este usuário?')">
+                            <i class="bi bi-trash"></i> 
+                        </button>
+                        
                         {% if usuario.status_acesso %}
                             <a href="{% url 'bloquear_usuario' usuario.id_usuario %}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-lock"></i> Bloquear
+                                <i class="bi bi-lock"></i> 
                             </a>
                         {% else %}
                             <a href="{% url 'ativar_usuario' usuario.id_usuario %}" class="btn btn-success btn-sm">
-                                <i class="bi bi-unlock"></i> Ativar
+                                <i class="bi bi-unlock"></i> 
                             </a>
                         {% endif %}
                         {% endif %}
@@ -73,5 +76,14 @@
         {% endfor %}
         </tbody>
       </table>
+
     </div>
-        {% endblock %}
+    <script >
+        {% if open_modal %}
+    document.addEventListener('DOMContentLoaded', function() {
+        var myModal = new bootstrap.Modal(document.getElementById('ModalUsuario'));
+        myModal.show();
+    });
+    {% endif %}
+</script>
+{% endblock %}

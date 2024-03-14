@@ -3,85 +3,78 @@
 
 {% block content %}
 
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Cadastro de Usuário</h3>
-                </div>
-                <div class="card-body">
-                    <form method="post" id="form_cadastro" autocomplete="off" class="needs-validation" novalidate>
-                        {% csrf_token %}
-                        <div class="form-floating mb-2">
-                            <input type="text" class="form-control input"   id="nome_completo" name="nome_completo" value="{{ usuario.nome_completo }}"  required>
-                            <label for="nome_completo">Nome Responsável:</label>
-                            <div class="invalid-feedback">
-                                Por favor, insira o nome.
-                            </div>
+<!-- Modal -->
+<div class="modal" id="ModalUsuario"  tabindex="-1"  >
+    <div class="modal-dialog  modal-md modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold font-monospace" id=" ModalLabel" >Cadastro de Usuário</h5>
+                </div>  
+            <div class="modal-body  font-monospace"   >
+                <form method="post" id="form_cadastro" autocomplete="off" class="needs-validation " novalidate>
+                    {% csrf_token %}
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control input"   id="nome_completo" name="nome_completo" value="{{ usuario.nome_completo }}"  required>
+                        <label for="nome_completo">Nome Responsável:</label>
+                        <div class="invalid-feedback">
+                            Por favor, insira o nome.
                         </div>
-                        
-                        <div class="form-floating mb-2">
-                            <select class="form-control" id="nivel_usuario" name="nivel_usuario">
-                                <option value="0" >selecione</option>
-                                <option value="2" {% if usuario.nivel_usuario == 2 %} selected {% endif %}>Gerente</option>
-                                <option value="3" {% if usuario.nivel_usuario == 3 %} selected {% endif %}>Colaborador</option>
-                            </select>
-                        
-                            <label for="nivel_usuario">Nível de Usuário:</label>
-                        </div>
+                    </div>
                     
-                        <div class="form-floating mb-2">
-                            <select class="form-control" id="status" name="status" value="{{ usuario.status_acesso }}">
-                                <option value="True"  >Ativo</option>
-                                <option value="False"  >Bloqueado</option>
-                            </select>
-                            <label for="status">Status:</label>
-                        </div>
+                    <div class="form-floating mb-2">
+                        <select class="form-control" id="nivel_usuario" name="nivel_usuario">
+                            <option value="0" >selecione</option>
+                            <option value="2" {% if usuario.nivel_usuario == 2 %} selected {% endif %}>Gerente</option>
+                            <option value="3" {% if usuario.nivel_usuario == 3 %} selected {% endif %}>Colaborador</option>
+                        </select>
                     
-                        <div class="form-floating mb-2">
-                            <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
-                            <input type="email" class="form-control input" id="email_responsavel" value="{{ usuario.email }}"   name="email_responsavel">
-                            <label for="email_responsavel">E-mail do Responsável</label>
-                            <div class="invalid-feedback">Por favor, insira um Email válido.</div>
-                        </div>
-                    
-                        <div class="form-floating mb-2">
-                            <input type="password" name="password" id="password_fake"  class="hidden" autocomplete="off" style="display: none;">
-                            <input type="password" class="form-control input " id="senha" value="{{ usuario.senha }}" 
-                                autocomplete="off" name="senha" 
-                                oninput="validarSenha()"  >
-                            <label for="senha">Senha</label>
-                            <div class="invalid-feedback" id="senha-feedback"></div>
-                        </div>
-                      
-                        <div class="list-group">
-                            {% for configuracao in list_configuracao %}
-                            <label class="list-group-item d-flex gap-2">
-                                <input class="form-check-input flex-shrink-0 my-auto" type="checkbox" name="status" value="{{ configuracao.status }}" checked>
-                                <input type="hidden" name="titulo" value="{{ configuracao.titulo }}">
-                                <input type="hidden" name="descricao" value="{{ configuracao.descricao_interna }}">
-                                <span>
-                                    {{ configuracao.titulo }}
-                                    <small class="d-block text-body-secondary">{{ configuracao.descricao }}</small>
-                                </span>
-                            </label>  
-                            {% endfor %}
-                        </div>
-                        
-                        <div class="container modal-footer">
-                      
-                        <button type="button" class="btn btn-md mx-auto btn-primary" onclick='ValidateInputs()'>
-                            Cadastrar  
-                        </button>
-                </div>
-            </form>
-                    
-                </div>
+                        <label for="nivel_usuario">Nível de Usuário:</label>
+                    </div>
+                
+                    <div class="form-floating mb-2">
+                        <select class="form-control" id="status" name="status" value="{{ usuario.status_acesso }}">
+                            <option value="True"  >Ativo</option>
+                            <option value="False"  >Bloqueado</option>
+                        </select>
+                        <label for="status">Status:</label>
+                    </div>
+                
+                    <div class="form-floating mb-2">
+                        <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
+                        <input type="email" class="form-control input" id="email_responsavel" value="{{ usuario.email }}"   name="email_responsavel">
+                        <label for="email_responsavel">E-mail do Responsável</label>
+                        <div class="invalid-feedback">Por favor, insira um Email válido.</div>
+                    </div>
+                
+                    <div class="form-floating mb-2">
+                        <input type="password" name="password" id="password_fake"  class="hidden" autocomplete="off" style="display: none;">
+                        <input type="password" class="form-control input " id="senha" value="{{ usuario.senha }}" 
+                            autocomplete="off" name="senha" 
+                            oninput="validarSenha()"  >
+                        <label for="senha">Senha</label>
+                        <div class="invalid-feedback" id="senha-feedback"></div>
+                    </div>
+                  
+                    <div class="list-group">
+                        {% for configuracao in list_configuracao %}
+                        <label class="list-group-item d-flex gap-2">
+                            <input class="form-check-input flex-shrink-0 my-auto" type="checkbox" name="status" value="{{ configuracao.status }}" checked>
+                            <input type="hidden" name="titulo" value="{{ configuracao.titulo }}">
+                            <input type="hidden" name="descricao" value="{{ configuracao.descricao_interna }}">
+                            <span>
+                                {{ configuracao.titulo }}
+                                <small class="d-block text-body-secondary">{{ configuracao.descricao }}</small>
+                            </span>
+                        </label>  
+                        {% endfor %}
+                    </div>
+                
+                        <button type="button"  onclick='ValidateInputs()' class="btn btn-primary mx-auto btn-md" >Salvar</button>
+                </form>
             </div>
-        </div>
+      </div>
     </div>
-</div>
+  </div>
 <script >  
     var email_responsavel =   document.getElementById('email_responsavel');
    email_responsavel.addEventListener('blur', function() {

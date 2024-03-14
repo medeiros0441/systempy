@@ -1,28 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Erro</title>
+{% extends 'base.html' %}
+{% block title %}Pag. Erro {% endblock %}
+
+{% block content %}
+  
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
+       
+        .container-erro {
             max-width: 600px;
             margin: 0 auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.1);
         }
-        h1 {
+        .h1-erro {
             color: #333;
         }
-        p {
+        .p-erro {
             color: #666;
         }
         .error-list {
@@ -37,15 +31,12 @@
             font-weight: bold;
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Ocorreu um erro!</h1>
-        <p>Desculpe-nos pelo inconveniente. Abaixo está um resumo do erro:</p>
+    <div class="container-erro my-5">
+        <h1 clas="h1-erro">Ocorreu um erro!</h1>
+        <p class="p-erro">Desculpe-nos pelo inconveniente. Abaixo está um resumo do erro:</p>
         <ul class="error-list">
             <li><span class="error-message">Erro:</span> {{ error_message }}</li>
         </ul>
         <p>Por favor, tente novamente mais tarde ou entre em contato conosco para obter assistência.</p>
     </div>
-</body>
-</html>
+{% endblock %}

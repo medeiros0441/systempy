@@ -37,35 +37,36 @@ url_empresa = [  # empresa
     path("empresas/<int:pk>/excluir/", excluir_empresa, name="excluir_empresa"),
 ]
 
-from app.view.views_usuario import (
-    listar_usuarios,
-    cadastrar_usuario,
-    detalhes_usuario,
-    excluir_usuario,
-    ativar_usuario,
-    bloquear_usuario,
-    editar_usuario,
-)
+from app.view.views_usuario import view_usuarios
 
-url_usuario = [  # usuarios
-    path("usuarios/", listar_usuarios, name="listar_usuarios"),
+url_usuario = [
+    # URLs de usuários
+    path("usuarios/", view_usuarios.listar_usuarios, name="listar_usuarios"),
+    path("usuarios/criar/", view_usuarios.cadastrar_usuario, name="cadastrar_usuario"),
     path(
-        "usuarios/bloquear/<int:id_usuario>/'",
-        bloquear_usuario,
-        name="bloquear_usuario",
+        "usuarios/<int:id_usuario>/", view_usuarios.detalhes_usuario, name="detalhes_usuario"
     ),
-    path("usuarios/ativar/<int:id_usuario>/'", ativar_usuario, name="ativar_usuario"),
-    path("usuarios/criar/", cadastrar_usuario, name="cadastrar_usuario"),
-    path("usuarios/<int:id_usuario>/", detalhes_usuario, name="detalhes_usuario"),
     path(
-        "usuarios/<int:id_usuario>/editar_usuario/",
-        editar_usuario,
+        "usuarios/<int:id_usuario>/editar/",
+        view_usuarios.editar_usuario,
         name="editar_usuario",
     ),
-    path("usuarios/<int:id_usuario>/excluir/", excluir_usuario, name="excluir_usuario"),
-    path("usuarios/<str:alerta_js>/", listar_usuarios, name="listar_usuarios_alerta"),
+    path(
+        "usuarios/<uuid:id_usuario>/excluir/",
+        view_usuarios.excluir_usuario,
+        name="excluir_usuario",
+    ),
+    path(
+        "usuarios/<int:id_usuario>/bloquear/",
+        view_usuarios.bloquear_usuario,
+        name="bloquear_usuario",
+    ),
+    path(
+        "usuarios/<int:id_usuario>/ativar/",
+        view_usuarios.ativar_usuario,
+        name="ativar_usuario",
+    ),
 ]
-
 from app.view.views_loja import (
     lista_lojas,
     editar_loja,

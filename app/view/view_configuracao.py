@@ -41,34 +41,50 @@ class ConfiguracaoDeleteView(DeleteView):
     success_url = reverse_lazy("configuracao_list")
 
 
-def criar_configuracoes_padrao(usuario):
+def criar_configuracoes_padrao(listModel):
+    for model in listModel:
+        Configuracao.objects.create(
+            titulo=model.titulo,
+            descricao_interna=model.descricao_interna,
+            descricao=model.descricao,
+            status_acesso=model.status_acesso,
+            codigo=model.codigo,
+            usuario=model.usuario,
+        )
 
-    nomes_classes = [
-        "Usuario",
-        "Empresa",
-        "Endereco",
-        "Galao",
-        "Loja",
-        "Produto",
-        "Sessao",
-        "Venda",
-        "Historico",
-        "Log",
-        "Configuracao",
-        "Cliente",
+
+def list_configuracoes_padrao(usuario=None, status=True):
+
+    classes = [
+        {"nome": "Usuario", "codigo": 1},
+        {"nome": "Empresa", "codigo": 2},
+        {"nome": "Endereco", "codigo": 3},
+        {"nome": "Galao", "codigo": 4},
+        {"nome": "Loja", "codigo": 5},
+        {"nome": "Produto", "codigo": 6},
+        {"nome": "Venda", "codigo": 7},
+        {"nome": "Cliente", "codigo": 8},
     ]
 
-    for nome_classe in nomes_classes:
+    list_configuracao = []
+
+    for classe in classes:
+        nome_classe = classe["nome"]
+        codigo_interger = classe["codigo"]
         titulo = f"Gerenciamento de {nome_classe}"
         descricao_interna = (
             f"Controle de {nome_classe.lower()}, editar, alterar, criar..."
         )
         descricao = f"Permitir acesso ao Painel de {nome_classe}, isso inclui criar, editar, remover, entre outros."
-        status_acesso = True
-        Configuracao.objects.create(
+        status_acesso = status
+        configuracao = Configuracao(
             titulo=titulo,
-            descricao=descricao,
             descricao_interna=descricao_interna,
+            descricao=descricao,
             status_acesso=status_acesso,
+            codigo=codigo_interger,
             usuario=usuario,
         )
+        list_configuracao.append(configuracao)
+
+    return list_configuracao

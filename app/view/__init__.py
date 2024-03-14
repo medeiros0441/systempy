@@ -7,15 +7,7 @@ from .views_empresa import (
     editar_empresa,
     excluir_empresa,
 )
-from .views_usuario import (
-    listar_usuarios,
-    cadastrar_usuario,
-    detalhes_usuario,
-    excluir_usuario,
-    ativar_usuario,
-    bloquear_usuario,
-    editar_usuario,
-)
+from .views_usuario import view_usuarios
 from .views_loja import (
     lista_lojas,
     editar_loja,
