@@ -1,74 +1,80 @@
 {% block content %}
    
   <!-- Modal -->
-  <div class="modal fade  " id="globalModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog ">
-      <div class="modal-content  bg-dark">
+  <div class="modal fade" id="globalModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark">
         <div class="modal-header">
-          <h1 class="modal-title fs-5 text-white" id="staticBackdropLabel"> </h1>
+          <h1 class="modal-title fs-5 text-white" id="staticBackdropLabel"></h1>
         </div>
-        <div class="modal-body text-white" id="id_body_modal_confirmacao">
-         
-        </div>
+        <div class="modal-body text-white" id="id_body_modal_confirmacao"></div>
         <div class="modal-footer text-white">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelarBtn">Cancelar</button>
-          <button type="button" class="btn btn-primary" id="confirmarBtn">confirmar</button>
+          <button type="button" class="btn btn-primary" id="confirmarBtn">Confirmar</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script>
-    async function abrirModalConfirmacao(id, name_metodo, titulo_modal, descricao_modal) {
-    // Obtém a referência para a modal
-    var modal = document.getElementById("globalModal");
+  <script >
+    // Função para abrir o modal de confirmação
+function abrirModalConfirmacao(titulo_modal, descricao_modal) {
+  var modal = document.getElementById("globalModal");
+  var modalTitulo = modal.querySelector(".modal-title");
+  var modalDescricao = modal.querySelector("#id_body_modal_confirmacao");
 
-    // Preenche os elementos da modal com os valores recebidos
-    var modalTitulo = modal.querySelector(".modal-title");
-    var modalDescricao = modal.querySelector("#id_body_modal_confirmacao");
-    modalTitulo.textContent = titulo_modal;
-    modalDescricao.textContent = descricao_modal;
+  modalTitulo.textContent = titulo_modal;
+  modalDescricao.textContent = descricao_modal;
 
-    // Cria uma instância da modal usando a biblioteca Bootstrap Modal
-    var myModal = new bootstrap.Modal(modal);
+  var myModal = new bootstrap.Modal(modal);
+  myModal.show();
 
-    // Mostra a modal
-    myModal.show();
+  return new Promise((resolve, reject) => {
+      var confirmarBtn = modal.querySelector("#confirmarBtn");
+      var cancelarBtn = modal.querySelector("#cancelarBtn");
 
-    // Adiciona um evento ao botão "Confirmar" para realizar a ação desejada
-    var confirmarBtn = modal.querySelector("#confirmarBtn");
-    confirmarBtn.onclick = async function() {
-        // Verifica se name_metodo e id não são nulos
-        if (name_metodo && id) {
-            try {
-                // Chama a função para fazer a requisição AJAX ao backend
-                await chamarFuncaoPython(name_metodo, id, callback);
-               
-            } catch (error) {
-                console.error("Erro ao chamar a função Python:", error);
-            }
-        }
+      confirmarBtn.onclick = function() {
+          myModal.hide();
+          resolve(true);
+      };
 
-        // Fecha a modal após realizar a ação
-        myModal.hide();
-    };
-
-    // Adiciona um evento ao botão "Cancelar" para fechar a modal sem realizar nenhuma ação
-    var cancelarBtn = modal.querySelector("#cancelarBtn");
-    cancelarBtn.onclick = function() {
-        // Fecha a modal sem realizar nenhuma ação
-        myModal.hide();
-    };
+      cancelarBtn.onclick = function() {
+          myModal.hide();
+          reject(false);
+      };
+  });
 }
-    function callback(response) {
-        if (response.success) {
-            console.log('Ação realizada com sucesso!');
-            // Aqui você pode adicionar qualquer lógica adicional para lidar com a resposta bem-sucedida
-        } else {
-            console.error('Erro:', response.error);
-            // Aqui você pode adicionar qualquer lógica adicional para lidar com a resposta de erro
-        }
-    }
-    </script>
+
+// Função para adicionar evento de confirmação aos botões
+function adicionarEventoConfirmacao() {
+  var botoes = document.querySelectorAll('.btn-confirmacao');
+
+  botoes.forEach(function(botao) {
+      botao.addEventListener('click', function(event) {
+          event.preventDefault();
+          var acao = botao.getAttribute('data-acao');
+          var titulo = botao.getAttribute('data-titulo');
+          var descricao = botao.getAttribute('data-descricao');
+
+          abrirModalConfirmacao(titulo, descricao)
+              .then(function(confirmado) {
+                  if (confirmado) {
+                      var caminhoUrl = botao.getAttribute('href');
+                      window.location.href = caminhoUrl;
+                  }
+              })
+              .catch(function(cancelado) {
+                  // Ação cancelada, não faz nada
+              });
+      });
+  });
+}
+
+// Adiciona o evento de confirmação aos botões após o carregamento do DOM
+document.addEventListener('DOMContentLoaded', function() {
+  adicionarEventoConfirmacao();
+});
+
+  </script>
 
 {% endblock %}

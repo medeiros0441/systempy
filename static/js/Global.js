@@ -42,10 +42,7 @@
 
 
 //alerta customizado
-function alertCustomer(text) {
-
-
-
+function alertCustomer(text,time=180000) {
     // Verificar se o container já existe
     let toastContainer = document.querySelector('.toast-container');
 
@@ -97,7 +94,7 @@ function alertCustomer(text) {
     // Remover o toast após um tempo padrão (por exemplo, 5 segundos)
     setTimeout(() => {
       toastContainer.removeChild(toastElement);
-    }, 100000); // Tempo em milissegundos, ajuste conforme necessário
+    }, time); // Tempo em milissegundos, ajuste conforme necessário
   
   }
 

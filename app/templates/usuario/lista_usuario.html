@@ -52,23 +52,38 @@
             <td class="text-end">
                 <div class="btn-group" role="group" aria-label="Ações do Usuário">
                     <div class="btn-group" role="group" aria-label="Ações do Usuário">
-                        <button type="button" class="btn btn-primary btn-sm" onclick="window.location.href='{% url 'editar_usuario' usuario.id_usuario %}'">
+                        <a   href="{% url 'editar_usuario' usuario.id_usuario %}" class="btn btn-primary btn-sm">
                             <i class="bi bi-pencil"></i> 
-                        </button>
-                        {% if usuario.nivel_usuario != 1 %}
-                        <button type="button"    class="btn btn-danger btn-sm" onclick="abrirModalConfirmacao('{{ usuario.id }}', 'excluir_usuario', 'Excluir Usuário', 'Tem certeza que deseja excluir este usuário?')">
-                            <i class="bi bi-trash"></i> 
-                        </button>
+                    </a>
+                        
+                    {% if usuario.nivel_usuario != 1 %}
                         
                         {% if usuario.status_acesso %}
-                            <a href="{% url 'bloquear_usuario' usuario.id_usuario %}" class="btn btn-warning btn-sm">
+                            <a href="{% url 'bloquear_usuario' usuario.id_usuario %}" class="btn btn-warning btn-sm btn-confirmacao" 
+                               data-acao="bloquear" 
+                               data-titulo="Bloquear Usuário" 
+                               data-descricao="Tem certeza de que deseja bloquear este usuário?">
                                 <i class="bi bi-lock"></i> 
                             </a>
                         {% else %}
-                            <a href="{% url 'ativar_usuario' usuario.id_usuario %}" class="btn btn-success btn-sm">
+                            <a href="{% url 'ativar_usuario' usuario.id_usuario %}" class="btn btn-success btn-sm btn-confirmacao" 
+                               data-acao="ativar" 
+                               data-titulo="Ativar Usuário" 
+                               data-descricao="Tem certeza de que deseja ativar este usuário?">
                                 <i class="bi bi-unlock"></i> 
                             </a>
+                    
                         {% endif %}
+
+                        <a  class="btn btn-secondary btn-sm"  href="{% url 'configuracao_usuario' usuario.id_usuario %}">
+                        <i class="bi bi-gear-fill"></i>
+                        </a>
+                        <a href="{% url 'excluir_usuario' usuario.id_usuario %}" class="btn btn-danger btn-sm btn-confirmacao" 
+                           data-acao="excluir" 
+                           data-titulo="Excluir Usuário" 
+                           data-descricao="Tem certeza de que deseja excluir este usuário?">
+                            <i class="bi bi-trash"></i> 
+                        </a>
                         {% endif %}
                     </div>  </div>
                 </td>

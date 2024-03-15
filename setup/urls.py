@@ -44,7 +44,9 @@ url_usuario = [
     path("usuarios/", view_usuarios.listar_usuarios, name="listar_usuarios"),
     path("usuarios/criar/", view_usuarios.cadastrar_usuario, name="cadastrar_usuario"),
     path(
-        "usuarios/<int:id_usuario>/", view_usuarios.detalhes_usuario, name="detalhes_usuario"
+        "usuarios/<int:id_usuario>/",
+        view_usuarios.detalhes_usuario,
+        name="detalhes_usuario",
     ),
     path(
         "usuarios/<int:id_usuario>/editar/",
@@ -52,17 +54,22 @@ url_usuario = [
         name="editar_usuario",
     ),
     path(
-        "usuarios/<uuid:id_usuario>/excluir/",
+        "usuarios/excluir/<int:id_usuario>",
         view_usuarios.excluir_usuario,
         name="excluir_usuario",
     ),
     path(
-        "usuarios/<int:id_usuario>/bloquear/",
+        "usuarios/bloquear/<int:id_usuario>",
         view_usuarios.bloquear_usuario,
         name="bloquear_usuario",
     ),
     path(
-        "usuarios/<int:id_usuario>/ativar/",
+        "usuarios/configuracao/<int:id_usuario>",
+        view_usuarios.bloquear_usuario,
+        name="configuracao_usuario",
+    ),
+    path(
+        "usuarios/ativar/<int:id_usuario>",
         view_usuarios.ativar_usuario,
         name="ativar_usuario",
     ),

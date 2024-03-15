@@ -10,12 +10,13 @@ from ..static import Alerta, UserInfo
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
-from ..models import Usuario, Empresa, Configuracao
+from ..models import Usuario, Empresa, Configuracao, Loja
 from django.urls import reverse
 from .view_configuracao import criar_configuracoes_padrao, list_configuracoes_padrao
 from ..processador.config_email import enviar_email
-from ..forms import UsuarioForm
+from ..forms import UsuarioForm, LojaForm
 from functools import wraps
+from django.http import JsonResponse
 
 
 def verificar_permissoes(func):
@@ -219,20 +220,19 @@ class view_usuarios:
     @staticmethod
     @verificar_permissoes
     def excluir_usuario(request, id_usuario):
-        id = UserInfo.get_id_usuario(request)
-        if request.method == "POST":
-            usuario = Usuario.objects.get(id=id_usuario)
-            if usuario:
-                usuario.delete()
-                Alerta.set_mensagem("Usuário excluído com sucesso!")
-                return redirect(
-                    "listar_usuarios",
-                )
-            else:
-                Alerta.set_mensagem("Erro ao excluír Usuário!")
-                return redirect(
-                    "listar_usuarios",
-                )
+        usuario = Usuario.objects.get(id_usuario=id_usuario)
+        if usuario:
+            usuario.delete()
+            Alerta.set_mensagem("Usuário excluído com sucesso!")
+            return redirect(
+                "listar_usuarios",
+            )
+
+        else:
+            Alerta.set_mensagem("Erro ao excluír Usuário!")
+            return redirect(
+                "listar_usuarios",
+            )
 
     @staticmethod
     @verificar_permissoes
@@ -279,11 +279,59 @@ class view_usuarios:
                 form.save()
                 Alerta.set_mensagem("Usuário ativado com sucesso!")
                 return redirect(
+                    "configuracao_usuario",
+                )
+            else:
+                Alerta.set_mensagem("Formulario Usuário Invalído!")
+                return view_usuarios.listar_usuarios(
+                    request, {"form_usuario": form, "open_modal": True}
+                )
+        else:
+            try:
+                id_empresa = UserInfo.get_id_empresa(request)
+                loja = Loja.objects.get(empresa__id_empresa=id_empresa)
+                form_usuario = UsuarioForm(request)
+                form_loja = LojaForm(loja, request)
+                return view_usuarios.listar_usuarios(
+                    request,
+                    {
+                        "form_usuario": form_usuario,
+                        "form_loja": form_loja,
+                        "open_modal": True,
+                    },
+                )
+            except Loja.DoesNotExist:
+                Alerta.set_mensagem(
+                    "Para associar um usuario a loja, precisa criar uma!"
+                )
+                form_usuario = UsuarioForm()
+                return view_usuarios.listar_usuarios(
+                    request,
+                    {
+                        "form_usuario": form_usuario,
+                        "open_modal": True,
+                    },
+                )
+
+    @staticmethod
+    @verificar_permissoes
+    def configuracao_usuario(request, id_usuario):
+        if request.method == "POST":
+            form = UsuarioForm(request.POST)
+            if form.is_valid():
+                form.save()
+                Alerta.set_mensagem("Usuário ativado com sucesso!")
+                return redirect(
                     "listar_usuarios",
+                )
+            else:
+                Alerta.set_mensagem("Erro, Formulario Invalido!")
+                form = UsuarioForm()
+                return view_usuarios.listar_usuarios(
+                    request, {"form_usuario": form, "open_modal": True}
                 )
         else:
             form = UsuarioForm()
-            retorn = view_usuarios.listar_usuarios(
+            return view_usuarios.listar_usuarios(
                 request, {"form_usuario": form, "open_modal": True}
             )
-            return retorn
