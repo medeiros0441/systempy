@@ -65,7 +65,7 @@ url_usuario = [
     ),
     path(
         "usuarios/configuracao/<int:id_usuario>",
-        view_usuarios.bloquear_usuario,
+        view_usuarios.configuracao_usuario,
         name="configuracao_usuario",
     ),
     path(

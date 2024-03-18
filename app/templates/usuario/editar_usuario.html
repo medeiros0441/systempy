@@ -71,8 +71,8 @@ function ValidateInputs() {
         senha.classList.add('is-invalid');
     }
 
-    if (nivel_usuario.value === "0") {
-        nivel_usuario.classList.add('is-invalid');
+    if (nome_completo.value === "") {
+        nome_completo.classList.add('is-invalid');
     }
 
     // Verifica se algum campo está com a classe 'is-invalid' e exibe uma mensagem de alerta se necessário
@@ -85,8 +85,6 @@ function ValidateInputs() {
     // Se todos os campos estiverem preenchidos corretamente, envia o formulário
     document.getElementById('form_cadastro').submit();
     return true;
-}
-
 }
   
   </script>

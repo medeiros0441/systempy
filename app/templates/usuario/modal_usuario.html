@@ -1,6 +1,6 @@
 
 {% block content %}
-    <div class="modal fade" id="ModalUsuario" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal fade" id="ModalUsuario" text_usuario-bs-backdrop="static" text_usuario-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog  modal-md modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
@@ -9,19 +9,53 @@
                     {% if form_usuario %} Formulario do Usuário{% endif%}
                 </h5>
                 </div>
-                <div class="modal-body  font-monospace"   >
                     {% if text_usuario %} 
-                        
-                    {% endif%}
-            
+                   
+                    <div class="modal-body font-monospace">
+                        <h5 class="fw-bold">{{ text_usuario.nome_completo }}</h5>
+                        <div class="card mt-3">
+                            <div class="card-body">
+                            <i class="bi bi-person"></i> ID do Usuário: <small class="fw-bold">{{ text_usuario.id_usuario }}</small></p>
+                            <i class="bi bi-person-circle"></i> Nome do Usuário: <small class="fw-bold">{{ text_usuario.nome_usuario }}</small></p>
+                            <i class="bi bi-envelope"></i>  Email: <small class="fw-bold">{{ text_usuario.email }}</small></p>
+                            <!-- Adicione outros campos conforme necessário -->
+                        </div>
+                    </div>
+                        <div class="card mt-3">
+                            <div class="card-body">
+                            <p class="fw-bold">  <i class="bi bi-calendar"></i> Inserção: <small class="fw-bold">{{ text_usuario.insert }}</small></p>
+                            <p class="fw-bold">  <i class="bi bi-calendar"></i> Atualização: <small class="fw-bold">{{ text_usuario.update }}</small></p>
+                              <p class="fw-bold"> <i class="bi bi-graph-up"></i> Nível do Usuário: <small class="fw-bold">{{ text_usuario.nivel_usuario }}</small></p>
+                              <p class="fw-bold"><i class="bi bi-toggle-on"></i> Status: <small class="fw-bold">{% if text_usuario.status_acesso %}Autorizado{% else %}Não Permitido{% endif %}</small></p>
+                            <p class="fw-bold"> <i class="bi bi-clock"></i> Último Login: <small class="fw-bold">{{ text_usuario.ultimo_login }} </small></p>
+                        </div>
+                    </div>
+                    
+                        {% for associado_info in associados_list %}
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <p class="fw-bold"><i class="bi bi-shop"></i> {{ associado_info.nome }}</small></p>
+                                <p class="fw-bold"> <i class="{% if associado_info.status %}text-success{% else %}text-danger{% endif %} bi bi-circle-fill"></i> Status: <small class="fw-bold">{{ associado_info.status }}</small></p>
+                                    <p class="fw-bold"><i class="bi bi-clock"></i> Atualizado: <small class="fw-bold">{{ associado_info.atualizado }}</small></p> 
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer ">
+                        <a href="{% url 'listar_usuarios' %}" class="btn btn-secondary mx-auto btn-sm">Fechar</a>
+        
+                    </div>  
+                {% endif%}
+                {% if form_usuario %}   
+                <div class="modal-body  font-monospace"   >
 
-                    {% if form_usuario %}   
-                    <form method="post" id="form_cadastro" class="needs-validation" novalidate>
+                <form method="post" id="form_cadastro" class="needs-validation" autocomplete="off" novalidate>
+                
                     {% csrf_token %}
                     <div class="form-floating mb-2">
                         {{ form_usuario.nome_completo }} 
                         <label for="nome_completo">Nome Responsável:</label>
-                        <div class="invalid-feedback">
+                        <div class="invalid-feedback ms-2">
                             Por favor, insira o nome.
                         </div>
                     </div>
@@ -35,7 +69,7 @@
                         {{ form_usuario.status_acesso }}
                         <label for="id_status_acesso">Status:</label>
                     </div>
-                
+                    {% if not isEditar  %} 
                     <div class="form-floating mb-2">
                         <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
                          {{form_usuario.email }}
@@ -49,121 +83,137 @@
                         <label for="senha">Senha</label>
                         <div class="invalid-feedback ms-2" id="senha-feedback"></div>
                     </div>
-                    {% if form_loja %} 
-                  
-                        <div class="form-floating mb-2">
-                            {{ form_loja.loja }}
-                            <label for="id_loja" style="font-size: 0.8rem;">Loja:</label>
-                        </div>  
                     {% endif%}
+                    <div class="list-group">
 
-                        <div class="container">
-                            <a href="{% url lista_usuario %}"  class="btn btn-secondary float-start me-auto btn-sm" >Cancelar</a>
-                         <button type="submit" class="btn btn-primary float-end btn-md" >Salvar</button>
-                        </div>  
-                    </form>
+                    {% for loja in list_lojas %}
+                    <label class="list-group-item d-flex gap-2">
+                        <input type="checkbox" name="status_acesso_{{ loja.id_loja }}" class="form-check-input"   {% if loja.status_acesso == True    %}checked{% endif %}>
+                        <span>
+                            <p style="font-size: 0.8rem;" class="font-monospace p-0 m-0" >{{ loja.nome_loja }}</p>
+                            <small style="font-size: 0.6rem;" class="d-block text-body-secondary">permitir o usuario ter acesso a essa loja, isso inclui, realizar vendas,acresentar produtos, entre outros</small>
+                        </small></p>
+                    </label>
+                {% endfor %}
+            </div>  
+                        
+ 
+                    
+    {% if not isEditar  %} 
 
-<script >  
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Adiciona um listener para o evento 'submit' do formulário
-        document.getElementById('form_cadastro').addEventListener('submit', function(event) {
-            // Impede o envio padrão do formulário
-            event.preventDefault();
-    
-            // Função para validar os campos
-            function ValidateInputs() {
-                var nome_completo = document.getElementById('id_nome_completo');
-                var nivel_usuario = document.getElementById('id_nivel_usuario');
+<script>   
+    function validarEmail() {
                 var email_responsavel = document.getElementById('id_email');
-                var senha = document.getElementById('id_senha');
-    
-                // Remove as classes 'is-invalid' de todos os campos antes de fazer a validação
-                nome_completo.classList.remove('is-invalid');
-                nivel_usuario.classList.remove('is-invalid');
-                email_responsavel.classList.remove('is-invalid');
-                senha.classList.remove('is-invalid');
-    
-                // Verifica se os campos estão preenchidos corretamente
-                if (email_responsavel.value === '') {
+                var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email_responsavel.value)) {
                     email_responsavel.classList.add('is-invalid');
                 } else {
-                    // Verifica se o email é válido
-                    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(email_responsavel.value)) {
-                        email_responsavel.classList.add('is-invalid');
+                    email_responsavel.classList.remove('is-invalid');
+                }
+                }
+
+                // Função para validar a senha
+                function validarSenha(senha="") {
+                    var senhaInput = document.getElementById("id_senha");
+                    var senhaFeedback = document.getElementById("senha-feedback");
+                    senha = senhaInput.value
+
+                    if (senha.length < 8) {
+                    senhaFeedback.innerHTML = "A senha deve ter no mínimo 8 caracteres.";
+                    senhaInput.classList.add("is-invalid");
+                    } else if (!/[A-Z]/.test(senha)) {
+                    senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra maiúscula.";
+                    senhaInput.classList.add("is-invalid");
+                    } else if (!/[a-z]/.test(senha)) {
+                    senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra minúscula.";
+                    senhaInput.classList.add("is-invalid");
+                    } else if (!/[0-9]/.test(senha)) {
+                    senhaFeedback.innerHTML = "A senha deve conter pelo menos um número.";
+                    senhaInput.classList.add("is-invalid");
+                    } else {
+                    senhaFeedback.innerHTML = "";
+                    senhaInput.classList.remove("is-invalid");
                     }
                 }
-    
-                if (senha.value === '') {
-                    senha.classList.add('is-invalid');
-                } else {
-                    // Verifica a validade da senha
-                    validarSenha(senha.value);
-                }
-    
-                if (nivel_usuario.value === "0") {
-                    nivel_usuario.classList.add('is-invalid');
-                }
-    
-                // Verifica se algum campo está com a classe 'is-invalid' e exibe uma mensagem de alerta se necessário
-                var camposInvalidos = document.querySelectorAll('.is-invalid');
-                if (camposInvalidos.length > 0) {
-                    alertCustomer('Por favor, preencha corretamente os campos.');
-                    return false;
-                }
-    
-                return true;
-            }
-    
-            // Executa a validação dos campos
-            if (ValidateInputs()) {
-                // Se a validação passar, envia o formulário
-                this.submit();
+            </script>
+    {% endif%}
+        
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        document.getElementById('form_cadastro').addEventListener('submit', function(event) {
+        // Impede o envio padrão do formulário
+        event.preventDefault();
+        
+        // Função para validar os campos
+        function ValidateInputs() {
+            var nome_completo = document.getElementById('id_nome_completo');
+            var nivel_usuario = document.getElementById('id_nivel_usuario');
+    {% if not isEditar  %} 
+
+            var email_responsavel = document.getElementById('id_email');
+            var senha = document.getElementById('id_senha');
+            email_responsavel.classList.remove('is-invalid');
+            senha.classList.remove('is-invalid');
+            var senhaFeedback = document.getElementById("senha-feedback");
+            
+            if (email_responsavel.value.trim() === '') {
+                email_responsavel.classList.add('is-invalid');
             } else {
-                // Se a validação falhar, não envia o formulário
+                var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email_responsavel.value)) {
+                    email_responsavel.classList.add('is-invalid');
+                }
+            }
+        
+            if (senha.value.trim() === '') {
+                senha.classList.add('is-invalid');
+                senhaFeedback.innerHTML = "preencha corretamente o campo.";
+                
+            } else {
+                validarSenha(senha.value);
+            }
+    {% endif%}
+        
+            // Remove as classes 'is-invalid' de todos os campos antes de fazer a validação
+            nome_completo.classList.remove('is-invalid');
+            nivel_usuario.classList.remove('is-invalid');
+                
+            // Verifica se os campos estão preenchidos corretamente
+             
+            if (nome_completo.value.trim() === "") {
+                nome_completo.classList.add('is-invalid');
+            }
+            var camposInvalidos = document.querySelectorAll('.is-invalid');
+            if (camposInvalidos.length > 0) {
+                alertCustomer('Por favor, preencha corretamente os campos.');
                 return false;
             }
-        });
-    
-        // Adiciona listener de blur para validação de email
-        var emailInput = document.getElementById('id_email');
-        emailInput.addEventListener('blur', function() {
-            // Verifica se o email é válido
-            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(this.value)) {
-                this.classList.add('is-invalid');
-            } else {
-                this.classList.remove('is-invalid');
+                return true;
             }
-        });
-    
-        // Função para validar a senha
-        function validarSenha(senha) {
-            var senhaInput = document.getElementById("id_senha");
-            var senhaFeedback = document.getElementById("senha-feedback");
-    
-            if (senha.length < 8) {
-                senhaFeedback.innerHTML = "A senha deve ter no mínimo 8 caracteres.";
-                senhaInput.classList.add("is-invalid");
-            } else if (!/[A-Z]/.test(senha)) {
-                senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra maiúscula.";
-                senhaInput.classList.add("is-invalid");
-            } else if (!/[a-z]/.test(senha)) {
-                senhaFeedback.innerHTML = "A senha deve conter pelo menos uma letra minúscula.";
-                senhaInput.classList.add("is-invalid");
-            } else if (!/[0-9]/.test(senha)) {
-                senhaFeedback.innerHTML = "A senha deve conter pelo menos um número.";
-                senhaInput.classList.add("is-invalid");
-            } else {
-                senhaFeedback.innerHTML = "";
-                senhaInput.classList.remove("is-invalid");
-            }
+        
+        // Executa a validação dos campos
+        if (ValidateInputs()) {
+            this.submit();
+        } else {
+            return false;
         }
+        });
     });
 </script>    
-                    {% endif%}
                 </div>
+
+            <div class="modal-footer ">
+                <a href="{% url 'listar_usuarios' %}" class="btn btn-secondary float-start me-auto btn-sm">Cancelar</a>
+             <button type="submit" class="btn btn-primary float-end btn-md" >Salvar</button>
+
+            </div>  
+
+        </form>
+        </div>
+
+                    {% endif%}
+
             </div>
         </div>
     </div>

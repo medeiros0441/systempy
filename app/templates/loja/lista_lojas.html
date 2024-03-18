@@ -33,9 +33,13 @@
                     <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-2 text-start">{{ loja.endereco.bairro }}</td>
                     <td class="text-end">
                         <div class="btn-group" role="group" aria-label="Ações do Usuário">
-                            <a href="{% url 'selecionar_loja' loja.id_loja %}" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i> Detalhes</a>
-                            <a href="{% url 'editar_loja' loja.id_loja %}" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi  bi-pencil me-1"></i>Editar</a>
-                            <a href="{% url 'excluir_loja' loja.id_loja %}" class="btn btn-danger btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-trash me-1"></i> Excluir</a>
+                            <a href="{% url 'selecionar_loja' loja.id_loja %}" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i> </a>
+                            <a href="{% url 'editar_loja' loja.id_loja %}" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi  bi-pencil me-1"></i></a>
+                            <a href="{% url 'excluir_loja' loja.id_loja %}" class="btn btn-danger btn-smbtn-confirmacao" 
+                            data-acao="excluir" 
+                            data-titulo="Excluir Loja" 
+                            data-descricao="Tem certeza de que deseja excluir este Loja? dados que estão associado a ela serão perdidos, isso inclui Clientes,Produtos. entre outros."
+                             style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-trash me-1"></i> </a>
                         </div>
                     </td>
                 </tr>

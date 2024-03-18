@@ -10,13 +10,14 @@ from ..static import Alerta, UserInfo
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
-from ..models import Usuario, Empresa, Configuracao, Loja
+from ..models import Usuario, Empresa, Configuracao, Loja, Associado
 from django.urls import reverse
 from .view_configuracao import criar_configuracoes_padrao, list_configuracoes_padrao
 from ..processador.config_email import enviar_email
-from ..forms import UsuarioForm, LojaForm
+from ..forms import UsuarioForm, LojaForm, ConfiguracaoForm
 from functools import wraps
-from django.http import JsonResponse
+from django.db.models import Exists, OuterRef
+from django.forms import formset_factory
 
 
 def verificar_permissoes(func):
@@ -63,159 +64,102 @@ class view_usuarios:
 
     @staticmethod
     @verificar_permissoes
-    def detalhes_usuario(request, usuario_id):
-        usuario = get_object_or_404(Usuario, id_usuario=usuario_id)
-        data = {
-            "id_usuario": usuario.id_usuario,
-            "nome_completo": usuario.nome_completo,
-            "nome_usuario": usuario.nome_usuario,
-            "data_insercao": usuario.insert,
-            "data_atualizacao": usuario.update,
-            "nivel_usuario": usuario.nivel_usuario,
-            "status": usuario.status_acesso,
-            "email": usuario.email,
-            "ultimo_login": usuario.ultimo_login,
-        }
-        return render(request, "usuario/select_usuario.html", {"data": data})
+    def detalhes_usuario(request, id_usuario):
+        usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
+        associados = Associado.objects.filter(usuario=usuario)
 
-    @staticmethod
-    @verificar_permissoes
-    def cadastrar_usuario1(request):
-        caminho_html = "usuario/cadastro_usuario.html"
-
-        if request.method == "POST":
-
-            formulario = Usuario(
-                nome_completo=request.POST.get("nome_completo"),
-                senha=request.POST.get("senha"),
-                nivel_usuario=int(request.POST.get("nivel_usuario")),
-                status_acesso=bool(request.POST.get("status")),
-                email=request.POST.get("email_responsavel"),
+        associados_list = []
+        for associado in associados:
+            status = "Autorizado" if associado.status_acesso else "Não Permitido"
+            associados_list.append(
+                {
+                    "status": status,
+                    "nome": associado.loja.nome_loja,
+                    "atualizado": associado.update,
+                }
             )
-            senha_hash = make_password(formulario.senha)
 
-            verificacao = email_existe(formulario.email)
-            if verificacao:
-                return render(
-                    request,
-                    caminho_html,
-                    {
-                        "alerta_js": criar_alerta_js(
-                            "Email já está cadastro, coloque outro."
-                        ),
-                        "usuario": formulario,
-                    },
-                )
-
-            nome_usuario = formulario.nome_completo.replace(
-                " ", ""
-            ).lower()  # Remove espaços e converte para minúsculas
-            # Se o nome de usuário já estiver em uso, adicionamos um número aleatório ao final
-            nome_usuario
-            usuario_existe(nome_usuario)
-            while usuario_existe(nome_usuario):
-                nome_usuario = nome_usuario + gerar_numero_aleatorio()
-
-            id_empresa = request.session.get("id_empresa")
-
-            # Verificar se os campos obrigatórios estão preenchidos
-            if (
-                formulario.nome_completo
-                and nome_usuario
-                and senha_hash
-                and formulario.nivel_usuario
-                and id_empresa
-            ):
-                try:
-                    # Converter id_empresa para inteiro
-                    id_empresa = int(id_empresa)
-
-                    # Obter a instância da empresa com base no id
-                    empresa = Empresa.objects.get(pk=id_empresa)
-
-                    # Verificar se id_usuario é zero antes de criar um novo usuário
-                    if empresa.id_empresa > 0:
-                        # Criar um novo usuário com a instância da empresa
-                        usuario_new = Usuario.objects.create(
-                            nome_completo=formulario.nome_completo,
-                            nome_usuario=nome_usuario,
-                            senha=senha_hash,
-                            nivel_usuario=int(formulario.nivel_usuario),
-                            status_acesso=formulario.status_acesso,
-                            email=formulario.email,
-                            empresa=empresa,
-                            insert=timezone.now(),
-                        )
-                        criar_configuracoes_padrao(usuario_new)
-                        Alerta.set_mensagem("Usuário cadastrado com sucesso!")
-                        return redirect(
-                            "listar_usuarios",
-                        )
-                except Exception as e:
-                    mensagem_erro = str(e)
-                    return erro(request, mensagem_erro)
-            else:
-                return render(
-                    request,
-                    caminho_html,
-                    {"alerta": criar_alerta_js("erro ao recuperar dados.")},
-                )
-        else:
-            list = list_configuracoes_padrao()
-            return render(request, caminho_html, {"list_configuracao": list})
+        return view_usuarios.listar_usuarios(
+            request,
+            {
+                "open_modal": True,
+                "text_usuario": usuario,
+                "associados_list": associados_list,
+            },
+        )
 
     @staticmethod
     @verificar_permissoes
     def editar_usuario(request, id_usuario):
-        caminho_html = "usuario/editar_usuario.html"
-        if id_usuario > 0:
+        try:
             usuario = Usuario.objects.get(id_usuario=id_usuario)
-            empresa_id = request.session.get("id_empresa")
+            id_empresa = UserInfo.get_id_empresa(request)
+            list_lojas = Loja.objects.filter(empresa_id=id_empresa)
 
             if request.method == "POST":
+                usuario.nome_completo = request.POST["nome_completo"]
+                usuario.nivel_usuario = request.POST["nivel_usuario"]
+                usuario.status_acesso = request.POST["status_acesso"]
+                if usuario.nome_completo:
 
-                nivel_usuario_str = request.POST.get("nivel_usuario")
-
-                # Inicializa um valor padrão
-                valor = 1
-
-                # Verifica se nivel_usuario_str não é None e se é maior que 1
-                if nivel_usuario_str is not None and int(nivel_usuario_str) > 1:
-                    valor = int(nivel_usuario_str)
-                status_acesso_str = request.POST.get("status")
-                if status_acesso_str is not None:
-                    status_acesso = bool(status_acesso_str)
-                else:
-                    status_acesso = True
-                # Cria o objeto do formulário
-                formulario = Usuario(
-                    nome_completo=request.POST.get("nome_completo"),
-                    nivel_usuario=valor,
-                    status_acesso=status_acesso,
-                )
-                # Verifica se os campos obrigatórios estão preenchidos
-                if formulario.nome_completo and formulario.nivel_usuario and empresa_id:
-                    try:
-                        usuario.nivel_usuario = int(formulario.nivel_usuario)
-                        usuario.nome_completo = formulario.nome_completo
-                        usuario.status_acesso = formulario.status_acesso
-                        usuario.update = timezone.now()
-                        usuario.save()
-                        Alerta.set_mensagem("Usuário Editado com sucesso!")
-                        return redirect(
-                            "listar_usuarios",
+                    usuario.update = timezone.now()
+                    usuario.save()
+                    for loja in list_lojas:
+                        campo_checkbox = f"status_acesso_{loja.id_loja}"
+                        associacao = Associado.objects.get(
+                            usuario_id=id_usuario, loja_id=loja.id_loja
                         )
-                    except Exception as e:
-                        mensagem_erro = str(e)
-                        return erro(request, mensagem_erro)
-                # usuario nao é post. verifica se o id dele é o mesmo que o do usuario
-            elif usuario.empresa.id_empresa == empresa_id:
-                return render(request, caminho_html, {"usuario": usuario})
-            else:  # Se o id do empresa não corresponder ao id do usuário,
-                Alerta.set_mensagem("Você não tem permissão para acessar este usuário.")
-                return redirect(
-                    "listar_usuarios",
+                        if campo_checkbox in request.POST:
+                            associacao.status_acesso = True
+                        else:
+                            associacao.status_acesso = False
+                        associacao.update = timezone.now()
+                        associacao.save
+                    Alerta.set_mensagem("Usuário editado com sucesso!")
+                    return redirect("listar_usuarios")
+                else:
+                    Alerta.set_mensagem(
+                        "Formulário inválido. Por favor, corrija os erros."
+                    )
+            else:
+                form_usuario = UsuarioForm(instance=usuario)
+
+                list_objs = []
+
+                associado = Associado.objects.filter(usuario=usuario)
+
+                for loja in list_lojas:
+                    loja_info = {
+                        "id_loja": loja.id_loja,  # ID da loja
+                        "nome_loja": loja.nome_loja,  # Nome da loja (suponha que o campo no modelo seja 'nome')
+                        "status_acesso": False,  # Status de acesso padrão, inicialmente definido como False
+                    }
+                    associado_loja = associado.filter(loja_id=loja.id_loja).first()
+                    if associado_loja:
+                        loja_info["status_acesso"] = associado_loja.status_acesso
+
+                    list_objs.append(loja_info)
+                return view_usuarios.listar_usuarios(
+                    request,
+                    {
+                        "form_usuario": form_usuario,
+                        "list_lojas": list_objs,
+                        "open_modal": True,
+                        "isEditar": True,
+                    },
                 )
+        except Loja.DoesNotExist:
+            pass
+        Alerta.set_mensagem("Para associar um usuario a loja, precisa criar uma!")
+        form_usuario = UsuarioForm(instance=usuario)
+        return view_usuarios.listar_usuarios(
+            request,
+            {
+                "form_usuario": form_usuario,
+                "open_modal": True,
+                "isEditar": True,
+            },
+        )
 
     @staticmethod
     @verificar_permissoes
@@ -273,30 +217,67 @@ class view_usuarios:
     @staticmethod
     @verificar_permissoes
     def cadastrar_usuario(request):
+        id_empresa = UserInfo.get_id_empresa(request)
+        form_usuario = UsuarioForm()
+        lojas = Loja.objects.filter(empresa_id=id_empresa)
+
         if request.method == "POST":
             form = UsuarioForm(request.POST)
             if form.is_valid():
-                form.save()
-                Alerta.set_mensagem("Usuário ativado com sucesso!")
-                return redirect(
-                    "configuracao_usuario",
+                email_responsavel = form.cleaned_data["email"]
+                if email_existe(email_responsavel):
+                    Alerta.set_mensagem("O email já existe. Por favor, escolha outro.")
+                    return view_usuarios.listar_usuarios(
+                        request,
+                        {
+                            "form_usuario": form,
+                            "list_lojas": lojas,
+                            "open_modal": True,
+                        },
+                    )
+
+                nome_usuario = (
+                    form.cleaned_data["nome_completo"].replace(" ", "").lower()
                 )
-            else:
-                Alerta.set_mensagem("Formulario Usuário Invalído!")
-                return view_usuarios.listar_usuarios(
-                    request, {"form_usuario": form, "open_modal": True}
-                )
-        else:
-            try:
+                while usuario_existe(nome_usuario):
+                    nome_usuario = nome_usuario + gerar_numero_aleatorio()
+
                 id_empresa = UserInfo.get_id_empresa(request)
-                loja = Loja.objects.get(empresa__id_empresa=id_empresa)
-                form_usuario = UsuarioForm(request)
-                form_loja = LojaForm(loja, request)
+                usuario = form.save(commit=False)
+                usuario.empresa_id = id_empresa
+                usuario.nome_usuario = nome_usuario
+                usuario.senha = make_password(usuario.senha)
+                usuario.save()
+                for key, value in request.POST.items():
+                    if key.startswith("status_acesso_"):
+                        loja_id = key.replace("status_acesso_", "")
+                        loja = get_object_or_404(Loja, id_loja=loja_id)
+                        associacao = Associado.objects.create(
+                            usuario=usuario, loja=loja
+                        )
+                        associacao.status_acesso = True if value == "on" else False
+                        associacao.update = timezone.now()
+                        associacao.save
+                Alerta.set_mensagem("Usuário ativado com sucesso!")
+                return redirect("configuracao_usuario", id_usuario=usuario.id_usuario)
+            else:
+                Alerta.set_mensagem("Formulário inválido. Por favor, corrija os erros.")
                 return view_usuarios.listar_usuarios(
                     request,
                     {
                         "form_usuario": form_usuario,
-                        "form_loja": form_loja,
+                        "list_lojas": lojas,
+                        "open_modal": True,
+                    },
+                )
+        else:
+            try:
+
+                return view_usuarios.listar_usuarios(
+                    request,
+                    {
+                        "form_usuario": form_usuario,
+                        "list_lojas": lojas,
                         "open_modal": True,
                     },
                 )
@@ -317,21 +298,31 @@ class view_usuarios:
     @verificar_permissoes
     def configuracao_usuario(request, id_usuario):
         if request.method == "POST":
-            form = UsuarioForm(request.POST)
-            if form.is_valid():
-                form.save()
-                Alerta.set_mensagem("Usuário ativado com sucesso!")
-                return redirect(
-                    "listar_usuarios",
-                )
-            else:
-                Alerta.set_mensagem("Erro, Formulario Invalido!")
-                form = UsuarioForm()
-                return view_usuarios.listar_usuarios(
-                    request, {"form_usuario": form, "open_modal": True}
-                )
+            for key, value in request.POST.items():
+                if key.startswith("status_acesso_"):
+                    configuracao_id = key.replace("status_acesso_", "")
+                    # Atualizar o status de acesso para a configuração correspondente
+                    configuracao = Configuracao.objects.get(
+                        id_configuracao=configuracao_id
+                    )
+                    configuracao.status_acesso = True if value == "on" else False
+                    configuracao.update = timezone.now()
+                    configuracao.save()
+                    Alerta.set_mensagem("Configurações salvas com sucesso!")
+            return redirect("listar_usuarios")
         else:
-            form = UsuarioForm()
+            list_configuracoes = Configuracao.objects.filter(usuario_id=id_usuario)
+
+            # Verificar nao existem configurações para o usuário implementamos uma padrão
+            if not list_configuracoes.exists():
+                list_configuracoes = list_configuracoes_padrao(id_usuario, False)
+                criar_configuracoes_padrao(list_configuracoes)
+                list_configuracoes = Configuracao.objects.filter(usuario_id=id_usuario)
+
             return view_usuarios.listar_usuarios(
-                request, {"form_usuario": form, "open_modal": True}
+                request,
+                {
+                    "formularios_configuracao": list_configuracoes,
+                    "open_modal_configuracao": True,
+                },
             )

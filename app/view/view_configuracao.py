@@ -83,7 +83,7 @@ def list_configuracoes_padrao(usuario=None, status=True):
             descricao=descricao,
             status_acesso=status_acesso,
             codigo=codigo_interger,
-            usuario=usuario,
+            usuario_id=usuario,
         )
         list_configuracao.append(configuracao)
 

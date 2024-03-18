@@ -28,7 +28,12 @@ class UsuarioForm(forms.ModelForm):
                 choices=[(False, "Bloqueado"), (True, "Ativo")],
                 attrs={"class": "form-select"},
             ),
-            "email": forms.EmailInput(attrs={"class": "form-control input"}),
+            "email": forms.EmailInput(
+                attrs={
+                    "class": "form-control input",
+                    "oninput": "validarEmail()",
+                }
+            ),
             "senha": forms.PasswordInput(
                 attrs={
                     "class": "form-control input",
@@ -38,4 +43,4 @@ class UsuarioForm(forms.ModelForm):
             ),
         }
         # Defina o valor inicial padrão para os campos 'nivel_usuario' e 'status_acesso'
-        initial = {"nivel_usuario": "", "status_acesso": ""}
+        initial = {"nivel_usuario": 2, "status_acesso": True}

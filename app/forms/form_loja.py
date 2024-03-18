@@ -28,7 +28,7 @@ class LojaForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, **kwargs):
-        super(Loja, self).__init__(*args, **kwargs)
+        super(LojaForm, self).__init__(*args, **kwargs)
         # Adiciona classes CSS aos campos do formulário
         for field_name in self.fields:
             self.fields[field_name].widget.attrs[

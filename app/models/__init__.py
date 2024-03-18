@@ -2,7 +2,7 @@ from .usuario import Usuario
 from .empresa import Empresa
 from .endereco import Endereco
 from .galao import Galao
-from .loja import Loja
+from .loja import Loja, Associado
 from .produto import Produto
 from .sessao import Sessao
 from .venda import Venda

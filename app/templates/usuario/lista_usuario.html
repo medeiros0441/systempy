@@ -4,6 +4,7 @@
 
 {% block content %}
 {% include 'usuario/modal_usuario.html' %}
+{% include 'configuracao/modal_configuracao.html' %}
 
 <div class="my-5 container-xl mx-auto ">
     <div class="d-flex justify-content-between">
@@ -51,7 +52,10 @@
             {% endif %}</td>
             <td class="text-end">
                 <div class="btn-group" role="group" aria-label="Ações do Usuário">
+
                     <div class="btn-group" role="group" aria-label="Ações do Usuário">
+                        <a href="{% url 'detalhes_usuario' usuario.id_usuario %}" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i> </a>
+                    
                         <a   href="{% url 'editar_usuario' usuario.id_usuario %}" class="btn btn-primary btn-sm">
                             <i class="bi bi-pencil"></i> 
                     </a>
@@ -94,11 +98,17 @@
 
     </div>
     <script >
-        {% if open_modal %}
-    document.addEventListener('DOMContentLoaded', function() {
+    {% if open_modal %}
+        document.addEventListener('DOMContentLoaded', function() {
         var myModal = new bootstrap.Modal(document.getElementById('ModalUsuario'));
         myModal.show();
     });
     {% endif %}
+    {% if open_modal_configuracao %}
+    document.addEventListener('DOMContentLoaded', function() {
+    var myModal = new bootstrap.Modal(document.getElementById('ModalConfiguracao'));
+    myModal.show();
+});
+{% endif %}
 </script>
 {% endblock %}
