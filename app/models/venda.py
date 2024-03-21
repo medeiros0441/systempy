@@ -3,54 +3,88 @@ from .usuario import Usuario
 from .cliente import Cliente
 from .produto import Produto
 import uuid
+from django.utils import timezone
 
 
 class Venda(models.Model):
-    id_venda = (models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False),)
-    data_venda = models.DateField()
-    valor_total = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
+    id_venda = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    data_venda = models.DateField(default=timezone.now)
+    valor_total = models.DecimalField(max_digits=10, decimal_places=2)
+    forma_pagamento = models.CharField(max_length=50)
+    tipo_venda = models.CharField(max_length=20)
+    estado_transacao = models.CharField(max_length=20, default="pendente")
+    numero_transacao = models.CharField(
+        max_length=100, unique=True, null=True, blank=True
     )
-    forma_pagamento = models.CharField(
-        max_length=50,
-    )
-    tipo_venda = models.CharField(
-        max_length=20,
-    )
-    insert = models.DateTimeField()
-    update = models.DateTimeField(null=True)
-    descricao = models.TextField()
-    usuario = models.ForeignKey(
-        Usuario,
-        on_delete=models.CASCADE,
-    )
-    loja = models.ForeignKey(
-        "Loja",
-        on_delete=models.CASCADE,
-    )
-    cliente = models.ForeignKey(
-        Cliente,
-        on_delete=models.CASCADE,
-    )
+    metodo_entrega = models.CharField(max_length=50, null=True, blank=True)
+    insert = models.DateTimeField(default=timezone.now)
+    update = models.DateTimeField(null=True, blank=True)
+    descricao = models.TextField(null=True, blank=True)
+    usuario = models.ForeignKey("Usuario", on_delete=models.CASCADE)
+    loja = models.ForeignKey("Loja", on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Venda {self.id_venda}"
 
 
-class VendaProduto(models.Model):
-    id_venda_produto = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
+class Compra(models.Model):
+    id_compra = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    produtos = models.ManyToManyField(Produto, through="ItemCompra")
+    data_compra = models.DateField(default=timezone.now)
+    valor_total = models.DecimalField(max_digits=10, decimal_places=2)
+    forma_pagamento = models.CharField(max_length=50)
+    estado_transacao = models.CharField(max_length=20, default="pendente")
+    numero_transacao = models.CharField(
+        max_length=100, unique=True, null=True, blank=True
     )
+    metodo_entrega = models.CharField(max_length=50, null=True, blank=True)
+    descricao = models.TextField(null=True, blank=True)
 
-    venda = models.ForeignKey(
-        Venda,
-        on_delete=models.CASCADE,
+    def save(self, *args, **kwargs):
+        # Se o objeto já existe no banco de dados, atualize o campo "update"
+        if self.pk:
+            self.update = timezone.now()
+        super().save(*args, **kwargs)
+
+
+class ItemCompra(models.Model):
+    id_item_compra = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False
     )
-    produto = models.ForeignKey(
-        Produto,
-        on_delete=models.CASCADE,
-        to_field="id_produto",
-    )
+    compra = models.ForeignKey(Compra, on_delete=models.CASCADE)
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
     quantidade = models.IntegerField()
-    insert = models.DateTimeField()
-    update = models.DateTimeField(null=True)
+    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    insert = models.DateTimeField(default=timezone.now)
+    update = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.produto} ({self.quantidade})"
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            self.update = timezone.now()
+        super().save(*args, **kwargs)
+
+ 
+class Motoboy(models.Model):
+    id_motoboy = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nome = models.CharField(max_length=255)
+    numero = models.CharField(max_length=20)
+    insert = models.DateTimeField(default=timezone.now)
+    update = models.DateTimeField(auto_now=True)
+
+class Entrega(models.Model):
+    id_entrega = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    venda = models.OneToOneField(
+        Venda, on_delete=models.CASCADE, related_name="entrega"
+    )
+    valor_entrega = models.DecimalField(max_digits=10, decimal_places=2)
+    data_pedido = models.DateTimeField(default=timezone.now)
+    data_finalizacao = models.DateTimeField(null=True, blank=True)
+    motoboy = models.ForeignKey(
+        Motoboy, on_delete=models.SET_NULL, null=True, blank=True
+    )
+

@@ -84,7 +84,7 @@ MIDDLEWARE_app = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "app.middlewares.AtualizarDadosClienteMiddleware",
     "app.middlewares.ErrorLoggingMiddleware",
-] 
+]
 MIDDLEWARE = MIDDLEWARE_app + MIDDLEWARE_django
 
 ROOT_URLCONF = "setup.urls"
@@ -136,10 +136,9 @@ import os
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "assents/"
-if DEBUG:
-    STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-else:
-    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")] if DEBUG else []
+STATIC_ROOT = os.path.join(BASE_DIR, "static") if not DEBUG else None
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

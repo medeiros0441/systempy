@@ -8,11 +8,8 @@
  
 
 <div class="my-5 container-xl mx-auto ">
-    <div class="d-flex justify-content-between">
-            <span   class=" font-monospace fw-border my-auto" style="font-size: 1.3rem;">Lista de Produtos</span>
-          
-          
-          
+    <div class="d-flex justify-content-between mb-2">
+        <h1 style="font-size: 1.3rem;"><i class="bi bi-box"></i> Lista de Produtos</h1>
             {% if produtos|length >= 1 %}
 
 <a type="button"  href="{% url 'acrescentar_produto' %}" id="btnAcrescentar" class="btn btn-success btn-sm ms-auto me-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-box-arrow-in-up me-1"></i> Acrescentar Quantidade de Produto </a>
@@ -20,7 +17,35 @@
 <a  type="button"  href="{% url 'criar_produto' %}"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Novo Produto</a>
     </div>
 
-
+    <div id="filtroProdutos" class="mb-2 mx-auto card-md card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <button id="btnAbrirFiltro" class="btn btn-text border-1" type="button" data-bs-toggle="collapse" data-bs-target="#filtroCollapse" aria-expanded="false" aria-controls="filtroCollapse">
+                    <i class="bi bi-funnel me-2"></i>Filtro de Produtos
+                </button>
+            </h5>
+        </div>
+        <div class="collapse" id="filtroCollapse">
+            <div class="card-body">
+                <div class="input-group mb-2">
+                    <span class="input-group-text" id="search-icon">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="textProduto" maxlength="50" class="form-control" aria-describedby="search-icon" placeholder="Filtrar por nome do produto">
+                </div>
+    
+                <div class="form-floating mb-2 form-loja">
+                    <select id="selectLojas" class="form-select"></select>
+                    <label for="selectLojas" class="form-label">Filtrar por Loja:</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <ul id="listaProdutos" class="list-group"></ul>
+    
+  
         <table class="table table-hover table-responsive table-sm  ">
             <thead>
                 <tr>
@@ -32,15 +57,21 @@
             </thead>
             <tbody class="table-group-divider">
                 {% for produto in produtos %}
-                <tr>
+                <tr data-loja="{{ produto.loja.nome_loja }}" class="produto-row">
+       
                     <td style="font-size: 0.8rem;">{{ produto.nome }}</td>
                     <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-1 text-start">{{ produto.quantidade_atual_estoque_f }}</td>
                     <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-2 text-start">{{ produto.preco_venda_f }}</td>
                     <td class="text-end">
                         <div class="btn-group" role="group" aria-label="Ações do Usuário">
-                            <a href="{% url 'selecionar_produto' produto.id_produto %}" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i> Detalhes</a>
-                            <a href="{% url 'editar_produto' produto.id_produto %}" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi  bi-pencil me-1"></i>Editar</a>
-                            <a href="{% url 'excluir_produto' produto.id_produto %}" class="btn btn-danger btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-trash me-1"></i> Excluir</a>
+                            <a href="{% url 'selecionar_produto' produto.id_produto %}" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i>  </a>
+                            <a href="{% url 'editar_produto' produto.id_produto %}" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi  bi-pencil me-1"></i> </a>
+                            <a href="{% url 'excluir_produto' produto.id_produto %}" class="btn btn-danger btn-sm btn-confirmacao" 
+                            data-acao="excluir" 
+                            data-titulo="Excluir Produto" 
+                            data-descricao="Tem certeza de que deseja excluir este produto?">
+                            <i style="font-size: 0.8rem;" class="bi bi-trash me-1"></i>
+                         </a>
                         </div>
                     </td>
                 </tr>
@@ -94,4 +125,69 @@
     {% endif %}
 
   </script>
+
+<script>
+    var selectLojas = document.getElementById('selectLojas');
+    var produtoRows = document.querySelectorAll('.produto-row');
+
+    // Adiciona um ouvinte de evento de alteração ao select
+    selectLojas.addEventListener('change', function() {
+        var lojaSelecionada = this.value; // Obtém o valor selecionado no select
+
+        // Oculta todos os produtos
+        produtoRows.forEach(function(produtoRow) {
+            produtoRow.classList.add('d-none');
+        });
+
+        // Exibe apenas os produtos da loja selecionada
+        produtoRows.forEach(function(produtoRow) {
+            if (produtoRow.getAttribute('data-loja') === lojaSelecionada) {
+                produtoRow.classList.remove('d-none');
+            }
+        });
+    });
+</script>
+<script>
+    // Obter o select
+    var selectLojas = document.getElementById('selectLojas');
+
+    // Conjunto de nomes de lojas únicas
+    var lojasUnicas = new Set([
+        {% for produto in produtos %}
+        "{{ produto.loja.nome_loja }}",
+        {% endfor %}
+    ]);
+
+    // Se houver mais de uma loja única, adiciona as opções ao select
+    if (lojasUnicas.size > 1) {
+        lojasUnicas.forEach(function(nomeLoja) {
+            var option = document.createElement('option');
+            option.value = nomeLoja;
+            option.textContent = nomeLoja;
+            selectLojas.appendChild(option);
+        });
+    } else {
+        // Se houver apenas uma loja ou nenhuma loja, oculta o formulário
+        document.querySelector('.form-floating').classList.add('d-none');
+    }
+</script>       
+<script>
+    var inputProduto = document.getElementById('textProduto');
+    var produtoRows = document.querySelectorAll('.produto-row');
+
+    // Adiciona um ouvinte de evento de entrada ao input de busca
+    inputProduto.addEventListener('input', function() {
+        var termoBusca = this.value.trim().toLowerCase(); // Obtém o termo de busca e converte para minúsculas
+
+        // Itera sobre as linhas de produto e verifica se o nome corresponde ao termo de busca
+        produtoRows.forEach(function(produtoRow) {
+            var nomeProduto = produtoRow.querySelector('td:first-child').textContent.toLowerCase();
+            if (nomeProduto.includes(termoBusca)) {
+                produtoRow.classList.remove('d-none'); // Exibe o produto se corresponder ao termo de busca
+            } else {
+                produtoRow.classList.add('d-none'); // Oculta o produto se não corresponder ao termo de busca
+            }
+        });
+    });
+</script>
         {% endblock %}

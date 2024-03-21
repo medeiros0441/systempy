@@ -55,11 +55,13 @@ def criar_produto(request):
 
 def editar_produto(request, id_produto):
     try:
-        # Obter o produto existente pelo ID
-        produto = Produto.objects.get(id_produto=id_produto)
-        id_empresa = UserInfo.get_id_empresa(request, True)
-        if produto.empresa.id_empresa != id_empresa:
-            return erro(request, "Vôce nao tem permissão para acessar o produto")
+        id_empresa = UserInfo.get_id_empresa(request)
+        produto = Produto.objects.filter(
+            id_produto=id_produto, loja__empresa_id=id_empresa
+        ).first()
+
+        if not produto:
+            return erro(request, "Você não tem permissão para acessar o produto")
 
         if request.method == "POST":
             form_produto = Form(request.POST, instance=produto, request=request)
