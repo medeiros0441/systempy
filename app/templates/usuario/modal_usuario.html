@@ -1,6 +1,6 @@
 
 {% block content %}
-    <div class="modal fade" id="ModalUsuario" text_usuario-bs-backdrop="static" text_usuario-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal fade" id="ModalUsuario"   modal-bs-backdrop="static"  modal-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog  modal-md modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
@@ -59,7 +59,7 @@
                             Por favor, insira o nome.
                         </div>
                     </div>
-                    
+                {% if form_usuario.nivel_usuario > 1 %} 
                     <div class="form-floating mb-2">
                         {{ form_usuario.nivel_usuario }} 
                         <label for="id_nivel_usuario">Nível de Usuário:</label>
@@ -69,6 +69,8 @@
                         {{ form_usuario.status_acesso }}
                         <label for="id_status_acesso">Status:</label>
                     </div>
+                {% endif%}
+
                     {% if not isEditar  %} 
                     <div class="form-floating mb-2">
                         <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
@@ -148,7 +150,10 @@
         // Função para validar os campos
         function ValidateInputs() {
             var nome_completo = document.getElementById('id_nome_completo');
+
+    {% if form_usuario.nivel_usuario > 1 %} 
             var nivel_usuario = document.getElementById('id_nivel_usuario');
+        {% endif%}    
     {% if not isEditar  %} 
 
             var email_responsavel = document.getElementById('id_email');
@@ -177,7 +182,9 @@
         
             // Remove as classes 'is-invalid' de todos os campos antes de fazer a validação
             nome_completo.classList.remove('is-invalid');
-            nivel_usuario.classList.remove('is-invalid');
+            {% if form_usuario.nivel_usuario > 1 %} 
+                nivel_usuario.classList.remove('is-invalid');
+            {% endif%}
                 
             // Verifica se os campos estão preenchidos corretamente
              

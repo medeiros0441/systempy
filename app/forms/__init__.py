@@ -5,3 +5,4 @@ from .form_produto import ProdutoForm
 from .form_cliente import ClienteForm
 from .form_empresa import EmpresaForm
 from .form_usuario import UsuarioForm
+from .form_venda import VendaForm

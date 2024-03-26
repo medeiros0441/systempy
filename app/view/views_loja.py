@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from ..forms import LojaForm, EnderecoForm
 from ..def_global import criar_alerta_js, erro
 from ..static import Alerta, UserInfo
-from ..models import Empresa, Loja
+from ..models import Empresa, Loja, Associado, Usuario
 
 
 def lista_lojas(request, context=None):
@@ -40,8 +40,18 @@ def criar_loja(request):
             if form_endereco.is_valid() and form_loja.is_valid():
                 endereco = form_endereco.save()  # Cria um novo registro de Endereco
                 form_loja.instance.endereco = endereco  # Associa o endereço à loja
-                form_loja.save()  # Cria um novo registro de Loja
+                loja = form_loja.save()  # Cria um novo registro de Loja
                 Alerta.set_mensagem("Cadastrado com Sucesso.")
+
+                id_usuario = UserInfo.get_id_usuario(request)
+                usuario = Usuario.object.get(id_usuario)
+                associacao = Associado.objects.create(usuario_id=id_usuario, loja=loja)
+                if usuario.nivel_usuario == 1:
+                    associacao.status_acesso = True
+                else:
+                    associacao.status_acesso = False
+                associacao.save
+
                 return redirect("lista_lojas")
             else:
                 if not form_endereco.is_valid():

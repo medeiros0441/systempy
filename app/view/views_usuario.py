@@ -10,45 +10,43 @@ from ..static import Alerta, UserInfo
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
-from ..models import Usuario, Empresa, Configuracao, Loja, Associado
-from django.urls import reverse
+from ..models import Usuario, Configuracao, Loja, Associado
 from .view_configuracao import criar_configuracoes_padrao, list_configuracoes_padrao
-from ..processador.config_email import enviar_email
-from ..forms import UsuarioForm, LojaForm, ConfiguracaoForm
+from ..forms import UsuarioForm
 from functools import wraps
-from django.db.models import Exists, OuterRef
-from django.forms import formset_factory
 
 
-def verificar_permissoes(func):
-    @wraps(func)
-    def wrapper(request, *args, **kwargs):
-        id_usuario = UserInfo.get_id_usuario(request)
-        try:
-            usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
-
-            configuracao = Configuracao.objects.get(usuario=usuario, codigo=1)
-            if configuracao.status_acesso == False:
-                Alerta.set_mensagem(
-                    "Acesso negado: você não tem permissão para executar o método."
+def verificar_permissoes(codigo_model):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            id_usuario = UserInfo.get_id_usuario(request)
+            try:
+                configuracao = Configuracao.objects.get(
+                    usuario_id=id_usuario, codigo=codigo_model
                 )
-                return erro(
-                    request,
-                    "Acesso negado: você não tem permissão para executar o método.",
-                )
-        except Configuracao.DoesNotExist:
+                if configuracao.status_acesso == False:
+                    Alerta.set_mensagem(
+                        "Acesso negado: você não tem permissão para executar o método."
+                    )
+                    return erro(
+                        request,
+                        "Acesso negado: você não tem permissão para executar o método.",
+                    )
+            except Configuracao.DoesNotExist:
+                Alerta.set_mensagem("Configuração não encontrada.")
+                return erro(request, "Configuração não encontrada.")
+            return func(request, *args, **kwargs)
 
-            Alerta.set_mensagem("Configuração não encontrada.")
-            return erro(request, "Configuração não encontrada.")
-        return func(request, *args, **kwargs)
+        return wrapper
 
-    return wrapper
+    return decorator
 
 
 class view_usuarios:
 
     @staticmethod
-    @verificar_permissoes
+    @verificar_permissoes(codigo_model=1)
     def listar_usuarios(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request)
 
@@ -63,7 +61,7 @@ class view_usuarios:
         return render(request, "usuario/lista_usuario.html", context)
 
     @staticmethod
-    @verificar_permissoes
+    @verificar_permissoes(codigo_model=1)
     def detalhes_usuario(request, id_usuario):
         usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
         associados = Associado.objects.filter(usuario=usuario)
@@ -89,7 +87,7 @@ class view_usuarios:
         )
 
     @staticmethod
-    @verificar_permissoes
+    @verificar_permissoes(codigo_model=1)
     def editar_usuario(request, id_usuario):
         try:
             usuario = Usuario.objects.get(id_usuario=id_usuario)
@@ -98,23 +96,24 @@ class view_usuarios:
 
             if request.method == "POST":
                 usuario.nome_completo = request.POST["nome_completo"]
-                usuario.nivel_usuario = request.POST["nivel_usuario"]
-                usuario.status_acesso = request.POST["status_acesso"]
+                if usuario.nivel_usuario > 1:
+                    usuario.nivel_usuario = request.POST["nivel_usuario"]
+                    usuario.status_acesso = request.POST["status_acesso"]
                 if usuario.nome_completo:
 
                     usuario.update = timezone.now()
                     usuario.save()
                     for loja in list_lojas:
                         campo_checkbox = f"status_acesso_{loja.id_loja}"
-                        associacao = Associado.objects.get(
-                            usuario_id=id_usuario, loja_id=loja.id_loja
+                        associacao, created = Associado.objects.get_or_create(
+                            usuario_id=id_usuario,
+                            loja_id=loja.id_loja,
+                            defaults={'status_acesso': campo_checkbox in request.POST, 'update': timezone.now()}
                         )
-                        if campo_checkbox in request.POST:
-                            associacao.status_acesso = True
-                        else:
-                            associacao.status_acesso = False
-                        associacao.update = timezone.now()
-                        associacao.save
+                        if not created:
+                            associacao.status_acesso = campo_checkbox in request.POST
+                            associacao.update = timezone.now()
+                            associacao.save()
                     Alerta.set_mensagem("Usuário editado com sucesso!")
                     return redirect("listar_usuarios")
                 else:
@@ -148,6 +147,8 @@ class view_usuarios:
                         "isEditar": True,
                     },
                 )
+        except Associado.DoesNotExist:
+            pass
         except Loja.DoesNotExist:
             pass
         Alerta.set_mensagem("Para associar um usuario a loja, precisa criar uma!")
@@ -162,7 +163,7 @@ class view_usuarios:
         )
 
     @staticmethod
-    @verificar_permissoes
+    @verificar_permissoes(codigo_model=1)
     def excluir_usuario(request, id_usuario):
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         if usuario:
@@ -179,7 +180,7 @@ class view_usuarios:
             )
 
     @staticmethod
-    @verificar_permissoes
+    @verificar_permissoes(codigo_model=1)
     def bloquear_usuario(request, id_usuario):
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         usuario.status_acesso = False
@@ -192,7 +193,7 @@ class view_usuarios:
         )
 
     @staticmethod
-    @verificar_permissoes
+    @verificar_permissoes(codigo_model=1)
     def ativar_usuario(request, id_usuario):
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         usuario.status_acesso = True
@@ -204,7 +205,7 @@ class view_usuarios:
         )
 
     @staticmethod
-    @verificar_permissoes
+    @verificar_permissoes(codigo_model=1)
     def autenticar_usuario(email, senha):
         try:
             usuario = Usuario.objects.get(email__iexact=email)
@@ -215,7 +216,7 @@ class view_usuarios:
         return None
 
     @staticmethod
-    @verificar_permissoes
+    @verificar_permissoes(codigo_model=1)
     def cadastrar_usuario(request):
         id_empresa = UserInfo.get_id_empresa(request)
         form_usuario = UsuarioForm()
@@ -295,7 +296,7 @@ class view_usuarios:
                 )
 
     @staticmethod
-    @verificar_permissoes
+    @verificar_permissoes(codigo_model=1)
     def configuracao_usuario(request, id_usuario):
         if request.method == "POST":
             for key, value in request.POST.items():

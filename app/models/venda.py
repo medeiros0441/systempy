@@ -11,18 +11,24 @@ class Venda(models.Model):
     data_venda = models.DateField(default=timezone.now)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)
     forma_pagamento = models.CharField(max_length=50)
-    tipo_venda = models.CharField(max_length=20)
-    estado_transacao = models.CharField(max_length=20, default="pendente")
-    numero_transacao = models.CharField(
-        max_length=100, unique=True, null=True, blank=True
-    )
+    estado_transacao = models.CharField(max_length=20, null=True)
     metodo_entrega = models.CharField(max_length=50, null=True, blank=True)
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(null=True, blank=True)
     descricao = models.TextField(null=True, blank=True)
     usuario = models.ForeignKey("Usuario", on_delete=models.CASCADE)
     loja = models.ForeignKey("Loja", on_delete=models.CASCADE)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(
+        Cliente, on_delete=models.CASCADE, null=True, blank=True
+    )
+    # Campos relacionados ao troco
+    valor_pago = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    troco = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    nota_fiscal = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
 
     def __str__(self):
         return f"Venda {self.id_venda}"
@@ -35,7 +41,7 @@ class Compra(models.Model):
     data_compra = models.DateField(default=timezone.now)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)
     forma_pagamento = models.CharField(max_length=50)
-    estado_transacao = models.CharField(max_length=20, default="pendente")
+    estado_transacao = models.CharField(max_length=20, null=True)
     numero_transacao = models.CharField(
         max_length=100, unique=True, null=True, blank=True
     )
@@ -68,13 +74,14 @@ class ItemCompra(models.Model):
             self.update = timezone.now()
         super().save(*args, **kwargs)
 
- 
+
 class Motoboy(models.Model):
     id_motoboy = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255)
     numero = models.CharField(max_length=20)
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(auto_now=True)
+
 
 class Entrega(models.Model):
     id_entrega = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -87,4 +94,3 @@ class Entrega(models.Model):
     motoboy = models.ForeignKey(
         Motoboy, on_delete=models.SET_NULL, null=True, blank=True
     )
-

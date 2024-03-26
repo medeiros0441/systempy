@@ -31,7 +31,9 @@ class Produto(models.Model):
     quantidade_atual_estoque = models.IntegerField(null=True)
     quantidade_minima_estoque = models.IntegerField(null=True)
     codigo = models.IntegerField(null=True)
-    tipo = models.IntegerField(null=True)
+    is_retornavel = models.BooleanField(null=True,blank=True)
+
+    data_validade = models.DateField(null=True,blank=True)
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(default=timezone.now, null=True)
     preco_compra = models.DecimalField(

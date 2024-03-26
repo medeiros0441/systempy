@@ -23,12 +23,7 @@ from .views_produto import (
     excluir_produto,
     acrescentar_produto,
 )
-from .views_venda import (
-    lista_vendas,
-    editar_venda,
-    selecionar_venda,
-    excluir_venda,
-)
+from .views_venda import view_vendas
 from .views_cliente import (
     lista_clientes,
     criar_cliente,

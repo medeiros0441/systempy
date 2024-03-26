@@ -1,7 +1,7 @@
 from pathlib import Path
 from dj_database_url import parse as db_url
 from pathlib import Path
-from decouple import config, Csv
+from decouple import config
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,7 +19,7 @@ try:
         default="p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol",
         cast=str,
     )
-    DEBUG = config("DEBUG", default=False, cast=bool)
+    DEBUG = True
     ALLOWED_HOSTS = ["wmsolutions.azurewebsites.net", "*"]
 
     # Database
@@ -40,108 +40,120 @@ try:
         }
     }
 
+    DJANGO_APPS = [
+        "django.contrib.admin",
+        "django.contrib.auth",
+        "django.contrib.contenttypes",
+        "django.contrib.sessions",
+        "django.contrib.messages",
+        "django.contrib.staticfiles",
+    ]
+    THIRD_PARTY_APPS = [
+        "crispy_forms",
+        "crispy_bootstrap5",
+    ]
+
+    CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+    CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+    MY_APPS = [
+        # integracao do app
+        "app",
+    ]
+
+    INSTALLED_APPS = MY_APPS + THIRD_PARTY_APPS + DJANGO_APPS
+
+    MIDDLEWARE_django = [
+        "django.middleware.security.SecurityMiddleware",
+        "django.contrib.sessions.middleware.SessionMiddleware",
+        "django.middleware.common.CommonMiddleware",
+        "django.middleware.csrf.CsrfViewMiddleware",
+        "django.contrib.auth.middleware.AuthenticationMiddleware",
+        "django.contrib.messages.middleware.MessageMiddleware",
+        "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    ]
+
+    MIDDLEWARE_app = [
+        "django.middleware.security.SecurityMiddleware",
+        "django.middleware.common.CommonMiddleware",
+        "django.contrib.sessions.middleware.SessionMiddleware",
+        "app.middlewares.AtualizarDadosClienteMiddleware",
+        "app.middlewares.ErrorLoggingMiddleware",
+    ]
+    MIDDLEWARE = MIDDLEWARE_app + MIDDLEWARE_django
+
+    ROOT_URLCONF = "setup.urls"
+
+    TEMPLATES = [
+        {
+            "BACKEND": "django.template.backends.django.DjangoTemplates",
+            "DIRS": [],
+            "APP_DIRS": True,
+            "OPTIONS": {
+                "context_processors": [
+                    "django.template.context_processors.debug",
+                    "django.template.context_processors.request",
+                    "django.contrib.auth.context_processors.auth",
+                    "django.contrib.messages.context_processors.messages",
+                ],
+            },
+        },
+    ]
+    WSGI_APPLICATION = "setup.wsgi.application"
+
+    AUTH_PASSWORD_VALIDATORS = [
+        {
+            "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        },
+        {
+            "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        },
+        {
+            "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        },
+        {
+            "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        },
+    ]
+
+    LANGUAGE_CODE = "pt-BR"
+
+    TIME_ZONE = "America/Sao_Paulo"
+
+    USE_I18N = True
+
+    USE_TZ = True
+
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    import os
+
+    # Static files (CSS, JavaScript, Images)
+    STATIC_URL = "assents/"
+
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+    DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+    CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+    CRISPY_TEMPLATE_PACK = "bootstrap5"
+    if DEBUG == True:
+        SESSION_COOKIE_SECURE = False
+        CSRF_COOKIE_SECURE = False
+        SECURE_SSL_REDIRECT = False
+    elif DEBUG == False:
+        # Configuração para o tempo de vida da política HSTS
+        SECURE_HSTS_SECONDS = 31536000  # 1 ano
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+        SECURE_HSTS_PRELOAD = True
+
+        # Redirecionamento automático para HTTPS
+        SECURE_SSL_REDIRECT = True
+
+        # Configurações para cookies de sessão e CSRF
+        SESSION_COOKIE_SECURE = True
+        CSRF_COOKIE_SECURE = True
+
 except ImproperlyConfigured as e:
     print(f"Erro de configuração: {e}")
-
-DJANGO_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-]
-THIRD_PARTY_APPS = [
-    "crispy_forms",
-    "crispy_bootstrap5",
-]
-
-
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-
-CRISPY_TEMPLATE_PACK = "bootstrap5"
-
-MY_APPS = [
-    # integracao do app
-    "app",
-]
-
-INSTALLED_APPS = MY_APPS + THIRD_PARTY_APPS + DJANGO_APPS
-
-MIDDLEWARE_django = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
-
-MIDDLEWARE_app = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "app.middlewares.AtualizarDadosClienteMiddleware",
-    "app.middlewares.ErrorLoggingMiddleware",
-]
-MIDDLEWARE = MIDDLEWARE_app + MIDDLEWARE_django
-
-ROOT_URLCONF = "setup.urls"
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-]
-WSGI_APPLICATION = "setup.wsgi.application"
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
-
-
-LANGUAGE_CODE = "pt-BR"
-
-TIME_ZONE = "America/Sao_Paulo"
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-import os
-
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = "assents/"
-
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")] if DEBUG else []
-STATIC_ROOT = os.path.join(BASE_DIR, "static") if not DEBUG else None
-
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"

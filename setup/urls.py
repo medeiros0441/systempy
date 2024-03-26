@@ -116,21 +116,24 @@ url_produto = [  # produtos
     ),
 ]
 
-from app.view.views_venda import (
-    lista_vendas,
-    editar_venda,
-    selecionar_venda,
-    excluir_venda,
-)
+from app.view.views_venda import view_vendas
 
 url_venda = [  # vendas
-    path("vendas/", lista_vendas, name="lista_vendas"),
-    path("vendas/criar/", editar_venda, name="criar_venda"),
-    path("vendas/editar/<uuid:id_venda>/", editar_venda, name="editar_venda"),
+    path("vendas/", view_vendas.lista_vendas, name="lista_vendas"),
+    path("vendas/criar/", view_vendas.criar_venda, name="criar_venda"),
     path(
-        "vendas/selecionar/<uuid:id_venda>/", selecionar_venda, name="selecionar_venda"
+        "vendas/editar/<uuid:id_venda>/", view_vendas.editar_venda, name="editar_venda"
     ),
-    path("vendas/excluir/<uuid:id_venda>/", excluir_venda, name="excluir_venda"),
+    path(
+        "vendas/selecionar/<uuid:id_venda>/",
+        view_vendas.selecionar_venda,
+        name="selecionar_venda",
+    ),
+    path(
+        "vendas/excluir/<uuid:id_venda>/",
+        view_vendas.excluir_venda,
+        name="excluir_venda",
+    ),
 ]
 
 from app.view.views_cliente import (
@@ -243,5 +246,7 @@ urlpatterns = (
     + url_cliente
     + url_endereco
     + url_galao
-    + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 )
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

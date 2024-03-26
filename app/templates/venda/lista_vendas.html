@@ -11,12 +11,7 @@
     <div class="d-flex justify-content-between">
             <span   class=" font-monospace fw-border my-auto" style="font-size: 1.3rem;">Lista de Vendas</span>
           
-          
-          
-          
-<a type="button"  href="{% url 'acrescentar_venda' %}" id="btnAcrescentar" class="btn btn-success btn-sm ms-auto me-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-box-arrow-in-up me-1"></i> Acrescentar Venda </a>
-
-<a  type="button"  href="{% url 'criar_venda' %}"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Novo Venda</a>
+<a  type="button"  href="{% url 'criar_venda' %}"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Cadastrar Venda</a>
     </div>
 
 
@@ -48,49 +43,14 @@
         </table>
     </div>
 
-    </div>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Define a variável para controlar a ordem atual da classificação
-            var ascending = false;
-    
-            // Adiciona um ouvinte de evento de clique para cada cabeçalho da coluna
-            $('th').click(function() {
-                // Obtém o índice da coluna clicada
-                var columnIndex = $(this).index();
-    
-                // Obtém a matriz das linhas da tabela
-                var rows = $('tbody').find('tr').get();
-    
-                // Ordena as linhas com base no conteúdo da coluna clicada
-                rows.sort(function(rowA, rowB) {
-                    var cellA = $(rowA).children('td').eq(columnIndex).text().toUpperCase();
-                    var cellB = $(rowB).children('td').eq(columnIndex).text().toUpperCase();
-                    
-                    if (columnIndex === 0 || columnIndex === 3) {
-                        return ascending ? (cellA < cellB ? -1 : 1) : (cellA > cellB ? -1 : 1);
-                    } else {
-                        return ascending ? parseFloat(cellA) - parseFloat(cellB) : parseFloat(cellB) - parseFloat(cellA);
-                    }
-                });
-    
-                // Reorganiza as linhas na tabela
-                $.each(rows, function(index, row) {
-                    $('tbody').append(row);
-                });
-    
-                // Alterna a ordem da classificação
-                ascending = !ascending;
-            });
-        });
-    // Abrir o modal se a variável indicar que deve ser aberto automaticamente
+    </div> 
+
+  <script >
     {% if open_modal %}
-    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
         var myModal = new bootstrap.Modal(document.getElementById('ModalVenda'));
         myModal.show();
     });
-    {% endif %}
-
-  </script>
+    {% endif %} 
+</script>
         {% endblock %}

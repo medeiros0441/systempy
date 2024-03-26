@@ -1,0 +1,309 @@
+
+{% block content %}
+    <div class="modal fade" id="ModalVenda" modal-bs-backdrop="static"   modal-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog  modal-md modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title fw-bold font-monospace" id="lojaModalLabel" >
+                    {% if text_venda %} Detalhes de Venda{% endif%}
+                    {% if form_venda %} Formulario de Venda{% endif%}
+                </h5>
+                </div>
+                    {% if text_vendas %} 
+                   
+                    <div class="modal-footer ">
+                        <a href="{% url 'lista_vendas' %}" class="btn btn-secondary mx-auto btn-sm">Fechar</a>
+        
+                    </div>  
+                {% endif%}
+
+                {% if form_venda %}   
+                <div class="modal-body  font-monospace">
+
+                <form method="post" id="form_cadastro" class="needs-validation" autocomplete="off" novalidate>
+                
+                    {% csrf_token %}
+                    <div class="form-floating mb-2">
+                        {{ form_venda.loja }}
+                        <label for="id_loja">Loja:</label>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control produtoInput" placeholder="Produto:" id="produtoInput" name="produtoInput" list="produtosList" autocomplete="off" />
+                        <button class="btn btn-outline-secondary bi-plus" type="button" id="adicionarProdutoBtn"></button>
+                    </div>
+                    
+                    <datalist id="produtosList">
+                        {% for produto in list_produtos %}
+                       <option value="{{ produto.nome }}" data-valor="{{produto.preco_venda}}" class="list-group-item" data-id="{{ produto.id_produto }}"  />
+                        {% endfor %}
+                    </datalist>
+                    
+                    <ul class="list-group" id="listaProdutos">
+                        <!-- Itens da lista de produtos selecionados serão adicionados aqui dinamicamente -->
+                    </ul>
+                  
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Obtém o input do produto
+        var produtoInput = document.getElementById("produtoInput");
+        
+        // Adiciona evento de entrada para detectar a seleção de uma opção
+        produtoInput.addEventListener("input", function() {
+            var selectedOption = document.querySelector("#produtosList option[value='" + this.value + "']");
+            if (selectedOption) {
+                 OptionSelection(selectedOption);
+            }
+        });
+
+        // Função para lidar com a seleção de opção
+        function  OptionSelection(option) {
+            var produtoId = option.getAttribute("data-id");
+            var produtoPreco = parseFloat(option.getAttribute("data-valor"));
+            var produtoInput = document.querySelector(".produtoInput");
+                console.log("Produto ID: " + produtoId);
+                console.log("Produto Preço: " + produtoPreco);
+                produtoInput.dataset.id = produtoId;
+                produtoInput.dataset.valor = produtoPreco;
+        }
+    });
+</script>        
+                    
+<script>
+   
+    function calcularValorTotal() {
+        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+        var valorTotal = 0;
+        
+        // Itera sobre os itens da lista e calcula o valor total
+        itensLista.forEach(function (item) {
+            var quantidade = parseInt(item.querySelector(".quantidade").textContent);
+            var valorUnitario = parseFloat(item.getAttribute("data-valor"));
+            valorTotal += quantidade * valorUnitario;
+        });
+
+        // Define o valor total no label, formatando-o com vírgula e duas casas decimais
+        var labelValorTotal = document.getElementById("label_valor_total");
+        if (labelValorTotal) {
+            labelValorTotal.textContent = valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        } else {
+            console.error("Elemento label_valor_total não encontrado.");
+        }
+    }
+    
+    document.addEventListener("DOMContentLoaded", function () {
+
+        
+
+            
+          var adicionarBtn = document.getElementById("adicionarProdutoBtn");
+        var valorTotalInput = document.getElementById("label_valor_total");
+        var listaProdutos = document.getElementById("listaProdutos");
+      // Função para calcular o valor total e atualizar o label
+       
+        adicionarBtn.addEventListener("click", function () {
+            var produtoInput = document.getElementById("produtoInput");
+            var produtoSelecionado = produtoInput.value.trim();
+            var produtoId = produtoInput.getAttribute("data-id");
+
+            var produto_valor_unitario = parseFloat(produtoInput.getAttribute("data-valor"));
+            var optionSelecionada = document.querySelector('option[value="' + produtoSelecionado + '"]');
+            
+            if (produtoSelecionado !== "") {
+                var listaProdutos = document.getElementById("listaProdutos");
+                var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+                var produtoExistente = false;
+                
+                // Verifica se o produto já está na lista
+                itensLista.forEach(function (item) {
+                    var idExistente = item.getAttribute("data-id");
+                    if (idExistente === produtoId) {
+                        // Se já existir, aumenta a quantidade
+                        var quantidadeSpan = item.querySelector(".quantidade");
+                        var quantidadeAtual = parseInt(quantidadeSpan.textContent);
+                        quantidadeSpan.textContent = quantidadeAtual + 1;
+                        produtoExistente = true;
+                    }
+                });
+
+                if (!produtoExistente) {
+                    // Se o produto não existir na lista, cria um novo item
+                    var novoItemLista = document.createElement("li");
+                    novoItemLista.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+                    novoItemLista.setAttribute("data-id", produtoId);
+                    novoItemLista.setAttribute("data-valor", produto_valor_unitario);
+                    novoItemLista.innerHTML = `
+                        <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
+                        <span class="" >${produtoSelecionado}</span>
+
+                        <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" onclick="aumentarQuantidade(this)"></span>
+                        <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
+                    `;
+                    listaProdutos.appendChild(novoItemLista);
+                }
+                calcularValorTotal();
+            }
+        });
+    });
+    
+    function aumentarQuantidade(elemento) {
+        var quantidadeSpan = elemento.parentElement.querySelector(".quantidade");
+        var quantidadeAtual = parseInt(quantidadeSpan.textContent);
+        quantidadeSpan.textContent = quantidadeAtual + 1;
+        calcularValorTotal();
+    }
+    
+    function diminuirQuantidade(elemento) {
+        var quantidadeSpan = elemento.parentElement.querySelector(".quantidade");
+        var quantidadeAtual = parseInt(quantidadeSpan.textContent);
+        if (quantidadeAtual > 1) {
+            quantidadeSpan.textContent = quantidadeAtual - 1;
+        } else {
+            elemento.parentElement.remove();
+        }
+        calcularValorTotal();
+    }
+</script>
+
+<div class="form-group mb-2" >
+    <label  id="valor_total">Valor Total:</label>
+    <label id="label_valor_total">00,00</label>
+
+</div>
+<hr>
+                    <div class="btn-group mb-2 mt-1" role="group" aria-label="Tipo de Cliente" >
+    
+                        <button type="button" class="btn btn-primary" data-bs-target="#container_cliente_existente" style="font-size: 0.8rem;">
+                            <i class="bi bi-person"></i> Cliente Existente
+                        </button>
+                        <button type="button" class="btn btn-success" data-bs-target="#container_venda_porta"  style="font-size: 0.8rem;" >
+                            <i class="bi bi-person-plus"></i> Novo Cliente
+                        </button>
+                    </div>
+                     
+                    <div class="collapse" id="container_cliente_existente">
+                        <div class="card card-body">
+                            <label for="select_cliente_existente" class="form-label">Selecione o Cliente Existente:</label>
+                            <select id="select_cliente_existente" class="form-select" aria-label="Selecione o Cliente Existente">
+                                <!-- Opções do select serão preenchidas dinamicamente via Django -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="collapse" id="container_novo_cliente">
+                        <div class="card card-body">
+                            <label for="nome_novo_cliente" class="form-label">Nome:</label>
+                            <input type="text" id="nome_novo_cliente" class="form-control" aria-label="Nome do Novo Cliente">
+                            <!-- Outros campos para o cadastro de novo cliente -->
+                        </div>
+                    </div>
+            
+                    
+                <hr> 
+                     
+                    
+                    <div class="form-floating mb-2">
+                        {{ form_venda.forma_pagamento }}
+                        <label for="forma_pagamento">Forma de Pagamento:</label>
+                    </div>
+                    
+                    <div class="form-floating mb-2">
+                        {{ form_venda.tipo_venda }}
+                        <label for="tipo_venda">Tipo de Venda:</label>
+                    </div>
+                    
+                    <div class="form-floating mb-2">
+                        {{ form_venda.estado_transacao }}
+                        <label for="estado_transacao">Estado da Transação:</label>
+                    </div>
+                    
+                    <div class="form-floating mb-2">
+                        {{ form_venda.numero_transacao }}
+                        <label for="numero_transacao">Número da Transação:</label>
+                    </div>
+                    
+                    <div class="form-floating mb-2">
+                        {{ form_venda.metodo_entrega }}
+                        <label for="metodo_entrega">Método de Entrega:</label>
+                    </div> 
+                    <div class="form-floating mb-2">
+                        {{ form_venda.valor_pago }}
+                        <label for="id_valor_pago">Valor Pago:</label>
+                    </div>
+                    <div class="form-floating mb-2">
+                        {{ form_venda.troco }}
+                        <label for="id_troco">Troco:</label>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Função para recalcular o troco quando o valor pago é alterado
+                            function calcularTroco() {
+                                // Obter os valores dos campos
+                                var valorPago = parseFloat(document.getElementById('id_valor_pago').value);
+                                var notaFiscal = parseFloat(document.getElementById('id_nota_fiscal').value);
+                                
+                                // Verificar se os valores são válidos
+                                if (!isNaN(valorPago) && !isNaN(notaFiscal) && valorPago >= notaFiscal) {
+                                    var troco = valorPago - notaFiscal;
+                                    document.getElementById('id_troco').value = troco.toFixed(2); // Arredondar para 2 casas decimais
+                                } else {
+                                    // Se os valores não forem válidos, limpar o campo de troco
+                                    document.getElementById('id_troco').value = '';
+                                }
+                            }
+                        
+                            // Adicionar um ouvinte de evento de entrada ao campo de valor pago
+                            document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
+                        });
+                        </script>
+                    <div class="form-floating mb-2">
+                        {{ form_venda.descricao }}
+                        <label for="descricao">Descrição:</label>
+                    </div>
+                     
+                   
+                     
+                   
+                        
+  
+           
+                </div>
+
+            <div class="modal-footer ">
+                <a href="{% url 'lista_vendas' %}" class="btn btn-secondary float-start me-auto btn-sm">Cancelar</a>
+             <button type="submit" class="btn btn-primary float-end btn-md" >Salvar</button>
+
+            </div>  
+
+        </form>
+        </div>
+         
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const buttons = document.querySelectorAll('[data-bs-target]');
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const target = button.getAttribute('data-bs-target');
+                        const targetElement = document.querySelector(target);
+                        const otherTargets = document.querySelectorAll('.collapse');
+                        otherTargets.forEach(otherTarget => {
+                            if (otherTarget !== targetElement && otherTarget.classList.contains('show')) {
+                                const otherCollapse = new bootstrap.Collapse(otherTarget);
+                                otherCollapse.hide();
+                            }
+                        });
+                        if (!targetElement.classList.contains('show')) {
+                            const collapse = new bootstrap.Collapse(targetElement);
+                            collapse.show();
+                        }
+                    });
+                });
+            });
+        </script>
+                    {% endif%}
+
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
