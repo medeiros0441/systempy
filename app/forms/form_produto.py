@@ -1,5 +1,5 @@
 from django import forms
-from ..models import Produto,Loja
+from ..models import Produto, Loja
 from ..static import UserInfo
 from decimal import Decimal
 
@@ -16,6 +16,16 @@ class ProdutoForm(forms.ModelForm):
             )
 
         self.fields["loja"].widget.attrs["class"] = "form-select form-select-sm"
+        self.fields["data_validade"].widget.attrs["class"] = "data-mask form-control"
+        self.fields["is_retornavel"] = forms.ChoiceField(
+            label="É Retornável?",
+            choices=[(False, "Não"), (True, "Sim")],
+            initial=False,  # Define o valor inicial como False
+            widget=forms.Select(
+                attrs={"class": "form-select form-select-sm"},
+            ),
+        )
+
 
         # Adicionando campos fake para exibição formatada
         self.fields["preco_compra_fake"] = forms.CharField(
@@ -55,6 +65,8 @@ class ProdutoForm(forms.ModelForm):
             "preco_venda",
             "fabricante",
             "loja",
+            "data_validade",
+            "is_retornavel",
         ]
 
     def clean(self):

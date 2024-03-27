@@ -1,7 +1,7 @@
 
 {% block content %}
-    <div class="modal fade" id="ModalVenda" modal-bs-backdrop="static"   modal-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog  modal-md modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal fade" id="ModalVenda" data-bs-backdrop="static"   data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog  modal-lg modal-fullscreen-lg-down modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                 <h5 class="modal-title fw-bold font-monospace" id="lojaModalLabel" >
@@ -34,7 +34,7 @@
                     
                     <datalist id="produtosList">
                         {% for produto in list_produtos %}
-                       <option value="{{ produto.nome }}" data-valor="{{produto.preco_venda}}" class="list-group-item" data-id="{{ produto.id_produto }}"  />
+                       <option value="{{ produto.nome }}" data-valor="{{produto.preco_venda}}" data-id-loja="{{produto.loja.id_loja}}" class="list-group-item" data-id="{{ produto.id_produto }}" data-retornavel="{{ produto.is_retornavel }}"  />
                         {% endfor %}
                     </datalist>
                     
@@ -43,6 +43,40 @@
                     </ul>
                   
 <script>
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var lojaSelect = document.querySelector('#id_loja');
+        var produtoInput = document.querySelector('#produtoInput');
+        var produtosList = document.querySelector('#produtosList');
+    
+        // Função para remover itens da lista de produtos com base na loja selecionada
+        function atualizarListaProdutos() {
+            var idLojaSelecionada = lojaSelect.value;
+    
+            // Remover todos os itens da lista de produtos
+            while (produtosList.firstChild) {
+                produtosList.removeChild(produtosList.firstChild);
+            }
+    
+            // Adicionar novamente os itens associados à loja selecionada
+            var options = document.querySelectorAll('[data-id-loja]');
+            options.forEach(function(option) {
+                var idLojaProduto = option.getAttribute('data-id-loja');
+                if (idLojaProduto === idLojaSelecionada || idLojaSelecionada === '') {
+                    produtosList.appendChild(option.cloneNode(true));
+                }
+            });
+        }
+    
+        // Adicionar evento de mudança ao campo de seleção da loja
+        lojaSelect.addEventListener('change', atualizarListaProdutos);
+    
+        // Chamar a função de atualização inicialmente para exibir os produtos corretos
+        atualizarListaProdutos();
+    });
+    
+    
+    
     document.addEventListener("DOMContentLoaded", function () {
         // Obtém o input do produto
         var produtoInput = document.getElementById("produtoInput");
@@ -59,17 +93,37 @@
         function  OptionSelection(option) {
             var produtoId = option.getAttribute("data-id");
             var produtoPreco = parseFloat(option.getAttribute("data-valor"));
+            var produtoRetornavel =  option.getAttribute("data-retornavel");
             var produtoInput = document.querySelector(".produtoInput");
                 console.log("Produto ID: " + produtoId);
                 console.log("Produto Preço: " + produtoPreco);
                 produtoInput.dataset.id = produtoId;
                 produtoInput.dataset.valor = produtoPreco;
+                produtoInput.dataset.retornavel = produtoRetornavel;
         }
-    });
-</script>        
-                    
-<script>
-   
+    }); 
+    function verificarRetornaveis() {
+        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+        var totalRetornaveis = 0;
+    
+        // Itera sobre os itens da lista e verifica se são retornáveis
+        itensLista.forEach(function (item) {
+            var isRetornavel = item.dataset.retornavel === "True";
+            if (isRetornavel) {
+                totalRetornaveis++;
+            }
+        });
+    
+        // Verifica se todos os itens são retornáveis
+        if (totalRetornaveis === itensLista.length) {
+            console.log("Todos os itens são retornáveis.");
+        } else if (totalRetornaveis === 0) {
+            console.log("Nenhum item é retornável.");
+        } else {
+            console.log("Alguns itens são retornáveis e outros não.");
+        }
+    }
+     
     function calcularValorTotal() {
         var itensLista = listaProdutos.querySelectorAll(".list-group-item");
         var valorTotal = 0;
@@ -90,12 +144,8 @@
         }
     }
     
-    document.addEventListener("DOMContentLoaded", function () {
-
-        
-
-            
-          var adicionarBtn = document.getElementById("adicionarProdutoBtn");
+    document.addEventListener("DOMContentLoaded", function () { 
+        var adicionarBtn = document.getElementById("adicionarProdutoBtn");
         var valorTotalInput = document.getElementById("label_valor_total");
         var listaProdutos = document.getElementById("listaProdutos");
       // Função para calcular o valor total e atualizar o label
@@ -104,9 +154,8 @@
             var produtoInput = document.getElementById("produtoInput");
             var produtoSelecionado = produtoInput.value.trim();
             var produtoId = produtoInput.getAttribute("data-id");
-
+            var produtoRetornavel = produtoInput.getAttribute("data-retornavel");
             var produto_valor_unitario = parseFloat(produtoInput.getAttribute("data-valor"));
-            var optionSelecionada = document.querySelector('option[value="' + produtoSelecionado + '"]');
             
             if (produtoSelecionado !== "") {
                 var listaProdutos = document.getElementById("listaProdutos");
@@ -130,17 +179,21 @@
                     var novoItemLista = document.createElement("li");
                     novoItemLista.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
                     novoItemLista.setAttribute("data-id", produtoId);
+                    novoItemLista.setAttribute("data-retornavel", produtoRetornavel); 
                     novoItemLista.setAttribute("data-valor", produto_valor_unitario);
                     novoItemLista.innerHTML = `
                         <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                        <span class="" >${produtoSelecionado}</span>
+                        <span class="" >${produtoSelecionado} R$${produto_valor_unitario} Unid</span>
 
                         <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" onclick="aumentarQuantidade(this)"></span>
                         <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
                     `;
                     listaProdutos.appendChild(novoItemLista);
                 }
+
                 calcularValorTotal();
+                produtoInput.value =""
+                verificarRetornaveis();
             }
         });
     });
@@ -164,13 +217,102 @@
     }
 </script>
 
-<div class="form-group mb-2" >
-    <label  id="valor_total">Valor Total:</label>
-    <label id="label_valor_total">00,00</label>
-
+<div class="container mb-1 font-monospace mt-2" style="font: size 1rem;" >
+    <label  id="valor_total" class="fw-bold ">Valor Total:</label>
+    <label class="ms-auto float-end text-success fw-bold" id="label_valor_total">00,00</label>
 </div>
-<hr>
-                    <div class="btn-group mb-2 mt-1" role="group" aria-label="Tipo de Cliente" >
+<hr class="mt-1 mb-3 fw-bold ">
+         
+<div class=" " id="container_gestao_retornavel">
+
+    <div class="alert alert-warning font-monospace" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <strong>Atenção:</strong> <span class="" style="font-size: 0.7rem"> Estas configurações se referem à gestão de produtos retornáveis. 
+            Este campo pode ser ignorado, mas sua utilização foi modelada para galões de água, que possuem data de validade. Preenchendo as informações, você consegue saber qual foi o último galão pego pelo cliente, entre outras informações.
+    </div> 
+    <div class="card card-body">
+        <label class="form-label fw-bold" style="font-size: 1.2rem">Gestão de Galões</label>
+        <div class="row ">
+            <label class="form-label fw-bold" style="font-size: 1.rem">Galão que está entrando.</label>
+            <div class="col mb-3">
+                <div class="form-floating mb-2">
+                    <input type="text" id="data_validade_entrada" name="data_validade_entrada" class="form-control data-validade data-mes-ano-mask">
+                    <label for="data_validade_entrada" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                </div>
+            </div>
+            <div class="col mb-3">
+                <div class="form-floating mb-2">
+                    <input type="text" id="data_fabricacao_entrada" name="data_fabricacao_entrada" class="form-control data-fabricacao data-mes-ano-mask">
+                    <label for="data_fabricacao_entrada" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                </div>
+            </div>
+        </div>
+        <div class="row ">
+            <label class="form-label fw-bold" style="font-size: 1.rem">Galão que está saindo.</label>
+            <div class="col mb-3">
+                <div class="form-floating mb-2">
+                    <input type="text" id="data_validade_saida" name="data_validade_saida" class="form-control data-validade data-mes-ano-mask">
+                    <label for="data_validade_saida" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                </div>
+            </div>
+            <div class="col mb-3">
+                <div class="form-floating mb-2">
+                    <input type="text" id="data_fabricacao_saida" name="data_fabricacao_saida" class="form-control data-fabricacao data-mes-ano-mask">
+                    <label for="data_fabricacao_saida" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+
+<script>
+    document.querySelectorAll(".data-validade").forEach(function(input) {
+        input.addEventListener("input", function() {
+            // Limpa qualquer timeout existente
+            clearTimeout(input.timeoutId);
+            
+            // Configura um novo timeout para esperar que o usuário pare de digitar
+            input.timeoutId = setTimeout(function() {
+                // Obtém o valor do campo data_validade
+                var dataValidade = input.value.trim();
+                
+                // Verifica se a entrada está vazia
+                if (dataValidade === "") {
+                    return; // Não faz nada se estiver vazio
+                }
+                
+                // Verifica se a entrada possui o formato esperado (MM/AAAA)
+                var regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
+                if (!regex.test(dataValidade)) {
+                    return; // Não faz nada se o formato for inválido
+                }
+                
+                // Extrai o mês e o ano da entrada
+                var partes = dataValidade.split("/");
+                var mes = parseInt(partes[0], 10);
+                var ano = parseInt(partes[1], 10);
+                
+                // Calcula a data de fabricação subtraindo três anos da data de validade
+                var dataFabricacao = ("0" + mes).slice(-2) + "/" + (ano - 3);
+            
+                
+                // Encontra o campo de entrada data_fabricacao correspondente
+                var dataFabricacaoField = input.closest('.row').querySelector(".data-fabricacao");
+                
+                // Define o valor do campo data_fabricacao se encontrado
+                if (dataFabricacaoField) {
+                    dataFabricacaoField.value = dataFabricacao;
+                }
+            }, 500); // Aguarda 500ms após a última entrada antes de executar o cálculo
+        });
+    });
+        
+  </script>
+                   
+
+
+<div class="btn-group mb-2 mt-1" role="group" aria-label="Tipo de Cliente" >
     
                         <button type="button" class="btn btn-primary" data-bs-target="#container_cliente_existente" style="font-size: 0.8rem;">
                             <i class="bi bi-person"></i> Cliente Existente
@@ -184,7 +326,7 @@
                         <div class="card card-body">
                             <label for="select_cliente_existente" class="form-label">Selecione o Cliente Existente:</label>
                             <select id="select_cliente_existente" class="form-select" aria-label="Selecione o Cliente Existente">
-                                <!-- Opções do select serão preenchidas dinamicamente via Django -->
+                               
                             </select>
                         </div>
                     </div>

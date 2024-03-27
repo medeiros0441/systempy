@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from ..def_global import erro, criar_alerta_js
 from ..static import Alerta, UserInfo
-from ..models import Venda, Configuracao, Usuario, Associado, Loja, Cliente,Produto
+from ..models import Venda, Configuracao, Usuario, Associado, Loja, Cliente, Produto
 from functools import wraps
 from ..forms import VendaForm, ClienteForm
+from django.db.models import Q
 
 
 def verificar_permissoes(codigo_model):
@@ -67,15 +68,24 @@ class view_vendas:
             id_usuario = UserInfo.get_id_usuario(request)
             id_empresa = UserInfo.get_id_empresa(request)
             # Obter todas as associações do usuário com status de acesso verdadeiro
-            Associado.objects.filter(usuario_id=id_usuario, status_acesso=True)
+            associacao = Associado.objects.filter(
+                usuario_id=id_usuario, status_acesso=True
+            )
             # Obter os clientes da empresa
             clientes = Cliente.objects.filter(empresa_id=id_empresa)
-            produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa)
+
+            # Obtém uma lista de IDs de loja associadas
+            ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
+
+            # Filtra os produtos com base nas lojas associadas
+            produtos = Produto.objects.filter(
+                Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa
+            )
 
             # Inicializar os formulários
             form_venda = VendaForm(id_usuario)
             form_cliente = ClienteForm()
-              # Criar o contexto
+            # Criar o contexto
             context = {
                 "list_clientes": clientes,
                 "form_cliente": form_cliente,
@@ -86,8 +96,8 @@ class view_vendas:
             return view_vendas.lista_vendas(request, context)
         except Associado.DoesNotExist:
             Alerta.set_mensagem(
-                    "Tivemos um problema para recuperar as lojas. Entre em contato com um administrador da assinatura. Você precisa estar associado a uma loja para realizar uma venda."
-                )
+                "Tivemos um problema para recuperar as lojas. Entre em contato com um administrador da assinatura. Você precisa estar associado a uma loja para realizar uma venda."
+            )
             context["open_modal"] = False
             return view_vendas.lista_vendas(request, context)
         except Produto.DoesNotExist:

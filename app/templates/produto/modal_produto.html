@@ -1,11 +1,10 @@
 
 {% block content %}
   
-  
-<!-- Modal -->
+   
 <div class="modal fade" id="ModalProduto" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog  modal-md modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
+    <div class="modal-dialog  modal-lg modal-fullscreen-lg-down modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
         <div class="modal-header">
         <h5 class="modal-title fw-bold font-monospace" id="lojaModalLabel" >
             {% if text_produto %} Detalhes do Produto{% endif%}
@@ -13,265 +12,272 @@
             {% if produtos_list %} acrescentar Produto{% endif%}
         </h5>
         </div>
-        {% if text_produto %} 
-
-        <div class="modal-body  font-monospace"   >
-            <div class="form-group">
-                <label for="text_nome_produto" class="fw-bold"><i class="bi bi-card-heading"></i> Nome do produto:</label>
-                <span id="nome_produto">{{ text_produto.nome }}</span>
-            </div>
-            
-            <div class="form-group">
-                <label for="text_quantidade_atual_estoque" class="fw-bold"><i class="bi bi-box"></i> Quantidade Atual no Estoque:</label>
-                <span id="quantidade_atual_estoque">{{ text_produto.quantidade_atual_estoque_f }}</span>
-            </div>
-            
-            <div class="form-group">
-                <label for="text_quantidade_minima_estoque" class="fw-bold"><i class="bi bi-box"></i> Quantidade Mínima no Estoque:</label>
-                <span id="quantidade_minima_estoque">{{ text_produto.quantidade_minima_estoque_f }}</span>
-            </div>
-            
-            <div class="form-group">
-                <label for="text_preco_compra" class="fw-bold"><i class="bi bi-currency-dollar"></i> Preço de Compra:</label>
-                <span id="preco_compra">{{ text_produto.preco_compra_f }}</span>
-            </div>
-            
-            <div class="form-group">
-                <label for="text_preco_venda" class="fw-bold"><i class="bi bi-currency-dollar"></i> Preço de Venda:</label>
-                <span id="preco_venda">{{ text_produto.preco_venda_f }}</span>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="text_fabricante" class="fw-bold"><i class="bi bi-tools"></i> Fabricante:</label>
-                <span id="fabricante">{{ text_produto.fabricante }}</span>
-            </div>
-            
-            <span class="fw-bold font-monospace" style="font-size: 1.0rem;"><i class="bi bi-shop"></i> Detalhes da Loja </span>
-            <hr class="fw-border text-black mt-0 mb-1">
-            
-            <div class="form-group">
-                <label for="nome_loja" class="fw-bold"><i class="bi bi-shop-window"></i> Nome da Loja:</label>
-                <span id="nome_loja">{{ text_produto.loja.nome_loja }}</span>
-            </div>
-            
-            <div class="form-group">
-                <label class="fw-bold" for="numero_telefone"><i class="bi bi-telephone"></i> Número Telefone:</label>
-                <span id="numero_telefone">{{ text_produto.loja.numero_telefone }}</span>
-            </div>
-            
-        </div>
-        <div class="modal-footer ">
-            <a href="{% url 'lista_produtos' %}" class="btn btn-secondary  mx-auto btn-sm">Fechar</a>
-        </div>
-        {% endif%}
-    <!-- form list acrescentar produtos -->
-    {% if produtos_list %}
-    <form method="post" id="form_cadastro" class="needs-validation  " novalidate>
-        <div class="modal-body  font-monospace"   >
-                {% csrf_token %}
-            <div class="form-floating mb-2">
-                <select class="form-select" id="id_loja" name="id_loja"  >
-                    <option class="small font-monospace mt-2" selected disabled>Selecione a loja</option>
-                    {% for loja in lojas %}
-                    <option class="small font-monospace" value="{{ loja.id_loja }}">{{ loja.nome_loja }}</option>
-                    {% endfor %}
-                </select>
-                <label for="id_loja" style="font-size: 0.8rem;">Loja:</label>
-            </div>
-            
-            <div class="form-floating mb-2">
-                <!-- Select para referenciar o produto que será acrescentado -->
-                <select class="form-select" id="id_nome" name="id_produto" aria-label="Selecione">
-                    <option class="small font-monospace mt-2" selected disabled>Selecione o produto</option>
-                    {% for produto in produtos_list %}
-                    <option  class="small font-monospace" value="{{ produto.id }}" data-loja="{{ produto.id_loja }}">{{ produto.nome }}</option>
-                    {% endfor %}
-                </select>
-                <label for="id_nome" style="font-size: 0.8rem;">Nome:</label>
-            </div>
-
-            <div class="form-group">
-                <label for="text_quantidade_atual_estoque" class="fw-bold">Quantidade Atual no Estoque:</label>
-                <span id="id_quantidade_atual_estoque"> </span>
-            </div>
-
-            <div class="form-floating mb-2">
-                <input type="text" class="form-control quantidade-mask" id="id_quantidade_acrescentar" name="id_quantidade_acrescentar">
-                <label for="id_quantidade_acrescentar" style="font-size: 0.8rem;">Quantidade a ser acrescentada no Estoque:</label>
-            </div>
-        </div>
-        <div class="modal-footer ">
-            <a href="{% url 'lista_produtos' %}" class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
-        <button type="submit" class="btn btn-primary float-end btn-md" >Salvar</button>
-        </div>
-          
-        <script>
-            document.getElementById('form_cadastro').addEventListener('submit', function(event) {  
-                event.preventDefault(); // Evita que o formulário seja submetido
-                
-                var idLoja = document.getElementById('id_loja').value;
-                var idProduto = document.getElementById('id_nome').value;
-                var id_quantidade_acrescentar = document.getElementById('id_quantidade_acrescentar').value;
-            
-                if (idLoja === "" || idProduto === "" || id_quantidade_acrescentar === "") {
-                    alertCustomer("Por favor, preencha todos os campos.");
-                
-                } else {
-                    // Se todos os campos estiverem preenchidos, envie o formulário
-                    document.getElementById('form_cadastro').submit();
-                }
-            });
-            
-        
-            // Renderizando os dados do Django no JavaScript
-            var lojas = [
-                {% for loja in lojas %}
-                    {
-                        id: "{{ loja.id_loja }}",
-                        nome: "{{ loja.nome_loja }}"
-                    },
-                {% endfor %}
-            ];
-        
-            var produtos = [
-                {% for produto in produtos_list %}
-                    {
-                        id: "{{ produto.id_produto }}",
-                        nome: "{{ produto.nome}}",
-                        id_loja: "{{ produto.loja.id_loja }}",
-                        quantidade_atual_estoque: "{{ produto.quantidade_atual_estoque }}"
-                    },
-                {% endfor %}
-            ];
-        
-            // Adiciona um ouvinte de evento de mudança ao seletor da loja
-
-            document.getElementById('id_nome').addEventListener('change', function () {
-                var selected = this.value;
-                produtos.forEach(function (produto) {
-                    if (produto.id=== selected  ) {
-                    document.getElementById('id_quantidade_atual_estoque').textContent = produto.quantidade_atual_estoque;
-                }
-                }); 
-                
-            });
-            document.getElementById('id_loja').addEventListener('change', function () {
-                // Obtém o valor selecionado da loja
-                var selectedLoja = this.value;
-                
-                // Limpa as opções do seletor de produtos
-                var idNomeSelect = document.getElementById('id_nome');
-                idNomeSelect.innerHTML = '';
-        
-                // Adiciona as opções dos produtos filtrados com base na loja selecionada
-                produtos.forEach(function (produto) {
-                    if (produto.id_loja === selectedLoja || selectedLoja === '') {
-                        var option = document.createElement('option');
-                        option.value = produto.id;
-                        option.textContent = produto.nome;
-                        idNomeSelect.appendChild(option);
-                         document.getElementById('id_quantidade_atual_estoque').textContent = produto.quantidade_atual_estoque;
-                }
-                });
-            });
-        </script>
-    </form>
-    {% endif%}
-
-
-
-{% if form_produto %}   
-    <form method="post" id="form_cadastro" class="needs-validation  " novalidate>
-               {% csrf_token %}
-
+    <form method="post" id="form_cadastro" class="needs-validation modal-body m-0 p-0 " novalidate>
+       
         <div class="modal-body  font-monospace"  >
-                <div class="form-floating mb-2">
-                    {{ form_produto.loja }}
-                    <label for="id_loja" style="font-size: 0.8rem;">Loja:</label>
+                {% if text_produto %} 
+                <div class="form-group">
+                    <label for="text_nome_produto" class="fw-bold"><i class="bi bi-card-heading"></i> Nome do produto:</label>
+                    <span id="nome_produto">{{ text_produto.nome }}</span>
                 </div>
-            
-            <div class="form-floating mb-2">
-                {{ form_produto.nome }}
-                <label for="id_nome" style="font-size: 0.8rem;">Nome:</label>
-            </div>
-            <div class="form-group">
-                <div class="row">
-                    <div class="col p-1">
-                        <div class="form-floating mb-2">
-                            {{ form_produto.quantidade_atual_estoque }}
-                            <label for="id_quantidade_atual_estoque" style="font-size: 0.8rem;">Quantidade Atual no Estoque:</label>
-                        </div>
-                    </div>
-                    <div class="col p-1">
-                        <div class="form-floating mb-2">
-                            {{ form_produto.quantidade_minima_estoque }}
-                            <label for="id_quantidade_minima_estoque" style="font-size: 0.8rem;">Quantidade Mínima no Estoque:</label>
-                        </div>
-                    </div>
+                
+                <div class="form-group">
+                    <label for="text_quantidade_atual_estoque" class="fw-bold"><i class="bi bi-box"></i> Quantidade Atual no Estoque:</label>
+                    <span id="quantidade_atual_estoque">{{ text_produto.quantidade_atual_estoque_f }}</span>
                 </div>
-            </div>
-            <div class="form-floating mb-2">
-                {{ form_produto.fabricante }}
-                <label for="id_fabricante" style="font-size: 0.8rem;">Fabricante:</label>
-            </div> 
-            <div class="form-group">
-                <div class="row">
-                    <div class="col p-1">
-                        <div class="form-floating mb-2">
-                            {{ form_produto.preco_compra_fake }}
-                            <label for="id_preco_compra_fake" style="font-size: 0.8rem;">Preço de Compra:</label>
-                        </div>
-                    </div>
-                    <div class="col p-1">
-                        <div class="form-floating mb-2">
-                            {{ form_produto.preco_venda_fake }}
-                            <label for="id_preco_venda_fake" style="font-size: 0.8rem;">Preço de Venda:</label>
-                        </div>
-                    </div>
+                
+                <div class="form-group">
+                    <label for="text_quantidade_minima_estoque" class="fw-bold"><i class="bi bi-box"></i> Quantidade Mínima no Estoque:</label>
+                    <span id="quantidade_minima_estoque">{{ text_produto.quantidade_minima_estoque_f }}</span>
                 </div>
+                
+                <div class="form-group">
+                    <label for="text_preco_compra" class="fw-bold"><i class="bi bi-currency-dollar"></i> Preço de Compra:</label>
+                    <span id="preco_compra">{{ text_produto.preco_compra_f }}</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="text_preco_venda" class="fw-bold"><i class="bi bi-currency-dollar"></i> Preço de Venda:</label>
+                    <span id="preco_venda">{{ text_produto.preco_venda_f }}</span>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="text_fabricante" class="fw-bold"><i class="bi bi-tools"></i> Fabricante:</label>
+                    <span id="fabricante">{{ text_produto.fabricante }}</span>
+                </div>
+                
+                <span class="fw-bold font-monospace" style="font-size: 1.0rem;"><i class="bi bi-shop"></i> Detalhes da Loja </span>
+                <hr class="fw-border text-black mt-0 mb-1">
+                
+                <div class="form-group">
+                    <label for="nome_loja" class="fw-bold"><i class="bi bi-shop-window"></i> Nome da Loja:</label>
+                    <span id="nome_loja">{{ text_produto.loja.nome_loja }}</span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="fw-bold" for="numero_telefone"><i class="bi bi-telephone"></i> Número Telefone:</label>
+                    <span id="numero_telefone">{{ text_produto.loja.numero_telefone }}</span>
+                </div>
+                
+        
+                {% endif%}
+                {% if produtos_list %} 
+                            {% csrf_token %}
+                        <div class="form-floating mb-2">
+                            <select class="form-select" id="id_loja" name="id_loja"  >
+                                <option class="small font-monospace mt-2" selected disabled>Selecione a loja</option>
+                                {% for loja in lojas %}
+                                <option class="small font-monospace" value="{{ loja.id_loja }}">{{ loja.nome_loja }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="id_loja" style="font-size: 0.8rem;">Loja:</label>
+                        </div>
+                        
+                        <div class="form-floating mb-2">
+                            <!-- Select para referenciar o produto que será acrescentado -->
+                            <select class="form-select" id="id_nome" name="id_produto" aria-label="Selecione">
+                                <option class="small font-monospace mt-2" selected disabled>Selecione o produto</option>
+                                {% for produto in produtos_list %}
+                                <option  class="small font-monospace" value="{{ produto.id }}" data-loja="{{ produto.id_loja }}">{{ produto.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="id_nome" style="font-size: 0.8rem;">Nome:</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="text_quantidade_atual_estoque" class="fw-bold">Quantidade Atual no Estoque:</label>
+                            <span id="id_quantidade_atual_estoque"> </span>
+                        </div>
+
+                        <div class="form-floating mb-2">
+                            <input type="text" class="form-control quantidade-mask" id="id_quantidade_acrescentar" name="id_quantidade_acrescentar">
+                            <label for="id_quantidade_acrescentar" style="font-size: 0.8rem;">Quantidade a ser acrescentada no Estoque:</label>
+                        </div>
+                    
+                    <script>
+                        document.getElementById('form_cadastro').addEventListener('submit', function(event) {  
+                            event.preventDefault(); // Evita que o formulário seja submetido
+                            
+                            var idLoja = document.getElementById('id_loja').value;
+                            var idProduto = document.getElementById('id_nome').value;
+                            var id_quantidade_acrescentar = document.getElementById('id_quantidade_acrescentar').value;
+                        
+                            if (idLoja === "" || idProduto === "" || id_quantidade_acrescentar === "") {
+                                alertCustomer("Por favor, preencha todos os campos.");
+                            
+                            } else {
+                                // Se todos os campos estiverem preenchidos, envie o formulário
+                                document.getElementById('form_cadastro').submit();
+                            }
+                        });
+                        
+                    
+                        // Renderizando os dados do Django no JavaScript
+                        var lojas = [
+                            {% for loja in lojas %}
+                                {
+                                    id: "{{ loja.id_loja }}",
+                                    nome: "{{ loja.nome_loja }}"
+                                },
+                            {% endfor %}
+                        ];
+                    
+                        var produtos = [
+                            {% for produto in produtos_list %}
+                                {
+                                    id: "{{ produto.id_produto }}",
+                                    nome: "{{ produto.nome}}",
+                                    id_loja: "{{ produto.loja.id_loja }}",
+                                    quantidade_atual_estoque: "{{ produto.quantidade_atual_estoque }}"
+                                },
+                            {% endfor %}
+                        ];
+                    
+                        // Adiciona um ouvinte de evento de mudança ao seletor da loja
+
+                        document.getElementById('id_nome').addEventListener('change', function () {
+                            var selected = this.value;
+                            produtos.forEach(function (produto) {
+                                if (produto.id=== selected  ) {
+                                document.getElementById('id_quantidade_atual_estoque').textContent = produto.quantidade_atual_estoque;
+                            }
+                            }); 
+                            
+                        });
+                        document.getElementById('id_loja').addEventListener('change', function () {
+                            // Obtém o valor selecionado da loja
+                            var selectedLoja = this.value;
+                            
+                            // Limpa as opções do seletor de produtos
+                            var idNomeSelect = document.getElementById('id_nome');
+                            idNomeSelect.innerHTML = '';
+                    
+                            // Adiciona as opções dos produtos filtrados com base na loja selecionada
+                            produtos.forEach(function (produto) {
+                                if (produto.id_loja === selectedLoja || selectedLoja === '') {
+                                    var option = document.createElement('option');
+                                    option.value = produto.id;
+                                    option.textContent = produto.nome;
+                                    idNomeSelect.appendChild(option);
+                                    document.getElementById('id_quantidade_atual_estoque').textContent = produto.quantidade_atual_estoque;
+                            }
+                            });
+                        });
+                    </script>
+                {% endif%}
+
+
+
+                {% if form_produto %}   
+                                    {% csrf_token %}
+                                <div class="form-floating mb-2">
+                                    {{ form_produto.loja }}
+                                    <label for="id_loja" style="font-size: 0.8rem;">Loja:</label>
+                                </div>
+                                <div class="form-floating mb-2">
+                                    {{ form_produto.nome }}
+                                    <label for="id_nome" style="font-size: 0.8rem;">Nome:</label>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col p-1">
+                                            <div class="form-floating mb-2">
+                                                {{ form_produto.quantidade_atual_estoque }}
+                                                <label for="id_quantidade_atual_estoque" style="font-size: 0.8rem;">Quantidade Atual no Estoque:</label>
+                                            </div>
+                                        </div>
+                                        <div class="col p-1">
+                                            <div class="form-floating mb-2">
+                                                {{ form_produto.quantidade_minima_estoque }}
+                                                <label for="id_quantidade_minima_estoque" style="font-size: 0.8rem;">Quantidade Mínima no Estoque:</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col p-1">
+                                            <div class="form-floating mb-2">
+                                                {{ form_produto.is_retornavel }}
+                                                <label for="is_retornavel" style="font-size: 0.8rem;"> {{ form_produto.is_retornavel.label }}:</label>
+                                            </div>  
+                                        </div>  
+                                        <div class="col p-1">
+                                            <div class="form-floating mb-2">
+                                                {{ form_produto.data_validade }}
+                                                <label for="data_validade"  >
+                                                    Validade: <span  style="font-size: 0.8rem;">(opcional)</span>
+                                                </label>
+                                            </div> 
+                                        </div>
+                                    </div>
+                                </div>
+                                    <div class="form-floating mb-2">
+                                        {{ form_produto.fabricante }}
+                                        <label for="id_fabricante" style="font-size: 0.8rem;">Fabricante:</label>
+                                    </div> 
+                            
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <div class="col p-1">
+                                                <div class="form-floating mb-2">
+                                                    {{ form_produto.preco_compra_fake }}
+                                                    <label for="id_preco_compra_fake" style="font-size: 0.8rem;">Preço de Compra:</label>
+                                                </div>
+                                            </div>
+                                            <div class="col p-1">
+                                                <div class="form-floating mb-2">
+                                                    {{ form_produto.preco_venda_fake }}
+                                                    <label for="id_preco_venda_fake" style="font-size: 0.8rem;">Preço de Venda:</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>  
+                            
+                        <script>
+                            document.getElementById('form_cadastro').addEventListener('submit', function(event) {
+                                var form = event.target;
+                                if (!form.checkValidity()) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    form.classList.add('was-validated');
+                                }
+                                else {
+                                    form.classList.remove('was-validated');
+                                }
+
+                                // Validação personalizada para o campo de preço de compra
+                                var precoCompraInput = document.getElementById('id_preco_compra');
+                                if (precoCompraInput.value < 0) {
+                                    precoCompraInput.classList.add('is-invalid');
+                                }
+                                else {
+                                    precoCompraInput.classList.remove('is-invalid');
+                                    precoCompraInput.classList.add('is-valid');
+                                }
+
+                                // Validação personalizada para o campo de preço de venda
+                                var precoVendaInput = document.getElementById('id_preco_venda');
+                                if (precoVendaInput.value < 0) {
+                                    precoVendaInput.classList.add('is-invalid');
+                                }
+                                else {
+                                    precoVendaInput.classList.remove('is-invalid');
+                                    precoVendaInput.classList.add('is-valid');
+                                }
+                            });
+                        </script>
+                    {% endif%}
+
+
+        </div>
+            <div class="modal-footer " >
+              <a href="{% url 'lista_produtos' %}"   class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
+              {% if form_produto  or  produtos_list %}      <button type="submit" class="btn btn-primary float-end btn-md btn-loading"   >Salvar</button> {% endif%} 
+       
             </div>  
-    </div>  
-    <div class="modal-footer " >
-        <a href="{% url 'lista_produtos' %}"   class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
-    <button type="submit" class="btn btn-primary float-end btn-md"   >Salvar</button>
-</div>  
-
-            </form>
-
-<script>
-    document.getElementById('form_cadastro').addEventListener('submit', function(event) {
-        var form = event.target;
-        if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-            form.classList.add('was-validated');
-        }
-        else {
-            form.classList.remove('was-validated');
-        }
-
-        // Validação personalizada para o campo de preço de compra
-        var precoCompraInput = document.getElementById('id_preco_compra');
-        if (precoCompraInput.value < 0) {
-            precoCompraInput.classList.add('is-invalid');
-        }
-        else {
-            precoCompraInput.classList.remove('is-invalid');
-            precoCompraInput.classList.add('is-valid');
-        }
-
-        // Validação personalizada para o campo de preço de venda
-        var precoVendaInput = document.getElementById('id_preco_venda');
-        if (precoVendaInput.value < 0) {
-            precoVendaInput.classList.add('is-invalid');
-        }
-        else {
-            precoVendaInput.classList.remove('is-invalid');
-            precoVendaInput.classList.add('is-valid');
-        }
-    });
-</script>
-            {% endif%}
+    </form>
+         
         </div>
       </div>
     </div>

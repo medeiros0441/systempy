@@ -105,16 +105,29 @@ class view_usuarios:
                     usuario.save()
                     for loja in list_lojas:
                         campo_checkbox = f"status_acesso_{loja.id_loja}"
-                        associacao, created = Associado.objects.get_or_create(
-                            usuario_id=id_usuario,
-                            loja_id=loja.id_loja,
-                            defaults={'status_acesso': campo_checkbox in request.POST, 'update': timezone.now()}
-                        )
-                        if not created:
-                            associacao.status_acesso = campo_checkbox in request.POST
-                            associacao.update = timezone.now()
-                            associacao.save()
-                    Alerta.set_mensagem("Usuário editado com sucesso!")
+                        if usuario.nivel_usuario > 1:
+                            associacao, created = Associado.objects.get_or_create(
+                                usuario_id=id_usuario,
+                                loja_id=loja.id_loja,
+                                defaults={
+                                    "status_acesso": campo_checkbox in request.POST,
+                                    "update": timezone.now(),
+                                },
+                            )
+                            if not created:
+                                associacao.status_acesso = (
+                                    campo_checkbox in request.POST
+                                )
+                                associacao.update = timezone.now()
+                                associacao.save()
+                            Alerta.set_mensagem("Usuário editado com sucesso!")
+                        else:
+                           
+                            if(campo_checkbox not in request.POST):
+                                Alerta.set_mensagem(
+                                    "Usuário editado com sucesso!, O Usuário administrador precisar estar associado a todas as lojas."
+                                )
+                            else: Alerta.set_mensagem("Usuário editado com sucesso!")
                     return redirect("listar_usuarios")
                 else:
                     Alerta.set_mensagem(
