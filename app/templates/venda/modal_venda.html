@@ -29,58 +29,416 @@
                     </div>
                     <div class="input-group mb-3">
                         <input type="text" class="form-control produtoInput" placeholder="Produto:" id="produtoInput" name="produtoInput" list="produtosList" autocomplete="off" />
-                        <button class="btn btn-outline-secondary bi-plus" type="button" id="adicionarProdutoBtn"></button>
+                        <button class="btn btn-outline-secondary bi-plus" type="button" id="adicionarProdutoBtn" />
+                             
                     </div>
-                    
-                    <datalist id="produtosList">
-                        {% for produto in list_produtos %}
-                       <option value="{{ produto.nome }}" data-valor="{{produto.preco_venda}}" data-id-loja="{{produto.loja.id_loja}}" class="list-group-item" data-id="{{ produto.id_produto }}" data-retornavel="{{ produto.is_retornavel }}"  />
-                        {% endfor %}
+                    <datalist id="produtosList" class="dropdown-menu">
+                         
                     </datalist>
                     
                     <ul class="list-group" id="listaProdutos">
-                        <!-- Itens da lista de produtos selecionados serão adicionados aqui dinamicamente -->
+                     
                     </ul>
-                  
+                   
+
+<div class="container mb-1 px-1 mx-1 font-monospace mt-2" style="font: size 1rem;" >
+    <label  id="valor_total" class="fw-bold ">Valor Total:</label>
+    <label class="ms-auto float-end text-success fw-bold" id="label_valor_total">00,00</label>
+</div>
+<hr class="mt-1 mb-3 fw-bold ">
+
+<div class="m-1 p-2 card shadow-lg">
+ 
+            <div class="container-fluid d-flex "     id="toggleAccordion"  >
+               <span class="me-auto font-monospace "> Gestão de produtos retornáveis</span>
+                <i id="iconeBloqueado" class="bi ms-auto bi-lock" ></i>
+                <i id="iconeDesbloqueado"  class="bi bi-unlock ms-auto d-none"></i>
+            </div>
+
+        <div class="card-body mt-0" id="body_gestaoRetornavel" style="display:none;">
+<hr class="mt-1 mb-1 fw-bold ">
+
+            <div class="alert alert-warning font-monospace" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <strong>Atenção:</strong> <span class="" style="font-size: 0.7rem"> Estas configurações se referem à gestão de produtos retornáveis. 
+                    Este campo pode ser ignorado, mas sua utilização foi modelada para galões de água, que possuem data de validade. Preenchendo as informações, você consegue saber qual foi o último galão pego pelo cliente, entre outras informações.
+            </div> 
+ 
+                <div class="row ">
+                    <label class="form-label  " style="font-size: 1.rem">Galão que está entrando.</label>
+                    <div class="col mx-1 p-0">
+                        <div class="form-floating mb-2">
+                            <input type="text" id="data_validade_entrada" name="data_validade_entrada" class="form-control data-validade data-mes-ano-mask">
+                            <label for="data_validade_entrada" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                        </div>
+                    </div>
+                    <div class="col mx-1 p-0">
+                        <div class="form-floating mb-2">
+                            <input type="text" id="data_fabricacao_entrada" name="data_fabricacao_entrada" class="form-control data-fabricacao data-mes-ano-mask">
+                            <label for="data_fabricacao_entrada" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row ">
+                    <label class="form-label  " style="font-size: 1.rem">Galão que está saindo.</label>
+                    <div class="col mx-1 p-0">
+                        <div class="form-floating mb-2">
+                            <input type="text" id="data_validade_saida" name="data_validade_saida" class="form-control data-validade data-mes-ano-mask">
+                            <label for="data_validade_saida" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                        </div>
+                    </div>
+                    <div class="col mx-1 p-0">
+                        <div class="form-floating mb-2">
+                            <input type="text" id="data_fabricacao_saida" name="data_fabricacao_saida" class="form-control data-fabricacao data-mes-ano-mask">
+                            <label for="data_fabricacao_saida" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-floating mb-2">
+                    <input type="text" id="id_descricao_gestão_galao" name="id_descricao_gestão_galao" class="form-control  ">
+                    <label for="id_descricao_gestão_galao" style="font-size: 0.7rem" class="form-label">Descricao: <span style="font-size: 0.6rem;">(opicional)</span></label>
+                </div>
+            </div>
+        </div>
+    
+        <div class="container p-0 mx-auto mb-2 mt-2 d-flex justify-content-center">
+            <div class="btn-group" role="group" aria-label="Tipo de Cliente">
+                <button type="button" class="btn btn-primary" data-bs-target="#container_cliente_existente" style="font-size: 0.8rem;" onclick="adicionarInputCliente(1)">
+                    <i class="bi bi-person"></i> Cliente Existente
+                </button>
+                <button type="button" class="btn btn-success" data-bs-target="#container_novo_cliente" style="font-size: 0.8rem;" onclick="adicionarInputCliente(2)">
+                    <i class="bi bi-person-plus"></i> Novo Cliente
+                </button>
+            </div>
+        </div>
+        
+                     
+                    <div class="collapse" id="container_cliente_existente">
+                        <div class="card card-body">
+                            <div class="form-floating mb-2">
+                            <input type="text" class="form-control " id="input_cliente" list="clientes">
+                            <label for="input_cliente">Escolha ou digite:</label>
+                            <datalist id="clientes">
+                                {% for cliente in clientes %}
+                                <option value="{{ cliente.nome_cliente }}" data-id-cliente="{{ cliente.id_cliente }}">
+                                {% endfor %}
+                            </datalist>
+
+                        </div>
+                    </div>
+                    </div>
+                    
+                    <div class="collapse" id="container_novo_cliente">
+                        <div class="card card-body">
+                            <div class="form-floating mb-2">
+                                {{ form_cliente.nome_cliente }}
+                                <label for="id_nome_cliente" class="form-label">Nome do Cliente:</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                {{ form_cliente.telefone_cliente }}
+                                <label for="id_telefone_cliente" class="form-label">Telefone do Cliente:</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                {{ form_cliente.descricao_cliente }}
+                                <label for="id_descricao_cliente" class="form-label">Descrição do Cliente:</label>
+                            </div>
+                            <h5 class="modal-title mx-auto fw-bold font-monospace"  style="font:size 1rem" >
+                            Formulario de  Endereço
+                            </h5>
+                            <div class="form-floating mb-2  ">
+                                {{ form_endereco.codigo_postal }}
+                                <label for="id_codigo_postal">Código Postal</label>
+                               
+                            </div>
+                            
+                            <div class="form-floating mb-2  ">
+                                {{ form_endereco.rua }}
+                                <label for="id_rua">Rua</label>
+                                
+                            </div>
+                            
+                            <div class="form-floating mb-2  ">
+                                {{ form_endereco.numero }}
+                                <label for="id_numero">Número</label>
+                               
+                            </div>
+                            
+                            <div class="form-floating mb-2  ">
+                                {{ form_endereco.bairro }}
+                                <label for="id_bairro">Bairro</label>
+                            </div>
+                            
+                            <div class="form-floating mb-2  ">
+                                {{ form_endereco.cidade }}
+                                <label for="id_cidade">Cidade</label>
+                            </div>
+                            
+                            <div class="form-floating mb-2  ">
+                                {{ form_endereco.estado }}
+                                <label for="id_estado">Estado</label>
+                            </div>
+                            
+                            <div class="form-floating mb-2 ">
+                                {{ form_endereco.descricao }}
+                                <label for="id_descricao">Descrição</label>
+                            </div> 
+                        </div>
+                    </div>
+            
+                    
+                <hr> 
+                     
+                    <div class="form-floating mb-2">
+                        {{ form_venda.metodo_entrega }}
+                        <label for="metodo_entrega">Método de Entrega:</label>
+                    </div> 
+                    
+                    <div class="form-floating mb-2">
+                        {{ form_venda.forma_pagamento }}
+                        <label for="forma_pagamento">Forma de Pagamento:</label>
+                    </div>
+                     
+                    <div class="form-floating mb-2">
+                        {{ form_venda.estado_transacao }}
+                        <label for="estado_transacao">Estado da Transação:</label>
+                    </div>
+                    
+                   
+                    <div class="container m-0  gestaotroco d-none">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="form-floating mb-2">
+                                    {{ form_venda.valor_pago }}
+                                    <label for="id_valor_pago">Valor Pago:</label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class=" my-auto">
+                                    <label for="id_troco" class="font-monospace fw-bold">Troco:</label>
+                                    <label id="id_troco" class="text-danger">00,00</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                
+                    <div class="form-floating mb-2">
+                        {{ form_venda.descricao }}
+                        <label for="descricao">Descrição:</label>
+                    </div>
+                </div>
+                <input id="id_tipoCliente" name="tipoCliente" type="hidden" value="0" > 
+            <div class="modal-footer ">
+                <a href="{% url 'lista_vendas' %}" class="btn btn-secondary float-start me-auto btn-sm">Cancelar</a>
+             <button type="submit" id="btnSubmit" class="btn btn-primary float-end btn-md" >Salvar</button>
+
+            </div>  
+
+        </form>
+        </div>
+         
 <script>
+     // Defina sua função de verificação
+     function verificarAntesDoSubmit() {
+
+        if (document.getElementById('id_loja').value == "0") {
+            alertCustomer('Por favor, selecione uma loja antes de enviar o formulário.');
+            return false;  
+        }
+        if (!atualizarCamposCarrinho()) {
+            alertCustomer('Não foram adicionados itens ao formulário. Por favor, adicione itens ao carrinho antes de enviar.');
+            return false;
+        }
+        if (document.getElementById('id_metodo_entrega').value == "0") {
+            alertCustomer('Por favor, selecione um método de entrega antes de enviar o formulário.');
+            return false;  
+        }
+        if (document.getElementById('id_forma_pagamento').value == "0") {
+            alertCustomer('Por favor, selecione uma forma de pagamento antes de enviar o formulário.');
+            return false;  
+        } 
+        if (document.getElementById('id_estado_transacao').value == "0") {
+            alertCustomer('Por favor, selecione um estado de transação antes de enviar o formulário.');
+            return false;  
+        }
+        if(document.getElementById('id_tipoCliente').value == "1"){
+            alertCustomer('Por favor, preencha todos os campos antes de enviar o formulário.');
+
+        }
+        
+        if(document.getElementById('id_tipoCliente').value == "2"){
+            alertCustomer('Por favor, preencha todos os campos antes de enviar o formulário.');
+        
+        }
+
+        return true; // Permite o envio do formulário
+    }
+
+    // Adicione um ouvinte de eventos ao botão de envio
+    document.getElementById("btnSubmit").addEventListener("click", function(event) {
+        // Chama a função de verificação antes de permitir o envio do formulário
+        if (!verificarAntesDoSubmit()) {
+            event.preventDefault(); // Impede o envio do formulário se a verificação falhar
+        }
+    });
+
+    // Função para atualizar o campo oculto com os itens do carrinho
+    function atualizarCamposCarrinho() {
+        var listaProdutos = document.getElementById('listaProdutos');
+        var itensCarrinho = [];
     
-    document.addEventListener('DOMContentLoaded', function() {
-        var lojaSelect = document.querySelector('#id_loja');
-        var produtoInput = document.querySelector('#produtoInput');
-        var produtosList = document.querySelector('#produtosList');
-    
-        // Função para remover itens da lista de produtos com base na loja selecionada
-        function atualizarListaProdutos() {
-            var idLojaSelecionada = lojaSelect.value;
-    
-            // Remover todos os itens da lista de produtos
-            while (produtosList.firstChild) {
-                produtosList.removeChild(produtosList.firstChild);
-            }
-    
-            // Adicionar novamente os itens associados à loja selecionada
-            var options = document.querySelectorAll('[data-id-loja]');
-            options.forEach(function(option) {
-                var idLojaProduto = option.getAttribute('data-id-loja');
-                if (idLojaProduto === idLojaSelecionada || idLojaSelecionada === '') {
-                    produtosList.appendChild(option.cloneNode(true));
-                }
-            });
+        // Percorrer os itens da lista de produtos
+        var itensLista = listaProdutos.querySelectorAll('li');
+        
+        // Verificar se há itens na lista de produtos
+        if (itensLista.length === 0) {
+            return false; // Retorna false se não houver itens
         }
     
-        // Adicionar evento de mudança ao campo de seleção da loja
-        lojaSelect.addEventListener('change', atualizarListaProdutos);
+        itensLista.forEach(function(item) {
+            var idProduto = item.getAttribute('data-id-produto');
+            var quantidade = parseInt(item.querySelector(".quantidade").textContent);
+            // Concatenar o ID do produto e a quantidade com |
+            var valorInput = idProduto + '|' + quantidade;
+            // Criar um input oculto para cada item do carrinho
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'item_carrinho';
+            input.value = valorInput;
+            document.getElementById('form_cadastro').appendChild(input);
+        });
     
-        // Chamar a função de atualização inicialmente para exibir os produtos corretos
-        atualizarListaProdutos();
+        return true; // Retorna true se os itens foram adicionados com sucesso
+    }
+    function adicionarInputCliente(tipoCliente) {
+        var inputTipoCliente = document.getElementById('id_tipoCliente');   
+        inputTipoCliente.value = tipoCliente;
+        document.getElementById('form_cadastro').appendChild(inputTipoCliente);
+    }
+    document.getElementById('id_metodo_entrega').addEventListener('change', function() {
+        var selectedOption = this.options[this.selectedIndex];
+        var selectedValue = selectedOption.value;
+    
+        if (selectedValue === "retirado_na_loja") {
+            document.getElementById("id_estado_transacao").value = "finalizado";
+        }
+
+        if (selectedValue === "entrega_no_local") {
+            document.getElementById("id_estado_transacao").value = "pendente";
+        }
     });
-    
-    
-    
+            document.addEventListener("DOMContentLoaded", function () {
+                var valorPagoInput = document.getElementById("id_valor_pago");
+                var trocoSpan = document.getElementById("id_troco");
+                var valorTotalLabel = document.getElementById("label_valor_total");
+        
+                valorPagoInput.addEventListener("input", function () {
+                    var valorPago = parseFloat(this.value);
+                    var valorTotal = parseFloat(valorTotalLabel.textContent.replace("R$", "").replace(",", ".")); // Extrai o valor total do label
+        
+                    if (!isNaN(valorPago) && valorPago >= valorTotal) {
+                        var troco = valorPago - valorTotal;
+                        trocoSpan.textContent = troco.toFixed(2); // Define o troco com duas casas decimais
+                    } else {
+                        trocoSpan.textContent = "0"; // Se o valor pago for menor que o valor total, define o troco como zero
+                    }
+                });
+            });
+        
+    document.addEventListener("DOMContentLoaded", function () {
+        var selectElement = document.getElementById("id_forma_pagamento");
+        var containerElement = document.querySelector(".gestaotroco");
+
+        selectElement.addEventListener("change", function () {
+        var selectedOption = this.options[this.selectedIndex];
+        var selectedValue = selectedOption.value;
+
+        if (selectedValue === "dinheiro") {
+            containerElement.classList.remove("d-none"); // Remove a classe que oculta o container
+        } else {
+            containerElement.classList.add("d-none"); // Adiciona a classe que oculta o container
+        }
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+                // Função para recalcular o troco quando o valor pago é alterado
+                                
+        function calcularTroco() {
+            var valorPagoInput = document.getElementById('id_valor_pago');
+            var valorPago = valorPagoInput ? valorPagoInput.value : ''; // Verifica se o elemento existe antes de acessá-lo
+            var valorTotalInput = document.getElementById('id_valor_total');
+            var valorTotal = valorTotalInput ? valorTotalInput.value : ''; // Verifica se o elemento existe antes de acessá-lo
+
+            if (valorPago !== '' && valorTotal !== '') {
+                var troco = parseFloat(valorPago) - parseFloat(valorTotal);
+                $('#id_troco').text('R$ ' + troco.toFixed(2).replace('.', ','));
+            }
+        }
+                // Adicionar um ouvinte de evento de entrada ao campo de valor pago
+            document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
+    });
+            document.addEventListener('DOMContentLoaded', function () {
+                const buttons = document.querySelectorAll('[data-bs-target]');
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const target = button.getAttribute('data-bs-target');
+                        const targetElement = document.querySelector(target);
+                        const otherTargets = document.querySelectorAll('.collapse');
+                        otherTargets.forEach(otherTarget => {
+                            if (otherTarget !== targetElement && otherTarget.classList.contains('show')) {
+                                const otherCollapse = new bootstrap.Collapse(otherTarget);
+                                otherCollapse.hide();
+                            }
+                        });
+                        if (!targetElement.classList.contains('show')) {
+                            const collapse = new bootstrap.Collapse(targetElement);
+                            collapse.show();
+                        }
+                    });
+                });
+            }); 
+     
+    produtosArray = [
+    {% for produto in list_produtos %}
+        { 
+            nome: "{{ produto.nome }}",
+            valor: "{{ produto.preco_venda }}",
+            idLoja: "{{ produto.loja.id_loja }}",
+            idProduto: "{{ produto.id_produto }}",
+            isRetornavel: "{{ produto.is_retornavel }}",
+            quantidade: "{{ produto.quantidade_atual_estoque }}"
+        },
+    {% endfor %}   
+     ];
+        document.addEventListener("DOMContentLoaded", function () {
+            
+                    var produtosList = document.getElementById('produtosList');
+                    produtosArray.forEach(function(produto) {
+                            var option = document.createElement('option');
+                            option.dataset.idProduto = produto.idProduto;
+                            option.value = produto.nome;
+                            produtosList.appendChild(option);
+                    });
+            });
+            document.getElementById('id_loja').addEventListener('change', function() {
+                    var selectedLoja = this.value;
+                    var produtosList = document.getElementById('produtosList');
+                    produtosList.innerHTML = ''; // Limpar os produtos existentes
+                    // Adicionar produtos relevantes ao datalist
+                    produtosArray.forEach(function(produto) {
+                        if (selectedLoja === '0' || produto.idLoja === selectedLoja) {
+                            var option = document.createElement('option');
+                            option.dataset.idProduto = produto.idProduto;
+                            option.value = produto.nome;
+                            produtosList.appendChild(option);
+                        }
+                    });
+                });
+
+
     document.addEventListener("DOMContentLoaded", function () {
         // Obtém o input do produto
         var produtoInput = document.getElementById("produtoInput");
-        
         // Adiciona evento de entrada para detectar a seleção de uma opção
         produtoInput.addEventListener("input", function() {
             var selectedOption = document.querySelector("#produtosList option[value='" + this.value + "']");
@@ -91,38 +449,10 @@
 
         // Função para lidar com a seleção de opção
         function  OptionSelection(option) {
-            var produtoId = option.getAttribute("data-id");
-            var produtoPreco = parseFloat(option.getAttribute("data-valor"));
-            var produtoRetornavel =  option.getAttribute("data-retornavel");
-            var produtoInput = document.querySelector(".produtoInput");
-                console.log("Produto ID: " + produtoId);
-                console.log("Produto Preço: " + produtoPreco);
-                produtoInput.dataset.id = produtoId;
-                produtoInput.dataset.valor = produtoPreco;
-                produtoInput.dataset.retornavel = produtoRetornavel;
+            var produtoId = option.getAttribute("data-id-produto");
+                produtoInput.dataset.idProduto = produtoId;
         }
-    }); 
-    function verificarRetornaveis() {
-        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-        var totalRetornaveis = 0;
-    
-        // Itera sobre os itens da lista e verifica se são retornáveis
-        itensLista.forEach(function (item) {
-            var isRetornavel = item.dataset.retornavel === "True";
-            if (isRetornavel) {
-                totalRetornaveis++;
-            }
-        });
-    
-        // Verifica se todos os itens são retornáveis
-        if (totalRetornaveis === itensLista.length) {
-            console.log("Todos os itens são retornáveis.");
-        } else if (totalRetornaveis === 0) {
-            console.log("Nenhum item é retornável.");
-        } else {
-            console.log("Alguns itens são retornáveis e outros não.");
-        }
-    }
+    });  
      
     function calcularValorTotal() {
         var itensLista = listaProdutos.querySelectorAll(".list-group-item");
@@ -131,40 +461,46 @@
         // Itera sobre os itens da lista e calcula o valor total
         itensLista.forEach(function (item) {
             var quantidade = parseInt(item.querySelector(".quantidade").textContent);
-            var valorUnitario = parseFloat(item.getAttribute("data-valor"));
-            valorTotal += quantidade * valorUnitario;
+            var idProduto = item.getAttribute("data-id-produto");
+            produtosArray.forEach(function(produto) {
+                if(produto.idProduto == idProduto){
+                    var valorUnitario = parseFloat(produto.valor);
+                    valorTotal += quantidade * valorUnitario;
+                }
+            });
         });
 
         // Define o valor total no label, formatando-o com vírgula e duas casas decimais
         var labelValorTotal = document.getElementById("label_valor_total");
         if (labelValorTotal) {
             labelValorTotal.textContent = valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-        } else {
-            console.error("Elemento label_valor_total não encontrado.");
-        }
+        }  
     }
     
     document.addEventListener("DOMContentLoaded", function () { 
         var adicionarBtn = document.getElementById("adicionarProdutoBtn");
         var valorTotalInput = document.getElementById("label_valor_total");
         var listaProdutos = document.getElementById("listaProdutos");
-      // Função para calcular o valor total e atualizar o label
+        // Função para calcular o valor total e atualizar o label
        
         adicionarBtn.addEventListener("click", function () {
             var produtoInput = document.getElementById("produtoInput");
-            var produtoSelecionado = produtoInput.value.trim();
-            var produtoId = produtoInput.getAttribute("data-id");
-            var produtoRetornavel = produtoInput.getAttribute("data-retornavel");
-            var produto_valor_unitario = parseFloat(produtoInput.getAttribute("data-valor"));
-            
-            if (produtoSelecionado !== "") {
-                var listaProdutos = document.getElementById("listaProdutos");
+            var produtoSelecionado = null;
+            var produtoId = produtoInput.getAttribute("data-id-produto");
+
+            produtosArray.forEach(function(produto) {
+                if (produto.idProduto == produtoId) {
+                    produtoSelecionado = produto;
+                    // Aqui você pode realizar outras operações relacionadas ao produto selecionado, se necessário
+                }
+            });
+            if (produtoSelecionado.nome !== "") {
                 var itensLista = listaProdutos.querySelectorAll(".list-group-item");
                 var produtoExistente = false;
                 
                 // Verifica se o produto já está na lista
                 itensLista.forEach(function (item) {
-                    var idExistente = item.getAttribute("data-id");
+                    var idExistente = item.getAttribute("data-id-produto");
                     if (idExistente === produtoId) {
                         // Se já existir, aumenta a quantidade
                         var quantidadeSpan = item.querySelector(".quantidade");
@@ -178,14 +514,14 @@
                     // Se o produto não existir na lista, cria um novo item
                     var novoItemLista = document.createElement("li");
                     novoItemLista.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
-                    novoItemLista.setAttribute("data-id", produtoId);
-                    novoItemLista.setAttribute("data-retornavel", produtoRetornavel); 
-                    novoItemLista.setAttribute("data-valor", produto_valor_unitario);
+                    novoItemLista.setAttribute("data-id-produto", produtoSelecionado.idProduto);
+                    novoItemLista.setAttribute("data-retornavel", produtoSelecionado.isRetornavel); 
+                    novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
                     novoItemLista.innerHTML = `
                         <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                        <span class="" >${produtoSelecionado} R$${produto_valor_unitario} Unid</span>
+                        <span class="" >${produtoSelecionado.nome} R$${produtoSelecionado.valor} Unid</span>
 
-                        <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" onclick="aumentarQuantidade(this)"></span>
+                        <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.idProduto}" onclick="aumentarQuantidade(this)"></span>
                         <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
                     `;
                     listaProdutos.appendChild(novoItemLista);
@@ -199,11 +535,24 @@
     });
     
     function aumentarQuantidade(elemento) {
-        var quantidadeSpan = elemento.parentElement.querySelector(".quantidade");
-        var quantidadeAtual = parseInt(quantidadeSpan.textContent);
-        quantidadeSpan.textContent = quantidadeAtual + 1;
-        calcularValorTotal();
-    }
+         // Encontra o elemento pai do elemento atual
+    var pai = elemento.closest(".list-group-item");
+    // Obtém o ID do produto do atributo data-id-produto do elemento pai
+    var idProduto = pai.getAttribute("data-id-produto");
+    
+    produtosArray.forEach(function(produto) {
+        if(produto.idProduto == idProduto) {
+            var quantidadeSpan = pai.querySelector(".quantidade");
+            var quantidadeAtual = parseInt(quantidadeSpan.textContent);
+            if(produto.quantidade >= quantidadeAtual) {
+                quantidadeSpan.textContent = quantidadeAtual + 1;
+                calcularValorTotal();
+            } else {
+                alertCustomer("Não há mais produto disponível no estoque.");
+            }
+        }
+    });
+}
     
     function diminuirQuantidade(elemento) {
         var quantidadeSpan = elemento.parentElement.querySelector(".quantidade");
@@ -214,59 +563,40 @@
             elemento.parentElement.remove();
         }
         calcularValorTotal();
+        verificarRetornaveis();
     }
-</script>
 
-<div class="container mb-1 font-monospace mt-2" style="font: size 1rem;" >
-    <label  id="valor_total" class="fw-bold ">Valor Total:</label>
-    <label class="ms-auto float-end text-success fw-bold" id="label_valor_total">00,00</label>
-</div>
-<hr class="mt-1 mb-3 fw-bold ">
-         
-<div class=" " id="container_gestao_retornavel">
+     
 
-    <div class="alert alert-warning font-monospace" role="alert">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <strong>Atenção:</strong> <span class="" style="font-size: 0.7rem"> Estas configurações se referem à gestão de produtos retornáveis. 
-            Este campo pode ser ignorado, mas sua utilização foi modelada para galões de água, que possuem data de validade. Preenchendo as informações, você consegue saber qual foi o último galão pego pelo cliente, entre outras informações.
-    </div> 
-    <div class="card card-body">
-        <label class="form-label fw-bold" style="font-size: 1.2rem">Gestão de Galões</label>
-        <div class="row ">
-            <label class="form-label fw-bold" style="font-size: 1.rem">Galão que está entrando.</label>
-            <div class="col mb-3">
-                <div class="form-floating mb-2">
-                    <input type="text" id="data_validade_entrada" name="data_validade_entrada" class="form-control data-validade data-mes-ano-mask">
-                    <label for="data_validade_entrada" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
-                </div>
-            </div>
-            <div class="col mb-3">
-                <div class="form-floating mb-2">
-                    <input type="text" id="data_fabricacao_entrada" name="data_fabricacao_entrada" class="form-control data-fabricacao data-mes-ano-mask">
-                    <label for="data_fabricacao_entrada" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
-                </div>
-            </div>
-        </div>
-        <div class="row ">
-            <label class="form-label fw-bold" style="font-size: 1.rem">Galão que está saindo.</label>
-            <div class="col mb-3">
-                <div class="form-floating mb-2">
-                    <input type="text" id="data_validade_saida" name="data_validade_saida" class="form-control data-validade data-mes-ano-mask">
-                    <label for="data_validade_saida" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
-                </div>
-            </div>
-            <div class="col mb-3">
-                <div class="form-floating mb-2">
-                    <input type="text" id="data_fabricacao_saida" name="data_fabricacao_saida" class="form-control data-fabricacao data-mes-ano-mask">
-                    <label for="data_fabricacao_saida" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    
 
-<script>
+    function verificarRetornaveis(){
+        var bodyGestaoRetornavel = document.getElementById("body_gestaoRetornavel");
+        var iconeBloqueado = document.getElementById("iconeBloqueado");
+        var iconeDesbloqueado = document.getElementById("iconeDesbloqueado");
+        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+        var algumRetornavel = false;
+
+        // Verifica se há algum item retornado na lista
+        for (var item of itensLista) {
+            var isRetornavel = item.dataset.retornavel === "True";
+            if (isRetornavel) {
+                algumRetornavel = true;
+                break;
+            }
+        }
+
+        // Alterna a visibilidade do corpo do acordeão e dos ícones com base na presença de itens retornáveis
+        if (algumRetornavel) {
+            bodyGestaoRetornavel.style.display = "block";
+            iconeBloqueado.classList.add("d-none");
+            iconeDesbloqueado.classList.remove("d-none");
+        } else {
+            bodyGestaoRetornavel.style.display = "none";
+            iconeBloqueado.classList.remove("d-none");
+            iconeDesbloqueado.classList.add("d-none");
+        }  
+    }
+   
     document.querySelectorAll(".data-validade").forEach(function(input) {
         input.addEventListener("input", function() {
             // Limpa qualquer timeout existente
@@ -310,137 +640,6 @@
         
   </script>
                    
-
-
-<div class="btn-group mb-2 mt-1" role="group" aria-label="Tipo de Cliente" >
-    
-                        <button type="button" class="btn btn-primary" data-bs-target="#container_cliente_existente" style="font-size: 0.8rem;">
-                            <i class="bi bi-person"></i> Cliente Existente
-                        </button>
-                        <button type="button" class="btn btn-success" data-bs-target="#container_venda_porta"  style="font-size: 0.8rem;" >
-                            <i class="bi bi-person-plus"></i> Novo Cliente
-                        </button>
-                    </div>
-                     
-                    <div class="collapse" id="container_cliente_existente">
-                        <div class="card card-body">
-                            <label for="select_cliente_existente" class="form-label">Selecione o Cliente Existente:</label>
-                            <select id="select_cliente_existente" class="form-select" aria-label="Selecione o Cliente Existente">
-                               
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="collapse" id="container_novo_cliente">
-                        <div class="card card-body">
-                            <label for="nome_novo_cliente" class="form-label">Nome:</label>
-                            <input type="text" id="nome_novo_cliente" class="form-control" aria-label="Nome do Novo Cliente">
-                            <!-- Outros campos para o cadastro de novo cliente -->
-                        </div>
-                    </div>
-            
-                    
-                <hr> 
-                     
-                    
-                    <div class="form-floating mb-2">
-                        {{ form_venda.forma_pagamento }}
-                        <label for="forma_pagamento">Forma de Pagamento:</label>
-                    </div>
-                    
-                    <div class="form-floating mb-2">
-                        {{ form_venda.tipo_venda }}
-                        <label for="tipo_venda">Tipo de Venda:</label>
-                    </div>
-                    
-                    <div class="form-floating mb-2">
-                        {{ form_venda.estado_transacao }}
-                        <label for="estado_transacao">Estado da Transação:</label>
-                    </div>
-                    
-                    <div class="form-floating mb-2">
-                        {{ form_venda.numero_transacao }}
-                        <label for="numero_transacao">Número da Transação:</label>
-                    </div>
-                    
-                    <div class="form-floating mb-2">
-                        {{ form_venda.metodo_entrega }}
-                        <label for="metodo_entrega">Método de Entrega:</label>
-                    </div> 
-                    <div class="form-floating mb-2">
-                        {{ form_venda.valor_pago }}
-                        <label for="id_valor_pago">Valor Pago:</label>
-                    </div>
-                    <div class="form-floating mb-2">
-                        {{ form_venda.troco }}
-                        <label for="id_troco">Troco:</label>
-                    </div>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            // Função para recalcular o troco quando o valor pago é alterado
-                            function calcularTroco() {
-                                // Obter os valores dos campos
-                                var valorPago = parseFloat(document.getElementById('id_valor_pago').value);
-                                var notaFiscal = parseFloat(document.getElementById('id_nota_fiscal').value);
-                                
-                                // Verificar se os valores são válidos
-                                if (!isNaN(valorPago) && !isNaN(notaFiscal) && valorPago >= notaFiscal) {
-                                    var troco = valorPago - notaFiscal;
-                                    document.getElementById('id_troco').value = troco.toFixed(2); // Arredondar para 2 casas decimais
-                                } else {
-                                    // Se os valores não forem válidos, limpar o campo de troco
-                                    document.getElementById('id_troco').value = '';
-                                }
-                            }
-                        
-                            // Adicionar um ouvinte de evento de entrada ao campo de valor pago
-                            document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
-                        });
-                        </script>
-                    <div class="form-floating mb-2">
-                        {{ form_venda.descricao }}
-                        <label for="descricao">Descrição:</label>
-                    </div>
-                     
-                   
-                     
-                   
-                        
-  
-           
-                </div>
-
-            <div class="modal-footer ">
-                <a href="{% url 'lista_vendas' %}" class="btn btn-secondary float-start me-auto btn-sm">Cancelar</a>
-             <button type="submit" class="btn btn-primary float-end btn-md" >Salvar</button>
-
-            </div>  
-
-        </form>
-        </div>
-         
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const buttons = document.querySelectorAll('[data-bs-target]');
-                buttons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        const target = button.getAttribute('data-bs-target');
-                        const targetElement = document.querySelector(target);
-                        const otherTargets = document.querySelectorAll('.collapse');
-                        otherTargets.forEach(otherTarget => {
-                            if (otherTarget !== targetElement && otherTarget.classList.contains('show')) {
-                                const otherCollapse = new bootstrap.Collapse(otherTarget);
-                                otherCollapse.hide();
-                            }
-                        });
-                        if (!targetElement.classList.contains('show')) {
-                            const collapse = new bootstrap.Collapse(targetElement);
-                            collapse.show();
-                        }
-                    });
-                });
-            });
-        </script>
                     {% endif%}
 
             </div>

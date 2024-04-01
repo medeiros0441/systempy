@@ -20,13 +20,21 @@ class ClienteForm(forms.ModelForm):
             "empresa",
         ]
         widgets = {
-            "nome_cliente": forms.TextInput(attrs={"class": "form-control"}),
-            "telefone_cliente": forms.TextInput(attrs={"class": "form-control"}),
-            "ultima_compra": forms.DateInput(
-                attrs={"class": "form-control", "type": "date"}
+            "nome_cliente": forms.TextInput(
+                attrs={"class": "form-control", "required": False}
             ),
-            "tipo_cliente": forms.TextInput(attrs={"class": "form-control"}),
-            "descricao_cliente": forms.Textarea(attrs={"class": "form-control"}),
+            "telefone_cliente": forms.TextInput(
+                attrs={"class": "form-control telefone-mask", "required": False}
+            ),
+            "ultima_compra": forms.DateInput(
+                attrs={"class": "form-control", "type": "date", "required": False}
+            ),
+            "tipo_cliente": forms.TextInput(
+                attrs={"class": "form-control", "required": False}
+            ),
+            "descricao_cliente": forms.Textarea(
+                attrs={"class": "form-control", "required": False}
+            ),
             # 'endereco' e 'empresa' são tratados automaticamente pelos subformulários
         }
 

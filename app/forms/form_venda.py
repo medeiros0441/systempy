@@ -1,10 +1,8 @@
 from django import forms
-from ..models import Venda, Loja, Cliente, Associado
-from ..static import UserInfo
+from ..models import Venda, Loja, Associado
 
 
 class VendaForm(forms.ModelForm):
-    # Definir as opções para forma de pagamento e estado da transação
     FORMA_PAGAMENTO_CHOICES = [
         ("0", "Selecione"),
         ("pix", "Pix"),
@@ -27,32 +25,15 @@ class VendaForm(forms.ModelForm):
         ("entrega_no_local", "Entrega no Local"),
     ]
 
-    estado_transacao = forms.ChoiceField(
-        choices=ESTADO_TRANSACAO_CHOICES,
-        widget=forms.Select(attrs={"class": "form-select"}),
-    )
-    metodo_entrega = forms.ChoiceField(
-        choices=METODO_ENTREGA_CHOICES,
-        widget=forms.Select(attrs={"class": "form-select"}),
-    )
-
-    valor_total = forms.DecimalField(
-        widget=forms.NumberInput(attrs={"class": "form-control"})
-    )
-    valor_pago = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
-    troco = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
-    nota_fiscal = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
-
-   
+    estado_transacao = forms.ChoiceField(choices=ESTADO_TRANSACAO_CHOICES, widget=forms.Select(attrs={"class": "form-select"}))
+    metodo_entrega = forms.ChoiceField(choices=METODO_ENTREGA_CHOICES, widget=forms.Select(attrs={"class": "form-select"}))
+    valor_total = forms.DecimalField(widget=forms.NumberInput(attrs={"class": "form-control money-mask"}))
+    valor_pago = forms.DecimalField(max_digits=10,  required=False, widget=forms.TextInput(attrs={"class": "form-control money-mask"}))
+    troco = forms.DecimalField(max_digits=10,  required=False, widget=forms.TextInput(attrs={"class": "form-control money-mask"}))
+    nota_fiscal = forms.DecimalField(max_digits=10,  required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
     descricao = forms.CharField(widget=forms.Textarea(attrs={"class": "form-control", "rows": "5"}))
-    loja = forms.ModelChoiceField(
-        queryset=Loja.objects.none(),
-        widget=forms.Select(attrs={"class": "form-select"}),
-    )
-    forma_pagamento = forms.ChoiceField(
-        choices=FORMA_PAGAMENTO_CHOICES,
-        widget=forms.Select(attrs={"class": "form-select"}),
-    )
+    loja = forms.ModelChoiceField(queryset=Loja.objects.none(), widget=forms.Select(attrs={"class": "form-select"}))
+    forma_pagamento = forms.ChoiceField(choices=FORMA_PAGAMENTO_CHOICES, widget=forms.Select(attrs={"class": "form-select"}))
 
     class Meta:
         model = Venda
@@ -60,25 +41,16 @@ class VendaForm(forms.ModelForm):
 
     def __init__(self, id_usuario=None, *args, **kwargs):
         super(VendaForm, self).__init__(*args, **kwargs)
+        self.set_loja_choices(id_usuario)
+
+    def set_loja_choices(self, id_usuario):
         if id_usuario is not None:
-            self.fields["usuario"].widget = forms.NumberInput(
-                attrs={"class": "form-control", "value": id_usuario}
-            )
-            # Filtrar as associações do usuário com acesso ativo
-            associacoes = Associado.objects.filter(
-                usuario_id=id_usuario, status_acesso=True
-            )
-            # Obter as lojas associadas
+            self.fields["usuario"].widget = forms.NumberInput(attrs={"class": "form-control", "value": id_usuario})
+            associacoes = Associado.objects.filter(usuario_id=id_usuario, status_acesso=True)
             lojas_disponiveis = [associacao.loja for associacao in associacoes]
-            # Configurar as opções do campo 'loja'
-            if len(lojas_disponiveis) == 1:
-                self.fields["loja"].widget.choices = [
-                    (loja.id_loja, loja.nome_loja) for loja in lojas_disponiveis
-                ]
-            else:
-                self.fields["loja"].widget.choices = [("", "Selecione")] + [
-                    (loja.id_loja, loja.nome_loja) for loja in lojas_disponiveis
-                ]
+            loja_choices = [(loja.id_loja, loja.nome_loja) for loja in lojas_disponiveis]
+            if len(loja_choices) > 1:
+                loja_choices.insert(0, ("0", "Selecione"))
+            self.fields["loja"].widget.choices = loja_choices
         else:
-            # Se o id_usuario não estiver definido, configurar uma opção padrão para 'loja'
             self.fields["loja"].widget.choices = [("", "ID de usuário não fornecido")]

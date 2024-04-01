@@ -37,4 +37,4 @@ class EnderecoForm(forms.ModelForm):
             self.fields[field_name].widget.attrs["class"] = (
                 existing_classes + " form-control form-control-validate input"
             )
-            self.fields[field_name].widget.attrs["required"] = "required"
+            self.fields[field_name].widget.attrs["required"] = "False"

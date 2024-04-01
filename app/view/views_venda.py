@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from ..def_global import erro, criar_alerta_js
 from ..static import Alerta, UserInfo
-from ..models import Venda, Configuracao, Usuario, Associado, Loja, Cliente, Produto
+from ..models import Venda, Configuracao, Usuario, Associado, Loja, Cliente, Produto,ItemCompra,Compra
 from functools import wraps
-from ..forms import VendaForm, ClienteForm
+from ..forms import VendaForm, ClienteForm, EnderecoForm
 from django.db.models import Q
 
 
@@ -64,6 +64,66 @@ class view_vendas:
     @verificar_permissoes(codigo_model=7)
     def criar_venda(request):
         try:
+            if request.method == "POST":
+                return view_vendas._insert_venda(request)
+            else:
+                return view_vendas._open_venda(request)
+        except Exception as e:
+            mensagem_erro = str(e)
+            return erro(request, mensagem_erro)
+
+    def _insert_venda(request):
+        try:
+            
+            for item_carrinho in request.POST.getlist("item_carrinho"):
+                id_produto, quantidade = item_carrinho.split("|")
+                produto = produto.object.filter(id_produto= id_produto)
+                ItemCompra.produto = produto 
+                ItemCompra.quantidade = quantidade 
+                ItemCompra.preco_unitario = produto.preco_venda
+                
+            id_usuario = UserInfo.get_id_usuario(request)
+            tipo_cliente =  request.POST.get("tipo_cliente")
+            if tipo_cliente == 1:
+                form_cliente = ClienteForm(request.POST)
+            elif tipo_cliente == 2:
+                form_cliente = ClienteForm(request.POST)
+                form_endereco = EnderecoForm(request.POST)
+                
+            form_venda = VendaForm(id_usuario, request.POST)
+            venda = form_venda.save(commit=False)
+             
+
+            if (
+                form_venda.is_valid()
+                and form_cliente.is_valid()
+                and form_endereco.is_valid()
+            ):
+                # Recuperar os dados dos formulários
+                dados_venda = form_venda.cleaned_data
+                dados_cliente = form_cliente.cleaned_data
+                dados_endereco = form_endereco.cleaned_data
+                # Aqui você pode criar instâncias dos modelos correspondentes e salvar no banco de dados
+                venda = form_venda.save(
+                    commit=False
+                )  # Se precisar de lógica adicional antes de salvar
+                cliente = form_cliente.save(commit=False)
+                endereco = form_endereco.save(commit=False)
+                venda.cliente = cliente
+                venda.endereco = endereco
+                venda.save()
+
+            else:
+                form_venda = VendaForm()
+                form_cliente = ClienteForm()
+                form_endereco = EnderecoForm()
+            return ""
+        except Exception as e:
+            mensagem_erro = str(e)
+            return erro(request, mensagem_erro)
+
+    def _open_venda(request):
+        try:
             context = {}
             id_usuario = UserInfo.get_id_usuario(request)
             id_empresa = UserInfo.get_id_empresa(request)
@@ -85,11 +145,13 @@ class view_vendas:
             # Inicializar os formulários
             form_venda = VendaForm(id_usuario)
             form_cliente = ClienteForm()
+            form_endereco = EnderecoForm()
             # Criar o contexto
             context = {
                 "list_clientes": clientes,
                 "form_cliente": form_cliente,
                 "form_venda": form_venda,
+                "form_endereco": form_endereco,
                 "list_produtos": produtos,
                 "open_modal": True,
             }

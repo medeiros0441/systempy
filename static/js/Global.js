@@ -10,7 +10,7 @@
  $('.data-mask').mask('00/00/0000');
  $('.data-mes-ano-mask').mask('00/0000');
  $('.quantidade-mask').mask('00000000');
- $('.money-mask').mask('R$ 000.000.000,00', {reverse: true,});
+ $('.money-mask').mask('000.000.000,00', {reverse: true,});
 
  $(function activateLoadingButtons() {
   document.addEventListener("DOMContentLoaded", function() {

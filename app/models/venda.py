@@ -36,7 +36,7 @@ class Venda(models.Model):
 
 class Compra(models.Model):
     id_compra = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True)
     produtos = models.ManyToManyField(Produto, through="ItemCompra")
     data_compra = models.DateField(default=timezone.now)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)
