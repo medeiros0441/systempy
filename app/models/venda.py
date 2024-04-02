@@ -2,6 +2,8 @@ from django.db import models
 from .usuario import Usuario
 from .cliente import Cliente
 from .produto import Produto
+from .empresa import Empresa
+from .loja import Loja
 import uuid
 from django.utils import timezone
 
@@ -81,6 +83,7 @@ class Motoboy(models.Model):
     numero = models.CharField(max_length=20)
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(auto_now=True)
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True)
 
 
 class Entrega(models.Model):
@@ -94,3 +97,22 @@ class Entrega(models.Model):
     motoboy = models.ForeignKey(
         Motoboy, on_delete=models.SET_NULL, null=True, blank=True
     )
+
+
+class Caixa(models.Model):
+    id_caixa = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    loja = models.ForeignKey(Loja, on_delete=models.CASCADE)
+    insert = models.DateTimeField(default=timezone.now)
+    update = models.DateTimeField(auto_now=True)
+    saldo_inicial = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    saldo_final = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+
+
+class Transacao(models.Model):
+    caixa = models.ForeignKey(Caixa, on_delete=models.CASCADE)
+    venda = models.ForeignKey(Venda, on_delete=models.CASCADE, null=True, blank=True)
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    descricao = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(default=timezone.now)

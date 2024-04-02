@@ -7,9 +7,36 @@
  $('.telefone-mask').mask('+55 (00) 0000-00000');
  $('.codigo-mask').mask('000-000');
  $('.cep-mask').mask('00000-000');
+ $('.data-mask').mask('00/00/0000');
+ $('.data-mes-ano-mask').mask('00/0000');
  $('.quantidade-mask').mask('00000000');
- $('.money-mask').mask('R$ 000.000.000,00', {reverse: true,});
+ $('.money-mask').mask('000.000.000,00', {reverse: true,});
 
+ $(function activateLoadingButtons() {
+  document.addEventListener("DOMContentLoaded", function() {
+    // Encontra todos os botões com a classe btn-loading
+    var buttons = document.querySelectorAll(".btn-loading");
+
+    // Para cada botão encontrado, adiciona a classe de loading
+    buttons.forEach(function(button) {
+      button.classList.add("loading");
+
+      // Desativa o botão para evitar interações enquanto estiver carregando
+      button.disabled = true;
+    });
+
+    // Simula uma requisição para o servidor (exemplo: com setTimeout)
+    setTimeout(function() {
+      // Após o tempo de espera (simulando a resposta do servidor), remove a classe de loading
+      buttons.forEach(function(button) {
+        button.classList.remove("loading");
+
+        // Reativa o botão para permitir interações após o carregamento
+        button.disabled = false;
+      });
+    }, 3000); // Tempo de espera de 3 segundos (3000 milissegundos)
+  });
+});
  function chamarFuncaoPython(DefName, data, callback, Type ="POST") {
   // Fazer uma requisição AJAX para o backend
   $.ajax({

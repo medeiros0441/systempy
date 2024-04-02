@@ -47,17 +47,15 @@
 </div>
 <hr class="mt-1 mb-3 fw-bold ">
 
-<div class="m-1 p-2 card shadow-lg">
+<div class="card ">
  
-            <div class="container-fluid d-flex "     id="toggleAccordion"  >
-               <span class="me-auto font-monospace "> Gestão de produtos retornáveis</span>
+            <div class="container-fluid card-header bg-dark text-white d-flex "     id="toggleAccordion"  >
+               <span class="me-auto font-monospace   "> Gestão de produtos retornáveis</span>
                 <i id="iconeBloqueado" class="bi ms-auto bi-lock" ></i>
                 <i id="iconeDesbloqueado"  class="bi bi-unlock ms-auto d-none"></i>
             </div>
 
         <div class="card-body mt-0" id="body_gestaoRetornavel" style="display:none;">
-<hr class="mt-1 mb-1 fw-bold ">
-
             <div class="alert alert-warning font-monospace" role="alert">
                 <i class="bi bi-exclamation-triangle-fill"></i>
                 <strong>Atenção:</strong> <span class="" style="font-size: 0.7rem"> Estas configurações se referem à gestão de produtos retornáveis. 
@@ -220,24 +218,127 @@
                             </div>
                         </div>
                     </div>
-                    
-                
                     <div class="form-floating mb-2">
                         {{ form_venda.descricao }}
                         <label for="descricao">Descrição:</label>
                     </div>
+
+                    <div class="card mb-3"  >
+                        <div class="card-header bg-dark text-white">
+                            <div class="d-flex align-items-center font-monospace">
+                                <span class="me-auto fs-6 text-white">Gestão de Entregas</span>
+                                <button type="button" class="btn btn-sm  text-white  me-2" id="btnCadastrarBoy" onclick="toggleMotoboyFields();">
+                                    <i class="bi bi-person-plus"></i>  
+                                </button>
+                                <button type="button" class="btn btn-sm text-white " onclick="toggleGestaoEntrega();" id="toggleAccordion">
+                                    <i class="bi bi-eye-slash"  id="icone_entrega_close"></i>
+                                    <i class="bi bi-eye d-none" id="icone_entrega_open"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body d-none" id="container_gestao_entrega">
+                            <div class="m-0 p-0 " id="select_motoboy">
+                            <div class="form-floating mb-2">
+ 
+                            <select id="id_motoboy" name="motoboy" class="form-select">
+                                <option value="">Selecione um motoboy</option>
+                                    <option value="{{ motoboy.id_motoboy }}">{{ motoboy.nome }}</option>
+                            </select>
+                            <label for="id_motoboy">Selecione Motoboy:</label>
+                        </div>
+                    </div>
+                    <div class="m-0 p-0 d-none" id="cadastrar_motoboy">
+                        <div class="form-floating mb-2">
+                            <input type="text" class="form-control" id="nome_motoboy" placeholder=" ">
+                            <label for="nome_motoboy" class="form-label">Nome do Motoboy:</label>
+                        </div>
+                        <div class="form-floating mb-2">
+                            <input type="text" class="form-control" id="telefone_motoboy" placeholder=" ">
+                            <label for="telefone_motoboy" class="form-label">Telefone do Motoboy:</label>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-loading" id="btnCriarMotoboy" onclick="insertMotoboy()">Cadastrar Motoboy</button>
+                    </div>
+                    
+                    </div>
+                    </div>
+                    
+                
+                    
                 </div>
                 <input id="id_tipoCliente" name="tipoCliente" type="hidden" value="0" > 
             <div class="modal-footer ">
                 <a href="{% url 'lista_vendas' %}" class="btn btn-secondary float-start me-auto btn-sm">Cancelar</a>
-             <button type="submit" id="btnSubmit" class="btn btn-primary float-end btn-md" >Salvar</button>
+             <button type="submit" id="btnSubmit" class="btn btn-primary float-end btn-md btn-loading" >Salvar</button>
 
             </div>  
 
         </form>
         </div>
-         
-<script>
+    <script>
+
+    
+function listarMotoboys() {
+    var container = document.getElementById('container_gestao_entrega');
+    if (container && !container.classList.contains('d-none')) {
+        listarMotoboysPorEmpresa()
+            .then(result => {
+                if (result.success) {
+                    var selectMotoboy = document.getElementById('id_motoboy');
+                    selectMotoboy.innerHTML = ''; // Limpar as opções existentes
+                    
+                    // Adicionar as opções dos motoboys
+                    result.data.forEach(motoboy => {
+                        var option = document.createElement('option');
+                        option.value = motoboy.id_motoboy;
+                        option.text = motoboy.nome;
+                        selectMotoboy.appendChild(option);
+                    });
+                    
+                    alertCustomer('Lista de motoboys atualizada.');
+                } else {
+                    alertCustomer(result.data);
+                }
+            })
+            .catch(error => {
+                alertCustomer(error.message);
+            });
+    }
+}
+
+    function insertMotoboy() {
+        var nomeMotoboy = document.getElementById('nome_motoboy').value.trim();
+        var telefoneMotoboy = document.getElementById('telefone_motoboy').value.trim();
+
+        // Validar se os campos não estão vazios
+        if (nomeMotoboy === '') {
+            alertCustomer('Por favor, insira o nome do motoboy.');
+            return;
+        }
+        if (telefoneMotoboy === '') {
+            alertCustomer('Por favor, insira o telefone do motoboy.');
+            return;
+        }
+
+        // Chamar a função para criar um motoboy, passando o objeto de dados como parâmetro
+        createMotoboy(nomeMotoboy, telefoneMotoboy)
+            .then(result => {
+                if (result.success) {
+                    // Limpar os campos após a criação bem-sucedida
+                    document.getElementById('nome_motoboy').value = '';
+                    document.getElementById('telefone_motoboy').value = '';
+                } else {
+                    alertCustomer(result.data.message);
+                }
+                toggleMotoboyFields()
+            })
+            .catch(error => {
+                alertCustomer('Ocorreu um erro ao criar o motoboy: ' + error.message);
+                // Habilitar o contêiner e remover o indicador de carregamento em caso de erro
+                container.classList.remove('disabled');
+            });
+    }
+        
+        
      // Defina sua função de verificação
      function verificarAntesDoSubmit() {
 
@@ -324,9 +425,57 @@
         }
 
         if (selectedValue === "entrega_no_local") {
-            document.getElementById("id_estado_transacao").value = "pendente";
+            toggleGestaoEntrega();
         }
     });
+    function toggleGestaoEntrega() {
+        var container = document.getElementById("container_gestao_entrega");
+        var iconeOpen = document.getElementById("icone_entrega_open");
+        var iconeClose = document.getElementById("icone_entrega_close");
+    
+        if (container.classList.contains("d-none")) {
+            listarMotoboys();
+            // Se o container estiver oculto, mostrá-lo e trocar os ícones
+            container.classList.remove("d-none");
+            iconeOpen.classList.remove("d-none");
+            iconeClose.classList.add("d-none");
+        } else {
+            // Se o container estiver visível, ocultá-lo e trocar os ícones
+            container.classList.add("d-none");
+            iconeOpen.classList.add("d-none");
+            iconeClose.classList.remove("d-none");
+        }
+    }
+    function toggleMotoboyFields() {
+        var selectMotoboy = document.getElementById("select_motoboy");
+        var cadastrarMotoboy = document.getElementById("cadastrar_motoboy");
+        var btnCadastrarBoy = document.getElementById("btnCadastrarBoy");
+        var container = document.getElementById("container_gestao_entrega");
+        var iconeOpen = document.getElementById("icone_entrega_open");
+        var iconeClose = document.getElementById("icone_entrega_close");
+        
+            if (selectMotoboy.classList.contains("d-none")) {
+                // Se estiver oculto, mostra o campo de seleção de motoboy e oculta o campo de cadastro
+                selectMotoboy.classList.remove("d-none");
+                cadastrarMotoboy.classList.add("d-none");
+                // Altera o texto do botão para "Cadastrar Motoboy" e adiciona um ícone adequado 
+                btnCadastrarBoy.innerHTML = '<i class="bi bi-person-plus"></i>';
+                listarMotoboys();
+            } else {
+                // Se estiver visível, mostra o campo de cadastro e oculta o campo de seleção de motoboy
+                selectMotoboy.classList.add("d-none");
+                cadastrarMotoboy.classList.remove("d-none");
+                // Altera o conteúdo do botão para o ícone "arrow-return-left"
+                btnCadastrarBoy.innerHTML = '<i class="bi bi-arrow-return-left"></i>';
+            }
+            if (container.classList.contains("d-none")) {
+                // Se o container estiver oculto, mostrá-lo e trocar os ícones
+                container.classList.remove("d-none");
+                iconeOpen.classList.remove("d-none");
+                iconeClose.classList.add("d-none");
+            }
+    }
+    
             document.addEventListener("DOMContentLoaded", function () {
                 var valorPagoInput = document.getElementById("id_valor_pago");
                 var trocoSpan = document.getElementById("id_troco");

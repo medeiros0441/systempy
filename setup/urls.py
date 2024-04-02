@@ -234,6 +234,27 @@ url_configuracao = [
         name="configuracao_delete",
     ),
 ]
+
+from app.view.views_motoboy import ViewMotoboy
+
+url_motoboy = [
+    path(
+        "listar_motoboys_por_empresa/",
+        ViewMotoboy.listar_motoboys_por_empresa,
+        name="listar_motoboys_por_empresa",
+    ),
+    path("create_motoboy/", ViewMotoboy.create_motoboy, name="create_motoboy"),
+    path(
+        "update_motoboy/<str:id_motoboy>/",
+        ViewMotoboy.update_motoboy,
+        name="update_motoboy",
+    ),
+    path(
+        "delete_motoboy/<str:id_motoboy>/",
+        ViewMotoboy.delete_motoboy,
+        name="delete_motoboy",
+    ),
+]
 urlpatterns = (
     url_default
     + url_funcJs
@@ -246,6 +267,7 @@ urlpatterns = (
     + url_cliente
     + url_endereco
     + url_galao
+    + url_motoboy
 )
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
