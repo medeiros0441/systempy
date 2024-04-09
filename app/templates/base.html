@@ -19,146 +19,78 @@
 <body class="bg-whiter container-fluid m-0 p-0 wrapper   ">
       <div  class="wrapper"> 
     <div  class="content">
-          
-        <nav class="navbar container-fluid navbar-expand-md navbar-dark p-2 shadow  " style="background:var(--tema-blue)">
-            <div class="container">
- 
-                <a class="navbar-brand text-start  link-sm " href="{% url 'home' %}" >
-                    <p class="logo-siglas mb-2 text-white" style="font-size:30px;"></p>
-                    </a>
-            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" id="navbarTogglerButton">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav  ms-auto text-sm-center  font-monospace">
-                     
-        {% if request.session.isCliente is not True %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home' %}">inicio</a>
-                </li> <li class="nav-item">
-                    <a class="nav-link" href="{% url 'sobre' %}">Sobre-ńós</a>
-                </li>
-                <li class="nav-item">
-
-                <a type="button" id="btn-login-nav" href="/login" class="btn text-white login-btn">
-                    <span class="login-icon"  >
-                        <i class="bi bi-person"  style="with:100; height=:100" ></i> 
-                    </span>
-                    Login 
+        <nav class="navbar navbar-expand-md navbar-dark p-2 shadow" style="background: var(--tema-blue)">
+            <div class=" container-xxl ms-auto">
+                 <a class="navbar-brand text-start link-sm" href="{% url 'home' %}">
+                    <p class="logo-siglas mb-2 text-white" style="font-size: 30px;"></p>
                 </a>
-            </li>
-        {% elif request.session.nivel_usuario <= 2 %} 
-             <li class="nav-item">
-                            <a class="nav-link" href="{% url 'homeAssinante' %}">inicio</a>
+                <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" id="navbarTogglerButton">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                     
+                        <ul class="navbar-nav  text-sm-center row   font-monospace collapse navbar-collapse" id="navbarNav">
+                        {% if request.session.isCliente is not True %}
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link" href="{% url 'home' %}">Início</a>
+                        </li>
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link" href="{% url 'sobre' %}">Sobre nós</a>
+                        </li>
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a type="button" id="btn-login-nav" href="/login" class="btn text-white login-btn">
+                                <span class="login-icon">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                Login
+                            </a>
+                        </li>
+                        {% elif request.session.nivel_usuario <= 2 %}
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link" href="{% url 'homeAssinante' %}">Início</a>
                         </li>
                         {% if request.session.nivel_usuario == 1 %}
-                        <li class="nav-item dropdown">
-                            <div class="btn-group"> 
-                                <a class="nav-link" href="{% url 'listar_usuarios' %}">Usuários</a>
-                            <button type="button" class="nav-link   dropdown-toggle dropdown-toggle-split d-none d-md-block" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="visually-hidden">Toggle Dropdown</span>
-                              </button>
-                            <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                <li><a class="dropdown-item" href="{% url 'listar_usuarios' %}">Listar Usuários</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'cadastrar_usuario' %}">Cadastrar Usuário</a></li>
-                            </ul>
-    </div>
-
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link nav-link-icon" href="{% url 'listar_usuarios' %}">
+                                <i class="bi bi-people"></i> Usuários
+                            </a>
                         </li>
-
-                        <li class="nav-item dropdown">
-                            <div class="btn-group">
-                                <a class="nav-link" href="{% url 'lista_lojas' %}">Lojas</a>
-                            <button type="button" class="nav-link   dropdown-toggle dropdown-toggle-split d-none d-md-block" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="visually-hidden">Toggle Dropdown</span>
-                            </button>
-                            <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                <li><a class="dropdown-item" href="{% url 'lista_lojas' %}">Listar Lojas</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'criar_loja' %}">Cadastrar loja</a></li>
-                            </ul>
-                            </div>
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link nav-link-icon" href="{% url 'lista_lojas' %}">
+                                <i class="bi bi-shop"></i> Lojas
+                            </a>
                         </li>
-                       
-                        <li class="nav-item dropdown">
-                            <div class="btn-group">
-                                <a class="nav-link" href="{% url 'lista_enderecos' %}">Endereços</a>
-                            <button type="button" class="nav-link   dropdown-toggle dropdown-toggle-split d-none d-md-block" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="visually-hidden">Toggle Dropdown</span>
-                            </button>
-                            <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                <li><a class="dropdown-item" href="{% url 'lista_enderecos' %}">Listar Endereços</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'criar_endereco' %}">Cadastrar Endereços</a></li>
-                            </ul>
-                            </div>
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link nav-link-icon" href="{% url 'lista_enderecos' %}">
+                                <i class="bi bi-geo-alt"></i> Endereços
+                            </a>
                         </li>
-                    {% endif %} 
-
-                        <li class="nav-item">
-                            <div class="btn-group">
-                            
-                            <a class="nav-link" href="{% url 'lista_produtos' %}">Produtos</a>
-                            <button type="button" class="nav-link   dropdown-toggle dropdown-toggle-split d-none d-md-block" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="visually-hidden">Toggle Dropdown</span>
-                            </button>
-                            <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                <li><a class="dropdown-item" href="{% url 'lista_produtos' %}">Listar Produtos</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'criar_produto' %}">Cadastrar Produtos</a></li>
-                            </ul>
-                            </div>
-                            
+                        {% endif %}
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link nav-link-icon" href="{% url 'lista_produtos' %}">
+                                <i class="bi bi-cart4"></i> Produtos
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <div class="btn-group">
-                            
-                            <a class="nav-link" href="{% url 'lista_vendas' %}">Venda</a>
-                                <button type="button" class="nav-link   dropdown-toggle dropdown-toggle-split d-none d-md-block" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                    <li><a class="dropdown-item" href="{% url 'lista_vendas' %}">Listar Vendas</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'criar_venda' %}">Cadastrar Venda</a></li>
-                                </ul>
-                                </div>
-                             </li>
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="nav-link" href="{% url 'lista_clientes' %}">Clientes</a>
-                            
-                                    <button type="button" class="nav-link   dropdown-toggle dropdown-toggle-split d-none d-md-block" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <span class="visually-hidden">Toggle Dropdown</span>
-                                    </button>
-                                    <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                        <li><a class="dropdown-item" href="{% url 'lista_clientes' %}">Listar Clientes</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{% url 'criar_cliente' %}">Cadastrar Clientes</a></li>
-                                    </ul>
-                                    </div>
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link nav-link-icon" href="{% url 'lista_vendas' %}">
+                                <i class="bi bi-cash"></i> Venda
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="nav-link" href="{% url 'lista_galoes' %}">Galões</a>
-                            
-                                    <button type="button" class="nav-link   dropdown-toggle dropdown-toggle-split d-none d-md-block" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <span class="visually-hidden">Toggle Dropdown</span>
-                                    </button>
-                                    <ul class="dropdown-menu bd-dark" aria-labelledby="usuariosDropdown">
-                                        <li><a class="dropdown-item" href="{% url 'lista_galoes' %}">Listar Galões</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{% url 'criar_galao' %}">Cadastrar Galões</a></li>
-                                    </ul>
-                                    </div>
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link nav-link-icon" href="{% url 'lista_clientes' %}">
+                                <i class="bi bi-person-check"></i> Clientes
+                            </a>
                         </li>
-        {% endif %} 
-    </ul>
-    </div>
-    </div>
-    </nav> 
-
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link nav-link-icon" href="{% url 'lista_galoes' %}">
+                                <i class="bi bi-barrel"></i> Galões
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+        </nav>
+        
 
         <div id="content"  >
         
@@ -234,6 +166,8 @@
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
     <script type="text/javascript" src="{% static 'js/Global.js' %}" ></script>
     <script type="text/javascript" src="{% static 'js/FunctionsMotoboy.js' %}" ></script>
-    
+    <script type="text/javascript" src="{% static 'js/FunctionsCliente.js' %}" ></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </body>
 </html>

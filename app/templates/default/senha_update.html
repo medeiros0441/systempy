@@ -76,7 +76,7 @@
       } else {
           var DefName = '/enviar-codigo/' + email_recuperacao.value.trim() + '/';
           btnValidateModals.style.display = "none";
-        chamarFuncaoPython(DefName, {}, function(result) {
+        chamarFuncaoPython(DefName, {},"POST", function(result) {
         //tirando vibilidade para evitar varios clicks
           if (result.success) {
             var body1 = document.getElementById('body1');
@@ -110,7 +110,7 @@
   } else {
     var DefName = '/enviar-codigo/' + email_recuperacao.value.trim() + '/';
         btnValidateModals.style.display = "none";
-      chamarFuncaoPython(DefName, {}, function(result) {
+      chamarFuncaoPython(DefName, {},"POST" function(result) {
       //tirando vibilidade para evitar varios clicks
         if (result.success) {
           alertCustomer("Novo codigo enviado.");
@@ -134,7 +134,7 @@
           var codigo = codigo_recuperacao.value.trim(); // Removido parêntese extra
           var DefName = '/confirmar-codigo/' + codigo + '/';
           btnValidateModals.style.display = "none";
-          chamarFuncaoPython(DefName, {}, function(result) {
+          chamarFuncaoPython(DefName, {},"POST" function(result) {
              //tirando vibilidade para evitar varios clicks
            if (result.success) {
               var body2 = document.getElementById('body2');
@@ -177,7 +177,7 @@
           var novaSenha = senha_recuperacao2.value.trim(); // Corrigido nome da variável
           var DefName = '/atualizar-senha/' + novaSenha + '/';
           btnValidateModals.style.display = "none";
-          chamarFuncaoPython(DefName, {}, function(result) {
+          chamarFuncaoPython(DefName, {},"POST" function(result) {
               //tirando vibilidade para evitar varios clicks
           if (result.success) {
               var body3 = document.getElementById('body3');

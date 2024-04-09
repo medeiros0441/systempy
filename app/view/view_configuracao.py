@@ -64,6 +64,7 @@ def list_configuracoes_padrao(usuario=None, status=True):
         {"nome": "Produto", "codigo": 6},
         {"nome": "Venda", "codigo": 7},
         {"nome": "Cliente", "codigo": 8},
+        {"nome": "Motoboy", "codigo": 9},
     ]
 
     list_configuracao = []

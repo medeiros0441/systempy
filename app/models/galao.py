@@ -1,23 +1,20 @@
 from django.db import models
 from .cliente import Cliente
 from .venda import Venda
+from .loja import Loja
 from django.utils import timezone
 
 
 class Galao(models.Model):
-    id_galao = models.AutoField(
-        primary_key=True,
-    )
-    data_insercao = models.DateTimeField()
-    data_atualizacao = models.DateTimeField(null=True)
-    data_validade = models.CharField(max_length=50)
-    data_fabricacao = models.CharField(max_length=50)
+    id_galao = models.AutoField(primary_key=True)
+    data_validade = models.CharField(max_length=50, null=True)
+    data_fabricacao = models.CharField(max_length=50, null=True)
     descricao = models.TextField(null=True)
-    id_galao = models.AutoField(
-        primary_key=True,
-    )
+    quantidade = models.IntegerField(default=0)  # Quantidade de galões
+    titulo = models.CharField(max_length=100, null=True)  # Título do galão
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(null=True)
+    loja = models.ForeignKey(Loja, on_delete=models.CASCADE, null=True)
 
 
 class GestaoGalao(models.Model):
@@ -38,5 +35,6 @@ class GestaoGalao(models.Model):
     )
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True)
     venda = models.ForeignKey(Venda, on_delete=models.CASCADE, null=True)
-    insert = models.DateTimeField()
+    insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(null=True)
+    descricao = models.TextField(null=True)

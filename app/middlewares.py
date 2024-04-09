@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.conf import settings
 from .view import criar_sessao
 from .static import UserInfo
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class ErrorLoggingMiddleware:
@@ -20,15 +21,18 @@ class ErrorLoggingMiddleware:
         return response
 
     def process_exception(self, request, exception):
-        if not settings.DEBUG:  # Verifica se o modo de depuração está ativado
-            # Registra o erro no modelo Log
-            Log.objects.create(
-                tipo="Erro",
-                origem=request.path,
-                descricao=str(exception),
-                usuario=request.user if request.user.is_authenticated else None,
-                ip_usuario=request.sessao["ip_usuario"],
-            )
+        if isinstance(exception, ObjectDoesNotExist):
+            if not settings.DEBUG:
+                # Registra o erro no modelo Log
+                Log.objects.create(
+                    tipo="Erro",
+                    origem=request.path,
+                    descricao=str(exception),
+                    usuario=request.user if request.user.is_authenticated else None,
+                    ip_usuario=request.sessao["ip_usuario"],
+                )
+        else:
+            return None  #
 
 
 class AtualizarDadosClienteMiddleware(MiddlewareMixin):

@@ -15,35 +15,12 @@ from .views_loja import (
     excluir_loja,
     criar_loja,
 )
-from .views_produto import (
-    lista_produtos,
-    criar_produto,
-    editar_produto,
-    selecionar_produto,
-    excluir_produto,
-    acrescentar_produto,
-)
-from .views_venda import view_vendas
-from .views_cliente import (
-    lista_clientes,
-    criar_cliente,
-    editar_cliente,
-    selecionar_cliente,
-    excluir_cliente,
-)
-from .views_galao import (
-    lista_galao,
-    editar_galao,
-    selecionar_galao,
-    excluir_galao,
-)
-from .views_endereco import (
-    criar_endereco,
-    lista_enderecos,
-    selecionar_endereco,
-    editar_endereco,
-    delete_endereco,
-)
+from .views_produto import views_produto
+from .views_venda import views_venda
+from .views_cliente import views_cliente
+from .views_galao import views_galao
+from .views_endereco import views_endereco
+from .views_motoboy import views_motoboy
 
 from .view_configuracao import (
     ConfiguracaoCreateView,

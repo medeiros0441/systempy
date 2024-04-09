@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
-from .models.usuario import Usuario
-from .models.empresa import Empresa
+from .models import Empresa, Usuario, Configuracao
 from django.contrib.auth.hashers import check_password, make_password
 from .processador.config_email import enviar_email
 from random import choices
@@ -27,8 +26,16 @@ def script_js(function):
     return script
 
 
+from django.http import JsonResponse
+
+
 def erro(request, error_message):
-    return render(request, "Erro.html", {"error_message": error_message})
+    if request.headers.get("Accept") == "application/json":
+        # Se a solicitação aceitar JSON, retorne um JsonResponse com a mensagem de erro
+        return JsonResponse({"error_message": error_message}, status=500)
+    else:
+        # Caso contrário, retorne o template HTML para exibir a mensagem de erro na página
+        return render(request, "Erro.html", {"error_message": error_message})
 
 
 def gerar_numero_aleatorio(tamanho=4):
@@ -218,3 +225,43 @@ def obter_dados_localizacao_ipinfo(ip, requests):
 
     except Exception as e:
         print(f"Erro ao obter dados de localização: {e}")
+
+
+from functools import wraps
+from .static import UserInfo, Alerta
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+
+
+def verificar_permissoes(codigo_model):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            id_usuario = UserInfo.get_id_usuario(request)
+            try:
+                configuracao = Configuracao.objects.get(
+                    usuario_id=id_usuario, codigo=codigo_model
+                )
+                if not configuracao.status_acesso:
+                    Alerta.set_mensagem(
+                        "Acesso negado: você não tem permissão para executar o método."
+                    )
+                    return erro(
+                        request,
+                        "Acesso negado: você não tem permissão para executar o método.",
+                    )
+            except Configuracao.DoesNotExist:
+                Alerta.set_mensagem("Configuração não encontrada.")
+                return erro(request, "Configuração não encontrada.")
+            except MultipleObjectsReturned:
+                Alerta.set_mensagem(
+                    "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte."
+                )
+                return erro(
+                    request,
+                    "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte.",
+                )
+            return func(request, *args, **kwargs)
+
+        return wrapper
+
+    return decorator

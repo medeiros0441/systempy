@@ -3,35 +3,14 @@ from django.utils import timezone
 from ..models import Motoboy,Configuracao
 from ..static import UserInfo,Alerta
 from functools import wraps
-from ..def_global import erro, criar_alerta_js
+from ..def_global import erro, criar_alerta_js,verificar_permissoes
 from django.views.decorators.csrf import csrf_exempt
 
-def verificar_permissoes(codigo_model):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(request, *args, **kwargs):
-            id_usuario = UserInfo.get_id_usuario(request)
-            try:
-                configuracao = Configuracao.objects.get(
-                    usuario_id=id_usuario, codigo=codigo_model
-                )
-                if not configuracao.status_acesso:
-                    message = "Acesso negado: você não tem permissão para executar o método."
-                    Alerta.set_mensagem(message)
-                    return JsonResponse({'status': 'error', 'message': message})
-            except Configuracao.DoesNotExist:
-                message = "Configuração não encontrada."
-                Alerta.set_mensagem(message)
-                return JsonResponse({'status': 'error', 'message': message})
-            return func(request, *args, **kwargs)
-        return wrapper
-    return decorator
-
-class ViewMotoboy:
+class views_motoboy:
     
     @staticmethod
     @csrf_exempt
-    @verificar_permissoes(codigo_model=7)
+    @verificar_permissoes(codigo_model=9)
     def listar_motoboys_por_empresa(request):
         if request.method == 'GET':
             id_empresa = UserInfo.get_id_empresa(request, True)
@@ -49,7 +28,7 @@ class ViewMotoboy:
     
     @staticmethod
     @csrf_exempt
-    @verificar_permissoes(codigo_model=7)
+    @verificar_permissoes(codigo_model=9)
     def create_motoboy(request):
         if request.method == 'POST':
             data = request.POST
@@ -69,7 +48,7 @@ class ViewMotoboy:
     
     @staticmethod
     @csrf_exempt
-    @verificar_permissoes(codigo_model=7)
+    @verificar_permissoes(codigo_model=9)
     def update_motoboy(request, id_motoboy):
         if request.method == 'POST':
             data = request.POST
@@ -95,7 +74,7 @@ class ViewMotoboy:
     
     @staticmethod
     @csrf_exempt
-    @verificar_permissoes(codigo_model=7)
+    @verificar_permissoes(codigo_model=9)
     def delete_motoboy(request, id_motoboy):
         if request.method == 'DELETE':
             id_empresa = UserInfo.get_id_empresa(request, True)

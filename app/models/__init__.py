@@ -1,7 +1,7 @@
 from .usuario import Usuario
 from .empresa import Empresa
 from .endereco import Endereco
-from .galao import Galao
+from .galao import Galao, GestaoGalao
 from .loja import Loja, Associado
 from .produto import Produto
 from .sessao import Sessao

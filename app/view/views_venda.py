@@ -1,41 +1,28 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from ..def_global import erro, criar_alerta_js
+from ..def_global import erro, criar_alerta_js,verificar_permissoes
 from ..static import Alerta, UserInfo
-from ..models import Venda, Configuracao, Usuario, Associado, Loja, Cliente, Produto,ItemCompra,Compra
-from functools import wraps
+from ..models import (
+    Venda,
+    Configuracao,
+    Usuario,
+    Associado,
+    Loja,
+    Cliente,
+    Produto,
+    ItemCompra,
+    Compra,
+    GestaoGalao,
+    Galao,
+)
 from ..forms import VendaForm, ClienteForm, EnderecoForm
 from django.db.models import Q
-
-
-def verificar_permissoes(codigo_model):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(request, *args, **kwargs):
-            id_usuario = UserInfo.get_id_usuario(request)
-            try:
-                configuracao = Configuracao.objects.get(
-                    usuario_id=id_usuario, codigo=codigo_model
-                )
-                if configuracao.status_acesso == False:
-                    Alerta.set_mensagem(
-                        "Acesso negado: você não tem permissão para executar o método."
-                    )
-                    return erro(
-                        request,
-                        "Acesso negado: você não tem permissão para executar o método.",
-                    )
-            except Configuracao.DoesNotExist:
-                Alerta.set_mensagem("Configuração não encontrada.")
-                return erro(request, "Configuração não encontrada.")
-            return func(request, *args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-class view_vendas:
+from datetime import datetime
+from django.utils.dateparse import parse_date
+from django.utils import timezone
+from functools import wraps
+ 
+class views_venda:
 
     @staticmethod
     @verificar_permissoes(codigo_model=7)
@@ -65,34 +52,36 @@ class view_vendas:
     def criar_venda(request):
         try:
             if request.method == "POST":
-                return view_vendas._insert_venda(request)
+                return views_venda._insert_venda(request)
             else:
-                return view_vendas._open_venda(request)
+                return views_venda._open_venda(request)
         except Exception as e:
             mensagem_erro = str(e)
             return erro(request, mensagem_erro)
 
     def _insert_venda(request):
         try:
-            
+
             for item_carrinho in request.POST.getlist("item_carrinho"):
                 id_produto, quantidade = item_carrinho.split("|")
-                produto = produto.object.filter(id_produto= id_produto)
-                ItemCompra.produto = produto 
-                ItemCompra.quantidade = quantidade 
-                ItemCompra.preco_unitario = produto.preco_venda
-                
+                produto = Produto.objects.filter(id_produto=id_produto)
+                ItemCompra.produto = produto
+                ItemCompra.quantidade = quantidade
+
             id_usuario = UserInfo.get_id_usuario(request)
-            tipo_cliente =  request.POST.get("tipo_cliente")
-            if tipo_cliente == 1:
+
+            id_cliente = request.POST.get("id_cliente")
+            if id_cliente != "0":
                 form_cliente = ClienteForm(request.POST)
-            elif tipo_cliente == 2:
-                form_cliente = ClienteForm(request.POST)
-                form_endereco = EnderecoForm(request.POST)
-                
-            form_venda = VendaForm(id_usuario, request.POST)
-            venda = form_venda.save(commit=False)
-             
+            
+            loja = request.POST.get("loja")
+            metodo_entrega = request.POST.get("metodo_entrega")
+            valor_pago = request.POST.get("valor_pago")
+            forma_pagamento = request.POST.get("forma_pagamento")
+            estado_transacao = request.POST.get("estado_transacao")
+            descricao = request.POST.get("descricao") 
+            motoboy = request.POST.get("motoboy")  
+            
 
             if (
                 form_venda.is_valid()
@@ -113,6 +102,8 @@ class view_vendas:
                 venda.endereco = endereco
                 venda.save()
 
+                views_venda._processar_dados_galoes(request, venda)
+
             else:
                 form_venda = VendaForm()
                 form_cliente = ClienteForm()
@@ -127,7 +118,7 @@ class view_vendas:
             context = {}
             id_usuario = UserInfo.get_id_usuario(request)
             id_empresa = UserInfo.get_id_empresa(request)
-            # Obter todas as associações do usuário com status de acesso verdadeiro
+
             associacao = Associado.objects.filter(
                 usuario_id=id_usuario, status_acesso=True
             )
@@ -155,19 +146,19 @@ class view_vendas:
                 "list_produtos": produtos,
                 "open_modal": True,
             }
-            return view_vendas.lista_vendas(request, context)
+            return views_venda.lista_vendas(request, context)
         except Associado.DoesNotExist:
             Alerta.set_mensagem(
                 "Tivemos um problema para recuperar as lojas. Entre em contato com um administrador da assinatura. Você precisa estar associado a uma loja para realizar uma venda."
             )
             context["open_modal"] = False
-            return view_vendas.lista_vendas(request, context)
+            return views_venda.lista_vendas(request, context)
         except Produto.DoesNotExist:
             Alerta.set_mensagem(
                 "Tivemos um problema para recuperar os Produtos. Entre em contato com um administrador da assinatura. Você precisa Ter produto para vender-los."
             )
             context["open_modal"] = False
-            return view_vendas.lista_vendas(request, context)
+            return views_venda.lista_vendas(request, context)
         except Exception as e:
             mensagem_erro = str(e)
             return erro(request, mensagem_erro)
@@ -176,13 +167,13 @@ class view_vendas:
     @verificar_permissoes(codigo_model=7)
     def editar_venda(request, venda_id):
 
-        return view_vendas.lista_vendas(request)
+        return views_venda.lista_vendas(request)
 
     @staticmethod
     @verificar_permissoes(codigo_model=7)
     def selecionar_venda(request, venda_id):
 
-        return view_vendas.lista_vendas(request)
+        return views_venda.lista_vendas(request)
 
     @staticmethod
     @verificar_permissoes(codigo_model=7)
@@ -196,3 +187,62 @@ class view_vendas:
             return HttpResponse(f"Excluindo a venda {venda_id}")
         else:
             return erro(request, "Você não está autorizado a fazer esta requisição.")
+
+    def _processar_dados_galoes(request, venda, cliente):
+        if request.method == "POST":
+            data_galao_entrada = data_fabricacao_entrada = tipo_entrada = (
+                data_galao_saida
+            ) = data_fabricacao_saida = tipo_saida = descricao = None
+
+            for chave, valor in request.POST.items():
+                if chave.startswith("data_validade_entrada_"):
+                    data_galao_entrada = datetime.strptime(valor, "%m/%Y").date()
+                elif chave.startswith("data_fabricacao_entrada_"):
+                    data_fabricacao_entrada = datetime.strptime(valor, "%m/%Y").date()
+                elif chave.startswith("tipo_entrada_"):
+                    tipo_entrada = valor
+                elif chave.startswith("data_validade_saida_"):
+                    data_galao_saida = datetime.strptime(valor, "%m/%Y").date()
+                elif chave.startswith("data_fabricacao_saida_"):
+                    data_fabricacao_saida = datetime.strptime(valor, "%m/%Y").date()
+                elif chave.startswith("tipo_saida_"):
+                    tipo_saida = valor
+                elif chave.startswith("id_descricao_gestão_galao"):
+                    descricao = valor
+
+            galao_entrada, created_entrada = Galao.objects.get_or_create(
+                data_validade=parse_date(data_galao_entrada),
+                titulo=tipo_entrada,
+                loja=venda.loja,
+            )
+            galao_saida, created_saida = Galao.objects.get_or_create(
+                data_validade=parse_date(data_galao_saida),
+                titulo=tipo_saida,
+                loja=venda.loja,
+            )
+
+            # Atualizar as quantidades
+            if created_entrada:
+                galao_entrada.quantidade = 1
+            else:
+                galao_entrada.quantidade += 1
+
+            galao_entrada.update = timezone.now()
+            galao_entrada.save()
+
+            if created_saida:
+                galao_saida.quantidade = -1
+            else:
+                galao_saida.quantidade -= 1
+            galao_saida.update = timezone.now()
+            galao_saida.save()
+
+            # Criar um objeto GestaoGalao
+            gestao_galao = GestaoGalao()
+            gestao_galao.descricao = descricao
+            gestao_galao.galao_entrando = galao_entrada
+            gestao_galao.galao_saiu = galao_saida
+            gestao_galao.venda = venda
+            gestao_galao.cliente = cliente
+            gestao_galao.update = timezone.now()
+            gestao_galao.save()

@@ -18,8 +18,8 @@ class Venda(models.Model):
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(null=True, blank=True)
     descricao = models.TextField(null=True, blank=True)
-    usuario = models.ForeignKey("Usuario", on_delete=models.CASCADE)
-    loja = models.ForeignKey("Loja", on_delete=models.CASCADE)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    loja = models.ForeignKey(Loja, on_delete=models.CASCADE)
     cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, null=True, blank=True
     )

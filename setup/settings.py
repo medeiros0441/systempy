@@ -126,9 +126,6 @@ try:
     USE_TZ = True
 
     BASE_DIR = Path(__file__).resolve().parent.parent
-    import os
-
-    # Static files (CSS, JavaScript, Images)
     STATIC_URL = "assents/"
 
     STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]

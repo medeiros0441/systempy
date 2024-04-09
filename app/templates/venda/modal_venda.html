@@ -1,3 +1,4 @@
+{% load static%}
 
 {% block content %}
     <div class="modal fade" id="ModalVenda" data-bs-backdrop="static"   data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -45,751 +46,287 @@
     <label  id="valor_total" class="fw-bold ">Valor Total:</label>
     <label class="ms-auto float-end text-success fw-bold" id="label_valor_total">00,00</label>
 </div>
-<hr class="mt-1 mb-3 fw-bold ">
+    <hr class="mt-1 mb-3 fw-bold ">
 
-<div class="card ">
- 
-            <div class="container-fluid card-header bg-dark text-white d-flex "     id="toggleAccordion"  >
-               <span class="me-auto font-monospace   "> Gestão de produtos retornáveis</span>
-                <i id="iconeBloqueado" class="bi ms-auto bi-lock" ></i>
-                <i id="iconeDesbloqueado"  class="bi bi-unlock ms-auto d-none"></i>
-            </div>
-
-        <div class="card-body mt-0" id="body_gestaoRetornavel" style="display:none;">
-            <div class="alert alert-warning font-monospace" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <strong>Atenção:</strong> <span class="" style="font-size: 0.7rem"> Estas configurações se referem à gestão de produtos retornáveis. 
-                    Este campo pode ser ignorado, mas sua utilização foi modelada para galões de água, que possuem data de validade. Preenchendo as informações, você consegue saber qual foi o último galão pego pelo cliente, entre outras informações.
-            </div> 
- 
-                <div class="row ">
-                    <label class="form-label  " style="font-size: 1.rem">Galão que está entrando.</label>
-                    <div class="col mx-1 p-0">
-                        <div class="form-floating mb-2">
-                            <input type="text" id="data_validade_entrada" name="data_validade_entrada" class="form-control data-validade data-mes-ano-mask">
-                            <label for="data_validade_entrada" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
-                        </div>
-                    </div>
-                    <div class="col mx-1 p-0">
-                        <div class="form-floating mb-2">
-                            <input type="text" id="data_fabricacao_entrada" name="data_fabricacao_entrada" class="form-control data-fabricacao data-mes-ano-mask">
-                            <label for="data_fabricacao_entrada" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row ">
-                    <label class="form-label  " style="font-size: 1.rem">Galão que está saindo.</label>
-                    <div class="col mx-1 p-0">
-                        <div class="form-floating mb-2">
-                            <input type="text" id="data_validade_saida" name="data_validade_saida" class="form-control data-validade data-mes-ano-mask">
-                            <label for="data_validade_saida" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
-                        </div>
-                    </div>
-                    <div class="col mx-1 p-0">
-                        <div class="form-floating mb-2">
-                            <input type="text" id="data_fabricacao_saida" name="data_fabricacao_saida" class="form-control data-fabricacao data-mes-ano-mask">
-                            <label for="data_fabricacao_saida" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-floating mb-2">
-                    <input type="text" id="id_descricao_gestão_galao" name="id_descricao_gestão_galao" class="form-control  ">
-                    <label for="id_descricao_gestão_galao" style="font-size: 0.7rem" class="form-label">Descricao: <span style="font-size: 0.6rem;">(opicional)</span></label>
-                </div>
-            </div>
-        </div>
-    
-        <div class="container p-0 mx-auto mb-2 mt-2 d-flex justify-content-center">
-            <div class="btn-group" role="group" aria-label="Tipo de Cliente">
-                <button type="button" class="btn btn-primary" data-bs-target="#container_cliente_existente" style="font-size: 0.8rem;" onclick="adicionarInputCliente(1)">
-                    <i class="bi bi-person"></i> Cliente Existente
-                </button>
-                <button type="button" class="btn btn-success" data-bs-target="#container_novo_cliente" style="font-size: 0.8rem;" onclick="adicionarInputCliente(2)">
-                    <i class="bi bi-person-plus"></i> Novo Cliente
+    <div class="card mb-2 ">
+        <div class=" card-header bg-dark text-white "      >
+            <div class="d-flex align-items-center font-monospace">
+                 <span class="me-auto font-monospace   "> Gestão de pagamento </span>
+            
+                <button type="button" id="btn_gestao_pagamento" class="btn btn-sm text-white " onclick="toggleGestaproduto();">
+                    <i class="bi bi-eye-slash d-none"  id="icone_pagamento_close"></i>
+                    <i class="bi bi-eye  " id="icone_pagamento_open"></i>
                 </button>
             </div>
         </div>
         
-                     
-                    <div class="collapse" id="container_cliente_existente">
-                        <div class="card card-body">
-                            <div class="form-floating mb-2">
-                            <input type="text" class="form-control " id="input_cliente" list="clientes">
-                            <label for="input_cliente">Escolha ou digite:</label>
-                            <datalist id="clientes">
-                                {% for cliente in clientes %}
-                                <option value="{{ cliente.nome_cliente }}" data-id-cliente="{{ cliente.id_cliente }}">
-                                {% endfor %}
-                            </datalist>
-
-                        </div>
-                    </div>
-                    </div>
-                    
-                    <div class="collapse" id="container_novo_cliente">
-                        <div class="card card-body">
-                            <div class="form-floating mb-2">
-                                {{ form_cliente.nome_cliente }}
-                                <label for="id_nome_cliente" class="form-label">Nome do Cliente:</label>
-                            </div>
-                            <div class="form-floating mb-2">
-                                {{ form_cliente.telefone_cliente }}
-                                <label for="id_telefone_cliente" class="form-label">Telefone do Cliente:</label>
-                            </div>
-                            <div class="form-floating mb-2">
-                                {{ form_cliente.descricao_cliente }}
-                                <label for="id_descricao_cliente" class="form-label">Descrição do Cliente:</label>
-                            </div>
-                            <h5 class="modal-title mx-auto fw-bold font-monospace"  style="font:size 1rem" >
-                            Formulario de  Endereço
-                            </h5>
-                            <div class="form-floating mb-2  ">
-                                {{ form_endereco.codigo_postal }}
-                                <label for="id_codigo_postal">Código Postal</label>
-                               
-                            </div>
-                            
-                            <div class="form-floating mb-2  ">
-                                {{ form_endereco.rua }}
-                                <label for="id_rua">Rua</label>
-                                
-                            </div>
-                            
-                            <div class="form-floating mb-2  ">
-                                {{ form_endereco.numero }}
-                                <label for="id_numero">Número</label>
-                               
-                            </div>
-                            
-                            <div class="form-floating mb-2  ">
-                                {{ form_endereco.bairro }}
-                                <label for="id_bairro">Bairro</label>
-                            </div>
-                            
-                            <div class="form-floating mb-2  ">
-                                {{ form_endereco.cidade }}
-                                <label for="id_cidade">Cidade</label>
-                            </div>
-                            
-                            <div class="form-floating mb-2  ">
-                                {{ form_endereco.estado }}
-                                <label for="id_estado">Estado</label>
-                            </div>
-                            
-                            <div class="form-floating mb-2 ">
-                                {{ form_endereco.descricao }}
-                                <label for="id_descricao">Descrição</label>
-                            </div> 
-                        </div>
-                    </div>
-            
-                    
-                <hr> 
-                     
-                    <div class="form-floating mb-2">
-                        {{ form_venda.metodo_entrega }}
-                        <label for="metodo_entrega">Método de Entrega:</label>
-                    </div> 
-                    
-                    <div class="form-floating mb-2">
-                        {{ form_venda.forma_pagamento }}
-                        <label for="forma_pagamento">Forma de Pagamento:</label>
-                    </div>
-                     
-                    <div class="form-floating mb-2">
-                        {{ form_venda.estado_transacao }}
-                        <label for="estado_transacao">Estado da Transação:</label>
-                    </div>
-                    
-                   
-                    <div class="container m-0  gestaotroco d-none">
-                        <div class="row">
+        <div class="card-body mt-0 " id="body_gestao_pay"  >
+            <div class="form-floating mb-2">
+                {{ form_venda.metodo_entrega }}
+                <label for="metodo_entrega">Método de Entrega:</label>   </div>  
+            <div class="form-floating mb-2">
+                {{ form_venda.estado_transacao }}
+                <label for="estado_transacao">Estado da Transação:</label> </div> 
+            <div class="form-floating mb-2">
+                {{ form_venda.forma_pagamento }}
+                <label for="forma_pagamento">Forma de Pagamento:</label> </div> 
+                <div class="container m-0  gestaotroco d-none">
+                    <div class="row">
                             <div class="col-8">
                                 <div class="form-floating mb-2">
                                     {{ form_venda.valor_pago }}
                                     <label for="id_valor_pago">Valor Pago:</label>
                                 </div>
                             </div>
-                            <div class="col-4">
-                                <div class=" my-auto">
-                                    <label for="id_troco" class="font-monospace fw-bold">Troco:</label>
-                                    <label id="id_troco" class="text-danger">00,00</label>
+                                <div class="col-4">
+                                    <div class=" my-auto">
+                                        <label for="id_troco" class="font-monospace fw-bold">Troco:</label>
+                                        <label id="id_troco" class="text-danger">00,00</label>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-floating mb-2">
-                        {{ form_venda.descricao }}
-                        <label for="descricao">Descrição:</label>
-                    </div>
+                    </div>   </div>
+                <div class="form-floating mb-2">
+                    {{ form_venda.descricao }}
+                        <label for="descricao">Descrição:</label> </div>
+        </div></div>
 
-                    <div class="card mb-3"  >
-                        <div class="card-header bg-dark text-white">
-                            <div class="d-flex align-items-center font-monospace">
-                                <span class="me-auto fs-6 text-white">Gestão de Entregas</span>
-                                <button type="button" class="btn btn-sm  text-white  me-2" id="btnCadastrarBoy" onclick="toggleMotoboyFields();">
-                                    <i class="bi bi-person-plus"></i>  
+                <div class="card mb-2">
+                                <div class=" card-header bg-dark text-white rounded-1"     id="toggleAccordion"  >
+                                <div class="d-flex align-items-center font-monospace">
+                                <span class="me-auto font-monospace   "> Gestão de produtos retornáveis</span>
+                                <div class="me-2">
+                                <i id="iconeBloqueado" class="bi ms-auto bi-lock" ></i>
+                                <i id="iconeDesbloqueado"  class="bi bi-unlock ms-auto d-none"></i>
+                                </div>
+                                <button type="button" id="btn_gestao_retornaveis" class="btn btn-sm text-white " onclick="toggleGestaoRetornavel(true);">
+                                <i class="bi bi-eye-slash"  id="icone_produto_close"></i>
+                                <i class="bi bi-eye d-none" id="icone_produto_open"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm text-white " onclick="toggleGestaoEntrega();" id="toggleAccordion">
-                                    <i class="bi bi-eye-slash"  id="icone_entrega_close"></i>
-                                    <i class="bi bi-eye d-none" id="icone_entrega_open"></i>
-                                </button>
-                            </div>
+                                </div>
+                                </div>
+
+                                <div class="card-body mt-0 d-none" id="body_gestaoRetornavel"  >
+                                <div class="alert alert-warning font-monospace" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <strong>Atenção:</strong> <span class="" style="font-size: 0.7rem"> Estas configurações se referem à gestão de produtos retornáveis. 
+                                Este campo pode ser ignorado, mas sua utilização foi modelada para galões de água, que possuem data de validade. Preenchendo as informações, você consegue saber qual foi o último galão pego pelo cliente, entre outras informações.
+                                </div>  
+                                <div id="form_galaoGestao">    </div>
+                                </div>
+                                </div> 
+              
+                <div class="card mb-2 "  >
+                    <div class="card-header bg-dark text-white">
+                        <div class="d-flex align-items-center font-monospace">
+                            <span class="me-auto fs-6 text-white">Gestão de Entregas</span>
+                            <button type="button" class="btn btn-sm  text-white  me-2" id="btnCadastrarBoy" onclick="toggleMotoboyFields();">
+                                <i class="bi bi-person-plus"></i>  
+                            </button>
+                            <button type="button" class="btn btn-sm text-white " onclick="toggleGestaoEntrega();" id="toggleAccordion">
+                                <i class="bi bi-eye-slash"  id="icone_entrega_close"></i>
+                                <i class="bi bi-eye d-none" id="icone_entrega_open"></i>
+                            </button>
                         </div>
-                        <div class="card-body d-none" id="container_gestao_entrega">
-                            <div class="m-0 p-0 " id="select_motoboy">
+                    </div>
+                    <div class="card-body d-none" id="container_gestao_entrega">
+                        <div class="m-0 p-0 " id="select_motoboy">
                             <div class="form-floating mb-2">
- 
-                            <select id="id_motoboy" name="motoboy" class="form-select">
-                                <option value="">Selecione um motoboy</option>
-                                    <option value="{{ motoboy.id_motoboy }}">{{ motoboy.nome }}</option>
-                            </select>
-                            <label for="id_motoboy">Selecione Motoboy:</label>
+                                <select id="id_motoboy" name="motoboy" class="form-select">
+                                    <option value="0">Selecione um motoboy</option>
+                                </select>
+                                <label for="id_motoboy">Selecione Motoboy:</label>
+                            </div> </div>
+                        <div class="m-0 p-0 d-none" id="cadastrar_motoboy">
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control" id="nome_motoboy" placeholder=" ">
+                                <label for="nome_motoboy" class="form-label">Nome do Motoboy:</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control" id="telefone_motoboy" placeholder=" ">
+                                <label for="telefone_motoboy" class="form-label">Telefone do Motoboy:</label>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-loading" id="btnCriarBoy" onclick="insertMotoboy()">Cadastrar Motoboy</button>
                         </div>
-                    </div>
-                    <div class="m-0 p-0 d-none" id="cadastrar_motoboy">
-                        <div class="form-floating mb-2">
-                            <input type="text" class="form-control" id="nome_motoboy" placeholder=" ">
-                            <label for="nome_motoboy" class="form-label">Nome do Motoboy:</label>
-                        </div>
-                        <div class="form-floating mb-2">
-                            <input type="text" class="form-control" id="telefone_motoboy" placeholder=" ">
-                            <label for="telefone_motoboy" class="form-label">Telefone do Motoboy:</label>
-                        </div>
-                        <button type="button" class="btn btn-primary btn-loading" id="btnCriarMotoboy" onclick="insertMotoboy()">Cadastrar Motoboy</button>
-                    </div>
-                    
-                    </div>
-                    </div>
-                    
                 
-                    
-                </div>
-                <input id="id_tipoCliente" name="tipoCliente" type="hidden" value="0" > 
-            <div class="modal-footer ">
-                <a href="{% url 'lista_vendas' %}" class="btn btn-secondary float-start me-auto btn-sm">Cancelar</a>
-             <button type="submit" id="btnSubmit" class="btn btn-primary float-end btn-md btn-loading" >Salvar</button>
-
-            </div>  
-
-        </form>
+            </div>
         </div>
-    <script>
-
-    
-function listarMotoboys() {
-    var container = document.getElementById('container_gestao_entrega');
-    if (container && !container.classList.contains('d-none')) {
-        listarMotoboysPorEmpresa()
-            .then(result => {
-                if (result.success) {
-                    var selectMotoboy = document.getElementById('id_motoboy');
-                    selectMotoboy.innerHTML = ''; // Limpar as opções existentes
-                    
-                    // Adicionar as opções dos motoboys
-                    result.data.forEach(motoboy => {
-                        var option = document.createElement('option');
-                        option.value = motoboy.id_motoboy;
-                        option.text = motoboy.nome;
-                        selectMotoboy.appendChild(option);
-                    });
-                    
-                    alertCustomer('Lista de motoboys atualizada.');
-                } else {
-                    alertCustomer(result.data);
-                }
-            })
-            .catch(error => {
-                alertCustomer(error.message);
-            });
-    }
-}
-
-    function insertMotoboy() {
-        var nomeMotoboy = document.getElementById('nome_motoboy').value.trim();
-        var telefoneMotoboy = document.getElementById('telefone_motoboy').value.trim();
-
-        // Validar se os campos não estão vazios
-        if (nomeMotoboy === '') {
-            alertCustomer('Por favor, insira o nome do motoboy.');
-            return;
-        }
-        if (telefoneMotoboy === '') {
-            alertCustomer('Por favor, insira o telefone do motoboy.');
-            return;
-        }
-
-        // Chamar a função para criar um motoboy, passando o objeto de dados como parâmetro
-        createMotoboy(nomeMotoboy, telefoneMotoboy)
-            .then(result => {
-                if (result.success) {
-                    // Limpar os campos após a criação bem-sucedida
-                    document.getElementById('nome_motoboy').value = '';
-                    document.getElementById('telefone_motoboy').value = '';
-                } else {
-                    alertCustomer(result.data.message);
-                }
-                toggleMotoboyFields()
-            })
-            .catch(error => {
-                alertCustomer('Ocorreu um erro ao criar o motoboy: ' + error.message);
-                // Habilitar o contêiner e remover o indicador de carregamento em caso de erro
-                container.classList.remove('disabled');
-            });
-    }
-        
-        
-     // Defina sua função de verificação
-     function verificarAntesDoSubmit() {
-
-        if (document.getElementById('id_loja').value == "0") {
-            alertCustomer('Por favor, selecione uma loja antes de enviar o formulário.');
-            return false;  
-        }
-        if (!atualizarCamposCarrinho()) {
-            alertCustomer('Não foram adicionados itens ao formulário. Por favor, adicione itens ao carrinho antes de enviar.');
-            return false;
-        }
-        if (document.getElementById('id_metodo_entrega').value == "0") {
-            alertCustomer('Por favor, selecione um método de entrega antes de enviar o formulário.');
-            return false;  
-        }
-        if (document.getElementById('id_forma_pagamento').value == "0") {
-            alertCustomer('Por favor, selecione uma forma de pagamento antes de enviar o formulário.');
-            return false;  
-        } 
-        if (document.getElementById('id_estado_transacao').value == "0") {
-            alertCustomer('Por favor, selecione um estado de transação antes de enviar o formulário.');
-            return false;  
-        }
-        if(document.getElementById('id_tipoCliente').value == "1"){
-            alertCustomer('Por favor, preencha todos os campos antes de enviar o formulário.');
-
-        }
-        
-        if(document.getElementById('id_tipoCliente').value == "2"){
-            alertCustomer('Por favor, preencha todos os campos antes de enviar o formulário.');
-        
-        }
-
-        return true; // Permite o envio do formulário
-    }
-
-    // Adicione um ouvinte de eventos ao botão de envio
-    document.getElementById("btnSubmit").addEventListener("click", function(event) {
-        // Chama a função de verificação antes de permitir o envio do formulário
-        if (!verificarAntesDoSubmit()) {
-            event.preventDefault(); // Impede o envio do formulário se a verificação falhar
-        }
-    });
-
-    // Função para atualizar o campo oculto com os itens do carrinho
-    function atualizarCamposCarrinho() {
-        var listaProdutos = document.getElementById('listaProdutos');
-        var itensCarrinho = [];
-    
-        // Percorrer os itens da lista de produtos
-        var itensLista = listaProdutos.querySelectorAll('li');
-        
-        // Verificar se há itens na lista de produtos
-        if (itensLista.length === 0) {
-            return false; // Retorna false se não houver itens
-        }
-    
-        itensLista.forEach(function(item) {
-            var idProduto = item.getAttribute('data-id-produto');
-            var quantidade = parseInt(item.querySelector(".quantidade").textContent);
-            // Concatenar o ID do produto e a quantidade com |
-            var valorInput = idProduto + '|' + quantidade;
-            // Criar um input oculto para cada item do carrinho
-            var input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'item_carrinho';
-            input.value = valorInput;
-            document.getElementById('form_cadastro').appendChild(input);
-        });
-    
-        return true; // Retorna true se os itens foram adicionados com sucesso
-    }
-    function adicionarInputCliente(tipoCliente) {
-        var inputTipoCliente = document.getElementById('id_tipoCliente');   
-        inputTipoCliente.value = tipoCliente;
-        document.getElementById('form_cadastro').appendChild(inputTipoCliente);
-    }
-    document.getElementById('id_metodo_entrega').addEventListener('change', function() {
-        var selectedOption = this.options[this.selectedIndex];
-        var selectedValue = selectedOption.value;
-    
-        if (selectedValue === "retirado_na_loja") {
-            document.getElementById("id_estado_transacao").value = "finalizado";
-        }
-
-        if (selectedValue === "entrega_no_local") {
-            toggleGestaoEntrega();
-        }
-    });
-    function toggleGestaoEntrega() {
-        var container = document.getElementById("container_gestao_entrega");
-        var iconeOpen = document.getElementById("icone_entrega_open");
-        var iconeClose = document.getElementById("icone_entrega_close");
-    
-        if (container.classList.contains("d-none")) {
-            listarMotoboys();
-            // Se o container estiver oculto, mostrá-lo e trocar os ícones
-            container.classList.remove("d-none");
-            iconeOpen.classList.remove("d-none");
-            iconeClose.classList.add("d-none");
-        } else {
-            // Se o container estiver visível, ocultá-lo e trocar os ícones
-            container.classList.add("d-none");
-            iconeOpen.classList.add("d-none");
-            iconeClose.classList.remove("d-none");
-        }
-    }
-    function toggleMotoboyFields() {
-        var selectMotoboy = document.getElementById("select_motoboy");
-        var cadastrarMotoboy = document.getElementById("cadastrar_motoboy");
-        var btnCadastrarBoy = document.getElementById("btnCadastrarBoy");
-        var container = document.getElementById("container_gestao_entrega");
-        var iconeOpen = document.getElementById("icone_entrega_open");
-        var iconeClose = document.getElementById("icone_entrega_close");
-        
-            if (selectMotoboy.classList.contains("d-none")) {
-                // Se estiver oculto, mostra o campo de seleção de motoboy e oculta o campo de cadastro
-                selectMotoboy.classList.remove("d-none");
-                cadastrarMotoboy.classList.add("d-none");
-                // Altera o texto do botão para "Cadastrar Motoboy" e adiciona um ícone adequado 
-                btnCadastrarBoy.innerHTML = '<i class="bi bi-person-plus"></i>';
-                listarMotoboys();
-            } else {
-                // Se estiver visível, mostra o campo de cadastro e oculta o campo de seleção de motoboy
-                selectMotoboy.classList.add("d-none");
-                cadastrarMotoboy.classList.remove("d-none");
-                // Altera o conteúdo do botão para o ícone "arrow-return-left"
-                btnCadastrarBoy.innerHTML = '<i class="bi bi-arrow-return-left"></i>';
-            }
-            if (container.classList.contains("d-none")) {
-                // Se o container estiver oculto, mostrá-lo e trocar os ícones
-                container.classList.remove("d-none");
-                iconeOpen.classList.remove("d-none");
-                iconeClose.classList.add("d-none");
-            }
-    }
-    
-            document.addEventListener("DOMContentLoaded", function () {
-                var valorPagoInput = document.getElementById("id_valor_pago");
-                var trocoSpan = document.getElementById("id_troco");
-                var valorTotalLabel = document.getElementById("label_valor_total");
-        
-                valorPagoInput.addEventListener("input", function () {
-                    var valorPago = parseFloat(this.value);
-                    var valorTotal = parseFloat(valorTotalLabel.textContent.replace("R$", "").replace(",", ".")); // Extrai o valor total do label
-        
-                    if (!isNaN(valorPago) && valorPago >= valorTotal) {
-                        var troco = valorPago - valorTotal;
-                        trocoSpan.textContent = troco.toFixed(2); // Define o troco com duas casas decimais
-                    } else {
-                        trocoSpan.textContent = "0"; // Se o valor pago for menor que o valor total, define o troco como zero
-                    }
-                });
-            });
-        
-    document.addEventListener("DOMContentLoaded", function () {
-        var selectElement = document.getElementById("id_forma_pagamento");
-        var containerElement = document.querySelector(".gestaotroco");
-
-        selectElement.addEventListener("change", function () {
-        var selectedOption = this.options[this.selectedIndex];
-        var selectedValue = selectedOption.value;
-
-        if (selectedValue === "dinheiro") {
-            containerElement.classList.remove("d-none"); // Remove a classe que oculta o container
-        } else {
-            containerElement.classList.add("d-none"); // Adiciona a classe que oculta o container
-        }
-        });
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-                // Função para recalcular o troco quando o valor pago é alterado
-                                
-        function calcularTroco() {
-            var valorPagoInput = document.getElementById('id_valor_pago');
-            var valorPago = valorPagoInput ? valorPagoInput.value : ''; // Verifica se o elemento existe antes de acessá-lo
-            var valorTotalInput = document.getElementById('id_valor_total');
-            var valorTotal = valorTotalInput ? valorTotalInput.value : ''; // Verifica se o elemento existe antes de acessá-lo
-
-            if (valorPago !== '' && valorTotal !== '') {
-                var troco = parseFloat(valorPago) - parseFloat(valorTotal);
-                $('#id_troco').text('R$ ' + troco.toFixed(2).replace('.', ','));
-            }
-        }
-                // Adicionar um ouvinte de evento de entrada ao campo de valor pago
-            document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
-    });
-            document.addEventListener('DOMContentLoaded', function () {
-                const buttons = document.querySelectorAll('[data-bs-target]');
-                buttons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        const target = button.getAttribute('data-bs-target');
-                        const targetElement = document.querySelector(target);
-                        const otherTargets = document.querySelectorAll('.collapse');
-                        otherTargets.forEach(otherTarget => {
-                            if (otherTarget !== targetElement && otherTarget.classList.contains('show')) {
-                                const otherCollapse = new bootstrap.Collapse(otherTarget);
-                                otherCollapse.hide();
-                            }
-                        });
-                        if (!targetElement.classList.contains('show')) {
-                            const collapse = new bootstrap.Collapse(targetElement);
-                            collapse.show();
-                        }
-                    });
-                });
-            }); 
-     
-    produtosArray = [
-    {% for produto in list_produtos %}
-        { 
-            nome: "{{ produto.nome }}",
-            valor: "{{ produto.preco_venda }}",
-            idLoja: "{{ produto.loja.id_loja }}",
-            idProduto: "{{ produto.id_produto }}",
-            isRetornavel: "{{ produto.is_retornavel }}",
-            quantidade: "{{ produto.quantidade_atual_estoque }}"
-        },
-    {% endfor %}   
-     ];
-        document.addEventListener("DOMContentLoaded", function () {
-            
-                    var produtosList = document.getElementById('produtosList');
-                    produtosArray.forEach(function(produto) {
-                            var option = document.createElement('option');
-                            option.dataset.idProduto = produto.idProduto;
-                            option.value = produto.nome;
-                            produtosList.appendChild(option);
-                    });
-            });
-            document.getElementById('id_loja').addEventListener('change', function() {
-                    var selectedLoja = this.value;
-                    var produtosList = document.getElementById('produtosList');
-                    produtosList.innerHTML = ''; // Limpar os produtos existentes
-                    // Adicionar produtos relevantes ao datalist
-                    produtosArray.forEach(function(produto) {
-                        if (selectedLoja === '0' || produto.idLoja === selectedLoja) {
-                            var option = document.createElement('option');
-                            option.dataset.idProduto = produto.idProduto;
-                            option.value = produto.nome;
-                            produtosList.appendChild(option);
-                        }
-                    });
-                });
-
-
-    document.addEventListener("DOMContentLoaded", function () {
-        // Obtém o input do produto
-        var produtoInput = document.getElementById("produtoInput");
-        // Adiciona evento de entrada para detectar a seleção de uma opção
-        produtoInput.addEventListener("input", function() {
-            var selectedOption = document.querySelector("#produtosList option[value='" + this.value + "']");
-            if (selectedOption) {
-                 OptionSelection(selectedOption);
-            }
-        });
-
-        // Função para lidar com a seleção de opção
-        function  OptionSelection(option) {
-            var produtoId = option.getAttribute("data-id-produto");
-                produtoInput.dataset.idProduto = produtoId;
-        }
-    });  
-     
-    function calcularValorTotal() {
-        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-        var valorTotal = 0;
-        
-        // Itera sobre os itens da lista e calcula o valor total
-        itensLista.forEach(function (item) {
-            var quantidade = parseInt(item.querySelector(".quantidade").textContent);
-            var idProduto = item.getAttribute("data-id-produto");
-            produtosArray.forEach(function(produto) {
-                if(produto.idProduto == idProduto){
-                    var valorUnitario = parseFloat(produto.valor);
-                    valorTotal += quantidade * valorUnitario;
-                }
-            });
-        });
-
-        // Define o valor total no label, formatando-o com vírgula e duas casas decimais
-        var labelValorTotal = document.getElementById("label_valor_total");
-        if (labelValorTotal) {
-            labelValorTotal.textContent = valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-        }  
-    }
-    
-    document.addEventListener("DOMContentLoaded", function () { 
-        var adicionarBtn = document.getElementById("adicionarProdutoBtn");
-        var valorTotalInput = document.getElementById("label_valor_total");
-        var listaProdutos = document.getElementById("listaProdutos");
-        // Função para calcular o valor total e atualizar o label
+                 <!--card cliente-->
+            <div class="card  "  >
+                    <div class="card-header bg-dark text-white">
+                        <div class="d-flex align-items-center font-monospace">
+                            <span class="me-auto fs-6 text-white">Gestão de Clientes</span>
+                            <button type="button" class="btn btn-sm  text-white  me-2" id="btnCadastrarCliente" onclick="toggleClienteFields();">
+                                <i class="bi bi-person-plus"></i>  
+                            </button>
+                            <button type="button" class="btn btn-sm text-white " onclick="toggleGestaoCliente();" id="toggleAccordionCliente">
+                                <i class="bi bi-eye-slash"  id="icone_cliente_close"></i>
+                                <i class="bi bi-eye d-none" id="icone_cliente_open"></i>
+                            </button>
+                        </div>
+                    </div>
+                        <div class="card-body d-none" id="container_gestao_cliente">
+                            <div id="select_cliente">
+                                <div class="form-floating  mb-2">
+                                    <input type="text" class="form-control" id="pesquisa_cliente">
+                                    <label class="fw-bold" for="pesquisa_cliente">Pesquisar Cliente:</label>
+                                </div> 
+                               
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Resultado da Busca</h5>
+        <button type="button" class="btn btn-sm text-dark" onclick="toggleResultadoPesquisa();" >
+            <i class="bi bi-eye-slash" id="icone_pesquisa_close"></i>
+            <i class="bi bi-eye d-none" id="icone_pesquisa_open"></i>
+        </button>
+    </div>
+    <div id="result-pesquisa" class="row card-body d-none">
        
-        adicionarBtn.addEventListener("click", function () {
-            var produtoInput = document.getElementById("produtoInput");
-            var produtoSelecionado = null;
-            var produtoId = produtoInput.getAttribute("data-id-produto");
-
-            produtosArray.forEach(function(produto) {
-                if (produto.idProduto == produtoId) {
-                    produtoSelecionado = produto;
-                    // Aqui você pode realizar outras operações relacionadas ao produto selecionado, se necessário
-                }
-            });
-            if (produtoSelecionado.nome !== "") {
-                var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-                var produtoExistente = false;
-                
-                // Verifica se o produto já está na lista
-                itensLista.forEach(function (item) {
-                    var idExistente = item.getAttribute("data-id-produto");
-                    if (idExistente === produtoId) {
-                        // Se já existir, aumenta a quantidade
-                        var quantidadeSpan = item.querySelector(".quantidade");
-                        var quantidadeAtual = parseInt(quantidadeSpan.textContent);
-                        quantidadeSpan.textContent = quantidadeAtual + 1;
-                        produtoExistente = true;
-                    }
-                });
-
-                if (!produtoExistente) {
-                    // Se o produto não existir na lista, cria um novo item
-                    var novoItemLista = document.createElement("li");
-                    novoItemLista.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
-                    novoItemLista.setAttribute("data-id-produto", produtoSelecionado.idProduto);
-                    novoItemLista.setAttribute("data-retornavel", produtoSelecionado.isRetornavel); 
-                    novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
-                    novoItemLista.innerHTML = `
-                        <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                        <span class="" >${produtoSelecionado.nome} R$${produtoSelecionado.valor} Unid</span>
-
-                        <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.idProduto}" onclick="aumentarQuantidade(this)"></span>
-                        <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
-                    `;
-                    listaProdutos.appendChild(novoItemLista);
-                }
-
-                calcularValorTotal();
-                produtoInput.value =""
-                verificarRetornaveis();
-            }
-        });
-    });
+    </div>
+</div>
     
-    function aumentarQuantidade(elemento) {
-         // Encontra o elemento pai do elemento atual
-    var pai = elemento.closest(".list-group-item");
-    // Obtém o ID do produto do atributo data-id-produto do elemento pai
-    var idProduto = pai.getAttribute("data-id-produto");
-    
-    produtosArray.forEach(function(produto) {
-        if(produto.idProduto == idProduto) {
-            var quantidadeSpan = pai.querySelector(".quantidade");
-            var quantidadeAtual = parseInt(quantidadeSpan.textContent);
-            if(produto.quantidade >= quantidadeAtual) {
-                quantidadeSpan.textContent = quantidadeAtual + 1;
-                calcularValorTotal();
-            } else {
-                alertCustomer("Não há mais produto disponível no estoque.");
-            }
-        }
-    });
-}
-    
-    function diminuirQuantidade(elemento) {
-        var quantidadeSpan = elemento.parentElement.querySelector(".quantidade");
-        var quantidadeAtual = parseInt(quantidadeSpan.textContent);
-        if (quantidadeAtual > 1) {
-            quantidadeSpan.textContent = quantidadeAtual - 1;
-        } else {
-            elemento.parentElement.remove();
-        }
-        calcularValorTotal();
-        verificarRetornaveis();
-    }
+        <div id="info_cliente" class="d-none">
+            <h5 class="mb-4">Informações do Cliente</h5>
+            <div class="col-sm-6">
+                <i class="bi bi-person-fill me-1"></i>
+                <span class="fw-bold">Nome do Cliente:</span>
+                <span id="info_nome_cliente"></span>
+            <div class="col-sm-6">
+                <i class="bi bi-phone-fill me-1"></i>
+                <span class="fw-bold">Telefone do Cliente:</span>
+                <span id="info_telefone_cliente"></span>
+            </div>
+            <div class="col-sm-6">
+                <i class="bi bi-people-fill me-1"></i>
+                <span class="fw-bold">Tipo de Cliente:</span>
+                <span id="info_tipo_cliente"></span>
+            </div>
+            <div class="mb-1">
+                <i class="bi bi-card-text-fill me-1"></i>
+                <span class="fw-bold">Descrição do Cliente:</span>
+                <span id="info_descricao_cliente"></span>
+            </div>
+            <hr class="my-2">
+            <h5 class="mb-4">Informações de Endereço</h5>
+            <div class="col-sm-6">
+                <i class="bi bi-geo-alt-fill me-1"></i>
+                <span class="fw-bold">Código Postal:</span>
+                <span id="info_codigo_postal"></span>
+            </div>
+            <div class="col-sm-6">
+                <i class="bi bi-house-fill me-1"></i>
+                <span class="fw-bold">Rua:</span>
+                <span id="info_rua"></span>
+            </div>
+            <div class="co-sm-6">
+                <i class="bi bi-geo-alt-fill me-1"></i>
+                <span class="fw-bold">Número:</span>
+                <span id="info_numero"></span>
+            </div>
+            <div class="co-sm-6">
+                <i class="bi bi-geo-alt-fill me-1"></i>
+                <span class="fw-bold">Bairro:</span>
+                <span id="info_bairro"></span>
+            </div>
+            <div class="col-sm-6">
+                <i class="bi bi-geo-alt-fill me-1"></i>
+                <span class="fw-bold">Cidade:</span>
+                <span id="info_cidade"></span>
+            </div>
+            <div class="col-sm-6">
+                <i class="bi bi-flag-fill me-2"></i>
+                <span class="fw-bold">Estado:</span>
+                <span id="info_estado"></span>
+            </div>
+            <div class="mb-1">
+                <i class="bi bi-card-text-fill me-1"></i>
+                <span class="fw-bold">Descrição:</span>
+                <span id="info_descricao_endereco"></span>
+            </div>
+        </div>
+                            </div>
+                            <div class="m-0 p-0 d-none" id="cadastrar_cliente">
+                                    <div class="form-floating mb-2">
+                                            {{ form_cliente.nome_cliente }}
+                                            <label for="id_nome_cliente" class="form-label">Nome do Cliente:</label> </div>
+                                    <div class="form-floating mb-2">
+                                            {{ form_cliente.telefone_cliente }}
+                                            <label for="id_telefone_cliente" class="form-label">Telefone do Cliente:</label></div>
+                                            <div class="form-floating mb-2" id="form_select_tipo_cliente">
+                                                <select class="form-select" id="id_select_tipo_cliente">
+                                                    <option value="0">selecione</option>
+                                                    <option value="corporativo">Corporativo</option>
+                                                    <option value="ocasional">Ocasional</option>
+                                                    <option value="regular">Regular</option>
+                                                    <option value="residencial">Residencial</option>
+                                                </select>
+                                                <label for="id_select_tipo_cliente" class="form-label">Tipo de Cliente:</label>
+                                            </div>
+                                    
+                                    <div class="form-floating mb-2">
+                                    {{ form_cliente.descricao_cliente }}
+                                    <label for="id_descricao_cliente" class="form-label">Descrição do Cliente:</label></div>
+                                
+                            
+                                            <h5 class="modal-title mx-auto fw-bold font-monospace"  style="font:size 1rem" >  Formulario de  Endereço  </h5>
+                                    <div class="form-floating mb-2  ">
+                                            {{ form_endereco.codigo_postal }}
+                                            <label for="id_codigo_postal">Código Postal</label> </div>  
+                                    <div class="form-floating mb-2  ">
+                                        {{ form_endereco.rua }}
+                                        <label for="id_rua">Rua</label>    </div>
+                                    <div class="form-floating mb-2  ">
+                                        {{ form_endereco.numero }}
+                                        <label for="id_numero">Número</label></div>
+                                    
+                                    <div class="form-floating mb-2  ">
+                                        {{ form_endereco.bairro }}
+                                        <label for="id_bairro">Bairro</label></div>
+                                    
+                                    <div class="form-floating mb-2  ">
+                                        {{ form_endereco.cidade }}
+                                        <label for="id_cidade">Cidade</label></div>
+                                    
+                                    <div class="form-floating mb-2  ">
+                                        {{ form_endereco.estado }}
+                                        <label for="id_estado">Estado</label></div>
+                                    
+                                    <div class="form-floating mb-2 " id="form_descricao">
+                                        {{ form_endereco.descricao }}
+                                        <label for="id_descricao">Descrição</label></div> 
+                                       
+                                        <button type="button" class="btn btn-primary  " id="btnCriarCliente" onclick="insertCliente()">Cadastrar Cliente</button></div>
+                           
+                             </div>  
+                        </div>  
+                    </div>  
 
+            <input id="id_cliente" name="id_cliente" name="id_cliente" type="hidden" value="0" > 
+            <div class="modal-footer ">
+                    <a href="{% url 'lista_vendas' %}" class="btn btn-secondary float-start me-auto btn-sm">Cancelar</a>
+                    <button type="submit" id="btnSubmit" class="btn btn-primary float-end btn-md btn-loading" >Salvar</button>
+            </div>  
+        </form>
+        </div> 
+
+  <script>
+    produtosArray = [
+        {% for produto in list_produtos %}
+        { 
+        nome: "{{ produto.nome }}",
+        valor: "{{ produto.preco_venda }}",
+        idLoja: "{{ produto.loja.id_loja }}",
+        idProduto: "{{ produto.id_produto }}",
+        isRetornavel: "{{ produto.is_retornavel }}",
+        quantidade: "{{ produto.quantidade_atual_estoque }}"
+        },
+        {% endfor %}   
+    ];
      
-
-
-    function verificarRetornaveis(){
-        var bodyGestaoRetornavel = document.getElementById("body_gestaoRetornavel");
-        var iconeBloqueado = document.getElementById("iconeBloqueado");
-        var iconeDesbloqueado = document.getElementById("iconeDesbloqueado");
-        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-        var algumRetornavel = false;
-
-        // Verifica se há algum item retornado na lista
-        for (var item of itensLista) {
-            var isRetornavel = item.dataset.retornavel === "True";
-            if (isRetornavel) {
-                algumRetornavel = true;
-                break;
-            }
-        }
-
-        // Alterna a visibilidade do corpo do acordeão e dos ícones com base na presença de itens retornáveis
-        if (algumRetornavel) {
-            bodyGestaoRetornavel.style.display = "block";
-            iconeBloqueado.classList.add("d-none");
-            iconeDesbloqueado.classList.remove("d-none");
-        } else {
-            bodyGestaoRetornavel.style.display = "none";
-            iconeBloqueado.classList.remove("d-none");
-            iconeDesbloqueado.classList.add("d-none");
-        }  
-    }
-   
-    document.querySelectorAll(".data-validade").forEach(function(input) {
-        input.addEventListener("input", function() {
-            // Limpa qualquer timeout existente
-            clearTimeout(input.timeoutId);
-            
-            // Configura um novo timeout para esperar que o usuário pare de digitar
-            input.timeoutId = setTimeout(function() {
-                // Obtém o valor do campo data_validade
-                var dataValidade = input.value.trim();
-                
-                // Verifica se a entrada está vazia
-                if (dataValidade === "") {
-                    return; // Não faz nada se estiver vazio
-                }
-                
-                // Verifica se a entrada possui o formato esperado (MM/AAAA)
-                var regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
-                if (!regex.test(dataValidade)) {
-                    return; // Não faz nada se o formato for inválido
-                }
-                
-                // Extrai o mês e o ano da entrada
-                var partes = dataValidade.split("/");
-                var mes = parseInt(partes[0], 10);
-                var ano = parseInt(partes[1], 10);
-                
-                // Calcula a data de fabricação subtraindo três anos da data de validade
-                var dataFabricacao = ("0" + mes).slice(-2) + "/" + (ano - 3);
-            
-                
-                // Encontra o campo de entrada data_fabricacao correspondente
-                var dataFabricacaoField = input.closest('.row').querySelector(".data-fabricacao");
-                
-                // Define o valor do campo data_fabricacao se encontrado
-                if (dataFabricacaoField) {
-                    dataFabricacaoField.value = dataFabricacao;
-                }
-            }, 500); // Aguarda 500ms após a última entrada antes de executar o cálculo
-        });
-    });
-        
   </script>
-                   
-                    {% endif%}
+
+    <script type="text/javascript" src="{% static '/js/pages/FunctionsModalVendas.js' %}" ></script>
+
+{% endif%}
 
             </div>
         </div>
