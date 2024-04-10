@@ -46,11 +46,11 @@
     </div> 
 
   <script >
-    {% if open_modal %}
-        document.addEventListener('DOMContentLoaded', function() {
-        var myModal = new bootstrap.Modal(document.getElementById('ModalVenda'));
-        myModal.show();
-    });
-    {% endif %} 
+    window.onload = function() {
+        {% if open_modal %}
+            var myModal = new bootstrap.Modal(document.getElementById('ModalVenda'));
+            myModal.show();
+        {% endif %}
+    };
 </script>
         {% endblock %}

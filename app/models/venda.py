@@ -48,6 +48,8 @@ class Compra(models.Model):
         max_length=100, unique=True, null=True, blank=True
     )
     metodo_entrega = models.CharField(max_length=50, null=True, blank=True)
+    desconto = models.CharField(max_length=50, null=True, blank=True)
+    valor_entrega = models.CharField(max_length=50, null=True, blank=True)
     descricao = models.TextField(null=True, blank=True)
 
     def save(self, *args, **kwargs):

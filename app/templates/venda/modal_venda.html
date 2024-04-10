@@ -42,9 +42,9 @@
                     </ul>
                    
 
-<div class="container mb-1 px-1 mx-1 font-monospace mt-2" style="font: size 1rem;" >
+<div class=" mb-1 px-1 mx-1 font-monospace mt-2" style="font: size 1rem;" >
     <label  id="valor_total" class="fw-bold ">Valor Total:</label>
-    <label class="ms-auto float-end text-success fw-bold" id="label_valor_total">00,00</label>
+    <label class="ms-auto float-end text-success fw-bold" id="id_valor_total">00,00</label>
 </div>
     <hr class="mt-1 mb-3 fw-bold ">
 
@@ -64,27 +64,37 @@
             <div class="form-floating mb-2">
                 {{ form_venda.metodo_entrega }}
                 <label for="metodo_entrega">Método de Entrega:</label>   </div>  
+                <div class="form-floating mb-2 d-none " id="id_container_entrega">
+                    <input id="txt_taxa_entrega" class="form-control money-mask" type="text" />
+                    <label for="txt_taxa_entrega">Taxa de Entrega:  <span style="font-size: 0.8;">R$ 00,00</span></label> </div> 
+
             <div class="form-floating mb-2">
                 {{ form_venda.estado_transacao }}
                 <label for="estado_transacao">Estado da Transação:</label> </div> 
             <div class="form-floating mb-2">
                 {{ form_venda.forma_pagamento }}
                 <label for="forma_pagamento">Forma de Pagamento:</label> </div> 
-                <div class="container m-0  gestaotroco d-none">
-                    <div class="row">
+                <div class="form-floating mb-2">
+                    <input id="txt_desconto" class="form-control money-mask" type="text" />
+                    <label for="txt_desconto">Desconto:  <span style="font-size: 0.8rem;">R$ 00,00</span></label> </div> 
+ 
+
+
+<div class=" mb-1 px-1 mx-1 font-monospace mt-2" style="font: size 1rem;" >
+    <label  id="valor_total" class="fw-bold ">Valor Total: <span style="font-size: 0.9rem;"> Somando Produtos + Taxa Entrega + Desconto</span></label>
+    <label class="ms-auto float-end   fw-bold" id="id_valor_apagar">00,00</label>
+</div>
+                <div class="    row  m-0  gestaotroco d-none">
                             <div class="col-8">
                                 <div class="form-floating mb-2">
                                     {{ form_venda.valor_pago }}
-                                    <label for="id_valor_pago">Valor Pago:</label>
+                                    <label for="id_valor_pago">Valor Pago:  <span style="font-size: 0.8rem;">R$ 00,00</span></label>
                                 </div>
                             </div>
-                                <div class="col-4">
-                                    <div class=" my-auto">
-                                        <label for="id_troco" class="font-monospace fw-bold">Troco:</label>
-                                        <label id="id_troco" class="text-danger">00,00</label>
-                                    </div>
+                                <div class="col mx-auto my-auto">
+                                        <label id="id_troco" class=" ">00,00   </label>
                                 </div>
-                    </div>   </div>
+            </div>
                 <div class="form-floating mb-2">
                     {{ form_venda.descricao }}
                         <label for="descricao">Descrição:</label> </div>
@@ -184,66 +194,67 @@
     </div>
 </div>
     
-        <div id="info_cliente" class="d-none">
-            <h5 class="mb-4">Informações do Cliente</h5>
-            <div class="col-sm-6">
-                <i class="bi bi-person-fill me-1"></i>
-                <span class="fw-bold">Nome do Cliente:</span>
-                <span id="info_nome_cliente"></span>
-            <div class="col-sm-6">
-                <i class="bi bi-phone-fill me-1"></i>
-                <span class="fw-bold">Telefone do Cliente:</span>
-                <span id="info_telefone_cliente"></span>
-            </div>
-            <div class="col-sm-6">
-                <i class="bi bi-people-fill me-1"></i>
-                <span class="fw-bold">Tipo de Cliente:</span>
-                <span id="info_tipo_cliente"></span>
-            </div>
-            <div class="mb-1">
-                <i class="bi bi-card-text-fill me-1"></i>
-                <span class="fw-bold">Descrição do Cliente:</span>
-                <span id="info_descricao_cliente"></span>
-            </div>
-            <hr class="my-2">
-            <h5 class="mb-4">Informações de Endereço</h5>
-            <div class="col-sm-6">
-                <i class="bi bi-geo-alt-fill me-1"></i>
-                <span class="fw-bold">Código Postal:</span>
-                <span id="info_codigo_postal"></span>
-            </div>
-            <div class="col-sm-6">
-                <i class="bi bi-house-fill me-1"></i>
-                <span class="fw-bold">Rua:</span>
-                <span id="info_rua"></span>
-            </div>
-            <div class="co-sm-6">
-                <i class="bi bi-geo-alt-fill me-1"></i>
-                <span class="fw-bold">Número:</span>
-                <span id="info_numero"></span>
-            </div>
-            <div class="co-sm-6">
-                <i class="bi bi-geo-alt-fill me-1"></i>
-                <span class="fw-bold">Bairro:</span>
-                <span id="info_bairro"></span>
-            </div>
-            <div class="col-sm-6">
-                <i class="bi bi-geo-alt-fill me-1"></i>
-                <span class="fw-bold">Cidade:</span>
-                <span id="info_cidade"></span>
-            </div>
-            <div class="col-sm-6">
-                <i class="bi bi-flag-fill me-2"></i>
-                <span class="fw-bold">Estado:</span>
-                <span id="info_estado"></span>
-            </div>
-            <div class="mb-1">
-                <i class="bi bi-card-text-fill me-1"></i>
-                <span class="fw-bold">Descrição:</span>
-                <span id="info_descricao_endereco"></span>
-            </div>
-        </div>
-                            </div>
+<div id="info_cliente" class="d-none row d-flex">
+    <h5 class="mb-1">Informações do Cliente</h5>
+    <div class="col-sm-6 d-inline-flex">
+        <i class="bi bi-person-fill me-1"></i>
+        <span class="fw-bold">Nome do Cliente: </span>
+        <span id="info_nome_cliente"></span>
+    </div>
+    <div class="col-sm-6 d-inline-flex">
+        <i class="bi bi-phone-fill me-1"></i>
+        <span class="fw-bold">Telefone do Cliente: </span>
+        <span id="info_telefone_cliente"></span>
+    </div>
+    <div class="col-sm-6 d-inline-flex">
+        <i class="bi bi-people-fill me-1"></i>
+        <span class="fw-bold">Tipo de Cliente: </span>
+        <span id="info_tipo_cliente"></span>
+    </div>
+    <div class=" mb-1 ">
+        <i class="bi bi-card-text-fill me-1"></i>
+        <span class="fw-bold">Descrição do Cliente: </span>
+        <span id="info_descricao_cliente"></span>
+    </div>
+    <hr class="my-2">
+    <h5 class="mb-1">Informações de Endereço</h5>
+    <div class="col-sm-6 d-inline-flex">
+        <i class="bi bi-geo-alt-fill me-1"></i>
+        <span class="fw-bold">Código Postal: </span>
+        <span id="info_codigo_postal"></span>
+    </div>
+    <div class="col-sm-6 d-inline-flex">
+        <i class="bi bi-house-fill me-1"></i>
+        <span class="fw-bold">Rua: </span>
+        <span id="info_rua"></span>
+    </div>
+    <div class="col-sm-6 d-inline-flex">
+        <i class="bi bi-geo-alt-fill me-1"></i>
+        <span class="fw-bold">Número: </span>
+        <span id="info_numero"></span>
+    </div>
+    <div class="col-sm-6 d-inline-flex">
+        <i class="bi bi-geo-alt-fill me-1"></i>
+        <span class="fw-bold">Bairro: </span>
+        <span id="info_bairro"></span>
+    </div>
+    <div class="col-sm-6 d-inline-flex">
+        <i class="bi bi-geo-alt-fill me-1"></i>
+        <span class="fw-bold">Cidade: </span>
+        <span id="info_cidade"></span>
+    </div>
+    <div class="col-sm-6 d-inline-flex">
+        <i class="bi bi-flag-fill me-2"></i>
+        <span class="fw-bold">Estado: </span>
+        <span id="info_estado"></span>
+    </div>
+    <div class=" mb-1 ">
+        <i class="bi bi-card-text-fill me-1"></i>
+        <span class="fw-bold">Descrição: </span>
+        <span id="info_descricao_endereco"></span>
+    </div>
+</div>
+          </div>
                             <div class="m-0 p-0 d-none" id="cadastrar_cliente">
                                     <div class="form-floating mb-2">
                                             {{ form_cliente.nome_cliente }}

@@ -20,7 +20,6 @@ from django.db.models import Q
 from datetime import datetime
 from django.utils.dateparse import parse_date
 from django.utils import timezone
-from functools import wraps
  
 class views_venda:
 

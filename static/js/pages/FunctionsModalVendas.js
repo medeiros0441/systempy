@@ -1,3 +1,16 @@
+
+document.getElementById('id_metodo_entrega').addEventListener('change', function() {
+    var selectedOption = this.value; // Obtém o valor selecionado
+    var containerEntrega = document.getElementById('id_container_entrega');
+
+    // Verifica se a opção selecionada é "entrega_no_local"
+    if (selectedOption === 'entrega_no_local') {
+      containerEntrega.classList.remove('d-none'); // Remove a classe d-none
+    } else {
+      containerEntrega.classList.add('d-none'); // Adiciona a classe d-none
+    }
+  });
+
 function toggleGestaoCliente() {
     var container = document.getElementById("container_gestao_cliente");  
     var iconeOpen = document.getElementById("icone_cliente_open");
@@ -16,7 +29,17 @@ function toggleGestaoCliente() {
         iconeClose.classList.remove("d-none");
     }
 }
+  document.getElementById('id_metodo_entrega').addEventListener('change', function() {
+      var selectedOption = this.value; // Obtém o valor selecionado
+      var containerEntrega = document.getElementById('id_container_entrega');
 
+      // Verifica se a opção selecionada é "entrega_no_local"
+      if (selectedOption === 'entrega_no_local') {
+        containerEntrega.classList.remove('d-none'); // Remove a classe d-none
+      } else {
+        containerEntrega.classList.add('d-none'); // Adiciona a classe d-none
+      }
+    });
 function toggleClienteFields() {
     var selectcliente = document.getElementById("select_cliente");
     var CadastrarCliente = document.getElementById("cadastrar_cliente");
@@ -344,11 +367,11 @@ function insertMotoboy() {
     manageLoading(true,"cadastrar_motoboy"); 
     // Validar se os campos não estão vazios
     if (nomeMotoboy === '') {
-        alertCustomer('Por favor, insira o nome do motoboy.');
+        alertCustomer('insira o nome do motoboy.');
         return;
     }
     if (telefoneMotoboy === '') {
-        alertCustomer('Por favor, insira o telefone do motoboy.');
+        alertCustomer('insira o telefone do motoboy.');
         return;
     }
 
@@ -375,33 +398,41 @@ createMotoboy(nomeMotoboy, telefoneMotoboy)
 // Defina sua função de verificação
 function verificarAntesDoSubmit() {
 
+   // Verifica se uma loja foi selecionada
     if (document.getElementById('id_loja').value == "0") {
-        alertCustomer('Por favor, selecione uma loja antes de enviar o formulário.');
+        alertCustomer('selecione uma loja antes de enviar o formulário.');
         return false;  
     }
+    // Verifica se há itens no carrinho
     if (!atualizarCamposCarrinho()) {
-        alertCustomer('Não foram adicionados itens ao formulário. Por favor, adicione itens ao carrinho antes de enviar.');
+        alertCustomer('Não foram adicionados itens ao formulário. adicione itens ao carrinho antes de enviar.');
         return false;
     }
-    if (document.getElementById('id_metodo_entrega').value == "0") {
-        alertCustomer('Por favor, selecione um método de entrega antes de enviar o formulário.');
-        return false;  
-    }
-    if (document.getElementById('id_forma_pagamento').value == "0") {
-        alertCustomer('Por favor, selecione uma forma de pagamento antes de enviar o formulário.');
+    // Verifica se o método de entrega foi selecionado
+    var metodoEntrega = document.getElementById('id_metodo_entrega').value;
+    if (metodoEntrega == "0") {
+        alertCustomer('selecione um método de entrega antes de enviar o formulário.');
         return false;  
     } 
-    if (document.getElementById('id_estado_transacao').value == "0") {
-        alertCustomer('Por favor, selecione um estado de transação antes de enviar o formulário.');
-        return false;  
-    }
-    if(document.getElementById('id_tipoCliente').value == "1"){
-         alertCustomer('Por favor, preencha todos os campos antes de enviar o formulário.');
-    }
-    if(document.getElementById('id_tipoCliente').value == "2"){
-        alertCustomer('Por favor, preencha todos os campos antes de enviar o formulário.');
+    // Se o método de entrega for "entrega_no_local", verifica se foi inserido um valor no campo de taxa de entrega
+    else if (metodoEntrega == "entrega_no_local") {
+        var taxaEntrega = document.getElementById('txt_taxa_entrega').value;
+        if (taxaEntrega.trim() === '') {
+            alertCustomer('informe a taxa de entrega antes de enviar o formulário.');
+            return false;
+        }
     }
 
+    // Verifica se a forma de pagamento foi selecionada
+    if (document.getElementById('id_forma_pagamento').value == "0") {
+        alertCustomer('selecione uma forma de pagamento antes de enviar o formulário.');
+        return false;  
+    } 
+    // Verifica se o estado da transação foi selecionado
+    if (document.getElementById('id_estado_transacao').value == "0") {
+        alertCustomer('selecione um estado de transação antes de enviar o formulário.');
+        return false;  
+    }
     return true; // Permite o envio do formulário
 }
 
@@ -487,13 +518,55 @@ itensLista.forEach(function(item) {
                     });
             });
             // Define o valor total no label, formatando-o com vírgula e duas casas decimais
-            var labelValorTotal = document.getElementById("label_valor_total");
+            var labelValorTotal = document.getElementById("id_valor_total");
+
             if (labelValorTotal) {
                 labelValorTotal.textContent = valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             }  
+            calcularTroco();
+
     }
  
-
+    function calcularTroco() {
+        // Obtém o valor total removendo a formatação
+        var valorTotalInput = document.getElementById('id_valor_total');
+        var valorTotalText = valorTotalInput ? valorTotalInput.textContent.trim() : '';
+        // Remove a formatação (vírgulas) do valor total
+        var valorTotal = parseFloat(valorTotalText.replace(',', '.')) || 0;
+    
+        // Repita o mesmo processo para a taxa de entrega e o desconto, se aplicável
+        var taxaEntregaInput = document.getElementById('txt_taxa_entrega');
+        var taxaEntregaText = taxaEntregaInput ? taxaEntregaInput.value.trim() : '';
+        var taxaEntrega = parseFloat(taxaEntregaText.replace(',', '.')) || 0;
+    
+        var descontoInput = document.getElementById('txt_desconto');
+        var descontoText = descontoInput ? descontoInput.value.trim() : '';
+        var desconto = parseFloat(descontoText.replace(',', '.')) || 0;
+    
+        // Calcula o valor total considerando a taxa de entrega e o desconto
+        var valorTotalComTaxaDesconto = valorTotal + taxaEntrega - desconto;
+    
+        // Define o valor total a ser pago no campo id_valor_total
+        document.getElementById('id_valor_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
+    
+        // Obtém o valor pago
+        var valorPagoInput = document.getElementById('id_valor_pago');
+        var valorPago = valorPagoInput ? parseFloat(valorPagoInput.value) : 0;
+    
+        // Calcula o troco apenas se o valor pago for maior ou igual ao total
+        var troco = valorPago - valorTotalComTaxaDesconto;
+    
+            // Exibe a mensagem dependendo do resultado
+        if (valorPago < valorTotalComTaxaDesconto) {
+            // Calcula o valor que está faltando para cobrir o total da compra
+            var valorFaltante = valorTotalComTaxaDesconto - valorPago;
+            // Exibe a mensagem informando o valor faltante
+            $('#id_troco').text('Está Faltando: R$ ' + valorFaltante.toFixed(2).replace('.', ',')).css('color', 'red');
+        } else {
+            $('#id_troco').text('Troco a ser dado é: R$ ' + troco.toFixed(2).replace('.', ',')).css('color', 'green');
+        }
+    }
+    
 function aumentarQuantidade(elemento) {
     // Encontra o elemento pai do elemento atual
     var pai = elemento.closest(".list-group-item");
@@ -552,22 +625,15 @@ function toggleGestaoRetornavel( status ) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    var valorPagoInput = document.getElementById("id_valor_pago");
-    var trocoSpan = document.getElementById("id_troco");
-    var valorTotalLabel = document.getElementById("label_valor_total");
 
-    valorPagoInput.addEventListener("input", function () {  
-        var valorPago = parseFloat(this.value);
-        var valorTotal = parseFloat(valorTotalLabel.textContent.replace("R$", "").replace(",", ".")); // Extrai o valor total do label
 
-        if (!isNaN(valorPago) && valorPago >= valorTotal) {
-            var troco = valorPago - valorTotal;
-            trocoSpan.textContent = troco.toFixed(2); // Define o troco com duas casas decimais
-        } else {
-            trocoSpan.textContent = "0"; // Se o valor pago for menor que o valor total, define o troco como zero
-        }
-    });
 
+
+    // Adiciona ouvintes de evento de entrada aos campos relevantes
+    document.getElementById('txt_taxa_entrega').addEventListener('input', calcularTroco);
+    document.getElementById('txt_desconto').addEventListener('input', calcularTroco);
+    document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
+ 
     var selectElement = document.getElementById("id_forma_pagamento");
     var containerElement = document.querySelector(".gestaotroco");
 
@@ -580,21 +646,10 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 containerElement.classList.add("d-none"); // Adiciona a classe que oculta o container
             }
-    });
-                        
-    function calcularTroco() {
-        var valorPagoInput = document.getElementById('id_valor_pago');
-        var valorPago = valorPagoInput ? valorPagoInput.value : ''; // Verifica se o elemento existe antes de acessá-lo
-        var valorTotalInput = document.getElementById('id_valor_total');
-        var valorTotal = valorTotalInput ? valorTotalInput.value : ''; // Verifica se o elemento existe antes de acessá-lo
+    }); 
+     
 
-            if (valorPago !== '' && valorTotal !== '') {
-                var troco = parseFloat(valorPago) - parseFloat(valorTotal);
-                $('#id_troco').text('R$ ' + troco.toFixed(2).replace('.', ','));
-            }
-        }
-        // Adicionar um ouvinte de evento de entrada ao campo de valor pago
-        document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
+
 
 const buttons = document.querySelectorAll('[data-bs-target]');
 buttons.forEach(button => {
@@ -638,7 +693,7 @@ buttons.forEach(button => {
         produtoInput.dataset.idProduto = produtoId;
     } 
     var adicionarBtn = document.getElementById("adicionarProdutoBtn");
-    var valorTotalInput = document.getElementById("label_valor_total");
+     
     var listaProdutos = document.getElementById("listaProdutos");
     // Função para calcular o valor total e atualizar o label
 
@@ -677,7 +732,7 @@ buttons.forEach(button => {
                         novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
                         novoItemLista.innerHTML = `
                             <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                            <span class="" >${produtoSelecionado.nome} R$${produtoSelecionado.valor} Unid</span>
+                            <span class="" >${produtoSelecionado.nome} R$ ${produtoSelecionado.valor} Unid</span>
 
                             <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.idProduto}" onclick="aumentarQuantidade(this)"></span>
                             <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
