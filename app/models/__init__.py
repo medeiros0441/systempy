@@ -5,7 +5,7 @@ from .galao import Galao, GestaoGalao
 from .loja import Loja, Associado
 from .produto import Produto
 from .sessao import Sessao
-from .venda import Venda, ItemCompra, Compra, Motoboy
+from .venda import Venda, ItemCompra, Motoboy, Caixa, Transacao, Entrega
 from .historico import Historico
 from .log import Log
 from .configuracao import Configuracao

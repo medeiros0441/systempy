@@ -435,15 +435,36 @@ function verificarAntesDoSubmit() {
     }
     return true; // Permite o envio do formulário
 }
-
-// Adicione um ouvinte de eventos ao botão de envio
+function enviarDadosVenda() {
+    manageLoading(true,"form_cadastro"); 
+    $.ajax({
+        url: 'insert_venda_ajax/',
+        type: 'POST',
+        data: $('#form_cadastro').serialize(),
+        success: function(response) {
+            console.log(response); // Exibe a resposta no console do navegador
+            if (response.success) {
+                alertCustomer(response.success);
+            } else {
+                alertCustomer(response.error);
+            }
+            manageLoading(false,"form_cadastro"); 
+        },
+        error: function(xhr, errmsg, err) {
+            console.log(xhr.responseText); // Exibe o erro no console do navegador
+            alert("Ocorreu um erro ao processar a venda. Por favor, tente novamente mais tarde.");
+         manageLoading(false,"form_cadastro"); 
+        }
+    });
+} 
 document.getElementById("btnSubmit").addEventListener("click", function(event) {
     // Chama a função de verificação antes de permitir o envio do formulário
     if (!verificarAntesDoSubmit()) {
         event.preventDefault(); // Impede o envio do formulário se a verificação falhar
+    } else {
+        enviarDadosDoFormulario(); // Se a verificação passar, envia os dados do formulário via AJAX
     }
 });
-
 // Função para atualizar o campo oculto com os itens do carrinho
 function atualizarCamposCarrinho() {
     var listaProdutos = document.getElementById('listaProdutos');
@@ -548,6 +569,7 @@ itensLista.forEach(function(item) {
     
         // Define o valor total a ser pago no campo id_valor_total
         document.getElementById('id_valor_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
+        document.getElementById('total_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
     
         // Obtém o valor pago
         var valorPagoInput = document.getElementById('id_valor_pago');
@@ -555,6 +577,7 @@ itensLista.forEach(function(item) {
     
         // Calcula o troco apenas se o valor pago for maior ou igual ao total
         var troco = valorPago - valorTotalComTaxaDesconto;
+        document.getElementById('troco').value =troco
     
             // Exibe a mensagem dependendo do resultado
         if (valorPago < valorTotalComTaxaDesconto) {
@@ -865,7 +888,7 @@ buttons.forEach(button => {
                                     // Verifica se a entrada possui o formato esperado (MM/AAAA)
                                     var regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
                                     if (!regex.test(dataValidade)) {
-                                        alertCustomer("há um campo validade, no formato incorreto. deve ser inserido no formato mês/ano");
+                                      
                                         return; // Não faz nada se o formato for inválido
                                     }
                                     

@@ -7,6 +7,7 @@ from django.views.generic import (
 )
 from ..models import Configuracao
 from django.urls import reverse_lazy
+from ..def_global import lista_de_configuracao
 
 
 class ConfiguracaoListView(ListView):
@@ -55,17 +56,7 @@ def criar_configuracoes_padrao(listModel):
 
 def list_configuracoes_padrao(usuario=None, status=True):
 
-    classes = [
-        {"nome": "Usuario", "codigo": 1},
-        {"nome": "Empresa", "codigo": 2},
-        {"nome": "Endereco", "codigo": 3},
-        {"nome": "Galao", "codigo": 4},
-        {"nome": "Loja", "codigo": 5},
-        {"nome": "Produto", "codigo": 6},
-        {"nome": "Venda", "codigo": 7},
-        {"nome": "Cliente", "codigo": 8},
-        {"nome": "Motoboy", "codigo": 9},
-    ]
+    classes = lista_de_configuracao()
 
     list_configuracao = []
 

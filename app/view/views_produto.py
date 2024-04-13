@@ -5,9 +5,10 @@ from ..static import Alerta, UserInfo
 from ..models import Loja, Produto
 from ..forms.form_produto import ProdutoForm as Form
 
+
 class views_produto:
     @staticmethod
-    @verificar_permissoes(codigo_model=6)
+    @verificar_permissoes(6)
     def lista_produtos(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request, True)
         if context is None:
@@ -23,9 +24,8 @@ class views_produto:
             pass
         return render(request, "produto/lista_produtos.html", context)
 
-
     @staticmethod
-    @verificar_permissoes(codigo_model=6)
+    @verificar_permissoes(6)
     def criar_produto(request):
         try:
             if request.method == "POST":
@@ -56,9 +56,8 @@ class views_produto:
             mensagem_erro = str(e)
             return erro(request, mensagem_erro)
 
-
     @staticmethod
-    @verificar_permissoes(codigo_model=6)
+    @verificar_permissoes(6)
     def editar_produto(request, id_produto):
         try:
             id_empresa = UserInfo.get_id_empresa(request)
@@ -101,7 +100,7 @@ class views_produto:
             return erro(request, mensagem_erro)
 
     @staticmethod
-    @verificar_permissoes(codigo_model=6)
+    @verificar_permissoes(6)
     def acrescentar_produto(request):
         try:
 
@@ -109,13 +108,17 @@ class views_produto:
             produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa)
             for produto in produtos:
                 if produto.loja.empresa.id_empresa != id_empresa:
-                    return erro(request, "Você não tem permissão para acessar este produto")
+                    return erro(
+                        request, "Você não tem permissão para acessar este produto"
+                    )
 
             if request.method == "POST":
                 # Obtém os dados do formulário
                 id_produto = request.POST.get("id_produto")
                 id_loja = request.POST.get("id_loja")
-                quantidade_acrescentar = int(request.POST.get("id_quantidade_acrescentar"))
+                quantidade_acrescentar = int(
+                    request.POST.get("id_quantidade_acrescentar")
+                )
 
                 # Verifica se os valores são válidos
                 if not id_produto or not id_loja or quantidade_acrescentar < 0:
@@ -123,12 +126,18 @@ class views_produto:
                     loja_list = Loja.objects.filter(empresa__id_empresa=id_empresa)
                     return views_produto.lista_produtos(
                         request,
-                        {"open_modal": True, "produtos_list": produtos, "lojas": loja_list},
+                        {
+                            "open_modal": True,
+                            "produtos_list": produtos,
+                            "lojas": loja_list,
+                        },
                     )
 
                 produto = Produto.objects.get(id_produto=id_produto)
                 if produto.loja.empresa.id_empresa != id_empresa:
-                    return erro(request, "Você não tem permissão para acessar este produto")
+                    return erro(
+                        request, "Você não tem permissão para acessar este produto"
+                    )
                 produto.quantidade_atual_estoque += quantidade_acrescentar
                 produto.save()
                 Alerta.set_mensagem("Produto acrescentado com sucesso.")
@@ -148,9 +157,8 @@ class views_produto:
             mensagem_erro = str(e)
             return erro(request, mensagem_erro)
 
-
     @staticmethod
-    @verificar_permissoes(codigo_model=6)
+    @verificar_permissoes(6)
     def selecionar_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)
@@ -166,9 +174,8 @@ class views_produto:
             mensagem_erro = str(e)
             return erro(request, mensagem_erro)
 
-
     @staticmethod
-    @verificar_permissoes(codigo_model=6)
+    @verificar_permissoes(6)
     def excluir_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)

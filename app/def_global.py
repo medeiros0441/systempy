@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Empresa, Usuario, Configuracao
 from django.contrib.auth.hashers import check_password, make_password
-from .processador.config_email import enviar_email
+from .gerencia_email.config_email import enviar_email
 from random import choices
 from django.core.exceptions import ObjectDoesNotExist
 import random
@@ -186,7 +186,6 @@ def RecuperacaoSenha(request, senha_nova):
 def get_status(request):
     id_usuario = request.session.get("id_usuario")
     usuario = Usuario.objects.get(id_usuario=id_usuario)
-
     return True
 
 
@@ -232,36 +231,71 @@ from .static import UserInfo, Alerta
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 
+def configuracao_usuario(request, id_usuario, codigo):
+    try:
+        configuracao = Configuracao.objects.get(usuario_id=id_usuario, codigo=codigo)
+        if not configuracao.status_acesso:
+            mensagem = "Acesso negado: você não tem permissão para executar o método."
+            return False, erro(request, mensagem)
+        else:
+            return True, None
+    except ObjectDoesNotExist:
+        mensagem = "Configuração não encontrada."
+        return False, erro(request, mensagem)
+    except MultipleObjectsReturned:
+        mensagem = "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte."
+        return False, erro(request, mensagem)
+
+
 def verificar_permissoes(codigo_model):
+    """
+    Decorador para verificar as permissões do usuário antes de executar a função.
+    """
+
     def decorator(func):
         @wraps(func)
         def wrapper(request, *args, **kwargs):
+            # Obtém o ID do usuário da requisição
             id_usuario = UserInfo.get_id_usuario(request)
-            try:
-                configuracao = Configuracao.objects.get(
-                    usuario_id=id_usuario, codigo=codigo_model
-                )
-                if not configuracao.status_acesso:
-                    Alerta.set_mensagem(
-                        "Acesso negado: você não tem permissão para executar o método."
-                    )
-                    return erro(
-                        request,
-                        "Acesso negado: você não tem permissão para executar o método.",
-                    )
-            except Configuracao.DoesNotExist:
-                Alerta.set_mensagem("Configuração não encontrada.")
-                return erro(request, "Configuração não encontrada.")
-            except MultipleObjectsReturned:
-                Alerta.set_mensagem(
-                    "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte."
-                )
-                return erro(
-                    request,
-                    "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte.",
-                )
-            return func(request, *args, **kwargs)
+
+            # Verifica as permissões do usuário com base no código
+            status, render = configuracao_usuario(request, id_usuario, codigo_model)
+            if status:
+                return func(request, *args, **kwargs)
+            else:
+                return render
 
         return wrapper
 
     return decorator
+
+
+def lista_de_configuracao():
+    return [
+        {"nome": "Usuario", "codigo": 1},
+        {"nome": "Empresa", "codigo": 2},
+        {"nome": "Endereco", "codigo": 3},
+        {"nome": "Galao", "codigo": 4},
+        {"nome": "Loja", "codigo": 5},
+        {"nome": "Produto", "codigo": 6},
+        {"nome": "Venda", "codigo": 7},
+        {"nome": "Cliente", "codigo": 8},
+        {"nome": "Motoboy", "codigo": 9},
+        {"nome": "Caixa", "codigo": 10},
+        {"nome": "Transacao", "codigo": 11},
+        {"nome": "Faturamento", "codigo": 12},
+    ]
+
+
+def buscar_codigo_por_nome(nome_classe):
+    for configuracao in lista_de_configuracao():
+        if configuracao["nome"] == nome_classe:
+            return configuracao["codigo"]
+    return None
+
+
+def buscar_nome_por_codigo(codigo_classe):
+    for configuracao in lista_de_configuracao():
+        if configuracao["codigo"] == codigo_classe:
+            return configuracao["nome"]
+    return None

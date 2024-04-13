@@ -3,7 +3,7 @@ from ..def_global import criar_alerta_js, erro
 from django.utils import timezone
 from .view_cadastro import cadastro_empresa
 from .view_autenticacao import autenticar_usuario
-from ..processador.config_email import enviar_email
+from ..gerencia_email.config_email import enviar_email
 from ..static import Alerta, UserInfo
 
 

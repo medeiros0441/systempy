@@ -137,6 +137,8 @@ url_venda = [  # vendas
         views_venda.excluir_venda,
         name="excluir_venda",
     ),
+
+    path('insert_venda_ajax/', views_venda.insert_venda_ajax, name='insert_venda_ajax'),
 ]
 
 from app.view.views_cliente import views_cliente

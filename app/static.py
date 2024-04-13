@@ -45,14 +45,14 @@ class UserInfo:
             Alerta.set_mensagem("Vôce precisa Fazer o login.")
             return None
         return id_empresa
-    
+
     @staticmethod
     def is_client(request):
         key = UserInfo.get_id_empresa(request)
         if key > 0:
             return True
         return False
-    
+
     @staticmethod
     def clear_user_info(request):
         if "id_usuario" in request.session:
