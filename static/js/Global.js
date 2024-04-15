@@ -73,21 +73,12 @@ function chamarFuncaoPython(url, data,type, callback)  {
         }
   // Fazer uma requisição Fetch para o backend
   fetch(url, requestOptions)
-      .then(response => {
-          // Verificar se a resposta da requisição foi bem sucedida
-          if (!response.ok) {
-              throw new Error('Erro ao chamar a função Python: ' + response.statusText);
-          }
-          // Converter a resposta para JSON
-          return response.json();
-      })
+      .then(response => response.json())
       .then(data => {
-          // Manipular a resposta do backend, se necessário
           console.log('Função Python chamada com sucesso!');
-          callback({ success: true, data: data }); // Chamando o callback com sucesso e dados
+          callback(data); // Chamando o callback com sucesso e dados
       })
       .catch(error => {
-          // Lidar com erros de requisição
           console.error('Erro ao chamar a função Python:', error.message);
           callback({ success: false, error: error.message });
       });

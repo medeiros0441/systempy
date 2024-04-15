@@ -32,7 +32,7 @@
   </div>
 </div>
 <div class="  card-footer d-flex justify-content-center">
-  <button onclick="hideContainer1()"  type="button" class="btn btn-primary btn-md">Proximo</button>
+  <button onclick="hideContainer1()" id="proximo"  type="button" class="btn btn-primary btn-md">Proximo</button>
 </div>
 </div>
 
@@ -76,7 +76,7 @@
   </div>
 </div>
 <div class="  card-footer d-flex justify-content-between">
-<button type="button"  onclick="validateContainer2()"  class="btn order-2 btn-primary btn-md">Finalizar</button>
+<button type="button"  onclick="validateContainer2()" id="finalizar" class="btn order-2 btn-primary btn-md">Finalizar</button>
 <button onclick="hideContainer2()"    class="btn btn-secondary btn-md  order-1">Voltar</button>
 </div>
 </div>
@@ -85,6 +85,26 @@
 </form>
 
 <script>
+  document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("container1").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            // Impedir o envio padrão do formulário
+            event.preventDefault();
+            // Encontrar e clicar no botão "Proximo" dentro do container1
+            document.getElementById("proximo").click();
+        }
+    });
+
+    document.getElementById("container2").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            // Impedir o envio padrão do formulário
+            event.preventDefault();
+            // Encontrar e clicar no botão "Finalizar" dentro do container2
+            document.getElementById("finalizar").click();
+        }
+    });
+});
+
   var cnpjInput = document.getElementById('nro_cnpj');
 
   // Adiciona um listener para o evento de mudança (blur)
@@ -94,7 +114,7 @@
 
       // Expressão regular para validar o formato do CNPJ
       var cnpjRegex = /^\d{14}$/;
-
+      return true
       // Verifica se o CNPJ corresponde à expressão regular
       if (!cnpjRegex.test(cnpj) || !validarCnpj(cnpj)) {
           // Adiciona a classe 'is-invalid' para sinalizar erro de validação

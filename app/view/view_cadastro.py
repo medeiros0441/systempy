@@ -57,13 +57,12 @@ def cadastro_empresa(request):
             mensagens_alerta = []
 
             campos = {
-                "E-mail": dados_formulario.get("email_responsavel"),
+                "E-mail": dados_formulario.get("email_responsavel").lower(),
                 "Telefone": dados_formulario.get("telefone_responsavel"),
                 "CPF": dados_formulario.get("nro_cpf_responsavel"),
                 "CNPJ": dados_formulario.get("nro_cnpj"),
             }
             mensagens_alerta = validacao(campos)
-
             if mensagens_alerta:
                 return render(
                     request,

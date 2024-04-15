@@ -5,14 +5,36 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from ..def_global import erro, criar_alerta_js, get_status, verificar_permissoes
-from ..models.usuario import Usuario
-from ..models import Cliente, Configuracao, Usuario
+from ..models import Cliente, Configuracao, Usuario,Loja
 from ..static import Alerta, UserInfo
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
-
+from ..models import Venda, Associado, Produto
+from django.db.models import Q
 class views_api:
+
+    @verificar_permissoes(codigo_model=3)
+    @csrf_exempt
+    def buscar_lojas(request):
+        id_usuario = UserInfo.get_id_usuario(request)
+        id_empresa = UserInfo.get_id_empresa(request)
+        associacao = Associado.objects.filter(
+            usuario_id=id_usuario, status_acesso=True
+        )
+        # Obtém uma lista de IDs de loja associadas que o usuario está associado.
+        ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
+        lojas = Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
+        list_lojas = []
+        for loja in lojas:
+            data_loja = {
+                'id': str(loja.id_loja),   # Convertendo o ID para string
+                'nome_loja': loja.nome_loja,
+                # Adicione outros campos da loja conforme necessário
+            }
+            list_lojas.append(data_loja)
+        
+        # Retornar a resposta JSON com a lista de lojas
+        return JsonResponse({"list_lojas":list_lojas,"success":"true"})
 
     @csrf_exempt
     @staticmethod

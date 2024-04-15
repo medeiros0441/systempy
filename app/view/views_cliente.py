@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from ..def_global import erro, criar_alerta_js, get_status, verificar_permissoes
 from ..models.usuario import Usuario
-from ..models import Cliente, Configuracao, Usuario, Endereco
+from ..models import Cliente, Configuracao, Usuario, Endereco,Venda
 from ..static import Alerta, UserInfo
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -173,9 +173,53 @@ class views_cliente:
     @staticmethod
     @verificar_permissoes(codigo_model=8)
     def api_get_clientes_by_empresa(request):
+        empresa_id = UserInfo.get_id_empresa(request)
+        # Obter clientes da empresa com os dados do endereço
+        clientes = Cliente.objects.filter(empresa_id=empresa_id).select_related('endereco')
+
+        # Verificar se não há clientes
+        if not clientes:
+            return JsonResponse({"message": "Não foram encontrados clientes para esta empresa.", "success": False})
+
+        # Construir a lista de dicionários contendo os dados de cada cliente com sua última venda
+        clientes_data = []
+        for cliente in clientes:
+            # Obter a última venda do cliente
+            ultima_venda = Venda.objects.filter(cliente=cliente).order_by('-insert').first()
+
+            # Construir o dicionário de dados do cliente e sua última venda
+            data = {
+                'id_cliente': str(cliente.id_cliente),
+                'nome': cliente.nome_cliente,
+                'telefone': cliente.telefone_cliente,
+                'descricao': cliente.descricao_cliente,
+                'tipo_cliente': cliente.tipo_cliente,
+                'rua': cliente.endereco.rua if cliente.endereco else None,
+                'numero': cliente.endereco.numero if cliente.endereco else None,
+                'cep': cliente.endereco.codigo_postal if cliente.endereco else None,
+                'estado': cliente.endereco.estado if cliente.endereco else None,
+                'bairro': cliente.endereco.bairro if cliente.endereco else None,
+                'cidade': cliente.endereco.cidade if cliente.endereco else None,
+                'descricao_endereco': cliente.endereco.descricao if cliente.endereco else None,
+                'ultima_venda': {
+                    'descricao': ultima_venda.descricao if ultima_venda else None,
+                    'data_venda': ultima_venda.data_venda.isoformat() if ultima_venda else None,
+                    'forma_pagamento': ultima_venda.forma_pagamento if ultima_venda else None,
+                    'valor_total': str(ultima_venda.valor_total) if ultima_venda else None,
+                    'produtos': [item.produto.nome for item in ultima_venda.itemcompra_set.all()] if ultima_venda else None,
+                }
+            }
+            clientes_data.append(data)
+        
+        return JsonResponse({"data": clientes_data, "success": True})
+    
+    @staticmethod
+    @verificar_permissoes(codigo_model=8)
+    def api_get_cliente(request):
         empresa_id = UserInfo.get_id_empresa(request)  # Obtenha o ID da empresa do usuário
         # Obtenha os clientes da empresa com os dados do endereço
         clientes = Cliente.objects.filter(empresa_id=empresa_id).select_related('endereco')
+        clientes = Vendas.objects.filter(cliente_id=cliente_id,empresa_id=empresa_id).select_related('endereco','cliente')
         
         # Construa a lista de dicionários contendo os dados de cada cliente
         clientes_data = []
@@ -197,4 +241,4 @@ class views_cliente:
             clientes_data.append(data)
         
         # Retorne a resposta JSON com os dados dos clientes
-        return JsonResponse(clientes_data, safe=False)
+        return JsonResponse({"data":clientes_data, "sucess":"true"})

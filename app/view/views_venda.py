@@ -3,7 +3,6 @@ from django.http import HttpResponse
 from ..def_global import erro, criar_alerta_js, verificar_permissoes
 from ..static import Alerta, UserInfo
 from ..models import Venda, Associado, Produto
-from ..forms import VendaForm, ClienteForm, EnderecoForm
 from django.db.models import Q
 from ..processos.venda import processos
 from django.http import JsonResponse
@@ -91,16 +90,7 @@ class views_venda:
             produtos = Produto.objects.filter(
                 Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa
             )
-
-            # Inicializar os formulários
-            form_venda = VendaForm(id_usuario)
-            form_cliente = ClienteForm()
-            form_endereco = EnderecoForm()
-            # Criar o contexto
             context = {
-                "form_cliente": form_cliente,
-                "form_venda": form_venda,
-                "form_endereco": form_endereco,
                 "list_produtos": produtos,
                 "open_modal": True,
             }

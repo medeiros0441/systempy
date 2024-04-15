@@ -210,15 +210,20 @@ from app.def_global import (
     atualizar_senha,
     confirmar_codigo,
 )
-
+from app.view.view_api import views_api
 url_funcJs = [  # funçoes js
     path("enviar-codigo/<str:email>/", enviar_codigo, name="enviar_codigo"),
     path("confirmar-codigo/<str:codigo>/", confirmar_codigo, name="confirmar_codigo"),
     path("atualizar-senha/<str:nova_senha>/", atualizar_senha, name="atualizar_senha"),
     path("api/status_on/", status_on, name="status_on"),
-    path("api/status_off/", status_off, name="status_off"),
+    path("api/status_off/", status_off, name="status_off"),  
+    path('buscar_lojas/', views_api.buscar_lojas, name='buscar_lojas'),
+    path('endereco/create/', views_api.create_endereco, name='create_endereco'),
+    path('endereco/read/<str:endereco_id>/', views_api.read_endereco, name='read_endereco'),
+    path('endereco/update/<str:endereco_id>/', views_api.update_endereco, name='update_endereco'),
+    path('endereco/delete/<str:endereco_id>/', views_api.delete_endereco, name='delete_endereco'),
+    # Adicione outras URLs conforme necessário
 ]
-
 from app.view import (
     ConfiguracaoListView,
     ConfiguracaoCreateView,

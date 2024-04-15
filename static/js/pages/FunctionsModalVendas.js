@@ -52,6 +52,7 @@ function toggleClienteFields() {
             selectcliente.classList.add("d-none");
             CadastrarCliente.classList.remove("d-none");
             btnCadastrarCliente.innerHTML = '<i class="bi bi-arrow-return-left"></i>';
+            carregarListaClientes();
         }
 
     var container = document.getElementById("container_gestao_cliente");
@@ -267,8 +268,70 @@ function toggleResultadoPesquisa(status=null) {
     document.getElementById("info_estado").textContent = data.estado;
     document.getElementById("info_descricao_endereco").textContent = data.descricao_endereco;
     document.getElementById("id_cliente").textContent = data.id_cliente;
+    // Verificar se há informações da última venda
+    if (data.ultima_venda) {
+        // Atualizar os valores das informações da última venda
+        document.getElementById("info_ultima_venda_descricao").textContent = data.ultima_venda.descricao || "N/A";
+        document.getElementById("info_ultima_venda_data_venda").textContent = data.ultima_venda.data_venda || "N/A";
+        document.getElementById("info_ultima_venda_forma_pagamento").textContent = data.ultima_venda.forma_pagamento || "N/A";
+        document.getElementById("info_ultima_venda_valor_total").textContent = data.ultima_venda.valor_total || "N/A";
+        document.getElementById("info_ultima_venda_produtos").textContent = data.ultima_venda.produtos ? data.ultima_venda.produtos.join(", ") : "N/A";
+    } else {
+        // Ocultar a seção de informações da última venda se não houver dados
+        document.getElementById("info_ultima_venda_descricao").textContent = "N/A";
+        document.getElementById("info_ultima_venda_data_venda").textContent = "N/A";
+        document.getElementById("info_ultima_venda_forma_pagamento").textContent = "N/A";
+        document.getElementById("info_ultima_venda_valor_total").textContent = "N/A";
+        document.getElementById("info_ultima_venda_produtos").textContent = "N/A";
+    }
     // Exibir o container de informações
     document.getElementById("info_cliente").classList.remove("d-none");
+}
+
+
+
+// Chamada inicial para buscar as lojas quando a página carrega
+window.addEventListener('load', function() {
+    buscarLojas();
+});
+
+function buscarLojas() {
+    const url = '/buscar_lojas/';  // URL para buscar as lojas
+    const type = 'GET';  // Tipo de requisição é GET
+    const callback = function(data) {
+        if (data.success) {
+            // Se a chamada for bem-sucedida, atualize o dropdown com as lojas
+            atualizarDropdownLojas(data.list_lojas);
+        } else {
+            console.error('Erro ao buscar lojas:', data.error);
+            // Trate o erro conforme necessário
+        }
+    };
+
+    // Chamar a função Python para buscar as lojas
+    chamarFuncaoPython(url, null, type, callback);
+}
+
+// Função para atualizar o dropdown com as lojas
+function atualizarDropdownLojas(list_lojas) {
+    const dropdown = document.getElementById('id_loja');  // Obtém o dropdown de lojas
+
+    // Limpa as opções existentes
+    dropdown.innerHTML = '';
+
+    // Adiciona a opção padrão
+    const optionDefault = document.createElement('option');
+    optionDefault.value = '0';
+    optionDefault.textContent = 'Selecione';
+    dropdown.appendChild(optionDefault);
+
+    // Adiciona as opções de lojas
+    list_lojas.forEach(function(loja) {
+        const option = document.createElement('option');
+        option.value = loja.id;
+        option.textContent = loja.nome_loja;
+        dropdown.appendChild(option);
+    });
 }
 // Função para carregar e manipular a lista de clientes
 function carregarListaClientes() {
@@ -503,6 +566,7 @@ itensLista.forEach(function(item) {
         }
 
         if (selectedValue === "entrega_no_local") {
+            document.getElementById("id_estado_transacao").value = "processando";
             toggleGestaoEntrega();
         }
     }); 
@@ -518,7 +582,8 @@ itensLista.forEach(function(item) {
                 var option = document.createElement('option');
                 option.dataset.idProduto = produto.idProduto;
                 option.value = produto.nome;
-                produtosList.appendChild(option);
+                produtosList.appendChild(option); 
+                produtoInput.setAttribute('list', 'produtosList');
             }
         });
     });
@@ -801,7 +866,8 @@ buttons.forEach(button => {
             for (var i = 0; i < numeroGaloes; i++) {
                 // Inputs para os galões que estão entrando
                 formGestaoGalao.innerHTML += `
-                    <div class="row">
+                    <div class=" border-dark border rounded bg-success p-3 m-0 text-dark bg-opacity-25 mb-1">
+                    <div class="row ">
                         <label class="form-label" style="font-size: 1.rem">Galão que está entrando ${i+1}.</label>
                         <div class="col mx-1 p-0">
                             <div class="form-floating mb-2">
@@ -823,10 +889,12 @@ buttons.forEach(button => {
                                 <option value="3">outro</option>
                             </select>
                             <label for="tipo_entrada_${i}" style="font-size: 0.7rem" class="form-label">Tipo de entrada:</label>
+                        </div> 
                         </div> `;
 
                 // Inputs para os galões que estão saindo
                 formGestaoGalao.innerHTML += `
+                    <div class=" border-dark border rounded bg-danger p-3 m-0 text-dark bg-opacity-25 mb-2">
                     <div class="row">
                         <label class="form-label" style="font-size: 1.rem">Galão que está saindo ${i+1}.</label>
                         <div class="col mx-1 p-0">
@@ -854,6 +922,8 @@ buttons.forEach(button => {
                         <input type="text" id="id_descricao_gestão_galao${i}" name="id_descricao_gestão_galao" class="form-control  ">
                         <label for="id_descricao_gestão_galao${i}" style="font-size: 0.7rem" class="form-label">Descricao: <span style="font-size: 0.6rem;">(opicional)</span></label>
                     </div>
+                    </div>
+                   
                     `;
             }
         }

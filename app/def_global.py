@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 import random
 import string
 
+from django.views.decorators.csrf import csrf_exempt
 
 def criar_alerta_js(texto):
     # Modelo do script JavaScript que será retornado
@@ -66,39 +67,44 @@ def cnpj_existe(cnpj):
 
 from django.http import JsonResponse
 
-
+@csrf_exempt
 def enviar_codigo(request, email):
-    enviado_com_sucesso, erro = verificar_email_e_enviar_codigo(request, email)
+    # Verificar o email e enviar o código
+    enviado_com_sucesso, erro = verificar_email_e_enviar_codigo(request, email.lower())
 
+    # Verificar se o código foi enviado com sucesso
     if enviado_com_sucesso:
-        return JsonResponse({"mensagem": "Código enviado com sucesso!"})
+        return JsonResponse({"success": 'true',"mensagem": "Código enviado com sucesso!"})
     else:
+        # Verificar se o usuário não existe
         if erro == "usuario_nao_existe":
             return JsonResponse(
-                {"erro": "O usuário com o e-mail fornecido não existe."}, status=404
+                {"mensagem": "O usuário com o e-mail fornecido não existe."}, 
             )
         else:
+            # Caso ocorra um erro genérico
             return JsonResponse(
-                {"erro": "Ocorreu um erro ao enviar o código."}, status=500
+                {"erro": "Ocorreu um erro ao enviar o código."},
+                status=500
             )
 
-
+@csrf_exempt
 def confirmar_codigo(request, codigo):
     codigo_armazenado = request.session["codigo_senha_recuperacao"]
     if codigo_armazenado == codigo:
-        return JsonResponse({"mensagem": "Código confirmado com sucesso!"})
+        return JsonResponse({"success": 'true',"mensagem": "Código confirmado com sucesso!"})
     else:
-        return JsonResponse({"erro": "Codigo Invalido"}, status=404)
+        return JsonResponse({"mensagem": "Codigo Invalido"}, status=404)
 
-
+@csrf_exempt
 def atualizar_senha(request, nova_senha):
     status = RecuperacaoSenha(request, nova_senha)
     if status:
-        return JsonResponse({"mensagem": "Senha atualizada com sucesso!"})
+        return JsonResponse({"success": 'true',"mensagem": "Senha atualizada com sucesso!"})
     else:
-        return JsonResponse({"erro": "Erro interno Invalido"}, status=400)
+        return JsonResponse({"mensagem": "Erro interno Invalido"}, status=400)
 
-
+@csrf_exempt
 def verificar_email_e_enviar_codigo(request, email):
 
     try:
@@ -137,7 +143,7 @@ def verificar_email_e_enviar_codigo(request, email):
         print("Erro ao verificar e-mail e enviar código:", e)
         return False, "erro_interno"
 
-
+@csrf_exempt
 def RecuperacaoSenha(request, senha_nova):
     id = request.session["id_usuario"]
     usuario = Usuario.objects.filter(id_usuario=id).first()

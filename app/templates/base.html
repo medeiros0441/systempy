@@ -19,7 +19,7 @@
 <body class="bg-whiter container-fluid m-0 p-0 wrapper   ">
       <div  class="wrapper"> 
     <div  class="content">
-        <nav class="navbar navbar-expand-md navbar-dark p-2 shadow" style="background: var(--tema-blue)">
+        <nav class="navbar navbar-expand-md navbar-dark p-2 " style="background: var(--tema-blue)">
             <div class=" container-xxl ms-auto">
                  <a class="navbar-brand text-start link-sm" href="{% url 'home' %}">
                     <p class="logo-siglas mb-2 text-white" style="font-size: 30px;"></p>
@@ -31,7 +31,7 @@
                      
                         <ul class="navbar-nav  text-sm-center row   font-monospace collapse navbar-collapse" id="navbarNav">
                         {% if request.session.isCliente is not True %}
-                        <li class="nav-item  d-inline-flex col-auto">
+                        <li class="nav-item ms-auto d-inline-flex col-auto">
                             <a class="nav-link" href="{% url 'home' %}">Início</a>
                         </li>
                         <li class="nav-item  d-inline-flex col-auto">

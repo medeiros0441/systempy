@@ -72,7 +72,7 @@ def cadastro(request):
         return erro(request, mensagem_erro)
 
 
-def login(request, context=None):
+def login(request, context={}):
     try:
         alerta = Alerta.get_mensagem()
         if alerta:
@@ -83,7 +83,7 @@ def login(request, context=None):
 
         if request.method == "POST":
             # Se a requisição for POST, tenta obter os dados de email, senha e checkbox
-            email = request.POST.get("email")
+            email = request.POST.get("email").lower()
             senha = request.POST.get("senha")
             valor_checkbox = request.POST.get("flexCheckDefault")
 

@@ -77,16 +77,32 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             else:
                 request.session["isCliente"] = False
 
+           # Lista de URLs sem verificação
             urls_sem_verificacao = [
                 "",
+                "/login/",
                 "/home",
                 "/cadastro/",
                 "/login/",
                 "/sobre/",
                 "/Erro/",
             ]
-            # Verifica se a URL atual não está na lista de URLs sem verificação
-            if request.path not in urls_sem_verificacao:
+
+            # URLs com valores variáveis
+            url_funcJs = [
+                "enviar-codigo/<str:email>/",
+                "confirmar-codigo/<str:codigo>/",
+                "atualizar-senha/<str:nova_senha>/",
+                "api/status_on/",
+                "api/status_off/",
+            ]
+
+            # Remover as partes dos valores variáveis das URLs de url_funcJs e adicionar à lista urls_sem_verificacao
+            for url_pattern in url_funcJs:
+                urls_sem_verificacao.append(url_pattern.split('<')[0])
+
+            # Verificar se a URL atual não está na lista de URLs sem verificação
+            if not any(request.path.startswith(url) for url in urls_sem_verificacao):
                 id_empresa = UserInfo.get_id_empresa(request, True)
                 if id_empresa is None:
                     return redirect("login")

@@ -3,7 +3,7 @@
  
   
 <div class="modal fade" id="ModalRecuperarSenha" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-md modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header ">
           <h1 class="modal-title  fs-4 font-monospace" id="staticBackdropLabel">Recuperação de Senha</h1>
@@ -23,7 +23,7 @@
         </div>
         <div class="modal-body" id="body2" style="display: none ;">
             <div  class="row mb-2 text-center">
-            <img  src="{% static 'img/undraw/undraw_mailbox_re_dvds.svg' %}"   class="image-fluid   mx-auto" height="150" />
+            <img  src="{% static 'img/undraw/undraw_letter_re_8m03.svg' %}"   class="image-fluid   mx-auto" height="150" />
             <div class="fs-3 font-monospace">confirme seu email com o codigo que foi enviado. </div>
         </div>
             <div class="input-group mb-3">
@@ -34,8 +34,8 @@
         </div>
         <div class="modal-body" id="body3" style="display:none  ;">
             <div  class="row mb-2 text-center">
-            <img  src="{% static 'img/undraw/undraw_mail_sent_re_0ofv.svg' %}"   class="image-fluid   mx-auto" height="150" />
-            <div class="fs-3 font-monospace">confirme seu email com o codigo que foi enviado. </div>
+            <img  src="{% static 'img/undraw/undraw_Security_on_re_e491.svg' %}"   class="image-fluid   mx-auto" height="150" />
+            <div class="fs-3 font-monospace">E-mail Confirmado, Atualize a senha </div>
           </div>
             <div class="form-floating mb-2" >
                 <input type="password" name="password" id="password_fake" class="hidden" autocomplete="off" style="display: none;">
@@ -51,7 +51,7 @@
         </div>
         <div class="modal-body" id="body4" style="display:none  ;">
             <div  class="row  mb-2 text-center">
-            <img  src="{% static 'img/undraw/undraw_confirmed_re_sef7.svg' %}"   class="image-fluid   mx-auto" height="150" />
+            <img  src="{% static 'img/undraw/undraw_world_re_768g.svg' %}"   class="image-fluid   mx-auto" height="150" />
                 <label for="senha">Senha Alterada.</label>
             </div>
         </div>
@@ -77,23 +77,22 @@
           var DefName = '/enviar-codigo/' + email_recuperacao.value.trim() + '/';
           btnValidateModals.style.display = "none";
         chamarFuncaoPython(DefName, {},"POST", function(result) {
-        //tirando vibilidade para evitar varios clicks
-          if (result.success) {
-            var body1 = document.getElementById('body1');
-            body1.style.display = "none"; // Corrigido estilo de exibição
-            var body2 = document.getElementById('body2');
-            body2.style.display = "block"; // Corrigido estilo de exibição
-            btnValidateModals.onclick = validateModal2; // Corrigida atribuição de função onclick
-            console.clear();
-            alertCustomer("codigo enviado.");
-            btnValidateModals.style.display = "block";
-          } else {
-            btnValidateModals.style.display = "block";
-            console.clear();
-            console.error('Erro ao chamar a função Python:', result.error);
-            alertCustomer(result.error);
-          }
-        });
+          //tirando vibilidade para evitar varios clicks
+            if (result.success== "true") {
+              var body1 = document.getElementById('body1');
+              body1.style.display = "none"; // Corrigido estilo de exibição
+              var body2 = document.getElementById('body2');
+              body2.style.display = "block"; // Corrigido estilo de exibição
+              btnValidateModals.onclick = validateModal2; // Corrigida atribuição de função onclick
+              console.clear();
+              alertCustomer(result.mensagem);
+              btnValidateModals.style.display = "block";
+            } else {
+              btnValidateModals.style.display = "block";
+              console.clear();
+              alertCustomer(result.mensagem);
+            }
+          });
       }
   }
   function  ReenviarCodigo(){
@@ -110,7 +109,7 @@
   } else {
     var DefName = '/enviar-codigo/' + email_recuperacao.value.trim() + '/';
         btnValidateModals.style.display = "none";
-      chamarFuncaoPython(DefName, {},"POST" function(result) {
+      chamarFuncaoPython(DefName, {},"POST", function(result) {
       //tirando vibilidade para evitar varios clicks
         if (result.success) {
           alertCustomer("Novo codigo enviado.");
@@ -134,7 +133,7 @@
           var codigo = codigo_recuperacao.value.trim(); // Removido parêntese extra
           var DefName = '/confirmar-codigo/' + codigo + '/';
           btnValidateModals.style.display = "none";
-          chamarFuncaoPython(DefName, {},"POST" function(result) {
+          chamarFuncaoPython(DefName, {},"POST", function(result) {
              //tirando vibilidade para evitar varios clicks
            if (result.success) {
               var body2 = document.getElementById('body2');
@@ -177,7 +176,7 @@
           var novaSenha = senha_recuperacao2.value.trim(); // Corrigido nome da variável
           var DefName = '/atualizar-senha/' + novaSenha + '/';
           btnValidateModals.style.display = "none";
-          chamarFuncaoPython(DefName, {},"POST" function(result) {
+          chamarFuncaoPython(DefName, {},"POST", function(result) {
               //tirando vibilidade para evitar varios clicks
           if (result.success) {
               var body3 = document.getElementById('body3');
@@ -202,7 +201,7 @@
   }
 
   function validateModal4() {
-    window.location.href = "/login";
+    window.location.reload();
   }
 
   function validarEmail() {
