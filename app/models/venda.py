@@ -14,11 +14,13 @@ class Venda(models.Model):
     forma_pagamento = models.CharField(max_length=50)
     estado_transacao = models.CharField(max_length=20, null=True)
     metodo_entrega = models.CharField(max_length=50, null=True, blank=True)
-   
+
     desconto = models.CharField(max_length=50, null=True, blank=True)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)
     valor_entrega = models.CharField(max_length=50, null=True, blank=True)
-    valor_pago = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) 
+    valor_pago = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     troco = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     insert = models.DateTimeField(default=timezone.now)
@@ -26,10 +28,8 @@ class Venda(models.Model):
     descricao = models.TextField(null=True, blank=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     loja = models.ForeignKey(Loja, on_delete=models.CASCADE)
-    cliente = models.ForeignKey(
-        Cliente, on_delete=models.CASCADE, null=True, blank=True
-    )
-    produtos = models.ManyToManyField(Produto, through="ItemCompra",null=True, blank=True)
+    cliente = models.ForeignKey(Cliente,on_delete=models.CASCADE ,null=True)
+    produtos = models.ManyToManyField(Produto, through="ItemCompra", blank=True)
     nota_fiscal = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
@@ -38,7 +38,8 @@ class Venda(models.Model):
         if self.pk:
             self.update = timezone.now()
         super().save(*args, **kwargs)
- 
+
+
 class ItemCompra(models.Model):
     id_item_compra = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
@@ -62,10 +63,12 @@ class Motoboy(models.Model):
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(auto_now=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True)
+
     def save(self, *args, **kwargs):
         if self.pk:
             self.update = timezone.now()
         super().save(*args, **kwargs)
+
 
 class Entrega(models.Model):
     id_entrega = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -83,23 +86,28 @@ class Entrega(models.Model):
     descricao = models.TextField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-            if self.pk:
-                self.update = timezone.now()
-            super().save(*args, **kwargs)
+        if self.pk:
+            self.update = timezone.now()
+        super().save(*args, **kwargs)
+
 
 class Caixa(models.Model):
     id_caixa = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     loja = models.ForeignKey(Loja, on_delete=models.CASCADE)
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(auto_now=True)
-    saldo_inicial = models.DecimalField(max_digits=10, decimal_places=2, default=0,null=True)
+    saldo_inicial = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, null=True
+    )
     saldo_final = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
+
     def save(self, *args, **kwargs):
         if self.pk:
             self.update = timezone.now()
         super().save(*args, **kwargs)
+
 
 class Transacao(models.Model):
     caixa = models.ForeignKey(Caixa, on_delete=models.CASCADE)
@@ -108,6 +116,7 @@ class Transacao(models.Model):
     descricao = models.CharField(max_length=100)
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(auto_now=True)
+
     def save(self, *args, **kwargs):
         if self.pk:
             self.update = timezone.now()

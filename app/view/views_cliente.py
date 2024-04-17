@@ -1,12 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from ..def_global import erro, criar_alerta_js, get_status, verificar_permissoes
 from ..models.usuario import Usuario
-from ..models import Cliente, Configuracao, Usuario, Endereco,Venda
+from ..models import Cliente, Configuracao, Usuario, Endereco, Venda
 from ..static import Alerta, UserInfo
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.utils import timezone
+from uuid import UUID
 
 
 class views_cliente:
@@ -88,6 +89,8 @@ class views_cliente:
         try:
             if request.method == "POST":
                 data = json.loads(request.body)
+
+                # Cria o objeto Endereco
                 endereco = Endereco.objects.create(
                     rua=data["rua"],
                     numero=data["numero"],
@@ -98,7 +101,7 @@ class views_cliente:
                     descricao=data["descricao_endereco"],
                 )
 
-                # Criação do Cliente associado ao endereço
+                # Cria o objeto Cliente associado ao endereço
                 cliente = Cliente.objects.create(
                     nome_cliente=data["nome"],
                     telefone_cliente=data["telefone"],
@@ -108,14 +111,33 @@ class views_cliente:
                     insert=timezone.now(),
                     empresa_id=UserInfo.get_id_empresa(request),
                 )
+
+                # Retorna os dados do cliente criado
                 return JsonResponse(
                     {
-                        "data.id_cliente": str(cliente.id_cliente),
+                        "data": {
+                            "id_cliente": str(cliente.id_cliente),
+                            "nome": cliente.nome_cliente,
+                            "telefone": cliente.telefone_cliente,
+                            "descricao": cliente.descricao_cliente,
+                            "tipo_cliente": cliente.tipo_cliente,
+                            "rua": endereco.rua,
+                            "numero": endereco.numero,
+                            "bairro": endereco.bairro,
+                            "cidade": endereco.cidade,
+                            "estado": endereco.estado,
+                            "cep": endereco.codigo_postal,
+                            "descricao": endereco.descricao,
+                            "insert": cliente.insert.isoformat(),
+                            "empresa_id": cliente.empresa_id,
+                        },
                         "message": "Cliente e Endereço inseridos com sucesso",
                     },
                     status=201,
                 )
+
         except Exception as e:
+            # Retorna uma resposta de erro em caso de exceção
             return JsonResponse({"error": str(e)}, status=400)
 
     @staticmethod
@@ -174,71 +196,126 @@ class views_cliente:
     @verificar_permissoes(codigo_model=8)
     def api_get_clientes_by_empresa(request):
         empresa_id = UserInfo.get_id_empresa(request)
+
         # Obter clientes da empresa com os dados do endereço
-        clientes = Cliente.objects.filter(empresa_id=empresa_id).select_related('endereco')
+        clientes = Cliente.objects.filter(empresa_id=empresa_id).select_related(
+            "endereco"
+        )
 
-        # Verificar se não há clientes
-        if not clientes:
-            return JsonResponse({"message": "Não foram encontrados clientes para esta empresa.", "success": False})
+        try:
+            # Verificar se não há clientes
+            if not clientes:
+                return JsonResponse(
+                    {
+                        "message": "Não foram encontrados clientes para esta empresa.",
+                    }
+                )
 
-        # Construir a lista de dicionários contendo os dados de cada cliente com sua última venda
-        clientes_data = []
-        for cliente in clientes:
-            # Obter a última venda do cliente
-            ultima_venda = Venda.objects.filter(cliente=cliente).order_by('-insert').first()
+            # Construir a lista de dicionários contendo os dados de cada cliente com sua última venda
+            clientes_data = []
+            for cliente in clientes:
+                try:
+                    # Obter a última venda do cliente
+                    ultima_venda = (
+                        Venda.objects.filter(cliente=cliente)
+                        .order_by("-insert")
+                        .first()
+                    )
 
-            # Construir o dicionário de dados do cliente e sua última venda
-            data = {
-                'id_cliente': str(cliente.id_cliente),
-                'nome': cliente.nome_cliente,
-                'telefone': cliente.telefone_cliente,
-                'descricao': cliente.descricao_cliente,
-                'tipo_cliente': cliente.tipo_cliente,
-                'rua': cliente.endereco.rua if cliente.endereco else None,
-                'numero': cliente.endereco.numero if cliente.endereco else None,
-                'cep': cliente.endereco.codigo_postal if cliente.endereco else None,
-                'estado': cliente.endereco.estado if cliente.endereco else None,
-                'bairro': cliente.endereco.bairro if cliente.endereco else None,
-                'cidade': cliente.endereco.cidade if cliente.endereco else None,
-                'descricao_endereco': cliente.endereco.descricao if cliente.endereco else None,
-                'ultima_venda': {
-                    'descricao': ultima_venda.descricao if ultima_venda else None,
-                    'data_venda': ultima_venda.data_venda.isoformat() if ultima_venda else None,
-                    'forma_pagamento': ultima_venda.forma_pagamento if ultima_venda else None,
-                    'valor_total': str(ultima_venda.valor_total) if ultima_venda else None,
-                    'produtos': [item.produto.nome for item in ultima_venda.itemcompra_set.all()] if ultima_venda else None,
+                    # Construir o dicionário de dados do cliente e sua última venda
+                    cliente_data = {
+                        "id_cliente": (cliente.id_cliente),
+                        "nome": cliente.nome_cliente,
+                        "telefone": cliente.telefone_cliente,
+                        "descricao": cliente.descricao_cliente,
+                        "tipo_cliente": cliente.tipo_cliente,
+                        "rua": cliente.endereco.rua if cliente.endereco else None,
+                        "numero": (
+                            cliente.endereco.numero if cliente.endereco else None
+                        ),
+                        "cep": (
+                            cliente.endereco.codigo_postal if cliente.endereco else None
+                        ),
+                        "estado": (
+                            cliente.endereco.estado if cliente.endereco else None
+                        ),
+                        "bairro": (
+                            cliente.endereco.bairro if cliente.endereco else None
+                        ),
+                        "cidade": (
+                            cliente.endereco.cidade if cliente.endereco else None
+                        ),
+                        "descricao": (
+                            cliente.endereco.descricao if cliente.endereco else None
+                        ),
+                        "ultima_venda": {
+                            "descricao": (
+                                ultima_venda.descricao if ultima_venda else None
+                            ),
+                            "data_venda": (
+                                ultima_venda.data_venda.isoformat()
+                                if ultima_venda
+                                else None
+                            ),
+                            "forma_pagamento": (
+                                ultima_venda.forma_pagamento if ultima_venda else None
+                            ),
+                            "valor_total": (
+                                str(ultima_venda.valor_total) if ultima_venda else None
+                            ),
+                            "produtos": (
+                                [
+                                    item.produto.nome
+                                    for item in ultima_venda.itemcompra_set.all()
+                                ]
+                                if ultima_venda
+                                else None
+                            ),
+                        },
+                    }
+                    clientes_data.append(cliente_data)
+                except Exception as e:
+                    # Lidar com exceções ao acessar os atributos do cliente ou da venda
+                    print(f"Erro ao processar cliente {cliente.id_cliente}: {e}")
+                    continue
+
+            return JsonResponse({"clientes": clientes_data, "success": True})
+        except Exception as e:
+            # Lidar com exceções gerais
+            return JsonResponse(
+                {
+                    "message": f"Ocorreu um erro ao processar a solicitação: {e}",
                 }
-            }
-            clientes_data.append(data)
-        
-        return JsonResponse({"data": clientes_data, "success": True})
-    
+            )
+
     @staticmethod
     @verificar_permissoes(codigo_model=8)
     def api_get_cliente(request):
-        empresa_id = UserInfo.get_id_empresa(request)  # Obtenha o ID da empresa do usuário
+        empresa_id = UserInfo.get_id_empresa(
+            request
+        )  # Obtenha o ID da empresa do usuário
         # Obtenha os clientes da empresa com os dados do endereço
-        clientes = Cliente.objects.filter(empresa_id=empresa_id).select_related('endereco')
-        clientes = Vendas.objects.filter(cliente_id=cliente_id,empresa_id=empresa_id).select_related('endereco','cliente')
-        
+        clientes = Cliente.objects.filter(empresa_id=empresa_id).select_related(
+            "endereco"
+        )
         # Construa a lista de dicionários contendo os dados de cada cliente
         clientes_data = []
         for cliente in clientes:
             data = {
-                'id_cliente': str(cliente.id_cliente),
-                'nome': cliente.nome_cliente,
-                'telefone': cliente.telefone_cliente,
-                'descricao': cliente.descricao_cliente,
-                'tipo_cliente': cliente.tipo_cliente,
-                'rua': cliente.endereco.rua,
-                'numero': cliente.endereco.numero,
-                'cep': cliente.endereco.codigo_postal,
-                'estado': cliente.endereco.estado,
-                'bairro': cliente.endereco.bairro,
-                'cidade': cliente.endereco.cidade,
-                'descricao_endereco': cliente.endereco.descricao,
+                "id_cliente": str(cliente.id_cliente),
+                "nome": cliente.nome_cliente,
+                "telefone": cliente.telefone_cliente,
+                "descricao": cliente.descricao_cliente,
+                "tipo_cliente": cliente.tipo_cliente,
+                "rua": cliente.endereco.rua,
+                "numero": cliente.endereco.numero,
+                "cep": cliente.endereco.codigo_postal,
+                "estado": cliente.endereco.estado,
+                "bairro": cliente.endereco.bairro,
+                "cidade": cliente.endereco.cidade,
+                "descricao_endereco": cliente.endereco.descricao,
             }
             clientes_data.append(data)
-        
+
         # Retorne a resposta JSON com os dados dos clientes
-        return JsonResponse({"data":clientes_data, "sucess":"true"})
+        return JsonResponse({"data": clientes_data, "sucess": "true"})

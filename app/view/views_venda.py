@@ -8,6 +8,8 @@ from ..processos.venda import processos
 from django.http import JsonResponse
 
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
 
 class views_venda:
 
@@ -44,15 +46,14 @@ class views_venda:
             return erro(request, mensagem_erro)
 
     @verificar_permissoes(codigo_model=7)
-    @require_POST
+    @csrf_exempt
     def insert_venda_ajax(request):
         try:
             # Processa a venda
-            venda, mensagem_erro = processos._processar_venda(
-                request.POST, UserInfo.get_id_usuario(request)
-            )
+            id = UserInfo.get_id_usuario(request)
+            venda, mensagem_erro = processos._processar_venda(request.POST, id)
             if mensagem_erro:
-                return JsonResponse({'success': False, 'error': mensagem_erro})
+                return JsonResponse({"success": False, "error": mensagem_erro})
 
             if venda is not None:
                 if venda.metodo_entrega == "entrega_no_local":
@@ -65,12 +66,12 @@ class views_venda:
                     processos._processar_carrinho(request.POST, venda)
                     # Processa os dados dos galões
                     processos._processar_dados_galoes(request, venda)
-            
-            return JsonResponse({'success': True})
+
+            return JsonResponse({"success": True})
 
         except Exception as e:
             mensagem_erro = str(e)
-            return JsonResponse({'success': False, 'error': mensagem_erro}, status=500)
+            return JsonResponse({"success": False, "error": mensagem_erro}, status=500)
 
     @staticmethod
     @verificar_permissoes(codigo_model=7)

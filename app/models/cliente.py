@@ -6,13 +6,10 @@ import uuid
 
 
 class Cliente(models.Model):
-    id_cliente = (
-        models.UUIDField(
-            primary_key=True,
-            default=uuid.uuid4,
-            editable=False,
-            null=True,
-        ),
+    id_cliente = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
     )
     nome_cliente = models.CharField(max_length=255)
     telefone_cliente = models.CharField(max_length=20, null=True)

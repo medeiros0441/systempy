@@ -10,62 +10,52 @@ document.getElementById('id_metodo_entrega').addEventListener('change', function
       containerEntrega.classList.add('d-none'); // Adiciona a classe d-none
     }
   });
-
-function toggleGestaoCliente() {
+ 
+function toggleGestaoCliente(status) {
     var container = document.getElementById("container_gestao_cliente");  
-    var iconeOpen = document.getElementById("icone_cliente_open");
-    var iconeClose = document.getElementById("icone_cliente_close");
-
-    if (container.classList.contains("d-none")) {
-        // Se o container estiver oculto, mostrá-lo e trocar os ícones
-        container.classList.remove("d-none");
-        iconeOpen.classList.remove("d-none");
-        iconeClose.classList.add("d-none");
-        carregarListaClientes();
-    } else {
-        // Se o container estiver visível, ocultá-lo e trocar os ícones
-        container.classList.add("d-none");
-        iconeOpen.classList.add("d-none");
-        iconeClose.classList.remove("d-none");
+    var btn_gestao_cliente = document.getElementById("btn_gestao_cliente");
+    if(status===1){
+        status = true;
+        gerencia_container_cliente(1)
     }
+    if (status) {
+        container.classList.remove("d-none");
+        btn_gestao_cliente.innerHTML = '<i class="bi bi-eye"></i>'; 
+        btn_gestao_cliente.onclick = function() { toggleGestaoCliente(false); };
+    }  else  {
+        container.classList.add("d-none");
+        btn_gestao_cliente.innerHTML = '<i class="bi bi-eye-slash"></i>'; 
+        btn_gestao_cliente.onclick = function() { toggleGestaoCliente(true); };
+    }
+
 }
-  document.getElementById('id_metodo_entrega').addEventListener('change', function() {
-      var selectedOption = this.value; // Obtém o valor selecionado
-      var containerEntrega = document.getElementById('id_container_entrega');
-
-      // Verifica se a opção selecionada é "entrega_no_local"
-      if (selectedOption === 'entrega_no_local') {
-        containerEntrega.classList.remove('d-none'); // Remove a classe d-none
-      } else {
-        containerEntrega.classList.add('d-none'); // Adiciona a classe d-none
-      }
-    });
-function toggleClienteFields() {
+function gerencia_container_cliente(obj) {
     var selectcliente = document.getElementById("select_cliente");
-    var CadastrarCliente = document.getElementById("cadastrar_cliente");
     var btnCadastrarCliente = document.getElementById("btnCadastrarCliente");
-        if (selectcliente.classList.contains("d-none")) {
-            selectcliente.classList.remove("d-none");
-            CadastrarCliente.classList.add("d-none");
-            btnCadastrarCliente.innerHTML = '<i class="bi bi-person-plus"></i>';
-        } else {
-            selectcliente.classList.add("d-none");
-            CadastrarCliente.classList.remove("d-none");
-            btnCadastrarCliente.innerHTML = '<i class="bi bi-arrow-return-left"></i>';
-            carregarListaClientes();
-        }
-
-    var container = document.getElementById("container_gestao_cliente");
-    var iconeOpen = document.getElementById("icone_cliente_open");
-    var iconeClose = document.getElementById("icone_cliente_close");
-        if (container.classList.contains("d-none")) {
-            // Se o container estiver oculto, mostrá-lo e trocar os ícones
-            container.classList.remove("d-none");
-            iconeOpen.classList.remove("d-none");
-            iconeClose.classList.add("d-none");
-        }
-}  
-
+    var formcliente = document.getElementById("cadastrar_cliente");
+    // Verifica se a chamada foi para mostrar o formulário de seleção de cliente
+    if (obj == 1 && selectcliente.classList.contains("d-none")) {
+        // Mostra o formulário de seleção de cliente e oculta o formulário de cadastro de cliente
+        selectcliente.classList.remove("d-none");
+        formcliente.classList.add("d-none");
+        // Atualiza o ícone do botão de cadastrar cliente e atribui a função toggleGestaoCliente
+        btnCadastrarCliente.innerHTML = '<i class="bi bi-person-plus"></i>';
+        // Atualiza o valor do onclick do botão para chamar toggleGestaoCliente com o argumento 1
+        btnCadastrarCliente.onclick =function() { gerencia_container_cliente(2); };
+        // Carrega a lista de clientes
+        carregarListaClientes();
+    } 
+    // Verifica se a chamada foi para mostrar o formulário de cadastro de cliente
+    if (obj == 2 && formcliente.classList.contains("d-none")) {
+        // Oculta o formulário de seleção de cliente e mostra o formulário de cadastro de cliente
+        selectcliente.classList.add("d-none");
+        formcliente.classList.remove("d-none");
+        // Atualiza o ícone do botão de cadastrar cliente e atribui a função toggleGestaoCliente
+        btnCadastrarCliente.innerHTML = '<i class="bi bi-arrow-return-left"></i>'; 
+        btnCadastrarCliente.onclick =function() { gerencia_container_cliente(1); };
+        toggleGestaoCliente(true);
+    }
+} 
 function listarMotoboys() {
     var container = document.getElementById('container_gestao_entrega');
     manageLoading(true,"container_gestao_entrega"); 
@@ -122,106 +112,86 @@ function insertCliente() {
 
     // Ativar o indicador de carregamento
     manageLoading(true, "cadastrar_cliente");
-
-    // Chamar a função para criar o cliente
-    criarCliente(formInputs, function(response) {
-        // Verificar se a criação foi bem-sucedida
-        if (response.success) {
+    chamarFuncaoPython('/api/cliente/create/', formInputs, 'POST', function(response) {
+        if (response.data) {
             alertCustomer("Cliente criado com sucesso!");
             manageLoading(false, "cadastrar_cliente");
-            toggleClienteFields();
-            montarInfoCliente(formInputs);
+            toggleGestaoCliente(1)
+            montarInfoCliente(response.data);
         } else {
             alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error);
-            manageLoading(false, "cadastrar_cliente");
+            manageLoading(false, "cadastrar_cliente"); // Chamando o callback sem dados do cliente e com o erro
         }
-    });
+    } );
+     
 }
 var clientesCache = null;
-
-// Função para manipular a pesquisa de clientes
 function manipularPesquisaClientes(clientes) {
-    // Seleciona os elementos HTML relevantes
     const inputPesquisa = document.getElementById('pesquisa_cliente');
     const resultPesquisa = document.getElementById('result-pesquisa');
     const clienteIdInput = document.getElementById('id_cliente');
-
-    // Evento de digitação no input de pesquisa
+    exibirResultados(clientes);
     inputPesquisa.addEventListener('input', function(event) {
         const termoPesquisa = event.target.value.toLowerCase();
         manageLoading(true, "result-pesquisa");
 
         const resultados = clientes.filter(cliente => {
-            // Itera sobre todas as propriedades do cliente
-            for (const propriedade in cliente) {
-                // Verifica se o valor da propriedade atual inclui o termo de pesquisa
-                if (cliente[propriedade] && cliente[propriedade].toString().toLowerCase().includes(termoPesquisa)) {
-                    // Se o valor da propriedade incluir o termo de pesquisa, retorna verdadeiro
-                    return true;
-                }
-            }
-            // Se nenhum valor de propriedade incluir o termo de pesquisa, retorna falso
-            return false;
+            return Object.values(cliente).some(value =>
+                value && value.toString().toLowerCase().includes(termoPesquisa)
+            );
         });
 
-        // Limpa o conteúdo anterior do container de resultados
-        resultPesquisa.innerHTML = ''; 
-        // Cria e exibe os elementos para cada resultado
+        exibirResultados(resultados);
+    });
+
+    function exibirResultados(resultados) {
+        resultPesquisa.innerHTML = '';
+
         resultados.forEach(cliente => {
             const divResultado = document.createElement('div');
-            divResultado.classList.add('p-2','mx-auto','my-1','mx-1', 'border', 'rounded', 'd-flex', 'align-items-center', 'justify-content-between','flex-wrap','text-center','col-sm-6','col-md-4');
-        
-            // Ícone de usuário
+            divResultado.classList.add('p-2', 'my-1', 'mx-2',  'border', 'rounded',  'flex-wrap', 'text-center', 'd-intial-flex',);
+
             const iconUsuario = document.createElement('i');
             iconUsuario.classList.add('bi', 'bi-person-fill', 'me-2');
-        
-            // Detalhes do cliente
+
             const detalhesCliente = document.createElement('div');
             detalhesCliente.classList.add('flex-grow-1', 'me-3');
-        
-            // Nome do cliente
+
             const nomeCliente = document.createElement('span');
             nomeCliente.textContent = cliente.nome;
             nomeCliente.classList.add('fw-bold');
             detalhesCliente.appendChild(iconUsuario);
             detalhesCliente.appendChild(nomeCliente);
             detalhesCliente.appendChild(document.createElement('br'));
-        
-            // Telefone do cliente
+
             const telefoneCliente = document.createElement('span');
             telefoneCliente.textContent = cliente.telefone;
             detalhesCliente.appendChild(telefoneCliente);
             detalhesCliente.appendChild(document.createElement('br'));
-        
-            // Endereço do cliente
+
             const enderecoCliente = document.createElement('span');
             enderecoCliente.textContent = `${cliente.rua} ${cliente.numero} ${cliente.bairro} ${cliente.cidade}`;
             detalhesCliente.appendChild(enderecoCliente);
-        
+
             divResultado.appendChild(detalhesCliente);
-        
-            // Botão de seleção
+
             const btnSelecionar = document.createElement('button');
             btnSelecionar.textContent = 'Selecionar';
-            btnSelecionar.classList.add('btn', 'btn-primary','btn-sm','mx-auto');
+            btnSelecionar.classList.add('btn', 'btn-primary', 'btn-sm', 'mx-auto');
             btnSelecionar.setAttribute("type", "button");
             btnSelecionar.addEventListener('click', function() {
                 clienteIdInput.value = cliente.id_cliente;
-                montarInfoCliente(cliente);
-                toggleResultadoPesquisa(false);
-                alertCustomer(`Cliente selecionado: ${cliente.nome}`);
+                montarInfoCliente(cliente); 
             });
-        
+
             divResultado.appendChild(btnSelecionar);
-        
-            // Adiciona o elemento de resultado ao container
+
             resultPesquisa.appendChild(divResultado);
-        }); 
+        });
 
         toggleResultadoPesquisa(true);
         manageLoading(false, "result-pesquisa");
-
-    });
+    }
 }
 // Função para alternar a visibilidade do container
 function toggleResultadoPesquisa(status=null) {
@@ -284,6 +254,9 @@ function toggleResultadoPesquisa(status=null) {
         document.getElementById("info_ultima_venda_valor_total").textContent = "N/A";
         document.getElementById("info_ultima_venda_produtos").textContent = "N/A";
     }
+    
+    toggleResultadoPesquisa(false);
+    alertCustomer(`Cliente selecionado: ${data.nome}`);
     // Exibir o container de informações
     document.getElementById("info_cliente").classList.remove("d-none");
 }
@@ -336,28 +309,23 @@ function atualizarDropdownLojas(list_lojas) {
 // Função para carregar e manipular a lista de clientes
 function carregarListaClientes() {
     // Verifica se já temos os clientes em cache
-    if (!clientesCache) {
         // Carrega a função manageLoading para mostrar o indicador de carregamento
         manageLoading(true, "select_cliente");
         alertCustomer('Atualizando Lista de clientes');
         // Chama a função para obter os clientes por empresa
-        obterClientesPorEmpresa(function(clientes, error) {
-            // Verifica se houve algum erro ao obter os clientes
-            if (error) {
-                console.error('Erro ao carregar clientes:', error);
-                return;
-            }
-            // Armazena os clientes em cache
-            clientesCache = clientes;
-            // Manipula a pesquisa de clientes com os dados obtidos
-            manipularPesquisaClientes(clientes);
-            // Carrega a função manageLoading para ocultar o indicador de carregamento
+        const url = '/api/cliente/by_empresa/';
+        chamarFuncaoPython(url, null, 'GET', function(response) {
+            if (response.success == true) {
+                clientesCache = response.clientes;
+                manipularPesquisaClientes(clientesCache);   
+                manageLoading(false, "select_cliente");
+
+            } else {
+                alertCustomer(response.message);
             manageLoading(false, "select_cliente");
-        });
-    } else {
-        // Se os clientes já estiverem em cache, manipula a pesquisa diretamente
-        manipularPesquisaClientes(clientesCache);
-    }
+            }
+        });  
+         
 }
 function toggleGestaoEntrega() {
     var container = document.getElementById("container_gestao_entrega");
@@ -525,7 +493,7 @@ document.getElementById("btnSubmit").addEventListener("click", function(event) {
     if (!verificarAntesDoSubmit()) {
         event.preventDefault(); // Impede o envio do formulário se a verificação falhar
     } else {
-        enviarDadosDoFormulario(); // Se a verificação passar, envia os dados do formulário via AJAX
+        enviarDadosVenda();
     }
 });
 // Função para atualizar o campo oculto com os itens do carrinho
@@ -634,7 +602,7 @@ itensLista.forEach(function(item) {
     
         // Define o valor total a ser pago no campo id_valor_total
         document.getElementById('id_valor_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
-        document.getElementById('total_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
+        document.getElementById('total_apagar').value = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
     
         // Obtém o valor pago
         var valorPagoInput = document.getElementById('id_valor_pago');

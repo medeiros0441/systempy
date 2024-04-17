@@ -20,16 +20,11 @@
 
   if (status === true) {
       // Oculta o conteúdo do contêiner
-      var children = container.children;
-      for (var i = 0; i < children.length; i++) {
-          children[i].style.display = 'none';
-      }
-
-      // Cria o campo de carregamento
-      var loadingContainer = document.createElement('div');
-      loadingContainer.classList.add('loading');
-      loadingContainer.classList.add('text-center');
-      loadingContainer.classList.add('text-primary');
+       container.style.display = 'none';
+      // Cria o campo de carregamento 
+      loadingContainer = document.createElement('div');
+        loadingContainer.classList.add('loading', 'd-flex', 'justify-content-center','my-5', 'align-items-center');
+        loadingContainer.classList.add('text-primary');
 
       var spinner = document.createElement('div');
       spinner.classList.add('spinner-border');
@@ -41,22 +36,16 @@
 
       spinner.appendChild(spinnerText);
       loadingContainer.appendChild(spinner);
-      container.appendChild(loadingContainer);
+      container.insertAdjacentElement('afterend', loadingContainer);
   } else if (status === false) {
-      // Remove o campo de carregamento, se existir
-      var loadingContainer = container.querySelector('.loading');
-      if (loadingContainer) {
-          container.removeChild(loadingContainer);
-      }
-
+    var loadingContainer = container.nextElementSibling;
+    
+    if (loadingContainer && loadingContainer.classList.contains('loading')) {
+        loadingContainer.remove();
+    }  
       // Exibe novamente os elementos filhos
-      var children = container.children;
-      for (var i = 0; i < children.length; i++) {
-          children[i].style.display = 'block';
-      }
-  } else {
-      console.error('Status inválido.');
-  }
+       container.style.display = 'block';
+  }  
 }
 function chamarFuncaoPython(url, data,type, callback)  {
   // Configuração do objeto de requisição
@@ -79,8 +68,7 @@ function chamarFuncaoPython(url, data,type, callback)  {
           callback(data); // Chamando o callback com sucesso e dados
       })
       .catch(error => {
-          console.error('Erro ao chamar a função Python:', error.message);
-          callback({ success: false, error: error.message });
+          callback(error);
       });
 }
 
