@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from ..def_global import erro, criar_alerta_js, verificar_permissoes
 from ..static import Alerta, UserInfo
-from ..models import Venda, Associado, Produto
+from ..models import Venda, Associado, Produto,Loja
 from django.db.models import Q
 from ..processos.venda import processos
 from django.http import JsonResponse
@@ -16,24 +16,42 @@ class views_venda:
     @staticmethod
     @verificar_permissoes(codigo_model=7)
     def lista_vendas(request, context=None, id_loja=None):
-        id_empresa = UserInfo.get_id_empresa(request, True)
-        if context is None:
-            context = {}
+         
         alerta = Alerta.get_mensagem()
         if alerta:
             context["alerta_js"] = criar_alerta_js(alerta)
 
-        try:
-            if id_loja is None:
-                vendas = Venda.objects.filter(loja__empresa__id_empresa=id_empresa)
-            else:
-                vendas = Venda.objects.filter(
-                    loja__empresa__id_empresa=id_empresa, loja_id_loja=id_loja
-                )
-            context["vendas"] = vendas
-        except Venda.DoesNotExist:
-            pass
         return render(request, "venda/lista_vendas.html", context)
+
+    @csrf_exempt
+    def obter_dados(request):
+        if request.method == 'POST':
+            id_empresa = UserInfo.get_id_empresa(request, True)
+            id_usuario = UserInfo.get_id_usuario(request)
+
+            associacao = Associado.objects.filter(
+                usuario_id=id_usuario, status_acesso=True
+            )
+            ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
+
+            produtos = Produto.objects.filter(
+                Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa
+            )
+
+            vendas = Venda.objects.filter(
+                Q(loja_id__in=ids_lojas_associadas), loja__empresa__id_empresa=id_empresa
+            )
+            lojas = Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
+            dados = {
+                "sucess":True,
+                "lojas": list(lojas.values()),
+                "produtos": list(produtos.values()),
+                "vendas": list(vendas.values())
+            }
+
+            return JsonResponse(dados)
+
+        return JsonResponse({"error": "Método não permitido"}, status=405)
 
     def criar_venda(request):
         try:
@@ -52,9 +70,6 @@ class views_venda:
             # Processa a venda
             id = UserInfo.get_id_usuario(request)
             venda, mensagem_erro = processos._processar_venda(request.POST, id)
-            if mensagem_erro:
-                return JsonResponse({"success": False, "error": mensagem_erro})
-
             if venda is not None:
                 if venda.metodo_entrega == "entrega_no_local":
                     id_motoboy = request.POST.get("motoboy", "").strip()
@@ -62,12 +77,14 @@ class views_venda:
                         processos.processo_entrega(venda=venda, id_motoboy=id_motoboy)
                 if venda.forma_pagamento == "dinheiro":
                     processos.processar_caixa(venda)
-                    # Processa o carrinho
-                    processos._processar_carrinho(request.POST, venda)
-                    # Processa os dados dos galões
-                    processos._processar_dados_galoes(request, venda)
+                # Processa o carrinho
+                processos._processar_carrinho(request.POST, venda)
+                # Processa os dados dos galões
+                processos._processar_dados_galoes(request, venda)
 
-            return JsonResponse({"success": True})
+                return JsonResponse({"success": True, "message": "venda processada."})
+            elif mensagem_erro:
+                return JsonResponse({"success": False, "error": mensagem_erro})
 
         except Exception as e:
             mensagem_erro = str(e)

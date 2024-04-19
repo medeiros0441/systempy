@@ -142,6 +142,11 @@ url_venda = [  # vendas
         views_venda.insert_venda_ajax,
         name="insert_venda_ajax",
     ),
+      path(
+        "api/vendas/dados",
+        views_venda.obter_dados,
+        name="api_obter_dados_vendas",
+    ),
 ]
 
 from app.view.views_cliente import views_cliente

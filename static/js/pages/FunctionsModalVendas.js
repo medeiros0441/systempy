@@ -293,10 +293,12 @@ function atualizarDropdownLojas(list_lojas) {
     dropdown.innerHTML = '';
 
     // Adiciona a opção padrão
-    const optionDefault = document.createElement('option');
-    optionDefault.value = '0';
-    optionDefault.textContent = 'Selecione';
-    dropdown.appendChild(optionDefault);
+    if(list_lojas.length > 1){
+        const optionDefault = document.createElement('option');
+        optionDefault.value = '0';
+        optionDefault.textContent = 'Selecione';
+        dropdown.appendChild(optionDefault);
+    }
 
     // Adiciona as opções de lojas
     list_lojas.forEach(function(loja) {
@@ -474,8 +476,9 @@ function enviarDadosVenda() {
         data: $('#form_cadastro').serialize(),
         success: function(response) {
             console.log(response); // Exibe a resposta no console do navegador
-            if (response.success) {
-                alertCustomer(response.success);
+            if (response.success===true) {
+                alertCustomer(response.message);
+                window.location.href="/vendas";
             } else {
                 alertCustomer(response.error);
             }
@@ -483,10 +486,10 @@ function enviarDadosVenda() {
         },
         error: function(xhr, errmsg, err) {
             console.log(xhr.responseText); // Exibe o erro no console do navegador
-            alert("Ocorreu um erro ao processar a venda. Por favor, tente novamente mais tarde.");
+            alertCustomer("Ocorreu um erro ao processar a venda. Por favor, tente novamente mais tarde.");
          manageLoading(false,"form_cadastro"); 
         }
-    });
+    }); 
 } 
 document.getElementById("btnSubmit").addEventListener("click", function(event) {
     // Chama a função de verificação antes de permitir o envio do formulário
@@ -496,30 +499,38 @@ document.getElementById("btnSubmit").addEventListener("click", function(event) {
         enviarDadosVenda();
     }
 });
-// Função para atualizar o campo oculto com os itens do carrinho
 function atualizarCamposCarrinho() {
-    var listaProdutos = document.getElementById('listaProdutos');
+    var itensLista = document.querySelectorAll('.item-list-carrinho');
     var itensCarrinho = [];
-
-// Percorrer os itens da lista de produtos
-    var itensLista = listaProdutos.querySelectorAll('li');
 
     // Verificar se há itens na lista de produtos
     if (itensLista.length === 0) {
-         return false; // Retorna false se não houver itens
+        return false; // Retorna false se não houver itens
     }
 
-itensLista.forEach(function(item) {
-    var idProduto = item.getAttribute('data-id-produto');
-    var quantidade = parseInt(item.querySelector(".quantidade").textContent);
-    // Concatenar o ID do produto e a quantidade com |
-    var valorInput = idProduto + '|' + quantidade;
-    // Criar um input oculto para cada item do carrinho
-    var input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'item_carrinho';
-    input.value = valorInput;
-    document.getElementById('form_cadastro').appendChild(input);
+    // Seleciona todos os inputs com o atributo name igual a 'item_carrinho'
+    var inputsCarrinho = document.querySelectorAll('input[name="item_carrinho"]');
+
+    // Verifica se há inputs encontrados
+    if (inputsCarrinho.length > 0) {
+        // Itera sobre cada input encontrado
+        inputsCarrinho.forEach(function(input) {
+            // Remove o input
+            input.remove();
+        });
+    }
+
+    itensLista.forEach(function(item) {
+        var idProduto = item.getAttribute('data-id-produto');
+        var quantidade = parseInt(item.querySelector(".quantidade").textContent);
+        // Concatenar o ID do produto e a quantidade com |
+        var valorInput = idProduto + '|' + quantidade;
+        // Criar um input oculto para cada item do carrinho
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'item_carrinho';
+        input.value = valorInput;
+        document.getElementById('form_cadastro').appendChild(input);
     });
 
     return true; // Retorna true se os itens foram adicionados com sucesso
@@ -610,7 +621,7 @@ itensLista.forEach(function(item) {
     
         // Calcula o troco apenas se o valor pago for maior ou igual ao total
         var troco = valorPago - valorTotalComTaxaDesconto;
-        document.getElementById('troco').value =troco
+        document.getElementById('troco').value =troco;
     
             // Exibe a mensagem dependendo do resultado
         if (valorPago < valorTotalComTaxaDesconto) {
@@ -703,102 +714,99 @@ document.addEventListener("DOMContentLoaded", function () {
                 containerElement.classList.add("d-none"); // Adiciona a classe que oculta o container
             }
     }); 
-     
-
-
-
-const buttons = document.querySelectorAll('[data-bs-target]');
-buttons.forEach(button => {
-    button.addEventListener('click', () => {
-        const target = button.getAttribute('data-bs-target');
-        const targetElement = document.querySelector(target);
-        const otherTargets = document.querySelectorAll('.collapse');
-        otherTargets.forEach(otherTarget => {
-            if (otherTarget !== targetElement && otherTarget.classList.contains('show')) {
-                const otherCollapse = new bootstrap.Collapse(otherTarget);
-                otherCollapse.hide();
-            }
-        });
-        if (!targetElement.classList.contains('show')) {
-            const collapse = new bootstrap.Collapse(targetElement);
-            collapse.show();
-        }
-    });
+     // Obtém a lista de produtos do DOM e itera sobre cada produto
+var produtosList = document.getElementById('produtosList');
+produtosArray.forEach(function(produto) {
+    // Cria uma nova opção para cada produto e a adiciona à lista de produtos
+    var option = document.createElement('option');
+    option.dataset.idProduto = produto.idProduto; // Define o atributo de dados 'idProduto' na opção
+    option.value = produto.nome; // Define o valor da opção como o nome do produto
+    produtosList.appendChild(option);
 });
 
-    var produtosList = document.getElementById('produtosList');
-    produtosArray.forEach(function(produto) {
-        var option = document.createElement('option');
-        option.dataset.idProduto = produto.idProduto;
-        option.value = produto.nome;
-        produtosList.appendChild(option);
-    });
+// Obtém o input do produto
+var produtoInput = document.getElementById("produtoInput");
+// Adiciona um evento de entrada para detectar a seleção de uma opção
+produtoInput.addEventListener("input", function() {
+    // Obtém a opção selecionada com base no valor do input do produto
+    var selectedOption = document.querySelector("#produtosList option[value='" + this.value + "']");
+    if (selectedOption) {
+        // Chama a função OptionSelection passando a opção selecionada como argumento
+        OptionSelection(selectedOption);
+    }
+});
+
+// Função para lidar com a seleção de opção
+function OptionSelection(option) {
+    // Obtém o ID do produto da opção selecionada e define o atributo de dados 'idProduto' no input do produto
+    var produtoId = option.getAttribute("data-id-produto");
+    produtoInput.dataset.idProduto = produtoId;
+}
+
+// Obtém o botão de adicionar produto do DOM
+var adicionarBtn = document.getElementById("adicionarProdutoBtn");
+
+// Obtém a lista de produtos do DOM
+var listaProdutos = document.getElementById("listaProdutos");
+
+// Adiciona um ouvinte de evento para calcular o valor total e atualizar o label quando o botão de adicionar produto é clicado
+adicionarBtn.addEventListener("click", function () {
     // Obtém o input do produto
     var produtoInput = document.getElementById("produtoInput");
-        // Adiciona evento de entrada para detectar a seleção de uma opção
-        produtoInput.addEventListener("input", function() {
-        var selectedOption = document.querySelector("#produtosList option[value='" + this.value + "']");
-        if (selectedOption) {
-            OptionSelection(selectedOption);
-        }
-    });
-
-     // Função para lidar com a seleção de opção
-    function  OptionSelection(option) {
-    var produtoId = option.getAttribute("data-id-produto");
-        produtoInput.dataset.idProduto = produtoId;
-    } 
-    var adicionarBtn = document.getElementById("adicionarProdutoBtn");
-     
-    var listaProdutos = document.getElementById("listaProdutos");
-    // Função para calcular o valor total e atualizar o label
-
-        adicionarBtn.addEventListener("click", function () {
-            var produtoInput = document.getElementById("produtoInput");
-            var produtoSelecionado = null;
-            var produtoId = produtoInput.getAttribute("data-id-produto");
-            produtosArray.forEach(function(produto) {
-                if (produto.idProduto == produtoId) {
-                    produtoSelecionado = produto;
-                    // Aqui você pode realizar outras operações relacionadas ao produto selecionado, se necessário
-                }       
-            });
-
-                if (produtoInput.value !== "") {
-                    var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-                    var produtoExistente = false;
-                    
-                    // Verifica se o produto já está na lista
-                    itensLista.forEach(function (item) {
-                        var idExistente = item.getAttribute("data-id-produto");
-                        if (idExistente === produtoId) {
-                            // Se já existir, aumenta a quantidade
-                            var quantidadeSpan = item.querySelector(".quantidade");
-                            var quantidadeAtual = parseInt(quantidadeSpan.textContent);
-                            quantidadeSpan.textContent = quantidadeAtual + 1;
-                            produtoExistente = true;
-                        }
-                    });
-                    if (!produtoExistente) {
-                        // Se o produto não existir na lista, cria um novo item
-                        var novoItemLista = document.createElement("li");
-                        novoItemLista.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
-                        novoItemLista.setAttribute("data-id-produto", produtoSelecionado.idProduto);
-                        novoItemLista.setAttribute("data-retornavel", produtoSelecionado.isRetornavel); 
-                        novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
-                        novoItemLista.innerHTML = `
-                            <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                            <span class="" >${produtoSelecionado.nome} R$ ${produtoSelecionado.valor} Unid</span>
-
-                            <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.idProduto}" onclick="aumentarQuantidade(this)"></span>
-                            <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
-                        `;
-                        listaProdutos.appendChild(novoItemLista);
-                    }
-                    calcularValorTotal();
-                    produtoInput.value =""
+    var produtoSelecionado = null;
+    var produtoId = produtoInput.getAttribute("data-id-produto");
+    // Itera sobre a lista de produtos para encontrar o produto selecionado
+    produtosArray.forEach(function(produto) {
+        if (produto.idProduto == produtoId) {
+            if(produto.quantidade >= 1) {
+                produtoInput.value ="";
+                produtoSelecionado = produto;
+            } else {
+                produtoInput.value ="";
+                alertCustomer("Não há mais produto disponível no estoque.");
             }
+        }       
     });
+
+    // Verifica se o valor do input do produto não está vazio
+    if (produtoSelecionado != null) {
+        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+        var produtoExistente = false;
+        
+        // Itera sobre os itens da lista para verificar se o produto já está na lista
+        itensLista.forEach(function (item) {
+            var idExistente = item.getAttribute("data-id-produto");
+            if (idExistente === produtoId) {
+                // Se o produto já existir na lista, aumenta a quantidade
+                var quantidadeSpan = item.querySelector(".quantidade");
+                var quantidadeAtual = parseInt(quantidadeSpan.textContent);
+                quantidadeSpan.textContent = quantidadeAtual + 1;
+                produtoExistente = true;
+            }
+        });
+        if (!produtoExistente) {
+            // Se o produto não existir na lista, cria um novo item na lista de produtos
+            var novoItemLista = document.createElement("li");
+            novoItemLista.classList.add("list-group-item",'item-list-carrinho', "d-flex", "justify-content-between", "align-items-center");
+            novoItemLista.setAttribute("data-id-produto", produtoSelecionado.idProduto);
+            novoItemLista.setAttribute("data-retornavel", produtoSelecionado.isRetornavel); 
+            novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
+            // Preenche o HTML do novo item na lista de produtos
+            novoItemLista.innerHTML = `
+                <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
+                <span class="text-small small " style="font-size: 0.8rem;" >${produtoSelecionado.nome} R$ ${produtoSelecionado.valor} Unid</span>
+                <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.idProduto}" onclick="aumentarQuantidade(this)"></span>
+                <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
+            `;
+            listaProdutos.appendChild(novoItemLista);
+        }
+        // Calcula o valor total dos produtos e atualiza o label
+        calcularValorTotal();
+        // Limpa o valor do input do produto
+        produtoInput.value ="";
+    }
+});
+
     // Função para verificar os produtos retornáveis
     function verificarRetornaveis() {
         var itensLista = listaProdutos.querySelectorAll(".list-group-item");
@@ -840,13 +848,13 @@ buttons.forEach(button => {
                         <div class="col mx-1 p-0">
                             <div class="form-floating mb-2">
                                 <input type="text" id="data_validade_entrada_${i}" name="data_validade_entrada_${i}" class="form-control data-validade data-mes-ano-mask">
-                                <label for="data_validade_entrada_${i}" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                                <label for="data_validade_entrada_${i}" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                             </div>
                         </div>
                         <div class="col mx-1 p-0">
                             <div class="form-floating mb-2">
                                 <input type="text" id="data_fabricacao_entrada_${i}" name="data_fabricacao_entrada_${i}" class="form-control data-fabricacao data-mes-ano-mask">
-                                <label for="data_fabricacao_entrada_${i}" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                                <label for="data_fabricacao_entrada_${i}" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                             </div>
                         </div>
                     </div>
@@ -868,13 +876,13 @@ buttons.forEach(button => {
                         <div class="col mx-1 p-0">
                             <div class="form-floating mb-2">
                                 <input type="text" id="data_validade_saida_${i}" name="data_validade_saida_${i}" class="form-control data-validade data-mes-ano-mask">
-                                <label for="data_validade_saida_${i}" style="font-size: 0.7rem" class="form-label">Data de Validade: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                                <label for="data_validade_saida_${i}" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                             </div>
                         </div>
                         <div class="col mx-1 p-0">
                             <div class="form-floating mb-2">
                                 <input type="text" id="data_fabricacao_saida_${i}" name="data_fabricacao_saida_${i}" class="form-control data-fabricacao data-mes-ano-mask">
-                                <label for="data_fabricacao_saida_${i}" style="font-size: 0.7rem" class="form-label">Data de Fabricação: <span style="font-size: 0.6rem;">(mes/ano)</span></label>
+                                <label for="data_fabricacao_saida_${i}" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                             </div>
                         </div>
                     </div>
@@ -882,6 +890,7 @@ buttons.forEach(button => {
                         <select id="tipo_saida_${i}" name="tipo_saida_${i}" class="form-select">
                             <option value="Galão 20 Litros">Galão 20 Litros</option>
                             <option value="Galão 10 Litros">Galão 10 Litros</option>
+                            <option value="Galão 10 Litros">Galão 5 Litros</option>
                             <option value="Outro">outro</option>
                         </select>
                         <label for="tipo_saida_${i}" style="font-size: 0.7rem" class="form-label">Tipo de saída:</label>

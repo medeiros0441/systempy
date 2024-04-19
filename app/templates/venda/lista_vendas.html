@@ -11,30 +11,29 @@
     <div class="d-flex justify-content-between">
             <span   class=" font-monospace fw-border my-auto" style="font-size: 1.3rem;">Lista de Vendas</span>
           
-<a  type="button"  href="{% url 'criar_venda' %}"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Cadastrar Venda</a>
+<button type="button"  onclick="open_modal(1);"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Cadastrar Venda</a>
     </div>
-
+    <select name="loja" class="form-select" id="id_loja"><option value="0">Selecione</option> </select>
 
         <table class="table table-hover table-responsive table-sm  ">
             <thead>
                 <tr>
-                    <th scope="col" class="text-start " style="font-size: 0.7rem;">Nome</th>
-                    <th scope="col" class=" d-none d-sm-table-cell order-1 text-start" style="font-size: 0.7rem;">Quantidade Atual</th>
-                    <th scope="col" class=" d-none d-sm-table-cell order-2 text-start" style="font-size: 0.7rem;">Valor</th>
+                    <th scope="col" class="text-start " style="font-size: 0.7rem;">Loja</th>
+                    <th scope="col" class=" d-none d-sm-table-cell order-1 text-start" style="font-size: 0.7rem;">Estado Transação</th>
+                    <th scope="col" class=" d-none d-sm-table-cell order-2 text-start" style="font-size: 0.7rem;">Valor Total</th>
                     <th scope="col" class="text-end" style="font-size: 0.7rem;">Ações</th>
                 </tr>
             </thead>
-            <tbody class="table-group-divider">
+            <tbody class="table-group-divider" id="table_list_vendas">
                 {% for venda in vendas %}
                 <tr>
-                    <td style="font-size: 0.8rem;">{{ venda.nome }}</td>
-                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-1 text-start">{{ venda.quantidade_atual_estoque_f }}</td>
-                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-2 text-start">{{ venda.preco_venda_f }}</td>
+                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-1 text-start">{{ venda.loja.nome_loja }}</td>
+                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-1 text-start">{{ venda.estado_transacao }}</td>
+                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-2 text-start">{{ venda.valor_total }}</td>
                     <td class="text-end">
                         <div class="btn-group" role="group" aria-label="Ações do Usuário">
-                            <a href="{% url 'selecionar_venda' venda.id_venda %}" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i> Detalhes</a>
-                            <a href="{% url 'editar_venda' venda.id_venda %}" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi  bi-pencil me-1"></i>Editar</a>
-                            <a href="{% url 'excluir_venda' venda.id_venda %}" class="btn btn-danger btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-trash me-1"></i> Excluir</a>
+                            <button type="button" onclick="open_modal(2);" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i>  </button>
+                            <a href="{% url 'editar_venda' venda.id_venda %}" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi  bi-pencil me-1"></i> </a>
                         </div>
                     </td>
                 </tr>
@@ -46,11 +45,75 @@
     </div> 
 
   <script >
-    window.onload = function() {
-        {% if open_modal %}
-            var myModal = new bootstrap.Modal(document.getElementById('ModalVenda'));
-            myModal.show();
-        {% endif %}
-    };
+     // Função para obter um item do local storage
+function getLocalStorageItem(key) {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  }
+  
+  // Função para definir um item no local storage
+  function setLocalStorageItem(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+  
+    chamarFuncaoPython("api/vendas/dados", null, 'GET', function(response) {
+        if (response.success == true) {
+            data_lojas = response.lojas;
+            data_vendas = response.vendas;
+            data_produtos = response.produtos;
+            manageLoading(false, "table_list_vendas");
+        } else {
+            alertCustomer(response.message);
+            manageLoading(false, "table_list_vendas");
+        }
+    });  
+       
+
+
+
+    var modalElement = document.getElementById('ModalVenda');
+   var  myModal;
+    // Função para abrir o modal
+    function open_modal(modalType) {
+         myModal = new bootstrap.Modal(modalElement);
+    updateModalContent(modalType);
+        myModal.show();
+    }
+    
+    // Função para fechar o modal
+    function close_modal() { 
+        myModal.hide();
+    }
+
+    function updateModalContent(modalType) {
+        var modalElement = document.getElementById('ModalVenda');
+        var formElements = document.querySelectorAll('.form-venda');
+        var detalhesElements = document.querySelectorAll('.detalhes-venda');
+        var modalTitleElement = document.getElementById('lojaModalLabel');
+    
+        // Oculta todos os elementos de formulário e detalhes
+        formElements.forEach(function(formElement) {
+            formElement.style.display = 'none';
+        });
+        detalhesElements.forEach(function(detalhesElement) {
+            detalhesElement.style.display = 'none';
+        });
+    
+        // Verifica o tipo de modal e decide quais elementos mostrar
+        if (modalType === 1) {
+            // Exibe os elementos de formulário
+            formElements.forEach(function(formElement) {
+                formElement.style.display = 'block';
+            });
+            modalTitleElement.textContent = 'Formulário de Venda';
+        } else if (modalType === 2) {
+            // Exibe os elementos de detalhes
+            detalhesElements.forEach(function(detalhesElement) {
+                detalhesElement.style.display = 'block';
+            });
+            modalTitleElement.textContent = 'Detalhes de Venda';
+        }
+    }
+    
 </script>
         {% endblock %}
