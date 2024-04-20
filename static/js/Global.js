@@ -20,7 +20,7 @@
 
   if (status === true) {
       // Oculta o conteúdo do contêiner
-       container.style.display = 'none';
+      toggleContainerAnimation(id_container, true);
       // Cria o campo de carregamento 
       loadingContainer = document.createElement('div');
         loadingContainer.classList.add('loading', 'd-flex', 'justify-content-center','my-5', 'align-items-center');
@@ -44,8 +44,44 @@
         loadingContainer.remove();
     }  
       // Exibe novamente os elementos filhos
-       container.style.display = 'block';
+      toggleContainerAnimation(id_container, false);
   }  
+}
+   // Função para obter um item do local storage
+   function getLocalStorageItem(key) {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  }
+  
+  // Função para definir um item no local storage
+  function setLocalStorageItem(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+  
+function toggleContainerAnimation(containerId, isOpen) {
+  const container = document.getElementById(containerId);
+  
+  if (!isOpen) {
+      anime({
+          targets: container,
+          opacity: [0, 1],
+          duration: 500,
+          easing: 'linear',
+          begin: function() {
+              container.classList.remove('d-none');
+          }
+      });
+  } else {
+      anime({
+          targets: container,
+          opacity: [1, 0],
+          duration: 500,
+          easing: 'linear',
+          complete: function() {
+              container.classList.add('d-none');
+          }
+      });
+  }
 }
 function chamarFuncaoPython(url, data,type, callback)  {
   // Configuração do objeto de requisição

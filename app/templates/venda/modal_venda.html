@@ -370,19 +370,24 @@
         </div> 
 
   <script>
-    produtosArray = [
-        {% for produto in list_produtos %}
-        { 
-        nome: "{{ produto.nome }}",
-        valor: "{{ produto.preco_venda }}",
-        idLoja: "{{ produto.loja.id_loja }}",
-        idProduto: "{{ produto.id_produto }}",
-        isRetornavel: "{{ produto.is_retornavel }}",
-        quantidade: "{{ produto.quantidade_atual_estoque }}"
-        },
-        {% endfor %}   
-    ];
-     
+// Chamar a função para preencher a tabela ao carregar a página
+window.addEventListener('DOMContentLoaded', function() {
+     produtosArray = getProdutosData();
+     function getProdutosData() {
+        // Verificar se os dados estão presentes no localStorage
+        const produtosData = getLocalStorageItem('data_produtos');
+
+        // Se os dados estiverem presentes no localStorage, usá-los
+        if (produtosData) {
+            return produtosData;
+        }
+
+        // Se os dados não estiverem presentes no localStorage, retornar null
+        return null;
+    }
+});
+    // Função para obter os dados do localStorage ou da API
+   
   </script>
     <script type="text/javascript" src="{% static '/js/pages/FunctionsModalVendas.js' %}" ></script>
     </div>

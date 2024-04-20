@@ -13,7 +13,7 @@
           
 <button type="button"  onclick="open_modal(1);"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Cadastrar Venda</a>
     </div>
-    <select name="loja" class="form-select" id="id_loja"><option value="0">Selecione</option> </select>
+    <select name="id_loja_list" class="form-select" id="id_loja_list"><option value="0">Selecione</option> </select>
 
         <table class="table table-hover table-responsive table-sm  ">
             <thead>
@@ -25,19 +25,7 @@
                 </tr>
             </thead>
             <tbody class="table-group-divider" id="table_list_vendas">
-                {% for venda in vendas %}
-                <tr>
-                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-1 text-start">{{ venda.loja.nome_loja }}</td>
-                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-1 text-start">{{ venda.estado_transacao }}</td>
-                    <td style="font-size: 0.8rem;" class=" d-none d-sm-table-cell order-2 text-start">{{ venda.valor_total }}</td>
-                    <td class="text-end">
-                        <div class="btn-group" role="group" aria-label="Ações do Usuário">
-                            <button type="button" onclick="open_modal(2);" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i  style="font-size: 0.8rem;" class="bi bi-eye me-1"></i>  </button>
-                            <a href="{% url 'editar_venda' venda.id_venda %}" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi  bi-pencil me-1"></i> </a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
+              
             </tbody>
         </table>
     </div>
@@ -45,29 +33,111 @@
     </div> 
 
   <script >
-     // Função para obter um item do local storage
-function getLocalStorageItem(key) {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : null;
-  }
-  
-  // Função para definir um item no local storage
-  function setLocalStorageItem(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
-  
-    chamarFuncaoPython("api/vendas/dados", null, 'GET', function(response) {
-        if (response.success == true) {
-            data_lojas = response.lojas;
-            data_vendas = response.vendas;
-            data_produtos = response.produtos;
-            manageLoading(false, "table_list_vendas");
-        } else {
-            alertCustomer(response.message);
-            manageLoading(false, "table_list_vendas");
-        }
-    });  
-       
+    // Função para preencher a tabela de vendas com os dados do localStorage
+function preencherTabelaVendas(vendas) {
+    const tbody = document.getElementById('table_list_vendas');
+    // Limpar qualquer conteúdo existente na tabela
+    tbody.innerHTML = '';
+
+    // Verificar se existem dados de vendas no localStorage
+    if (vendas && vendas.length > 0) {
+        // Iterar sobre os dados de vendas e criar uma linha na tabela para cada venda
+        vendas.forEach(venda => {
+            const tr = document.createElement('tr');
+
+            const tdLoja = document.createElement('td');
+          data_lojas = getLocalStorageItem('data_lojas');
+          data_lojas.forEach(function(loja) {
+            if (loja.id_loja === venda.loja_id) {
+                tdLoja.textContent = loja.nome_loja;
+                tdLoja.classList.add( 'd-sm-table-cell', 'order-1', 'text-start');
+                return; // Parar de percorrer o array assim que entrar no if
+            }
+        });
+            const tdEstado = document.createElement('td');
+            tdEstado.textContent = venda.estado_transacao;
+            tdEstado.classList.add('d-sm-table-cell', 'order-1', 'text-start');
+
+            const tdValor = document.createElement('td');
+            tdValor.textContent = venda.valor_total;
+            tdValor.classList.add('d-sm-table-cell', 'order-2', 'text-start');
+
+            const tdAcoes = document.createElement('td');
+            tdAcoes.classList.add('text-end');
+
+            const divBtnGroup = document.createElement('div');
+            divBtnGroup.classList.add('btn-group');
+            divBtnGroup.setAttribute('role', 'group');
+            divBtnGroup.setAttribute('aria-label', 'Ações do Usuário');
+
+            const btnVer = document.createElement('button');
+            btnVer.setAttribute('type', 'button');
+            btnVer.setAttribute('onclick', 'open_modal(2);');
+            btnVer.classList.add('btn', 'btn-success', 'btn-sm');
+            btnVer.innerHTML = '<i class="bi bi-eye me-1" style="font-size: 0.8rem;"></i>';
+
+            const btnEditar = document.createElement('button');
+            btnEditar.setAttribute('type', 'button');
+            btnEditar.classList.add('btn', 'btn-warning', 'btn-sm');
+            btnEditar.innerHTML = '<i class="bi bi-pencil me-1" style="font-size: 0.8rem;"></i>';
+
+            btnEditar.addEventListener('click', function() {
+                // Chamada da função com o id_venda como parâmetro
+                editarVenda(venda.id_venda);
+            });
+
+            divBtnGroup.appendChild(btnVer);
+            divBtnGroup.appendChild(btnEditar);
+
+            tdAcoes.appendChild(divBtnGroup);
+
+            tr.appendChild(tdLoja);
+            tr.appendChild(tdEstado);
+            tr.appendChild(tdValor);
+            tr.appendChild(tdAcoes);
+
+            tbody.appendChild(tr);
+        });
+    } else {
+        // Se não houver dados de vendas no localStorage, exibir uma mensagem na tabela
+        const tr = document.createElement('tr');
+
+        const tdMensagem = document.createElement('td');
+        tdMensagem.textContent = 'Nenhuma venda encontrada';
+        tdMensagem.setAttribute('colspan', '4');
+
+        tr.appendChild(tdMensagem);
+        tbody.appendChild(tr);
+    }
+}
+
+// Função para editar a venda
+function editarVenda(idVenda) {
+    // Adicione aqui a lógica para editar a venda com o idVenda fornecido
+    console.log('Editando venda com id:', idVenda);
+}
+    function get_data(){
+        manageLoading(true, "table_list_vendas");
+
+        chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
+            if (response.success===true) {
+                // Armazenar os dados no localStorage
+                setLocalStorageItem('data_lojas', response.lojas);
+                setLocalStorageItem('data_vendas', response.vendas);
+                setLocalStorageItem('data_produtos', response.produtos);
+                preencherTabelaVendas(response.vendas) 
+                manageLoading(false, "table_list_vendas");
+            } else {
+                alertCustomer(response.error);
+                manageLoading(false, "table_list_vendas");
+            }
+        });  
+    }
+    
+// Chamar a função para preencher a tabela ao carregar a página
+window.addEventListener('DOMContentLoaded', function() {
+        get_data();
+    });
 
 
 

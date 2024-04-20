@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from ..def_global import erro, criar_alerta_js, verificar_permissoes
 from ..static import Alerta, UserInfo
-from ..models import Venda, Associado, Produto,Loja
+from ..models import Venda, Associado, Produto, Loja
 from django.db.models import Q
 from ..processos.venda import processos
 from django.http import JsonResponse
@@ -16,7 +16,7 @@ class views_venda:
     @staticmethod
     @verificar_permissoes(codigo_model=7)
     def lista_vendas(request, context=None, id_loja=None):
-         
+
         alerta = Alerta.get_mensagem()
         if alerta:
             context["alerta_js"] = criar_alerta_js(alerta)
@@ -25,7 +25,7 @@ class views_venda:
 
     @csrf_exempt
     def obter_dados(request):
-        if request.method == 'POST':
+        if request.method == "GET":
             id_empresa = UserInfo.get_id_empresa(request, True)
             id_usuario = UserInfo.get_id_usuario(request)
 
@@ -37,16 +37,17 @@ class views_venda:
             produtos = Produto.objects.filter(
                 Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa
             )
+            lojas = Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
 
             vendas = Venda.objects.filter(
-                Q(loja_id__in=ids_lojas_associadas), loja__empresa__id_empresa=id_empresa
-            )
-            lojas = Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
+                Q(loja_id__in=ids_lojas_associadas),
+                loja__empresa__id_empresa=id_empresa,
+            ).prefetch_related("loja")
             dados = {
-                "sucess":True,
+                "success": True,
                 "lojas": list(lojas.values()),
                 "produtos": list(produtos.values()),
-                "vendas": list(vendas.values())
+                "vendas": list(vendas.values()),
             }
 
             return JsonResponse(dados)

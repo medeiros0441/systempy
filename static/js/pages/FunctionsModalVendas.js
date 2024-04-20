@@ -269,20 +269,15 @@ window.addEventListener('load', function() {
 });
 
 function buscarLojas() {
-    const url = '/buscar_lojas/';  // URL para buscar as lojas
-    const type = 'GET';  // Tipo de requisição é GET
-    const callback = function(data) {
-        if (data.success) {
-            // Se a chamada for bem-sucedida, atualize o dropdown com as lojas
-            atualizarDropdownLojas(data.list_lojas);
-        } else {
-            console.error('Erro ao buscar lojas:', data.error);
-            // Trate o erro conforme necessário
-        }
-    };
+    const lojas_data = getLocalStorageItem('data_lojas');
 
-    // Chamar a função Python para buscar as lojas
-    chamarFuncaoPython(url, null, type, callback);
+    // Se os dados estiverem presentes no localStorage, usá-los
+    if (lojas_data) {
+        return lojas_data;
+    }
+
+    // Se os dados não estiverem presentes no localStorage, retornar null
+    return null;
 }
 
 // Função para atualizar o dropdown com as lojas
@@ -691,7 +686,7 @@ function toggleGestaoRetornavel( status ) {
         }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+window.addEventListener('DOMContentLoaded', function() {
 
 
 
@@ -715,14 +710,16 @@ document.addEventListener("DOMContentLoaded", function () {
             }
     }); 
      // Obtém a lista de produtos do DOM e itera sobre cada produto
+
+// Chamar a função para preencher a tabela ao carregar a página 
 var produtosList = document.getElementById('produtosList');
-produtosArray.forEach(function(produto) {
-    // Cria uma nova opção para cada produto e a adiciona à lista de produtos
-    var option = document.createElement('option');
-    option.dataset.idProduto = produto.idProduto; // Define o atributo de dados 'idProduto' na opção
-    option.value = produto.nome; // Define o valor da opção como o nome do produto
-    produtosList.appendChild(option);
-});
+    produtosArray.forEach(function(produto) {
+        // Cria uma nova opção para cada produto e a adiciona à lista de produtos
+        var option = document.createElement('option');
+        option.dataset.idProduto = produto.idProduto; // Define o atributo de dados 'idProduto' na opção
+        option.value = produto.nome; // Define o valor da opção como o nome do produto
+        produtosList.appendChild(option);
+    });
 
 // Obtém o input do produto
 var produtoInput = document.getElementById("produtoInput");
