@@ -46,17 +46,7 @@
       // Exibe novamente os elementos filhos
       toggleContainerAnimation(id_container, false);
   }  
-}
-   // Função para obter um item do local storage
-   function getLocalStorageItem(key) {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : null;
-  }
-  
-  // Função para definir um item no local storage
-  function setLocalStorageItem(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
+} 
   
 function toggleContainerAnimation(containerId, isOpen) {
   const container = document.getElementById(containerId);
@@ -93,9 +83,10 @@ function chamarFuncaoPython(url, data,type, callback)  {
       },
       
   };
-    if (data) {
-            requestOptions.body = JSON.stringify(data);
-        }
+  if (type === 'POST' || type === 'PUT') {
+    requestOptions.body = JSON.stringify(data);
+  }
+
   // Fazer uma requisição Fetch para o backend
   fetch(url, requestOptions)
       .then(response => response.json())

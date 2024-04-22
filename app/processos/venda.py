@@ -249,73 +249,85 @@ class processos:
     def _processar_dados_galoes(request, venda):
         if request.method == "POST":
             try:
-                id_cliente = request.POST.get("id_cliente")
-                cliente = (
-                    Cliente.objects.get(id_cliente=id_cliente)
-                    if id_cliente != "0"
-                    else None
-                )
-
-                galoes = {}
+                trocas = []
+                # Iterar sobre as entradas do request.POST
                 for chave, valor in request.POST.items():
                     if chave.startswith("data_validade_entrada_"):
-                        galoes.setdefault("entrada", {})["data_validade"] = parse_date(
-                            valor
-                        )
-                    elif chave.startswith("data_fabricacao_entrada_"):
-                        galoes.setdefault("entrada", {})["data_fabricacao"] = (
-                            parse_date(valor)
-                        )
-                    elif chave.startswith("tipo_entrada_"):
-                        galoes.setdefault("entrada", {})["titulo"] = valor
+                        # Extrair informações da entrada
+                        indice = chave.split('_')[-1]
+                        entrada = {
+                            "data_validade": valor,
+                            "data_fabricacao": request.POST[f"data_fabricacao_entrada_{indice}"],
+                            "titulo": request.POST[f"tipo_entrada_{indice}"]
+                        }
+
+                        # Verificar se já existe uma troca para este índice
+                        if len(trocas) <= int(indice):
+                            trocas.append({"entradas": [], "saidas": [], "descricao": None})
+
+                        # Adicionar a entrada à troca correspondente
+                        trocas[int(indice)]["entradas"].append(entrada)
+
                     elif chave.startswith("data_validade_saida_"):
-                        galoes.setdefault("saida", {})["data_validade"] = parse_date(
-                            valor
+                        # Extrair informações da saída
+                        indice = chave.split('_')[-1]
+                        saida = {
+                            "data_validade": valor,
+                            "data_fabricacao": request.POST[f"data_fabricacao_saida_{indice}"],
+                            "titulo": request.POST[f"tipo_saida_{indice}"]
+                        }
+
+                        # Verificar se já existe uma troca para este índice
+                        if len(trocas) <= int(indice):
+                            trocas.append({"entradas": [], "saidas": [], "descricao": None})
+
+                        # Adicionar a saída à troca correspondente
+                        trocas[int(indice)]["saidas"].append(saida)
+
+                    elif chave == "id_descricao_gestão_galao":
+                        # Adicionar a descrição à última troca
+                        trocas[-1]["descricao"] = valor
+
+                # Processar as trocas
+                for troca in trocas:
+                    # Processar cada entrada e saída da troca
+                    for entrada, saida in zip(troca["entradas"], troca["saidas"]):
+                    # Criar galões de entrada e saída
+                        galao_entrada, created_entrada = Galao.objects.get_or_create(
+                            data_validade=entrada["data_validade"],
+                            data_fabricacao=entrada["data_fabricacao"],
+                            titulo=entrada["titulo"],
+                            loja=venda.loja,
                         )
-                    elif chave.startswith("data_fabricacao_saida_"):
-                        galoes.setdefault("saida", {})["data_fabricacao"] = parse_date(
-                            valor
+
+                        galao_saida, created_saida = Galao.objects.get_or_create(
+                            data_validade=saida["data_validade"],
+                            data_fabricacao=saida["data_fabricacao"],
+                            titulo=saida["titulo"],
+                            loja=venda.loja,
                         )
-                    elif chave.startswith("tipo_saida_"):
-                        galoes.setdefault("saida", {})["titulo"] = valor
-                    elif chave.startswith("id_descricao_gestão_galao"):
-                        descricao = valor
 
-                # Criar galões de entrada e saída
-                galao_entrada, created_entrada = Galao.objects.get_or_create(
-                    data_validade=galoes.get("entrada", {}).get("data_validade"),
-                    data_fabricacao=galoes.get("entrada", {}).get("data_fabricacao"),
-                    titulo=galoes.get("entrada", {}).get("titulo"),
-                    loja=venda.loja,
-                )
-                galao_saida, created_saida = Galao.objects.get_or_create(
-                    data_validade=galoes.get("saida", {}).get("data_validade"),
-                    data_fabricacao=galoes.get("saida", {}).get("data_fabricacao"),
-                    titulo=galoes.get("saida", {}).get("titulo"),
-                    loja=venda.loja,
-                )
+                        # Atualizar as quantidades
+                        galao_entrada.quantidade = (
+                            1 if created_entrada else galao_entrada.quantidade + 1
+                        )
+                        galao_entrada.update = timezone.now()
+                        galao_entrada.save()
 
-                # Atualizar as quantidades
-                galao_entrada.quantidade = (
-                    1 if created_entrada else galao_entrada.quantidade + 1
-                )
-                galao_entrada.update = timezone.now()
-                galao_entrada.save()
+                        galao_saida.quantidade = (
+                            -1 if created_saida else galao_saida.quantidade - 1
+                        )
+                        galao_saida.update = timezone.now()
+                        galao_saida.save()
 
-                galao_saida.quantidade = (
-                    -1 if created_saida else galao_saida.quantidade - 1
-                )
-                galao_saida.update = timezone.now()
-                galao_saida.save()
-
-                # Criar um objeto GestaoGalao
-                gestao_galao = GestaoGalao()
-                gestao_galao.descricao = descricao
-                gestao_galao.galao_entrando = galao_entrada
-                gestao_galao.galao_saiu = galao_saida
-                gestao_galao.venda = venda
-                gestao_galao.update = timezone.now()
-                gestao_galao.save()
+                    # Criar um objeto GestaoGalao
+                    gestao_galao = GestaoGalao()
+                    gestao_galao.descricao =  troca["descricao"]
+                    gestao_galao.galao_entrando = galao_entrada
+                    gestao_galao.galao_saiu = galao_saida
+                    gestao_galao.venda = venda
+                    gestao_galao.update = timezone.now()
+                    gestao_galao.save()
 
                 return True
             except Exception as e:

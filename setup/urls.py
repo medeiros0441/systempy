@@ -112,6 +112,7 @@ url_produto = [  # produtos
         views_produto.selecionar_produto,
         name="selecionar_produto",
     ),
+    
     path(
         "produtos/excluir/<uuid:id_produto>/",
         views_produto.excluir_produto,
@@ -146,6 +147,20 @@ url_venda = [  # vendas
         "api/vendas/dados",
         views_venda.obter_dados,
         name="api_obter_dados_vendas",
+    ),
+    path(
+        "api/cliente/by/venda/<uuid:id_venda>",
+        views_venda.selecionar_cliente_by_venda,
+        name="selecionar_cliente_by_vendas",
+    ),path(
+        "api/produtos/by/venda/<uuid:id_venda>",
+        views_venda.selecionar_produto_by_venda,
+        name="selecionar_produto_by_vendas",
+    ),
+  path(
+        "api/retornaveis/by/venda/<uuid:id_venda>",
+        views_venda.selecionar_retornaveis_by_venda,
+        name="selecionar_produto_by_vendas",
     ),
 ]
 

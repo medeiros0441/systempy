@@ -1,113 +1,169 @@
 {% extends 'base.html' %}
 
-{% block title %}Lista de Vendas{% endblock %}
+{% block title %} Gestão Vendas{% endblock %}
 
 {% block content %}
 {% include 'venda/modal_venda.html' %}
 
  
+<div class="container  bg-light mx-auto">
 
-<div class="my-5 container-xl mx-auto ">
-    <div class="d-flex justify-content-between">
-            <span   class=" font-monospace fw-border my-auto" style="font-size: 1.3rem;">Lista de Vendas</span>
-          
-<button type="button"  onclick="open_modal(1);"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Cadastrar Venda</a>
+    <div class="d-flex  mt-3 mb-2 justify-content-between">
+         <span   class=" font-monospace fw-border my-auto" style="font-size: 1.0rem;">Lista de Vendas</span>
+        <button type="button"  onclick="open_modal(1);"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Cadastrar Venda</a>
     </div>
-    <select name="id_loja_list" class="form-select" id="id_loja_list"><option value="0">Selecione</option> </select>
+</div>
+<div class="container bg-light mb-2 mx-auto">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
+        <div class="col p-1">
+            <div class="form-floating">
+                <select name="id_loja_list" class="form-select-sm form-select" id="select_loja">
+                    <option value="0">Selecione</option>
+                </select>
+                <label for="select_loja">Loja:</label>
+            </div>
+        </div>
 
-        <table class="table table-hover table-responsive table-sm  ">
-            <thead>
-                <tr>
-                    <th scope="col" class="text-start " style="font-size: 0.7rem;">Loja</th>
-                    <th scope="col" class=" d-none d-sm-table-cell order-1 text-start" style="font-size: 0.7rem;">Estado Transação</th>
-                    <th scope="col" class=" d-none d-sm-table-cell order-2 text-start" style="font-size: 0.7rem;">Valor Total</th>
-                    <th scope="col" class="text-end" style="font-size: 0.7rem;">Ações</th>
-                </tr>
-            </thead>
-            <tbody class="table-group-divider" id="table_list_vendas">
-              
-            </tbody>
-        </table>
+        <div class="col p-1">
+            <div class="form-floating">
+                <select name="metodo_entrega" class="form-select-sm form-select" id="select_metodo_entrega">
+                    <option value="0">Selecione</option>
+                    <option value="retirado_na_loja">Retirado na Loja</option>
+                    <option value="entrega_no_local">Entrega no Local</option>
+                </select>
+                <label for="select_metodo_entrega">Método de Entrega:</label>
+            </div>
+        </div>
+
+        <div class="col p-1">
+            <div class="form-floating">
+                <select name="estado_transacao" class="form-select-sm form-select" id="select_estado_transacao">
+                    <option value="0">Selecione</option>
+                    <option value="finalizado">Finalizado</option>
+                    <option value="processando">Processando</option>
+                    <option value="pendente">Pendente</option>
+                </select>
+                <label for="select_estado_transacao">Estado da Transação:</label>
+            </div>
+        </div>
+
+        <div class="col p-1">
+            <div class="form-floating">
+                <select name="forma_pagamento" class="form-select-sm form-select" id="select_forma_pagamento">
+                    <option value="0">Selecione</option>
+                    <option value="dinheiro">Dinheiro</option>
+                    <option value="pix">Pix</option>
+                    <option value="cartao_credito">Cartão de Crédito</option>
+                    <option value="cartao_debito">Cartão de Débito</option>
+                    <option value="fiado">Fiado</option>
+                </select>
+                <label for="select_forma_pagamento">Forma de Pagamento:</label>
+            </div>
+        </div>
     </div>
+</div>
+    <div  id="container_load" class="container-xl p-3  mx-auto bg-dark rounded">
 
-    </div> 
+            <table class="table table-hover table-responsive table-sm  table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col" class="text-start font-size-sm">Loja</th>
+                        <th scope="col" class="d-none d-sm-table-cell order-1 text-start font-size-sm">Estado Transação</th>
+                        <th scope="col" class="d-none d-sm-table-cell order-2 text-start font-size-sm">Valor Total</th>
+                        <th scope="col" class="text-end font-size-sm">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider" id="table_list_vendas">
+                
+                </tbody>
+            </table>
+    </div>
+</div>
+
 
   <script >
-    // Função para preencher a tabela de vendas com os dados do localStorage
+       // Função para preencher a tabela de vendas com os dados do localStorage
 function preencherTabelaVendas(vendas) {
-    const tbody = document.getElementById('table_list_vendas');
-    // Limpar qualquer conteúdo existente na tabela
-    tbody.innerHTML = '';
+    try {
+        const tbody = document.getElementById('table_list_vendas');
+         // Limpar qualquer conteúdo existente na tabela
+        tbody.innerHTML = '';
 
-    // Verificar se existem dados de vendas no localStorage
-    if (vendas && vendas.length > 0) {
-        // Iterar sobre os dados de vendas e criar uma linha na tabela para cada venda
-        vendas.forEach(venda => {
+        // Verificar se existem dados de vendas no localStorage
+        if (vendas && vendas.length > 0) {
+            // Iterar sobre os dados de vendas e criar uma linha na tabela para cada venda
+            vendas.forEach(venda => {
+                const tr = document.createElement('tr');
+
+                const tdLoja = document.createElement('td');
+            data_lojas = Utils.getLocalStorageItem('data_lojas');
+            data_lojas.forEach(function(loja) {
+                if (loja.id_loja === venda.loja_id) {
+                    tdLoja.textContent = loja.nome_loja;
+                    tdLoja.classList.add( 'd-sm-table-cell', 'order-1', 'text-start');
+                    return; // Parar de percorrer o array assim que entrar no if
+                }
+            });
+                const tdEstado = document.createElement('td');
+                tdEstado.textContent = venda.estado_transacao;
+                tdEstado.classList.add('d-sm-table-cell', 'order-1', 'text-start');
+
+                const tdValor = document.createElement('td');
+                tdValor.textContent = venda.valor_total;
+                tdValor.classList.add('d-sm-table-cell', 'order-2', 'text-start');
+
+                const tdAcoes = document.createElement('td');
+                tdAcoes.classList.add('text-end');
+
+                const divBtnGroup = document.createElement('div');
+                divBtnGroup.classList.add('btn-group');
+                divBtnGroup.setAttribute('role', 'group');
+                divBtnGroup.setAttribute('aria-label', 'Ações do Usuário');
+            
+                const btnVer = document.createElement('button');
+                btnVer.setAttribute('type', 'button');
+                btnVer.classList.add('btn', 'btn-success', 'btn-sm');
+                btnVer.innerHTML = '<i class="bi bi-eye me-1" style="font-size: 0.8rem;"></i>';
+
+                btnVer.addEventListener('click', function() {
+                    detalhes_modal_cliente(venda.id_venda);
+                    open_modal(2);
+                });
+
+                const btnEditar = document.createElement('button');
+                btnEditar.setAttribute('type', 'button');
+                btnEditar.classList.add('btn', 'btn-warning', 'btn-sm');
+                btnEditar.innerHTML = '<i class="bi bi-pencil me-1" style="font-size: 0.8rem;"></i>';
+
+                btnEditar.addEventListener('click', function() {
+                    // Chamada da função com o id_venda como parâmetro
+                    editarVenda(venda.id_venda);
+                });
+
+                divBtnGroup.appendChild(btnVer);
+                divBtnGroup.appendChild(btnEditar);
+                tdAcoes.appendChild(divBtnGroup);
+
+                tr.appendChild(tdLoja);
+                tr.appendChild(tdEstado);
+                tr.appendChild(tdValor);
+                tr.appendChild(tdAcoes);
+
+                tbody.appendChild(tr);
+            });
+        } else {
+            // Se não houver dados de vendas no localStorage, exibir uma mensagem na tabela
             const tr = document.createElement('tr');
 
-            const tdLoja = document.createElement('td');
-          data_lojas = getLocalStorageItem('data_lojas');
-          data_lojas.forEach(function(loja) {
-            if (loja.id_loja === venda.loja_id) {
-                tdLoja.textContent = loja.nome_loja;
-                tdLoja.classList.add( 'd-sm-table-cell', 'order-1', 'text-start');
-                return; // Parar de percorrer o array assim que entrar no if
-            }
-        });
-            const tdEstado = document.createElement('td');
-            tdEstado.textContent = venda.estado_transacao;
-            tdEstado.classList.add('d-sm-table-cell', 'order-1', 'text-start');
+            const tdMensagem = document.createElement('td');
+            tdMensagem.textContent = 'Nenhuma venda encontrada';
+            tdMensagem.setAttribute('colspan', '4');
 
-            const tdValor = document.createElement('td');
-            tdValor.textContent = venda.valor_total;
-            tdValor.classList.add('d-sm-table-cell', 'order-2', 'text-start');
-
-            const tdAcoes = document.createElement('td');
-            tdAcoes.classList.add('text-end');
-
-            const divBtnGroup = document.createElement('div');
-            divBtnGroup.classList.add('btn-group');
-            divBtnGroup.setAttribute('role', 'group');
-            divBtnGroup.setAttribute('aria-label', 'Ações do Usuário');
-
-            const btnVer = document.createElement('button');
-            btnVer.setAttribute('type', 'button');
-            btnVer.setAttribute('onclick', 'open_modal(2);');
-            btnVer.classList.add('btn', 'btn-success', 'btn-sm');
-            btnVer.innerHTML = '<i class="bi bi-eye me-1" style="font-size: 0.8rem;"></i>';
-
-            const btnEditar = document.createElement('button');
-            btnEditar.setAttribute('type', 'button');
-            btnEditar.classList.add('btn', 'btn-warning', 'btn-sm');
-            btnEditar.innerHTML = '<i class="bi bi-pencil me-1" style="font-size: 0.8rem;"></i>';
-
-            btnEditar.addEventListener('click', function() {
-                // Chamada da função com o id_venda como parâmetro
-                editarVenda(venda.id_venda);
-            });
-
-            divBtnGroup.appendChild(btnVer);
-            divBtnGroup.appendChild(btnEditar);
-
-            tdAcoes.appendChild(divBtnGroup);
-
-            tr.appendChild(tdLoja);
-            tr.appendChild(tdEstado);
-            tr.appendChild(tdValor);
-            tr.appendChild(tdAcoes);
-
+            tr.appendChild(tdMensagem);
             tbody.appendChild(tr);
-        });
-    } else {
-        // Se não houver dados de vendas no localStorage, exibir uma mensagem na tabela
-        const tr = document.createElement('tr');
-
-        const tdMensagem = document.createElement('td');
-        tdMensagem.textContent = 'Nenhuma venda encontrada';
-        tdMensagem.setAttribute('colspan', '4');
-
-        tr.appendChild(tdMensagem);
-        tbody.appendChild(tr);
+        }
+    } catch (error) {
+        console.error("Erro ao chamar a função Python:", error);
     }
 }
 
@@ -117,26 +173,51 @@ function editarVenda(idVenda) {
     console.log('Editando venda com id:', idVenda);
 }
     function get_data(){
-        manageLoading(true, "table_list_vendas");
+        manageLoading(true, "container_load");
 
-        chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
-            if (response.success===true) {
-                // Armazenar os dados no localStorage
-                setLocalStorageItem('data_lojas', response.lojas);
-                setLocalStorageItem('data_vendas', response.vendas);
-                setLocalStorageItem('data_produtos', response.produtos);
-                preencherTabelaVendas(response.vendas) 
-                manageLoading(false, "table_list_vendas");
-            } else {
-                alertCustomer(response.error);
-                manageLoading(false, "table_list_vendas");
-            }
-        });  
+        try {
+            chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
+                if (response.success === true) {
+                    // Armazenar os dados no localStorage
+                    Utils.setLocalStorageItem('data_lojas', response.lojas);
+                    Utils.setLocalStorageItem('data_vendas', response.vendas);
+                    Utils.setLocalStorageItem('data_produtos', response.produtos);
+                    preencherTabelaVendas(response.vendas);
+                } else {
+                    alertCustomer(response.error);
+                }
+                manageLoading(false, "container_load");
+            });
+        } catch (error) {
+            console.error("Erro ao chamar a função Python:", error);
+        }
+        
     }
     
 // Chamar a função para preencher a tabela ao carregar a página
 window.addEventListener('DOMContentLoaded', function() {
         get_data();
+
+        $(document).ready(function() {
+            $('th').click(function() {
+                const index = $(this).index();
+                const isAscending = $(this).hasClass('ascending');
+                
+                $('th').removeClass('ascending descending');
+                $(this).addClass(isAscending ? 'descending' : 'ascending');
+        
+                const rows = $('tbody tr').get();
+                rows.sort(function(a, b) {
+                    const aValue = $(a).find('td').eq(index).text();
+                    const bValue = $(b).find('td').eq(index).text();
+                    return (isAscending ? 1 : -1) * aValue.localeCompare(bValue);
+                });
+        
+                $.each(rows, function(index, row) {
+                    $('tbody').append(row);
+                });
+            });
+        });
     });
 
 
@@ -145,8 +226,8 @@ window.addEventListener('DOMContentLoaded', function() {
    var  myModal;
     // Função para abrir o modal
     function open_modal(modalType) {
-         myModal = new bootstrap.Modal(modalElement);
-    updateModalContent(modalType);
+        myModal = new bootstrap.Modal(modalElement);
+        updateModalContent(modalType);
         myModal.show();
     }
     
@@ -175,12 +256,14 @@ window.addEventListener('DOMContentLoaded', function() {
             formElements.forEach(function(formElement) {
                 formElement.style.display = 'block';
             });
+            FormModalVendas();
             modalTitleElement.textContent = 'Formulário de Venda';
         } else if (modalType === 2) {
             // Exibe os elementos de detalhes
             detalhesElements.forEach(function(detalhesElement) {
                 detalhesElement.style.display = 'block';
             });
+            
             modalTitleElement.textContent = 'Detalhes de Venda';
         }
     }
