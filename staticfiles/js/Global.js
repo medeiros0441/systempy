@@ -2,71 +2,111 @@
  // Máscara para CNPJ
  $('.cnpj-mask').mask('00.000.000/0000-00');
  $('.cpf-mask').mask('000.000.000-00');
-
- // Máscara para telefone
  $('.telefone-mask').mask('+55 (00) 0000-00000');
  $('.codigo-mask').mask('000-000');
  $('.cep-mask').mask('00000-000');
  $('.data-mask').mask('00/00/0000');
  $('.data-mes-ano-mask').mask('00/0000');
  $('.quantidade-mask').mask('00000000');
- $('.money-mask').mask('000.000.000,00', {reverse: true,});
+ $('.money-mask').mask('000.000.000,00', {reverse: true,}); 
 
- $(function activateLoadingButtons() {
-  document.addEventListener("DOMContentLoaded", function() {
-    // Encontra todos os botões com a classe btn-loading
-    var buttons = document.querySelectorAll(".btn-loading");
+ function manageLoading(status, id_container) {
+  var container = document.getElementById(id_container);
+  
+  if (!container) {
+      console.error('Container não encontrado.');
+      return;
+  }
 
-    // Para cada botão encontrado, adiciona a classe de loading
-    buttons.forEach(function(button) {
-      button.classList.add("loading");
+  if (status === true) {
+      // Oculta o conteúdo do contêiner
+      toggleContainerAnimation(id_container, true);
+      // Cria o campo de carregamento 
+      loadingContainer = document.createElement('div');
+        loadingContainer.classList.add('loading', 'd-flex', 'justify-content-center','my-5', 'align-items-center');
+        loadingContainer.classList.add('text-primary');
 
-      // Desativa o botão para evitar interações enquanto estiver carregando
-      button.disabled = true;
-    });
+      var spinner = document.createElement('div');
+      spinner.classList.add('spinner-border');
+      spinner.setAttribute('role', 'status');
 
-    // Simula uma requisição para o servidor (exemplo: com setTimeout)
-    setTimeout(function() {
-      // Após o tempo de espera (simulando a resposta do servidor), remove a classe de loading
-      buttons.forEach(function(button) {
-        button.classList.remove("loading");
+      var spinnerText = document.createElement('span');
+      spinnerText.classList.add('visually-hidden');
+      spinnerText.textContent = 'Loading...';
 
-        // Reativa o botão para permitir interações após o carregamento
-        button.disabled = false;
-      });
-    }, 3000); // Tempo de espera de 3 segundos (3000 milissegundos)
-  });
-});
- function chamarFuncaoPython(DefName, data, callback, Type ="POST") {
-  // Fazer uma requisição AJAX para o backend
-  $.ajax({
-    url: DefName,
-    type: Type,
-    data: data,
-    success: function(response) {
-      // Manipular a resposta do backend, se necessário
-      console.log('Função Python chamada com sucesso!');
-      console.log('Resposta:', response);
-      callback({ success: true, data: response }); // Chamando o callback com sucesso e dados
-    },
-    error: function(xhr, status, error) {
-      // Lidar com erros de requisição, se houver
-      console.error('Erro ao chamar a função Python:', error);
-
-      if (xhr.status === 404) {
-        // Se o recurso não foi encontrado
-        callback({ success: false, error: xhr.responseJSON.erro });
-      } else if (xhr.status === 500) {
-        // Se houve um erro interno do servidor
-        callback({ success: false, error: 'Erro interno do servidor (500)' });
-      } else {
-        // Outros erros não especificados
-        callback({ success: false, error: 'Erro desconhecido: ' + error });
-      }
-    }
-  });
+      spinner.appendChild(spinnerText);
+      loadingContainer.appendChild(spinner);
+      container.insertAdjacentElement('afterend', loadingContainer);
+  } else if (status === false) {
+    var loadingContainer = container.nextElementSibling;
+    
+    if (loadingContainer && loadingContainer.classList.contains('loading')) {
+        loadingContainer.remove();
+    }  
+      // Exibe novamente os elementos filhos
+      toggleContainerAnimation(id_container, false);
+  }  
 }
-
+   // Função para obter um item do local storage
+   function getLocalStorageItem(key) {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  }
+  
+  // Função para definir um item no local storage
+  function setLocalStorageItem(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+  
+function toggleContainerAnimation(containerId, isOpen) {
+  const container = document.getElementById(containerId);
+  
+  if (!isOpen) {
+      anime({
+          targets: container,
+          opacity: [0, 1],
+          duration: 500,
+          easing: 'linear',
+          begin: function() {
+              container.classList.remove('d-none');
+          }
+      });
+  } else {
+      anime({
+          targets: container,
+          opacity: [1, 0],
+          duration: 500,
+          easing: 'linear',
+          complete: function() {
+              container.classList.add('d-none');
+          }
+      });
+  }
+}
+function chamarFuncaoPython(url, data,type, callback)  {
+  // Configuração do objeto de requisição
+  const requestOptions = {
+      method: type,
+      headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json' 
+      },
+      
+  };
+    if (data) {
+            requestOptions.body = JSON.stringify(data);
+        }
+  // Fazer uma requisição Fetch para o backend
+  fetch(url, requestOptions)
+      .then(response => response.json())
+      .then(data => {
+          console.log('Função Python chamada com sucesso!');
+          callback(data); // Chamando o callback com sucesso e dados
+      })
+      .catch(error => {
+          callback(error);
+      });
+}
 
 //alerta customizado
 function alertCustomer(text,time=180000) {

@@ -130,9 +130,16 @@ try:
 
     STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
     STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
+    # Configure o armazenamento para compressão de arquivos estáticos
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
     DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
+    # Habilitar a compressão de arquivos CSS e JavaScript
+    COMPRESS_ENABLED = True
+
+    # Executar a compressão de arquivos estáticos offline durante a coleta de arquivos estáticos
+    COMPRESS_OFFLINE = True
     CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
     CRISPY_TEMPLATE_PACK = "bootstrap5"
     if DEBUG == True:
