@@ -139,6 +139,8 @@ function insertCliente() {
             manageLoading(false, "cadastrar_cliente");
             toggleGestaoCliente(1)
             montarInfoCliente(response.data,"info_cliente");
+            new_carregarListaClientes();
+
         } else {
             alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error);
             manageLoading(false, "cadastrar_cliente"); // Chamando o callback sem dados do cliente e com o erro
@@ -154,7 +156,6 @@ function manipularPesquisaClientes(clientes) {
     exibirResultados(clientes);
     inputPesquisa.addEventListener('input', function(event) {
         const termoPesquisa = event.target.value.toLowerCase();
-        manageLoading(true, "result-pesquisa");
 
         const resultados = clientes.filter(cliente => {
             return Object.values(cliente).some(value =>
@@ -211,7 +212,6 @@ function manipularPesquisaClientes(clientes) {
         });
 
         toggleResultadoPesquisa(true);
-        manageLoading(false, "result-pesquisa");
     }
 }
 // Função para alternar a visibilidade do container
@@ -300,24 +300,8 @@ function atualizarDropdownLojas(list_lojas) {
 }
 // Função para carregar e manipular a lista de clientes
 function carregarListaClientes() {
-    // Verifica se já temos os clientes em cache
-        // Carrega a função manageLoading para mostrar o indicador de carregamento
-        manageLoading(true, "select_cliente");
-        alertCustomer('Atualizando Lista de clientes');
-        // Chama a função para obter os clientes por empresa
-        const url = '/api/cliente/by_empresa/';
-        chamarFuncaoPython(url, null, 'GET', function(response) {
-            if (response.success == true) {
-                clientesCache = response.clientes;
-                manipularPesquisaClientes(clientesCache);   
-                manageLoading(false, "select_cliente");
-
-            } else {
-                alertCustomer(response.message);
-            manageLoading(false, "select_cliente");
-            }
-        });  
-         
+        data_clientes = Utils.getLocalStorageItem('data_clientes');
+        manipularPesquisaClientes(data_clientes);   
 }
 function toggleGestaoEntrega() {
     var container = document.getElementById("container_gestao_entrega");
@@ -585,17 +569,17 @@ function atualizarCamposCarrinho() {
     }
  
     function calcularTroco() {
-        // Obtém o valor total removendo a formatação
+        // Obtém o valor total
         var valorTotalInput = document.getElementById('id_valor_total');
         var valorTotalText = valorTotalInput ? valorTotalInput.textContent.trim() : '';
-        // Remove a formatação (vírgulas) do valor total
         var valorTotal = parseFloat(valorTotalText.replace(',', '.')) || 0;
     
-        // Repita o mesmo processo para a taxa de entrega e o desconto, se aplicável
+        // Obtém a taxa de entrega
         var taxaEntregaInput = document.getElementById('txt_taxa_entrega');
         var taxaEntregaText = taxaEntregaInput ? taxaEntregaInput.value.trim() : '';
         var taxaEntrega = parseFloat(taxaEntregaText.replace(',', '.')) || 0;
     
+        // Obtém o desconto
         var descontoInput = document.getElementById('txt_desconto');
         var descontoText = descontoInput ? descontoInput.value.trim() : '';
         var desconto = parseFloat(descontoText.replace(',', '.')) || 0;
@@ -603,7 +587,7 @@ function atualizarCamposCarrinho() {
         // Calcula o valor total considerando a taxa de entrega e o desconto
         var valorTotalComTaxaDesconto = valorTotal + taxaEntrega - desconto;
     
-        // Define o valor total a ser pago no campo id_valor_total
+        // Define o valor total a ser pago
         document.getElementById('id_valor_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
         document.getElementById('total_apagar').value = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
     
@@ -613,16 +597,17 @@ function atualizarCamposCarrinho() {
     
         // Calcula o troco apenas se o valor pago for maior ou igual ao total
         var troco = valorPago - valorTotalComTaxaDesconto;
-        document.getElementById('troco').value =troco;
     
-            // Exibe a mensagem dependendo do resultado
+        // Exibe a mensagem dependendo do resultado
         if (valorPago < valorTotalComTaxaDesconto) {
             // Calcula o valor que está faltando para cobrir o total da compra
-            var valorFaltante = valorTotalComTaxaDesconto - valorPago;
+            var valorFaltante = (valorTotalComTaxaDesconto - valorPago).toFixed(2);
+
             // Exibe a mensagem informando o valor faltante
-            $('#id_troco').text('Está Faltando: R$ ' + valorFaltante.toFixed(2).replace('.', ',')).css('color', 'red');
+            $('#id_troco').text('Está Faltando: R$ ' + valorFaltante.replace('.', ',')).css('color', 'red');
         } else {
-            $('#id_troco').text('Troco a ser dado é: R$ ' + troco.toFixed(2).replace('.', ',')).css('color', 'green');
+            // Exibe a mensagem informando o troco
+            $('#id_troco').text('Troco  R$ ' + troco.toFixed(2).replace('.', ',')).css('color', 'green');
         }
     }
     
@@ -682,10 +667,19 @@ function toggleGestaoRetornavel( status ) {
             iconeDesbloqueado.classList.add("d-none");
         }
 }
+function new_carregarListaClientes (){
+    chamarFuncaoPython('/api/cliente/by_empresa/', null, 'GET', function(response) {
+      if (response.success == true) {
+           Utils.setLocalStorageItem('data_clientes', response.clientes);
 
+      } else {
+          alertCustomer(response.message);
+      }
+  });  }
  function FormModalVendas() {
 
-
+    
+    new_carregarListaClientes();
     // Chamar a função para preencher a tabela ao carregar a página
     produtosArray = Utils.getLocalStorageItem('data_produtos');
 
