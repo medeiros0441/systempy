@@ -1,18 +1,20 @@
 from pathlib import Path
 from dj_database_url import parse as db_url
-from pathlib import Path
 from decouple import config
 import os
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # Specify the full path to the .env file
 ENV_FILE = BASE_DIR / ".env"
 
-from django.core.exceptions import ImproperlyConfigured
-
 try:
+    ROOT_URLCONF = "setup.urls"
+
+    WSGI_APPLICATION = "setup.wsgi.application"
 
     SECRET_KEY = config(
         "SECRET_KEY",
@@ -20,7 +22,7 @@ try:
         cast=str,
     )
     DEBUG = True
-    ALLOWED_HOSTS = ["wmsolutions.azurewebsites.net", "*"]
+    ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
 
     # Database
     DATABASES = {
@@ -63,8 +65,7 @@ try:
     ]
 
     INSTALLED_APPS = MY_APPS + THIRD_PARTY_APPS + DJANGO_APPS
-
-    MIDDLEWARE_django = [
+    MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
         "django.contrib.sessions.middleware.SessionMiddleware",
         "django.middleware.common.CommonMiddleware",
@@ -72,19 +73,9 @@ try:
         "django.contrib.auth.middleware.AuthenticationMiddleware",
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    ]
-
-    MIDDLEWARE_app = [
-        "django.middleware.security.SecurityMiddleware",
-        "django.middleware.common.CommonMiddleware",
-        "django.contrib.sessions.middleware.SessionMiddleware",
         "app.middlewares.AtualizarDadosClienteMiddleware",
         "app.middlewares.ErrorLoggingMiddleware",
     ]
-    MIDDLEWARE = MIDDLEWARE_app + MIDDLEWARE_django
-
-    ROOT_URLCONF = "setup.urls"
-
     TEMPLATES = [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -100,7 +91,6 @@ try:
             },
         },
     ]
-    WSGI_APPLICATION = "setup.wsgi.application"
 
     AUTH_PASSWORD_VALIDATORS = [
         {
@@ -131,9 +121,8 @@ try:
     STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
     STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
     # Configure o armazenamento para compressão de arquivos estáticos
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-    DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+    DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
     # Habilitar a compressão de arquivos CSS e JavaScript
     COMPRESS_ENABLED = True
