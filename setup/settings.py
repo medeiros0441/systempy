@@ -21,7 +21,7 @@ try:
         default="p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol",
         cast=str,
     )
-    DEBUG = True
+    DEBUG = False
     ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
 
     # Database
