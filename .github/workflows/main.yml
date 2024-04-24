@@ -14,35 +14,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Python version
-        uses: actions/setup-python@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
           python-version: '3.12'
 
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Generate static files
         run: |
           python manage.py collectstatic --noinput
 
       - name: Zip artifact for deployment
-        run: zip -r deploy.zip ./*
+        run: zip -r deploy-package.zip .
 
       - name: Upload deployment artifact
         uses: actions/upload-artifact@v2
         with:
           name: deploy-package
-          path: deploy.zip
+          path: deploy-package.zip
 
       - name: Deploy to Azure Web App using Web Deploy
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'comercioprime'
-    publish-profile: |
+          publish-profile: |
             <publishProfile profileName="comercioprime - Web Deploy" publishMethod="MSDeploy" publishUrl="comercioprime.scm.azurewebsites.net:443" msdeploySite="comercioprime" userName="$comercioprime" userPWD="9gfC2rJJZpcrYBquDefqN6ktYNiyhgrScXgevfYil3jTR7q6thG79W3jlncx" destinationAppUrl="https://comercioprime.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile>
