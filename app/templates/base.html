@@ -48,7 +48,7 @@
                         </li>
                         {% elif request.session.nivel_usuario <= 2 %}
                         <li class="nav-item  d-inline-flex col-auto">
-                            <a class="nav-link" href="{% url 'homeAssinante' %}">Início</a>
+                            <a class="nav-link" href="{% url 'dashbord' %}">Início</a>
                         </li>
                         {% if request.session.nivel_usuario == 1 %}
                         <li class="nav-item  d-inline-flex col-auto">
@@ -85,6 +85,11 @@
                         <li class="nav-item  d-inline-flex col-auto">
                             <a class="nav-link nav-link-icon" href="{% url 'lista_galoes' %}">
                                 <i class="bi bi-barrel"></i> Galões
+                            </a>
+                        </li>
+                        <li class="nav-item  d-inline-flex col-auto">
+                            <a class="nav-link nav-link-icon" href="{% url 'desconect' %}">
+                                <i class="bi bi-barrel"></i> Desconectar
                             </a>
                         </li>
                         {% endif %}

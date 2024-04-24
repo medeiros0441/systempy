@@ -1,5 +1,5 @@
 from .views import home, cadastro, login, sobre, erro
-from .assinante import home as a_home
+from .assinante import views_assinante
 from .views_empresa import (
     listar_empresas,
     criar_empresa,

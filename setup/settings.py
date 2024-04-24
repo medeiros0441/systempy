@@ -14,7 +14,7 @@ else:
 # Diretório base do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_URLCONF = "setup.urls"
-
+SESSION_COOKIE_AGE = 8 * 60 * 60
 # Configurações do banco de dados
 DATABASES = {
     "default": {
