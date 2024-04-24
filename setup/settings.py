@@ -21,8 +21,12 @@ try:
         default="p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol",
         cast=str,
     )
-    DEBUG = False
-    ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
+    DEBUG = config("DEBUG", default=True, cast=bool)
+    ALLOWED_HOSTS = config(
+        "ALLOWED_HOSTS",
+        default=["comercioprime.azurewebsites.net", "*"],
+        cast=lambda v: [s.strip() for s in v.split(",")],
+    )
 
     # Database
     DATABASES = {
