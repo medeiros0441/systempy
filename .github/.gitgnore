@@ -1,0 +1,29 @@
+# Arquivos de compilação e diretórios
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.pyc
+
+# Arquivos de mídia
+media/
+
+# Arquivos de dados
+db.sqlite3
+*.sqlite3
+*.db
+
+# Arquivos de ambiente
+.env
+
+# Arquivos de configuração locais
+local_settings.py
+
+# Diretório de configuração do Python
+.idea/
+
+# Diretório de arquivos estáticos coletados
+staticfiles/
+
+# Arquivos de log
+*.log
