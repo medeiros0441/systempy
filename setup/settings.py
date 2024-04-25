@@ -1,15 +1,19 @@
 from pathlib import Path
-from dotenv import load_dotenv
 from decouple import config
 import os
 from django.core.exceptions import ImproperlyConfigured
 
-# Carregar variáveis de ambiente do arquivo correspondente ao ambiente atual
+# Determina o ambiente atual
 ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
 if ENVIRONMENT == "production":
+    from dotenv import load_dotenv
+
     load_dotenv(".env.prod")
 else:
+    from dotenv import load_dotenv
+
     load_dotenv(".env.dev")
+
 
 # Diretório base do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,7 +22,7 @@ SESSION_COOKIE_AGE = 8 * 60 * 60
 # Configurações do banco de dados
 DATABASES = {
     "default": {
-        "ENGINE": config("DB_ENGINE", default="django.db.backends.postgresql"),
+        "ENGINE": config("DB_ENGINE"),
         "NAME": config("DB_NAME"),
         "USER": config("DB_USER"),
         "PASSWORD": config("DB_PASSWORD"),

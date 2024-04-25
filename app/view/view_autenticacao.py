@@ -20,18 +20,7 @@ def autenticar_usuario(request, email, senha_digitada):
         usuario = Usuario.objects.filter(email=email).first()
         if usuario:
             usuario = Usuario.objects.get(email=email)
-            # Verifica se o usuário está bloqueado devido a muitas tentativas inválidas
-            tentativas_invalidas = request.session.get("tentativas_invalidas", 0)
-            tempo_bloqueio_expirado = request.session.get("tempo_bloqueio_expirado")
 
-            if (
-                tentativas_invalidas >= MAX_TENTATIVAS_INVALIDAS
-                and not tempo_bloqueio_expirado
-            ):
-                # Usuário bloqueado devido a muitas tentativas inválidas
-                raise SuspiciousOperation(
-                    f"Usuário bloqueado. Tente novamente após {TEMPO_BLOQUEIO} minutos."
-                )
             # Verifica se a senha fornecida corresponde ao hash armazenado
             senha_correta = check_password(senha_digitada, usuario.senha)
 
@@ -49,16 +38,8 @@ def autenticar_usuario(request, email, senha_digitada):
                 # Reseta o contador de tentativas inválidas
                 request.session["tentativas_invalidas"] = 0
                 request.session["tempo_bloqueio_expirado"] = None
-                return redirect("homeAssinante")
+                return redirect("dashbord")
             else:
-                # Aumenta o contador de tentativas inválidas
-                request.session.setdefault("tentativas_invalidas", 0)
-                request.session["tentativas_invalidas"] += 1
-                if request.session["tentativas_invalidas"] >= MAX_TENTATIVAS_INVALIDAS:
-                    # Define o tempo de bloqueio
-                    request.session["tempo_bloqueio_expirado"] = (
-                        timezone.now() + timedelta(minutes=TEMPO_BLOQUEIO)
-                    )
 
                 # Exceção para tentativas inválidas
                 script = criar_alerta_js("Credenciais inválidas. Tente novamente.")

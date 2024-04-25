@@ -43,21 +43,22 @@ from .view_configuracao import criar_configuracoes_padrao, list_configuracoes_pa
 def cadastro_empresa(request):
     try:
         if request.method == "POST":
+            email_responsavel = request.POST.get("email_responsavel", "").lower().strip()
             dados_formulario = {
                 "nome_empresa": request.POST.get("nome_empresa"),
                 "nro_cnpj": request.POST.get("nro_cnpj"),
-                "razao_social": request.POST.get("razao_social_empresa", ""),
+                "razao_social": request.POST.get("razao_social_empresa"),
                 "descricao": request.POST.get("descricao_empresa"),
                 "nome_responsavel": request.POST.get("nome_responsavel"),
                 "cargo": request.POST.get("cargo_responsavel"),
-                "email": request.POST.get("email_responsavel"),
+                "email": email_responsavel,
                 "nro_cpf": request.POST.get("nro_cpf"),
                 "telefone": request.POST.get("telefone_responsavel"),
             }
             mensagens_alerta = []
 
             campos = {
-                "E-mail": dados_formulario.get("email_responsavel").lower(),
+                "E-mail": email_responsavel,
                 "Telefone": dados_formulario.get("telefone_responsavel"),
                 "CPF": dados_formulario.get("nro_cpf_responsavel"),
                 "CNPJ": dados_formulario.get("nro_cnpj"),
