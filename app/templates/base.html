@@ -20,76 +20,99 @@
 <body class="  container-fluid m-0 p-0 wrapper  bg-light " background="#f5f7fa">
       <div  class="wrapper"> 
     <div  class="content">
-        <nav class="navbar navbar-expand-md navbar-dark p-2 " style="background: var(--tema-blue)">
-            <div class=" container-xxl ms-auto">
-                 <a class="navbar-brand text-start link-sm" href="{% url 'home' %}">
-                    <p class="logo-siglas mb-2 text-white" style="font-size: 30px;"></p>
-                </a>
-                <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" id="navbarTogglerButton">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+        <nav class="  navbar-expand-md navbar-dark p-2 " style="background: var(--tema-blue)">
+            <div class="    mx-auto container-xl  row">
+                <div class=" col-12 container  justify-content-between row align-items-center ">
+                    <a class="col  text-sm-center text-start text-decoration-none  " href="{% url 'home' %}">
+                        <p class="logo-siglas mb-2   text-white" style="font-size: 30px;"></p>
+                    </a>
+                    <button class=" btn text-white col-auto d-inline-flex ms-auto d-sm-none" type="button" onclick="toggleMenu()">
+                        <span class=" bi bi-list" id="menuIcon" style="font-size: 30px;"></span>
+                    </button>
+                </div>
+                <div class="col-12  d-sm-block d-none" id="navbarNav">
                      
-                        <ul class="navbar-nav  text-sm-center row   font-monospace collapse navbar-collapse" id="navbarNav">
                         {% if request.session.isCliente is not True %}
-                        <li class="nav-item ms-auto d-inline-flex col-auto">
-                            <a class="nav-link" href="{% url 'home' %}">Início</a>
+                        <ul class=" text-center text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center text-sm-end  justify-content-center align-items-center " >
+
+                        <li class="  text-sm-end text-center d-inline-flex col-auto ">
+                            <a class="nav-link  text-decoration-underline" href="{% url 'home' %}">Início</a>
                         </li>
-                        <li class="nav-item  d-inline-flex col-auto">
-                            <a class="nav-link" href="{% url 'sobre' %}">Sobre nós</a>
+                        <li class="   text-center d-inline-flex col-auto">
+                            <a class="nav-link  text-decoration-underline" href="{% url 'sobre' %}">Sobre nós</a>
                         </li>
-                        <li class="nav-item  d-inline-flex col-auto">
-                            <a type="button" id="btn-login-nav" href="{% url 'login' %}" class="btn text-white login-btn">
+                        <li class="  text-center d-inline-flex col-auto ">
+                            <a type="button" id="btn-login-nav" href="{% url 'login' %}" class="btn text-white login-btn px-0">
                                 <span class="login-icon">
                                     <i class="bi bi-person"></i>
                                 </span>
-                                Login
+                               <span class=" text-decoration-underline"> Login</span>
                             </a>
                         </li>
-                        {% elif request.session.nivel_usuario <= 2 %}
-                        <li class="nav-item  d-inline-flex col-auto">
-                            <a class="nav-link" href="{% url 'homeAssinante' %}">Início</a>
+                    </ul>
+
+
+                            {% elif request.session.nivel_usuario <= 2 %}
+                        <ul class=" text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center   justify-content-center align-items-center  "  >
+
+                        <div class="container">
+                            <div class=" row  justify-content-evenly">
+                            <li class="  d-inline-flex col-auto">
+                            <a class="nav-link" href="{% url 'dashbord' %}">
+                                <i class="bi bi-speedometer2"></i> Início</a>
                         </li>
-                        {% if request.session.nivel_usuario == 1 %}
-                        <li class="nav-item  d-inline-flex col-auto">
+                        
+                        <li class="  d-inline-flex col-auto">
                             <a class="nav-link nav-link-icon" href="{% url 'listar_usuarios' %}">
                                 <i class="bi bi-people"></i> Usuários
                             </a>
                         </li>
-                        <li class="nav-item  d-inline-flex col-auto">
+                        <li class="  d-inline-flex col-auto">
                             <a class="nav-link nav-link-icon" href="{% url 'lista_lojas' %}">
                                 <i class="bi bi-shop"></i> Lojas
                             </a>
                         </li>
-                        <li class="nav-item  d-inline-flex col-auto">
+                    </div>
+
+                        <div class="row  justify-content-evenly ">
+
+                        <li class="  d-inline-flex col-auto ">
                             <a class="nav-link nav-link-icon" href="{% url 'lista_enderecos' %}">
                                 <i class="bi bi-geo-alt"></i> Endereços
                             </a>
                         </li>
-                        {% endif %}
-                        <li class="nav-item  d-inline-flex col-auto">
+                         
+                        <li class="  d-inline-flex col-auto">
                             <a class="nav-link nav-link-icon" href="{% url 'lista_produtos' %}">
                                 <i class="bi bi-cart4"></i> Produtos
                             </a>
                         </li>
-                        <li class="nav-item  d-inline-flex col-auto">
+                    </div>
+
+                        <div class=" row  justify-content-evenly">
+
+                        <li class="  d-inline-flex col-auto">
                             <a class="nav-link nav-link-icon" href="{% url 'lista_vendas' %}">
                                 <i class="bi bi-cash"></i> Venda
                             </a>
                         </li>
-                        <li class="nav-item  d-inline-flex col-auto">
+                        <li class="  d-inline-flex col-auto">
                             <a class="nav-link nav-link-icon" href="{% url 'lista_clientes' %}">
                                 <i class="bi bi-person-check"></i> Clientes
                             </a>
                         </li>
-                        <li class="nav-item  d-inline-flex col-auto">
-                            <a class="nav-link nav-link-icon" href="{% url 'lista_galoes' %}">
-                                <i class="bi bi-barrel"></i> Galões
+                      
+                        <li class="  d-inline-flex col-auto">
+                            <a class="nav-link nav-link-icon" href="{% url 'desconect' %}">
+                                <i class="bi bi-box-arrow-right"></i> Desconectar
                             </a>
                         </li>
+                    </div>
+                </div>
                         {% endif %}
                     </ul>
                 </div>
+            </div>
         </nav>
         
 
@@ -135,6 +158,23 @@
         </div>
     </footer>
     </div>
+
+
+<script>
+    function toggleMenu() {
+        var menu = document.getElementById('navbarNav');
+        var icon = document.getElementById('menuIcon');
+        if (menu.classList.contains('d-none')) {
+            menu.classList.remove('d-none');
+            icon.classList.remove('bi-list');
+            icon.classList.add('bi-x');
+        } else {
+            menu.classList.add('d-none');
+            icon.classList.remove('bi-x');
+            icon.classList.add('bi-list');
+        }
+    }
+    </script>
     <style>
         /* Largura da barra de rolagem */
         ::-webkit-scrollbar {

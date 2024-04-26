@@ -15,10 +15,12 @@ url_default = [
     path("Erro/", erro, name="Erro"),
 ]
 
-from app.view.assinante import home as a_home
+from app.view.assinante import views_assinante 
 
 url_assinante = [
-    path("homeAssinante/", a_home, name="homeAssinante"),
+    path("dashbord/", views_assinante.dashbord, name="dashbord"),
+     path('desconect/', views_assinante.desconect, name='desconect'),
+
 ]
 
 from app.view.views_empresa import (

@@ -42,7 +42,7 @@ def sobre(request):
             # Enviar o # Enviar o e-mail para o destinatário
             enviar_email(
                 destinatario="medeiros0442@gmail.com",
-                assunto="Contato via site WMS",
+                assunto="Contato via site CPS",
                 NomeCliente=nome,
                 TextIntroducao=mensagem_modelo,
                 TextContainer2=mensagem,
@@ -83,7 +83,7 @@ def login(request, context={}):
 
         if request.method == "POST":
             # Se a requisição for POST, tenta obter os dados de email, senha e checkbox
-            email = request.POST.get("email").lower()
+            email = request.POST.get("email").lower().strip()
             senha = request.POST.get("senha")
             valor_checkbox = request.POST.get("flexCheckDefault")
 
