@@ -20,7 +20,7 @@ class Loja(models.Model):
     insert = models.DateTimeField(default=timezone.now)
     update = models.DateTimeField(default=timezone.now, null=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
-    endereco = models.ForeignKey(Endereco, on_delete=models.CASCADE, null=True)
+    endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True)
 
 
 class Associado(models.Model):

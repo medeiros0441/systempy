@@ -1,36 +1,43 @@
 from django.http import JsonResponse
 from django.utils import timezone
-from ..models import Motoboy,Configuracao
-from ..static import UserInfo,Alerta
+from ..models import Motoboy, Configuracao
+from ..static import UserInfo, Alerta
 from functools import wraps
-from ..def_global import erro, criar_alerta_js,verificar_permissoes
+from ..utils import utils
 from django.views.decorators.csrf import csrf_exempt
 
+
 class views_motoboy:
-    
+
     @staticmethod
     @csrf_exempt
-    @verificar_permissoes(codigo_model=9)
+    @utils.verificar_permissoes(codigo_model=9)
     def listar_motoboys_por_empresa(request):
-        if request.method == 'GET':
+        if request.method == "GET":
             id_empresa = UserInfo.get_id_empresa(request, True)
             if id_empresa:
                 motoboys = Motoboy.objects.filter(empresa_id=id_empresa)
                 motoboy_list = [
-                    {'id_motoboy': str(motoboy.id_motoboy), 'nome': motoboy.nome, 'numero': motoboy.numero}
+                    {
+                        "id_motoboy": str(motoboy.id_motoboy),
+                        "nome": motoboy.nome,
+                        "numero": motoboy.numero,
+                    }
                     for motoboy in motoboys
                 ]
-                return JsonResponse({'status': 'success', 'motoboys': motoboy_list})
+                return JsonResponse({"status": "success", "motoboys": motoboy_list})
             else:
-                return JsonResponse({'status': 'error', 'message': 'ID da empresa não encontrado'})
+                return JsonResponse(
+                    {"status": "error", "message": "ID da empresa não encontrado"}
+                )
         else:
-            return JsonResponse({'status': 'error', 'message': 'Método não permitido'})
-    
+            return JsonResponse({"status": "error", "message": "Método não permitido"})
+
     @staticmethod
     @csrf_exempt
-    @verificar_permissoes(codigo_model=9)
+    @utils.verificar_permissoes(codigo_model=9)
     def create_motoboy(request):
-        if request.method == 'POST':
+        if request.method == "POST":
             data = request.POST
             nome = data.get("nome")
             numero = data.get("numero")
@@ -40,17 +47,24 @@ class views_motoboy:
                 motoboy = Motoboy.objects.create(
                     nome=nome, numero=numero, empresa_id=id_empresa
                 )
-                return JsonResponse({"status": "success", "id_motoboy": str(motoboy.id_motoboy)})
+                return JsonResponse(
+                    {"status": "success", "id_motoboy": str(motoboy.id_motoboy)}
+                )
             else:
-                return JsonResponse({"status": "error", "message": "Dados insuficientes para criar o motoboy"})
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": "Dados insuficientes para criar o motoboy",
+                    }
+                )
         else:
             return JsonResponse({"status": "error", "message": "Método não permitido"})
-    
+
     @staticmethod
     @csrf_exempt
-    @verificar_permissoes(codigo_model=9)
+    @utils.verificar_permissoes(codigo_model=9)
     def update_motoboy(request, id_motoboy):
-        if request.method == 'POST':
+        if request.method == "POST":
             data = request.POST
             nome = data.get("nome")
             numero = data.get("numero")
@@ -66,17 +80,24 @@ class views_motoboy:
                     motoboy.save()
                     return JsonResponse({"status": "success"})
                 else:
-                    return JsonResponse({"status": "error", "message": "Motoboy não encontrado"})
+                    return JsonResponse(
+                        {"status": "error", "message": "Motoboy não encontrado"}
+                    )
             else:
-                return JsonResponse({"status": "error", "message": "Dados insuficientes para atualizar o motoboy"})
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": "Dados insuficientes para atualizar o motoboy",
+                    }
+                )
         else:
             return JsonResponse({"status": "error", "message": "Método não permitido"})
-    
+
     @staticmethod
     @csrf_exempt
-    @verificar_permissoes(codigo_model=9)
+    @utils.verificar_permissoes(codigo_model=9)
     def delete_motoboy(request, id_motoboy):
-        if request.method == 'DELETE':
+        if request.method == "DELETE":
             id_empresa = UserInfo.get_id_empresa(request, True)
 
             if id_empresa:
@@ -87,8 +108,12 @@ class views_motoboy:
                     motoboy.delete()
                     return JsonResponse({"status": "success"})
                 else:
-                    return JsonResponse({"status": "error", "message": "Motoboy não encontrado"})
+                    return JsonResponse(
+                        {"status": "error", "message": "Motoboy não encontrado"}
+                    )
             else:
-                return JsonResponse({"status": "error", "message": "ID da empresa não encontrado"})
+                return JsonResponse(
+                    {"status": "error", "message": "ID da empresa não encontrado"}
+                )
         else:
             return JsonResponse({"status": "error", "message": "Método não permitido"})

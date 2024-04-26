@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from ..def_global import erro, criar_alerta_js, get_status, verificar_permissoes
+from ..utils import utils
 from ..models.usuario import Usuario
 from ..models import Cliente, Configuracao, Usuario, Endereco, Venda
 from ..static import Alerta, UserInfo
@@ -13,7 +13,7 @@ from uuid import UUID
 class views_cliente:
 
     @staticmethod
-    @verificar_permissoes(codigo_model=8)
+    @utils.verificar_permissoes(codigo_model=8)
     def lista_clientes(request):
         if get_status(request):
             clientes = Cliente.objects.all()
@@ -21,7 +21,9 @@ class views_cliente:
                 request, "cliente/lista_clientes.html", {"clientes": clientes}
             )
         else:
-            return erro(request, "Você não está autorizado a fazer esta requisição.")
+            return utils.erro(
+                request, "Você não está autorizado a fazer esta requisição."
+            )
 
     def criar_cliente(request):
         if get_status(request):
@@ -43,7 +45,9 @@ class views_cliente:
             else:
                 return render(request, "cadastrar_cliente.html")
         else:
-            return erro(request, "Você não está autorizado a fazer esta requisição.")
+            return utils.erro(
+                request, "Você não está autorizado a fazer esta requisição."
+            )
 
     def editar_cliente(request, cliente_id):
         if get_status(request):
@@ -59,14 +63,18 @@ class views_cliente:
             else:
                 return render(request, "editar_cliente.html", {"cliente": cliente})
         else:
-            return erro(request, "Você não está autorizado a fazer esta requisição.")
+            return utils.erro(
+                request, "Você não está autorizado a fazer esta requisição."
+            )
 
     def selecionar_cliente(request, cliente_id):
         if get_status(request):
             cliente = get_object_or_404(Cliente, id_cliente=cliente_id)
             return render(request, "selecionar_cliente.html", {"cliente": cliente})
         else:
-            return erro(request, "Você não está autorizado a fazer esta requisição.")
+            return utils.erro(
+                request, "Você não está autorizado a fazer esta requisição."
+            )
 
     def excluir_cliente(request, cliente_id):
         if get_status(request):
@@ -77,14 +85,16 @@ class views_cliente:
             else:
                 return render(request, "excluir_cliente.html", {"cliente": cliente})
         else:
-            return erro(request, "Você não está autorizado a fazer esta requisição.")
+            return utils.erro(
+                request, "Você não está autorizado a fazer esta requisição."
+            )
 
     def home_cliente(request):
         return render(request, "cliente/default/home.html")
 
     @staticmethod
     @csrf_exempt
-    @verificar_permissoes(codigo_model=8)
+    @utils.verificar_permissoes(codigo_model=8)
     def api_create_cliente(request):
         try:
             if request.method == "POST":
@@ -141,7 +151,7 @@ class views_cliente:
             return JsonResponse({"error": str(e)}, status=400)
 
     @staticmethod
-    @verificar_permissoes(codigo_model=8)
+    @utils.verificar_permissoes(codigo_model=8)
     def api_get_cliente(request, cliente_id):
         cliente = get_object_or_404(Cliente, pk=cliente_id)
         cliente_data = {
@@ -156,7 +166,7 @@ class views_cliente:
         return JsonResponse(cliente_data)
 
     @staticmethod
-    @verificar_permissoes(codigo_model=8)
+    @utils.verificar_permissoes(codigo_model=8)
     @csrf_exempt
     def api_update_cliente(request, cliente_id):
         cliente = get_object_or_404(Cliente, pk=cliente_id)
@@ -186,14 +196,14 @@ class views_cliente:
         return JsonResponse({"error": "Método não permitido"}, status=405)
 
     @staticmethod
-    @verificar_permissoes(codigo_model=8)
+    @utils.verificar_permissoes(codigo_model=8)
     def api_delete_cliente(request, cliente_id):
         cliente = get_object_or_404(Cliente, pk=cliente_id)
         cliente.delete()
         return JsonResponse({"message": "Cliente deletado com sucesso"}, status=204)
 
     @staticmethod
-    @verificar_permissoes(codigo_model=8)
+    @utils.verificar_permissoes(codigo_model=8)
     def api_get_clientes_by_empresa(request):
         empresa_id = UserInfo.get_id_empresa(request)
 
@@ -289,7 +299,7 @@ class views_cliente:
             )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=8)
+    @utils.verificar_permissoes(codigo_model=8)
     def api_get_cliente(request):
         empresa_id = UserInfo.get_id_empresa(
             request

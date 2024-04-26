@@ -1,13 +1,13 @@
 # middleware.py
 from django.shortcuts import redirect, get_object_or_404
-from .def_global import erro, criar_alerta_js
+from .utils import utils
 from django.utils.deprecation import MiddlewareMixin
 from django.utils import timezone
 from django.http import HttpRequest
 from app.models import Usuario, Log, Sessao
 from django.utils import timezone
 from django.conf import settings
-from .view import criar_sessao
+from .view import views_sessao
 from .static import UserInfo
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -57,7 +57,7 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
 
             # Se o IP do cliente não estiver cadastrado, cria uma nova sessão
             if not sessao:
-                criar_sessao(request)
+                views_sessao.criar_sessao(request)
 
             # Se o ID do usuário for diferente do atual, atualiza com o novo ID
             if sessao is not None:
@@ -77,7 +77,7 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             else:
                 request.session["isCliente"] = False
 
-           # Lista de URLs sem verificação
+            # Lista de URLs sem verificação
             urls_sem_verificacao = [
                 "",
                 "/login/",
@@ -99,7 +99,7 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
 
             # Remover as partes dos valores variáveis das URLs de url_funcJs e adicionar à lista urls_sem_verificacao
             for url_pattern in url_funcJs:
-                urls_sem_verificacao.append(url_pattern.split('<')[0])
+                urls_sem_verificacao.append(url_pattern.split("<")[0])
 
             # Verificar se a URL atual não está na lista de URLs sem verificação
             if not any(request.path.startswith(url) for url in urls_sem_verificacao):
@@ -109,7 +109,7 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
 
         except Exception as e:
             # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
-            return erro(request, f"Erro durante a autenticação: {str(e)}")
+            return utils.erro(request, f"Erro durante a autenticação: {str(e)}")
 
     # process_response é chamado após a view ser executada e recebe a resposta gerada
     def process_response(self, request, response):
@@ -131,4 +131,4 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             return response
         except Exception as e:
             # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
-            return erro(request, f"Erro durante a autenticação: {str(e)}")
+            return utils.erro(request, f"Erro durante a autenticação: {str(e)}")

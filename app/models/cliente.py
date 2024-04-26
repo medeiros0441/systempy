@@ -18,5 +18,6 @@ class Cliente(models.Model):
     update = models.DateTimeField(null=True)
     tipo_cliente = models.CharField(max_length=50, null=True, blank=True)
     descricao_cliente = models.CharField(max_length=300, null=True, blank=True)
-    endereco = models.ForeignKey(Endereco, on_delete=models.CASCADE, null=True)
+    endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True)
+
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True)

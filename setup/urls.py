@@ -1,96 +1,90 @@
 from django.urls import path
-from app.view.sessao import status_off, status_on
+from app.view.sessao import views_sessao
 
 app_name = "app"
 from django.conf import settings
 from django.conf.urls.static import static
-from app.view.views import home, cadastro, login, sobre, erro
+from app.view.views_default import views_default
+from app.utils import utils
 
 url_default = [
-    path("", home, name=""),
-    path("home", home, name="home"),
-    path("cadastro/", cadastro, name="cadastro"),
-    path("login/", login, name="login"),
-    path("sobre/", sobre, name="sobre"),
-    path("Erro/", erro, name="Erro"),
+    path("", views_default.home, name=""),
+    path("home", views_default.home, name="home"),
+    path("cadastro/", views_default.cadastro, name="cadastro"),
+    path("login/", views_default.login, name="login"),
+    path("sobre/", views_default.sobre, name="sobre"),
+    path("Erro/", utils.erro, name="Erro"),
 ]
 
-from app.view.assinante import views_assinante 
+from app.view.assinante import views_assinante
 
 url_assinante = [
     path("dashbord/", views_assinante.dashbord, name="dashbord"),
-     path('desconect/', views_assinante.desconect, name='desconect'),
-
+    path("desconect/", views_assinante.desconect, name="desconect"),
 ]
 
-from app.view.views_empresa import (
-    listar_empresas,
-    criar_empresa,
-    detalhes_empresa,
-    editar_empresa,
-    excluir_empresa,
-)
+from app.view.views_empresa import views_empresa
 
 url_empresa = [  # empresa
-    path("empresas/", listar_empresas, name="listar_empresas"),
-    path("empresas/criar/", criar_empresa, name="criar_empresa"),
-    path("empresas/<int:pk>/", detalhes_empresa, name="detalhes_empresa"),
-    path("empresas/<int:pk>/editar/", editar_empresa, name="editar_empresa"),
-    path("empresas/<int:pk>/excluir/", excluir_empresa, name="excluir_empresa"),
+    path("empresas/", views_empresa.listar_empresas, name="listar_empresas"),
+    path("empresas/criar/", views_empresa.criar_empresa, name="criar_empresa"),
+    path("empresas/<int:pk>/", views_empresa.detalhes_empresa, name="detalhes_empresa"),
+    path(
+        "empresas/<int:pk>/editar/", views_empresa.editar_empresa, name="editar_empresa"
+    ),
+    path(
+        "empresas/<int:pk>/excluir/",
+        views_empresa.excluir_empresa,
+        name="excluir_empresa",
+    ),
 ]
 
-from app.view.views_usuario import view_usuarios
+from app.view.views_usuario import views_usuarios
 
 url_usuario = [
     # URLs de usuários
-    path("usuarios/", view_usuarios.listar_usuarios, name="listar_usuarios"),
-    path("usuarios/criar/", view_usuarios.cadastrar_usuario, name="cadastrar_usuario"),
+    path("usuarios/", views_usuarios.listar_usuarios, name="listar_usuarios"),
+    path("usuarios/criar/", views_usuarios.cadastrar_usuario, name="cadastrar_usuario"),
     path(
         "usuarios/<int:id_usuario>/",
-        view_usuarios.detalhes_usuario,
+        views_usuarios.detalhes_usuario,
         name="detalhes_usuario",
     ),
     path(
         "usuarios/<int:id_usuario>/editar/",
-        view_usuarios.editar_usuario,
+        views_usuarios.editar_usuario,
         name="editar_usuario",
     ),
     path(
         "usuarios/excluir/<int:id_usuario>",
-        view_usuarios.excluir_usuario,
+        views_usuarios.excluir_usuario,
         name="excluir_usuario",
     ),
     path(
         "usuarios/bloquear/<int:id_usuario>",
-        view_usuarios.bloquear_usuario,
+        views_usuarios.bloquear_usuario,
         name="bloquear_usuario",
     ),
     path(
         "usuarios/configuracao/<int:id_usuario>",
-        view_usuarios.configuracao_usuario,
+        views_usuarios.configuracao_usuario,
         name="configuracao_usuario",
     ),
     path(
         "usuarios/ativar/<int:id_usuario>",
-        view_usuarios.ativar_usuario,
+        views_usuarios.ativar_usuario,
         name="ativar_usuario",
     ),
 ]
-from app.view.views_loja import (
-    lista_lojas,
-    editar_loja,
-    selecionar_loja,
-    excluir_loja,
-    criar_loja,
-)
+from app.view.views_loja import views_loja
 
 url_loja = [
     # lojas
-    path("lojas/", lista_lojas, name="lista_lojas"),
-    path("lojas/criar", criar_loja, name="criar_loja"),
-    path("lojas/editar/<int:id_loja>/", editar_loja, name="editar_loja"),
-    path("lojas/selecionar/<int:id_loja>/", selecionar_loja, name="selecionar_loja"),
-    path("lojas/excluir/<int:id_loja>/", excluir_loja, name="excluir_loja"),
+    path("lojas/", views_loja.lista_lojas, name="lista_lojas"),
+    path("lojas/criar",  views_loja.criar_loja, name="criar_loja"),
+    path("lojas/editar/<int:id_loja>/",  views_loja.editar_loja, name="editar_loja"),
+    path("lojas/selecionar/<int:id_loja>/",  views_loja.selecionar_loja, name="selecionar_loja"),
+    path("lojas/excluir/<int:id_loja>/",  views_loja.excluir_loja, name="excluir_loja"),
 ]
 
 
@@ -114,7 +108,6 @@ url_produto = [  # produtos
         views_produto.selecionar_produto,
         name="selecionar_produto",
     ),
-    
     path(
         "produtos/excluir/<uuid:id_produto>/",
         views_produto.excluir_produto,
@@ -145,7 +138,7 @@ url_venda = [  # vendas
         views_venda.insert_venda_ajax,
         name="insert_venda_ajax",
     ),
-      path(
+    path(
         "api/vendas/dados",
         views_venda.obter_dados,
         name="api_obter_dados_vendas",
@@ -154,12 +147,13 @@ url_venda = [  # vendas
         "api/cliente/by/venda/<uuid:id_venda>",
         views_venda.selecionar_cliente_by_venda,
         name="selecionar_cliente_by_vendas",
-    ),path(
+    ),
+    path(
         "api/produtos/by/venda/<uuid:id_venda>",
         views_venda.selecionar_produto_by_venda,
         name="selecionar_produto_by_vendas",
     ),
-  path(
+    path(
         "api/retornaveis/by/venda/<uuid:id_venda>",
         views_venda.selecionar_retornaveis_by_venda,
         name="selecionar_produto_by_vendas",
@@ -229,20 +223,15 @@ url_endereco = [
         name="delete_endereco",
     ),
 ]
-
-from app.def_global import (
-    enviar_codigo,
-    atualizar_senha,
-    confirmar_codigo,
-)
+ 
 from app.view.view_api import views_api
 
 url_funcJs = [  # funçoes js
-    path("enviar-codigo/<str:email>/", enviar_codigo, name="enviar_codigo"),
-    path("confirmar-codigo/<str:codigo>/", confirmar_codigo, name="confirmar_codigo"),
-    path("atualizar-senha/<str:nova_senha>/", atualizar_senha, name="atualizar_senha"),
-    path("api/status_on/", status_on, name="status_on"),
-    path("api/status_off/", status_off, name="status_off"),
+    path("enviar-codigo/<str:email>/", utils.enviar_codigo, name="enviar_codigo"),
+    path("confirmar-codigo/<str:codigo>/", utils.confirmar_codigo, name="confirmar_codigo"),
+    path("atualizar-senha/<str:nova_senha>/", utils.atualizar_senha, name="atualizar_senha"),
+    path("api/status_on/", views_sessao.status_on, name="status_on"),
+    path("api/status_off/", views_sessao.status_off, name="status_off"),
     path("buscar_lojas/", views_api.buscar_lojas, name="buscar_lojas"),
     path("endereco/create/", views_api.create_endereco, name="create_endereco"),
     path(
@@ -262,36 +251,9 @@ url_funcJs = [  # funçoes js
     ),
     # Adicione outras URLs conforme necessário
 ]
-from app.view import (
-    ConfiguracaoListView,
-    ConfiguracaoCreateView,
-    ConfiguracaoUpdateView,
-    ConfiguracaoDeleteView,
-    ConfiguracaoDetailView,
-)
+from app.view.views_configuracao import  views_configuracao
 
-url_configuracao = [
-    path("configuracao/", ConfiguracaoListView.as_view(), name="configuracao_list"),
-    path(
-        "configuracao/create/",
-        ConfiguracaoCreateView.as_view(),
-        name="configuracao_create",
-    ),
-    path(
-        "configuracao/<uuid:pk>/",
-        ConfiguracaoDetailView.as_view(),
-        name="configuracao_detail",
-    ),
-    path(
-        "configuracao/<uuid:pk>/update/",
-        ConfiguracaoUpdateView.as_view(),
-        name="configuracao_update",
-    ),
-    path(
-        "configuracao/<uuid:pk>/delete/",
-        ConfiguracaoDeleteView.as_view(),
-        name="configuracao_delete",
-    ),
+url_configuracao = [ 
 ]
 
 from app.view.views_motoboy import views_motoboy

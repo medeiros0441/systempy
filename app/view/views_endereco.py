@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from ..models import Endereco, Configuracao
 from ..forms import EnderecoForm
-from ..def_global import criar_alerta_js, erro, verificar_permissoes
+from ..utils import utils
 from ..static import Alerta, UserInfo
 from django.db import IntegrityError
 
@@ -9,7 +9,7 @@ from django.db import IntegrityError
 class views_endereco:
 
     @staticmethod
-    @verificar_permissoes(codigo_model=3)
+    @utils.verificar_permissoes(codigo_model=3)
     def lista_enderecos(request, context=None):
         if context is None:
             context = {}
@@ -18,12 +18,12 @@ class views_endereco:
         context["enderecos"] = enderecos
         alerta = Alerta.get_mensagem()
         if alerta:
-            context["alerta_js"] = criar_alerta_js(alerta)
+            context["alerta_js"] = utils.criar_alerta_js(alerta)
 
         return render(request, "endereco/lista_enderecos.html", context)
 
     @staticmethod
-    @verificar_permissoes(codigo_model=3)
+    @utils.verificar_permissoes(codigo_model=3)
     def criar_endereco(request):
         if request.method == "POST":
             form = EnderecoForm(request.POST)
@@ -43,7 +43,7 @@ class views_endereco:
             )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=3)
+    @utils.verificar_permissoes(codigo_model=3)
     def selecionar_endereco(request, pk):
         endereco = get_object_or_404(Endereco, pk=pk)
         return views_endereco.lista_enderecos(
@@ -51,7 +51,7 @@ class views_endereco:
         )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=3)
+    @utils.verificar_permissoes(codigo_model=3)
     def editar_endereco(request, pk):
         endereco = get_object_or_404(Endereco, pk=pk)
         if request.method == "POST":
@@ -68,7 +68,7 @@ class views_endereco:
             )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=3)
+    @utils.verificar_permissoes(codigo_model=3)
     def delete_endereco(request, pk):
         try:
             endereco = get_object_or_404(Endereco, pk=pk)

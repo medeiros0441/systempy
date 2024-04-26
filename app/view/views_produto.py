@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from ..def_global import criar_alerta_js, erro, verificar_permissoes
+from ..utils import utils
 from django.http import HttpResponse
 from ..static import Alerta, UserInfo
 from ..models import Loja, Produto
@@ -8,14 +8,14 @@ from ..forms.form_produto import ProdutoForm as Form
 
 class views_produto:
     @staticmethod
-    @verificar_permissoes(6)
+    @utils.verificar_permissoes(6)
     def lista_produtos(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request, True)
         if context is None:
             context = {}
         alerta = Alerta.get_mensagem()
         if alerta:
-            context["alerta_js"] = criar_alerta_js(alerta)
+            context["alerta_js"] = utils.criar_alerta_js(alerta)
 
         try:
             produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa)
@@ -25,7 +25,7 @@ class views_produto:
         return render(request, "produto/lista_produtos.html", context)
 
     @staticmethod
-    @verificar_permissoes(6)
+    @utils.verificar_permissoes(6)
     def criar_produto(request):
         try:
             if request.method == "POST":
@@ -54,10 +54,10 @@ class views_produto:
                 )
         except Exception as e:
             mensagem_erro = str(e)
-            return erro(request, mensagem_erro)
+            return utils.erro(request, mensagem_erro)
 
     @staticmethod
-    @verificar_permissoes(6)
+    @utils.verificar_permissoes(6)
     def editar_produto(request, id_produto):
         try:
             id_empresa = UserInfo.get_id_empresa(request)
@@ -66,7 +66,9 @@ class views_produto:
             ).first()
 
             if not produto:
-                return erro(request, "Você não tem permissão para acessar o produto")
+                return utils.erro(
+                    request, "Você não tem permissão para acessar o produto"
+                )
 
             if request.method == "POST":
                 form_produto = Form(request.POST, instance=produto, request=request)
@@ -97,10 +99,10 @@ class views_produto:
             return redirect("lista_produtos")
         except Exception as e:
             mensagem_erro = str(e)
-            return erro(request, mensagem_erro)
+            return utils.erro(request, mensagem_erro)
 
     @staticmethod
-    @verificar_permissoes(6)
+    @utils.verificar_permissoes(6)
     def acrescentar_produto(request):
         try:
 
@@ -155,10 +157,10 @@ class views_produto:
             return redirect("lista_produtos")
         except Exception as e:
             mensagem_erro = str(e)
-            return erro(request, mensagem_erro)
+            return utils.erro(request, mensagem_erro)
 
     @staticmethod
-    @verificar_permissoes(6)
+    @utils.verificar_permissoes(6)
     def selecionar_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)
@@ -172,10 +174,10 @@ class views_produto:
             return redirect("lista_produtos")
         except Exception as e:
             mensagem_erro = str(e)
-            return erro(request, mensagem_erro)
+            return utils.erro(request, mensagem_erro)
 
     @staticmethod
-    @verificar_permissoes(6)
+    @utils.verificar_permissoes(6)
     def excluir_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)
@@ -188,4 +190,4 @@ class views_produto:
             return redirect("lista_produtos")
         except Exception as e:
             mensagem_erro = str(e)
-            return erro(request, mensagem_erro)
+            return utils.erro(request, mensagem_erro)

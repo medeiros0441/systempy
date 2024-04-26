@@ -9,6 +9,7 @@ import string
 
 from django.views.decorators.csrf import csrf_exempt
 
+
 def criar_alerta_js(texto):
     # Modelo do script JavaScript que será retornado
     script = script_js(f"""  alertCustomer('{texto}');""")
@@ -67,6 +68,7 @@ def cnpj_existe(cnpj):
 
 from django.http import JsonResponse
 
+
 @csrf_exempt
 def enviar_codigo(request, email):
     # Verificar o email e enviar o código
@@ -74,35 +76,43 @@ def enviar_codigo(request, email):
 
     # Verificar se o código foi enviado com sucesso
     if enviado_com_sucesso:
-        return JsonResponse({"success": 'true',"mensagem": "Código enviado com sucesso!"})
+        return JsonResponse(
+            {"success": "true", "mensagem": "Código enviado com sucesso!"}
+        )
     else:
         # Verificar se o usuário não existe
         if erro == "usuario_nao_existe":
             return JsonResponse(
-                {"mensagem": "O usuário com o e-mail fornecido não existe."}, 
+                {"mensagem": "O usuário com o e-mail fornecido não existe."},
             )
         else:
             # Caso ocorra um erro genérico
             return JsonResponse(
-                {"erro": "Ocorreu um erro ao enviar o código."},
-                status=500
+                {"erro": "Ocorreu um erro ao enviar o código."}, status=500
             )
+
 
 @csrf_exempt
 def confirmar_codigo(request, codigo):
     codigo_armazenado = request.session["codigo_senha_recuperacao"]
     if codigo_armazenado == codigo:
-        return JsonResponse({"success": 'true',"mensagem": "Código confirmado com sucesso!"})
+        return JsonResponse(
+            {"success": "true", "mensagem": "Código confirmado com sucesso!"}
+        )
     else:
         return JsonResponse({"mensagem": "Codigo Invalido"}, status=404)
+
 
 @csrf_exempt
 def atualizar_senha(request, nova_senha):
     status = RecuperacaoSenha(request, nova_senha)
     if status:
-        return JsonResponse({"success": 'true',"mensagem": "Senha atualizada com sucesso!"})
+        return JsonResponse(
+            {"success": "true", "mensagem": "Senha atualizada com sucesso!"}
+        )
     else:
         return JsonResponse({"mensagem": "Erro interno Invalido"}, status=400)
+
 
 @csrf_exempt
 def verificar_email_e_enviar_codigo(request, email):
@@ -142,6 +152,7 @@ def verificar_email_e_enviar_codigo(request, email):
         # Lidar com outros erros inesperados
         print("Erro ao verificar e-mail e enviar código:", e)
         return False, "erro_interno"
+
 
 @csrf_exempt
 def RecuperacaoSenha(request, senha_nova):
@@ -236,6 +247,8 @@ from functools import wraps
 from .static import UserInfo, Alerta
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
+from .view.views_default import default
+
 
 def configuracao_usuario(request, id_usuario, codigo):
     try:
@@ -263,6 +276,13 @@ def verificar_permissoes(codigo_model):
         def wrapper(request, *args, **kwargs):
             # Obtém o ID do usuário da requisição
             id_usuario = UserInfo.get_id_usuario(request)
+            if id_usuario == 0:
+                status = default.login(request, {"set_autenticacao": True})
+                if status == False:
+                    Alerta.set_mensagem(
+                        "Se você deseja continuar, é necessário estar logado"
+                    )
+                    return render(request, "default/login.html")
 
             # Verifica as permissões do usuário com base no código
             status, render = configuracao_usuario(request, id_usuario, codigo_model)

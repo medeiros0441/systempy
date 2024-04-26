@@ -1,52 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from ..def_global import (
-    criar_alerta_js,
-    erro,
-    email_existe,
-    gerar_numero_aleatorio,
-    usuario_existe,
-)
+from ..utils import utils
 from ..static import Alerta, UserInfo
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
 from ..models import Usuario, Configuracao, Loja, Associado
-from .view_configuracao import criar_configuracoes_padrao, list_configuracoes_padrao
+from .views_configuracao import views_configuracao
 from ..forms import UsuarioForm
 from functools import wraps
 
 
-def verificar_permissoes(codigo_model):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(request, *args, **kwargs):
-            id_usuario = UserInfo.get_id_usuario(request)
-            try:
-                configuracao = Configuracao.objects.get(
-                    usuario_id=id_usuario, codigo=codigo_model
-                )
-                if configuracao.status_acesso == False:
-                    Alerta.set_mensagem(
-                        "Acesso negado: você não tem permissão para executar o método."
-                    )
-                    return erro(
-                        request,
-                        "Acesso negado: você não tem permissão para executar o método.",
-                    )
-            except Configuracao.DoesNotExist:
-                Alerta.set_mensagem("Configuração não encontrada.")
-                return erro(request, "Configuração não encontrada.")
-            return func(request, *args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-class view_usuarios:
+class views_usuarios:
 
     @staticmethod
-    @verificar_permissoes(codigo_model=1)
+    @utils.verificar_permissoes(codigo_model=1)
     def listar_usuarios(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request)
 
@@ -56,12 +23,12 @@ class view_usuarios:
         context["usuarios"] = usuarios
         alerta_js = Alerta.get_mensagem()
         if alerta_js:
-            context["alerta_js"] = criar_alerta_js(alerta_js)
+            context["alerta_js"] = utils.criar_alerta_js(alerta_js)
 
         return render(request, "usuario/lista_usuario.html", context)
 
     @staticmethod
-    @verificar_permissoes(codigo_model=1)
+    @utils.verificar_permissoes(codigo_model=1)
     def detalhes_usuario(request, id_usuario):
         usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
         associados = Associado.objects.filter(usuario=usuario)
@@ -77,7 +44,7 @@ class view_usuarios:
                 }
             )
 
-        return view_usuarios.listar_usuarios(
+        return views_usuarios.listar_usuarios(
             request,
             {
                 "open_modal": True,
@@ -87,7 +54,7 @@ class view_usuarios:
         )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=1)
+    @utils.verificar_permissoes(codigo_model=1)
     def editar_usuario(request, id_usuario):
         try:
             usuario = Usuario.objects.get(id_usuario=id_usuario)
@@ -122,12 +89,13 @@ class view_usuarios:
                                 associacao.save()
                             Alerta.set_mensagem("Usuário editado com sucesso!")
                         else:
-                           
-                            if(campo_checkbox not in request.POST):
+
+                            if campo_checkbox not in request.POST:
                                 Alerta.set_mensagem(
                                     "Usuário editado com sucesso!, O Usuário administrador precisar estar associado a todas as lojas."
                                 )
-                            else: Alerta.set_mensagem("Usuário editado com sucesso!")
+                            else:
+                                Alerta.set_mensagem("Usuário editado com sucesso!")
                     return redirect("listar_usuarios")
                 else:
                     Alerta.set_mensagem(
@@ -151,7 +119,7 @@ class view_usuarios:
                         loja_info["status_acesso"] = associado_loja.status_acesso
 
                     list_objs.append(loja_info)
-                return view_usuarios.listar_usuarios(
+                return views_usuarios.listar_usuarios(
                     request,
                     {
                         "form_usuario": form_usuario,
@@ -166,7 +134,7 @@ class view_usuarios:
             pass
         Alerta.set_mensagem("Para associar um usuario a loja, precisa criar uma!")
         form_usuario = UsuarioForm(instance=usuario)
-        return view_usuarios.listar_usuarios(
+        return views_usuarios.listar_usuarios(
             request,
             {
                 "form_usuario": form_usuario,
@@ -176,7 +144,7 @@ class view_usuarios:
         )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=1)
+    @utils.verificar_permissoes(codigo_model=1)
     def excluir_usuario(request, id_usuario):
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         if usuario:
@@ -193,7 +161,7 @@ class view_usuarios:
             )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=1)
+    @utils.verificar_permissoes(codigo_model=1)
     def bloquear_usuario(request, id_usuario):
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         usuario.status_acesso = False
@@ -206,7 +174,7 @@ class view_usuarios:
         )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=1)
+    @utils.verificar_permissoes(codigo_model=1)
     def ativar_usuario(request, id_usuario):
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         usuario.status_acesso = True
@@ -218,7 +186,7 @@ class view_usuarios:
         )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=1)
+    @utils.verificar_permissoes(codigo_model=1)
     def autenticar_usuario(email, senha):
         try:
             usuario = Usuario.objects.get(email__iexact=email)
@@ -229,7 +197,7 @@ class view_usuarios:
         return None
 
     @staticmethod
-    @verificar_permissoes(codigo_model=1)
+    @utils.verificar_permissoes(codigo_model=1)
     def cadastrar_usuario(request):
         id_empresa = UserInfo.get_id_empresa(request)
         form_usuario = UsuarioForm()
@@ -239,9 +207,9 @@ class view_usuarios:
             form = UsuarioForm(request.POST)
             if form.is_valid():
                 email_responsavel = form.cleaned_data["email"]
-                if email_existe(email_responsavel):
+                if utils.email_existe(email_responsavel):
                     Alerta.set_mensagem("O email já existe. Por favor, escolha outro.")
-                    return view_usuarios.listar_usuarios(
+                    return views_usuarios.listar_usuarios(
                         request,
                         {
                             "form_usuario": form,
@@ -253,8 +221,8 @@ class view_usuarios:
                 nome_usuario = (
                     form.cleaned_data["nome_completo"].replace(" ", "").lower()
                 )
-                while usuario_existe(nome_usuario):
-                    nome_usuario = nome_usuario + gerar_numero_aleatorio()
+                while utils.usuario_existe(nome_usuario):
+                    nome_usuario = nome_usuario + utils.gerar_numero_aleatorio()
 
                 id_empresa = UserInfo.get_id_empresa(request)
                 usuario = form.save(commit=False)
@@ -276,7 +244,7 @@ class view_usuarios:
                 return redirect("configuracao_usuario", id_usuario=usuario.id_usuario)
             else:
                 Alerta.set_mensagem("Formulário inválido. Por favor, corrija os erros.")
-                return view_usuarios.listar_usuarios(
+                return views_usuarios.listar_usuarios(
                     request,
                     {
                         "form_usuario": form_usuario,
@@ -287,7 +255,7 @@ class view_usuarios:
         else:
             try:
 
-                return view_usuarios.listar_usuarios(
+                return views_usuarios.listar_usuarios(
                     request,
                     {
                         "form_usuario": form_usuario,
@@ -300,7 +268,7 @@ class view_usuarios:
                     "Para associar um usuario a loja, precisa criar uma!"
                 )
                 form_usuario = UsuarioForm()
-                return view_usuarios.listar_usuarios(
+                return views_usuarios.listar_usuarios(
                     request,
                     {
                         "form_usuario": form_usuario,
@@ -309,7 +277,7 @@ class view_usuarios:
                 )
 
     @staticmethod
-    @verificar_permissoes(codigo_model=1)
+    @utils.verificar_permissoes(codigo_model=1)
     def configuracao_usuario(request, id_usuario):
         if request.method == "POST":
             for key, value in request.POST.items():
@@ -329,11 +297,13 @@ class view_usuarios:
 
             # Verificar nao existem configurações para o usuário implementamos uma padrão
             if not list_configuracoes.exists():
-                list_configuracoes = list_configuracoes_padrao(id_usuario, False)
-                criar_configuracoes_padrao(list_configuracoes)
+                list_configuracoes = views_configuracao.list_configuracoes_padrao(
+                    id_usuario, False
+                )
+                views_configuracao.criar_configuracoes_padrao(list_configuracoes)
                 list_configuracoes = Configuracao.objects.filter(usuario_id=id_usuario)
 
-            return view_usuarios.listar_usuarios(
+            return views_usuarios.listar_usuarios(
                 request,
                 {
                     "formularios_configuracao": list_configuracoes,

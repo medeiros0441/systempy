@@ -2,7 +2,7 @@ from builtins import int
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from ..def_global import erro, criar_alerta_js, verificar_permissoes
+from ..utils import utils
 from ..static import Alerta, UserInfo
 from ..models import (
     Venda,
@@ -254,32 +254,40 @@ class processos:
                 for chave, valor in request.POST.items():
                     if chave.startswith("data_validade_entrada_"):
                         # Extrair informações da entrada
-                        indice = chave.split('_')[-1]
+                        indice = chave.split("_")[-1]
                         entrada = {
                             "data_validade": valor,
-                            "data_fabricacao": request.POST[f"data_fabricacao_entrada_{indice}"],
-                            "titulo": request.POST[f"tipo_entrada_{indice}"]
+                            "data_fabricacao": request.POST[
+                                f"data_fabricacao_entrada_{indice}"
+                            ],
+                            "titulo": request.POST[f"tipo_entrada_{indice}"],
                         }
 
                         # Verificar se já existe uma troca para este índice
                         if len(trocas) <= int(indice):
-                            trocas.append({"entradas": [], "saidas": [], "descricao": None})
+                            trocas.append(
+                                {"entradas": [], "saidas": [], "descricao": None}
+                            )
 
                         # Adicionar a entrada à troca correspondente
                         trocas[int(indice)]["entradas"].append(entrada)
 
                     elif chave.startswith("data_validade_saida_"):
                         # Extrair informações da saída
-                        indice = chave.split('_')[-1]
+                        indice = chave.split("_")[-1]
                         saida = {
                             "data_validade": valor,
-                            "data_fabricacao": request.POST[f"data_fabricacao_saida_{indice}"],
-                            "titulo": request.POST[f"tipo_saida_{indice}"]
+                            "data_fabricacao": request.POST[
+                                f"data_fabricacao_saida_{indice}"
+                            ],
+                            "titulo": request.POST[f"tipo_saida_{indice}"],
                         }
 
                         # Verificar se já existe uma troca para este índice
                         if len(trocas) <= int(indice):
-                            trocas.append({"entradas": [], "saidas": [], "descricao": None})
+                            trocas.append(
+                                {"entradas": [], "saidas": [], "descricao": None}
+                            )
 
                         # Adicionar a saída à troca correspondente
                         trocas[int(indice)]["saidas"].append(saida)
@@ -292,7 +300,7 @@ class processos:
                 for troca in trocas:
                     # Processar cada entrada e saída da troca
                     for entrada, saida in zip(troca["entradas"], troca["saidas"]):
-                    # Criar galões de entrada e saída
+                        # Criar galões de entrada e saída
                         galao_entrada, created_entrada = Galao.objects.get_or_create(
                             data_validade=entrada["data_validade"],
                             data_fabricacao=entrada["data_fabricacao"],
@@ -322,7 +330,7 @@ class processos:
 
                     # Criar um objeto GestaoGalao
                     gestao_galao = GestaoGalao()
-                    gestao_galao.descricao =  troca["descricao"]
+                    gestao_galao.descricao = troca["descricao"]
                     gestao_galao.galao_entrando = galao_entrada
                     gestao_galao.galao_saiu = galao_saida
                     gestao_galao.venda = venda
