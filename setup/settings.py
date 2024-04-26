@@ -2,7 +2,7 @@ from pathlib import Path
 from decouple import config
 import os
 from django.core.exceptions import ImproperlyConfigured
-
+from socket import ConnectionError
 # Determina o ambiente atual
 ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
 if ENVIRONMENT == "production":
@@ -20,17 +20,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_URLCONF = "setup.urls"
 SESSION_COOKIE_AGE = 8 * 60 * 60
 # Configurações do banco de dados
-DATABASES = {
-    "default": {
-        "ENGINE": config("DB_ENGINE"),
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": config("DB_PORT", cast=int),
+try:
+    DATABASES = {
+        "default": {
+            "ENGINE": config("DB_ENGINE"),
+            "NAME": config("DB_NAME"),
+            "USER": config("DB_USER"),
+            "PASSWORD": config("DB_PASSWORD"),
+            "HOST": config("DB_HOST"),
+            "PORT": config("DB_PORT", cast=int),
+        }
     }
-}
+except ConnectionError:
+    print(
+        "Banco de dados principal não disponível. Utilizando o banco de dados SQLite."
+    )
 
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "database", "database.db"),
+        }
+    }
 # Configurações gerais
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=True, cast=bool)
