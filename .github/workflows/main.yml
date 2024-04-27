@@ -33,7 +33,6 @@ jobs:
           pip install -r requirements.txt
 
       - name: Generate static files
-        if: steps.static_changed.outputs.CHANGED == 'static'
         run: |
           python manage.py collectstatic --noinput
 
