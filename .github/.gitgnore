@@ -1,25 +1,16 @@
-# Arquivos de compilação e diretórios
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-*.pyc
-
-# Arquivos de mídia
-media/
- 
+# Arquivos de ambiente local
 .env.dev
-# Arquivos de ambiente
-.env
-
-# Arquivos de configuração locais
-local_settings.py
-
-# Diretório de configuração do Python
-.idea/
-
-# Diretório de arquivos estáticos coletados
  
-
-# Arquivos de log
+# Arquivos de log de desenvolvimento
 *.log
+
+# Arquivos de bytecode Python
+__pycache__/
+*.pyc
+
+# Arquivos de configuração de IDEs
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+.setup/test_settings.py
