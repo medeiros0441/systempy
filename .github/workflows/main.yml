@@ -19,7 +19,7 @@ jobs:
 
       - name: Check for changes in static directory
         id: static_changed
-        run: echo ::set-output name=CHANGED::$(git diff --name-only HEAD^ HEAD '**/static')
+        run: echo ::set-output name=CHANGED::$(git diff --name-only HEAD^ HEAD '**/static/*')
 
       - name: Set up Python
         uses: actions/setup-python@v2
