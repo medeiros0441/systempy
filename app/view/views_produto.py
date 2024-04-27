@@ -110,7 +110,7 @@ class views_produto:
             produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa)
             for produto in produtos:
                 if produto.loja.empresa.id_empresa != id_empresa:
-                    return erro(
+                    return utils.erro(
                         request, "Você não tem permissão para acessar este produto"
                     )
 
@@ -137,7 +137,7 @@ class views_produto:
 
                 produto = Produto.objects.get(id_produto=id_produto)
                 if produto.loja.empresa.id_empresa != id_empresa:
-                    return erro(
+                    return utils.erro(
                         request, "Você não tem permissão para acessar este produto"
                     )
                 produto.quantidade_atual_estoque += quantidade_acrescentar

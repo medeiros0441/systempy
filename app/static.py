@@ -56,6 +56,9 @@ class UserInfo:
     @staticmethod
     def clear_user_info(request):
         if "id_usuario" in request.session:
-            del request.session["id_usuario"]
+            request.session["id_usuario"] = 0
         if "id_empresa" in request.session:
-            del request.session["id_empresa"]
+            request.session["id_empresa"] = 0
+        request.session["email_saved"] = None
+        request.session["senha_saved"] = None
+        request.session["checkbox_login"] = None

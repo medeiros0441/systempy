@@ -37,13 +37,15 @@ class views_configuracao:
             )
             descricao = f"Permitir acesso ao Painel de {nome_classe}, isso inclui criar, editar, remover, entre outros."
             status_acesso = status
+            id = usuario.Id_usuario if hasattr(usuario, "id_usuario") else usuario
+
             configuracao = Configuracao(
                 titulo=titulo,
                 descricao_interna=descricao_interna,
                 descricao=descricao,
                 status_acesso=status_acesso,
                 codigo=codigo_interger,
-                usuario_id=usuario.id_usuario,
+                usuario_id=id,
             )
             list_configuracao.append(configuracao)
 

@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from ..utils import utils
 from ..static import Alerta, UserInfo
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
@@ -7,7 +6,7 @@ from django.shortcuts import render
 from ..models import Usuario, Configuracao, Loja, Associado
 from .views_configuracao import views_configuracao
 from ..forms import UsuarioForm
-from functools import wraps
+from ..utils import utils
 
 
 class views_usuarios:
@@ -72,24 +71,16 @@ class views_usuarios:
                     usuario.save()
                     for loja in list_lojas:
                         campo_checkbox = f"status_acesso_{loja.id_loja}"
-                        if usuario.nivel_usuario > 1:
-                            associacao, created = Associado.objects.get_or_create(
+                        if usuario.nivel_usuario != "1":
+                            associacao, created = Associado.objects.get(
                                 usuario_id=id_usuario,
                                 loja_id=loja.id_loja,
-                                defaults={
-                                    "status_acesso": campo_checkbox in request.POST,
-                                    "update": timezone.now(),
-                                },
                             )
-                            if not created:
-                                associacao.status_acesso = (
-                                    campo_checkbox in request.POST
-                                )
-                                associacao.update = timezone.now()
-                                associacao.save()
+                            associacao.status_acesso = campo_checkbox in request.POST
+                            associacao.update = timezone.now()
+                            associacao.save()
                             Alerta.set_mensagem("Usuário editado com sucesso!")
                         else:
-
                             if campo_checkbox not in request.POST:
                                 Alerta.set_mensagem(
                                     "Usuário editado com sucesso!, O Usuário administrador precisar estar associado a todas as lojas."
@@ -114,7 +105,9 @@ class views_usuarios:
                         "nome_loja": loja.nome_loja,  # Nome da loja (suponha que o campo no modelo seja 'nome')
                         "status_acesso": False,  # Status de acesso padrão, inicialmente definido como False
                     }
-                    associado_loja = associado.filter(loja_id=loja.id_loja).first()
+                    associado_loja = associado.filter(
+                        loja_id=loja.id_loja, usuario=usuario
+                    ).first()
                     if associado_loja:
                         loja_info["status_acesso"] = associado_loja.status_acesso
 
@@ -207,8 +200,11 @@ class views_usuarios:
             form = UsuarioForm(request.POST)
             if form.is_valid():
                 email_responsavel = form.cleaned_data["email"]
+                email_responsavel.lower().strip()
                 if utils.email_existe(email_responsavel):
-                    Alerta.set_mensagem("O email já existe. Por favor, escolha outro.")
+                    Alerta.set_mensagem(
+                        "O email já está cadastrado em nossa base de dados, escolha outro."
+                    )
                     return views_usuarios.listar_usuarios(
                         request,
                         {
@@ -226,7 +222,9 @@ class views_usuarios:
 
                 id_empresa = UserInfo.get_id_empresa(request)
                 usuario = form.save(commit=False)
+                usuario.email = email_responsavel
                 usuario.empresa_id = id_empresa
+                usuario.status_acesso = True
                 usuario.nome_usuario = nome_usuario
                 usuario.senha = make_password(usuario.senha)
                 usuario.save()
@@ -234,12 +232,11 @@ class views_usuarios:
                     if key.startswith("status_acesso_"):
                         loja_id = key.replace("status_acesso_", "")
                         loja = get_object_or_404(Loja, id_loja=loja_id)
-                        associacao = Associado.objects.create(
-                            usuario=usuario, loja=loja
+                        Associado.objects.create(
+                            usuario=usuario,
+                            loja=loja,
+                            status_acesso=True if value == "on" else False,
                         )
-                        associacao.status_acesso = True if value == "on" else False
-                        associacao.update = timezone.now()
-                        associacao.save
                 Alerta.set_mensagem("Usuário ativado com sucesso!")
                 return redirect("configuracao_usuario", id_usuario=usuario.id_usuario)
             else:

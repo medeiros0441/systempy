@@ -6,6 +6,7 @@ from ..models import Empresa, Loja, Associado, Usuario
 
 
 class views_loja:
+    @utils.verificar_permissoes(5)
     def lista_lojas(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request, True)
 
@@ -23,7 +24,8 @@ class views_loja:
         if alerta:
             context["alerta_js"] = utils.criar_alerta_js(alerta)
         return render(request, "loja/lista_lojas.html", context)
-
+   
+    @utils.verificar_permissoes(5)
     def criar_loja(request):
         try:
             if request.method == "POST":
@@ -81,6 +83,7 @@ class views_loja:
             mensagem_erro = str(e)
             return utils.erro(request, mensagem_erro)
 
+    @utils.verificar_permissoes(5)
     def selecionar_loja(request, id_loja):
 
         try:
@@ -101,6 +104,7 @@ class views_loja:
             mensagem_erro = str(e)
             return utils.erro(request, mensagem_erro)
 
+    @utils.verificar_permissoes(5)
     def editar_loja(request, id_loja):
         loja = get_object_or_404(Loja, pk=id_loja)
         id = UserInfo.get_id_empresa(request)
@@ -139,6 +143,7 @@ class views_loja:
                 {"open_modal": True, "form_endereco": form, "form_loja": formloja},
             )
 
+    @utils.verificar_permissoes(5)
     def excluir_loja(request, id_loja):
         loja = get_object_or_404(Loja, id_loja=id_loja)
         loja.delete()

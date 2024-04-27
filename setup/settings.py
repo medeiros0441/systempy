@@ -2,7 +2,8 @@ from pathlib import Path
 from decouple import config
 import os
 from django.core.exceptions import ImproperlyConfigured
-from socket import ConnectionError
+from requests.exceptions import ConnectionError
+
 # Determina o ambiente atual
 ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
 if ENVIRONMENT == "production":

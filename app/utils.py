@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from .models import Sessao
 from functools import wraps
 from .static import UserInfo, Alerta
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned 
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -252,13 +252,14 @@ class utils:
         Decorador para verificar as permissões do usuário antes de executar a função.
         """
         from .view.views_default import views_default as default
- 
+
         def decorator(func):
             @wraps(func)
             def wrapper(request, *args, **kwargs):
                 # Obtém o ID do usuário da requisição
+                id_empresa = UserInfo.get_id_empresa(request)
                 id_usuario = UserInfo.get_id_usuario(request)
-                if id_usuario == 0:
+                if id_usuario == 0 or id_empresa == 0:
                     type = default.login(request, {"set_autenticacao": True})
                     if type != True:
                         Alerta.set_mensagem(

@@ -88,9 +88,9 @@ class views_default:
                     request.session["senha_saved"] = senha
                     request.session["checkbox_login"] = "on"
                 else:
-                    request.session.pop("email_saved", None)
-                    request.session.pop("senha_saved", None)
-                    request.session.pop("checkbox_login", None)
+                    request.session["email_saved"] = None
+                    request.session["senha_saved"] = None
+                    request.session["checkbox_login"] = None
 
                 # Chama a função para autenticar o usuário com os dados fornecidos
                 if autenticar_usuario(request, email, senha):

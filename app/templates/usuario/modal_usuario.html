@@ -56,15 +56,21 @@
                         {{ form_usuario.nome_completo }} 
                         <label for="nome_completo">Nome Responsável:</label>
                         <div class="invalid-feedback ms-2">
-                            Por favor, insira o nome.
+                            insira o nome.
                         </div>
                     </div>
-                {% if form_usuario.nivel_usuario > 1 %} 
+                {% if  not isEditar %} 
                     <div class="form-floating mb-2">
                         {{ form_usuario.nivel_usuario }} 
                         <label for="id_nivel_usuario">Nível de Usuário:</label>
                     </div>
-                
+                {% endif%}
+
+                {% if form_usuario.nivel_usuario.value > 1 %} 
+                    <div class="form-floating mb-2">
+                        {{ form_usuario.nivel_usuario }} 
+                        <label for="id_nivel_usuario">Nível de Usuário:</label>
+                    </div>
                     <div class="form-floating mb-2">
                         {{ form_usuario.status_acesso }}
                         <label for="id_status_acesso">Status:</label>
@@ -73,14 +79,12 @@
 
                     {% if not isEditar  %} 
                     <div class="form-floating mb-2">
-                        <input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
                          {{form_usuario.email }}
                         <label for="email_responsavel">E-mail do Responsável</label>
                         <div class="invalid-feedback ms-2">Por favor, insira um Email válido.</div>
                     </div>
                 
                     <div class="form-floating mb-2">
-                        <input type="password" name="password" id="password_fake"  class="hidden" autocomplete="off" style="display: none;">
                          {{ form_usuario.senha }}  
                         <label for="senha">Senha</label>
                         <div class="invalid-feedback ms-2" id="senha-feedback"></div>
@@ -90,9 +94,9 @@
 
                     {% for loja in list_lojas %}
                     <label class="list-group-item d-flex gap-2">
-                        <input type="checkbox" name="status_acesso_{{ loja.id_loja }}" class="form-check-input"   {% if loja.status_acesso == True    %}checked{% endif %}>
+                        <input type="checkbox" name="status_acesso_{{ loja.id_loja }}" class="form-check-input my-auto"   {% if loja.status_acesso == True    %}checked{% endif %}>
                         <span>
-                            <p style="font-size: 0.8rem;" class="font-monospace p-0 m-0" >{{ loja.nome_loja }}</p>
+                            <p style="font-size: 0.8rem;" class="font-monospace p-0 m-0 fw-bold" >{{ loja.nome_loja }}</p>
                             <small style="font-size: 0.6rem;" class="d-block text-body-secondary">permitir o usuario ter acesso a essa loja, isso inclui, realizar vendas,acresentar produtos, entre outros</small>
                         </small></p>
                     </label>
@@ -151,7 +155,7 @@
         function ValidateInputs() {
             var nome_completo = document.getElementById('id_nome_completo');
 
-    {% if form_usuario.nivel_usuario > 1 %} 
+    {% if form_usuario.nivel_usuario.value > 1 %} 
             var nivel_usuario = document.getElementById('id_nivel_usuario');
         {% endif%}    
     {% if not isEditar  %} 
@@ -182,7 +186,7 @@
         
             // Remove as classes 'is-invalid' de todos os campos antes de fazer a validação
             nome_completo.classList.remove('is-invalid');
-            {% if form_usuario.nivel_usuario > 1 %} 
+            {% if form_usuario.nivel_usuario.value > 1 %} 
                 nivel_usuario.classList.remove('is-invalid');
             {% endif%}
                 
