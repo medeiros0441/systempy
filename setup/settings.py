@@ -148,3 +148,4 @@ else:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    CORS_ORIGIN_WHITELIST = ['https://comercioprime.azurewebsites.net',]
