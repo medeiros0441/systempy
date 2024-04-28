@@ -1,6 +1,6 @@
 # Arquivos de ambiente local
 .env.dev
- 
+
 # Arquivos de log de desenvolvimento
 *.log
 
@@ -13,4 +13,22 @@ __pycache__/
 .vscode/
 *.sublime-workspace
 *.sublime-project
-local_settings.py
+
+# Arquivos temporários
+*.pyc
+*.pyo
+*.bak
+*.swp
+
+# Diretórios
+app/__pycache__/
+
+# Arquivos de compilação Python (repetidos)
+*.pyc
+
+# Logs e arquivos de saída
+*.cache
+
+# Diretórios e arquivos de ambiente gerados pelo sistema operacional
+.DS_Store
+Thumbs.db
