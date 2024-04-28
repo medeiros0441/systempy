@@ -13,4 +13,4 @@ __pycache__/
 .vscode/
 *.sublime-workspace
 *.sublime-project
-.setup/test_settings.py
+local_settings.py

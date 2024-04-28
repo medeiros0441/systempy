@@ -32,7 +32,7 @@ DATABASES = {
 import secrets
 
 # Gera uma chave secreta aleatória
-SECRET_KEY = ''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50))
+SECRET_KEY ="p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
 
 DEBUG = False
 ALLOWED_HOSTS = config(
