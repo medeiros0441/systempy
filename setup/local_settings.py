@@ -4,12 +4,12 @@ import os
 from django.core.exceptions import ImproperlyConfigured
 from requests.exceptions import ConnectionError
 
-# Determina o ambiente atual como produção
-ENVIRONMENT = "production"
+# Determina o ambiente atual como desenvolvimento
+ENVIRONMENT = "development"
 
-# Carrega as variáveis de ambiente para produção
+# Carrega as variáveis de ambiente para desenvolvimento
 from dotenv import load_dotenv
-load_dotenv(".env.prod")
+load_dotenv(".env.dev")
 
 # Diretório base do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,24 +19,19 @@ SESSION_COOKIE_AGE = 8 * 60 * 60
 # Configurações do banco de dados
 DATABASES = {
     "default": {
-        "ENGINE": config("DB_ENGINE"),
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": config("DB_PORT", cast=int),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "database", "database.db"),
     }
 }
+
 
 # Configurações gerais
 import secrets
 
 # Gera uma chave secreta aleatória
-SECRET_KEY ="p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
-
-DEBUG = False
-ALLOWED_HOSTS =  ["comercioprime.azurewebsites.net","*"]
- 
+SECRET_KEY = ''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50))
+DEBUG = True
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Lista de apps do Django
 DJANGO_APPS = [
@@ -122,11 +117,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True
 
-# Configurações de segurança para produção
-SECURE_HSTS_SECONDS = 31536000  # 1 ano
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-CORS_ORIGIN_WHITELIST = ['https://comercioprime.azurewebsites.net']
+# Configurações de segurança para ambiente de teste
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False

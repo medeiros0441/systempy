@@ -78,6 +78,72 @@ static setLocalStorageItem(key, value) {
             console.error("Erro ao formatar data/hora:", error);
             return '';
         }
-        // Outros métodos...
+    }  static validateInputs(inputIDs) {
+        var allInputsValid = true; // Inicializa como true
+    
+        function showError(input, message) {
+            var feedbackElement = input.nextElementSibling;
+            if (feedbackElement.classList.contains('invalid-feedback')) {
+                feedbackElement.innerText = message;
+            } else {
+                feedbackElement = document.createElement('div');
+                feedbackElement.className = 'invalid-feedback';
+                feedbackElement.innerText = message;
+                input.parentNode.appendChild(feedbackElement);
+            }
+            feedbackElement.style.fontSize = '0.5rem'; // Defina o tamanho de fonte desejado
+            input.classList.add('is-invalid');
+        }
+    
+        function removeError(input) {
+            var feedbackElements = input.parentNode.querySelectorAll('.invalid-feedback');
+            feedbackElements.forEach(function(element) {
+                if (element.innerText === 'Preencha este campo.') {
+                    element.remove();
+                }
+            });
+            input.classList.remove('is-invalid');
+        }
+    
+        function isEmpty(input) {
+            return input.value.trim() === '';
+        }
+    
+        function validateInput(input) {
+            var errorShown = input.getAttribute('data-error-shown');
+            if (isEmpty(input)) {
+                if (!errorShown) {
+                    showError(input, 'Preencha este campo.');
+                    input.setAttribute('data-error-shown', 'true');
+                }
+                allInputsValid = false; // Define como false se um input estiver vazio
+            } else {
+                if (errorShown) {
+                    removeError(input);
+                    input.removeAttribute('data-error-shown');
+                }
+            }
+        }
+    
+        inputIDs.forEach(function(id) {
+            var input = document.getElementById(id);
+            if (!input) {
+                console.error('Elemento de input não encontrado com o ID: ' + id);
+                return; // Se o elemento de input não for encontrado, saia da iteração atual
+            }
+    
+            // Adiciona um ouvinte de evento de entrada para monitorar as alterações nos inputs
+            input.addEventListener('input', function() {
+                validateInput(input);
+            });
+    
+            // Executa a validação inicialmente
+            validateInput(input);
+        });
+    
+        // Retorna allInputsValid ao final da função
+        return allInputsValid;
     }
-}
+            
+    }
+    

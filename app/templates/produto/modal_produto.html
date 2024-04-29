@@ -3,7 +3,7 @@
   
    
 <div class="modal fade" id="ModalProduto" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog  modal-md modal-fullscreen-md-down modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog  modal-lg modal-fullscreen-md-down modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold font-monospace" id="lojaModalLabel" >
@@ -12,10 +12,10 @@
                     {% if produtos_list %} Acrescentar Produto{% endif%}
                 </h5>
             </div>
+            <div class="modal-body  font-monospace"  >
        
-        <div class="modal-body  font-monospace"  >
     <form method="post" id="form_cadastro" class="needs-validation   " novalidate>
-        {% if text_produto %} 
+                {% if text_produto %} 
                     <div class="form-group">
                         <label for="text_nome_produto" class="fw-bold"><i class="bi bi-card-heading"></i> Nome do produto:</label>
                         <span id="nome_produto">{{ text_produto.nome }}</span>
@@ -58,11 +58,11 @@
                         <label class="fw-bold" for="numero_telefone"><i class="bi bi-telephone"></i> Número Telefone:</label>
                         <span id="numero_telefone">{{ text_produto.loja.numero_telefone }}</span>
                     </div>
-                    
-        
-                {% endif%}
-                {% if produtos_list %} 
-                            {% csrf_token %}
+                
+    
+            {% endif%}
+            {% if produtos_list %} 
+                {% csrf_token %}
                         <div class="form-floating mb-2">
                             <select class="form-select" id="id_loja" name="id_loja"  >
                                 <option class="small font-monospace mt-2" selected disabled>Selecione a loja</option>
@@ -170,116 +170,132 @@
                             });
                         });
                     </script>
-                {% endif%}
-                {% if form_produto %}   
-                                    {% csrf_token %}
-                                <div class="form-floating mb-2">
-                                    {{ form_produto.loja }}
-                                    <label for="id_loja" style="font-size: 0.8rem;">Loja:</label>
-                                </div>
-                                <div class="form-floating mb-2">
-                                    {{ form_produto.nome }}
-                                    <label for="id_nome" style="font-size: 0.8rem;">Nome:</label>
-                                </div>
-                                <div class="form-group">
-                                    <div class="row">
-                                        <div class="col p-1">
-                                            <div class="form-floating mb-2">
-                                                {{ form_produto.quantidade_atual_estoque }}
-                                                <label for="id_quantidade_atual_estoque" style="font-size: 0.8rem;">Quantidade Atual no Estoque:</label>
-                                            </div>
-                                        </div>
-                                        <div class="col p-1">
-                                            <div class="form-floating mb-2">
-                                                {{ form_produto.quantidade_minima_estoque }}
-                                                <label for="id_quantidade_minima_estoque" style="font-size: 0.8rem;">Quantidade Mínima no Estoque:</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="row">
-                                        <div class="col p-1">
-                                            <div class="form-floating mb-2">
-                                                {{ form_produto.is_retornavel }}
-                                                <label for="is_retornavel" style="font-size: 0.8rem;"> {{ form_produto.is_retornavel.label }}:</label>
-                                            </div>  
-                                        </div>  
-                                        <div class="col p-1">
-                                            <div class="form-floating mb-2">
-                                                {{ form_produto.data_validade }}
-                                                <label for="data_validade"  >
-                                                    Validade: <span  style="font-size: 0.8rem;">(opcional)</span>
-                                                </label>
-                                            </div> 
-                                        </div>
-                                    </div>
-                                </div>
-                                    <div class="form-floating mb-2">
-                                        {{ form_produto.fabricante }}
-                                        <label for="id_fabricante" style="font-size: 0.8rem;">Fabricante:</label>
-                                    </div> 
+            {% endif%}
+            {% if form_produto %}   
+                    {% csrf_token %}
+                    <div class="form-floating mb-2">
+                        <select class="form-select " id="select_loja" name="select_loja">
+                        </select>
+                        <label for="select_loja">Loja:</label>
+                    </div>
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control" id="id_nome" name="nome">
+                        <label for="id_nome" style="font-size: 0.8rem;">Nome do produto</label>
+                    </div>
+                    <div class="row g-1">
+                        <div class="col-6">
+                            <div class="form-floating mb-2">
+                                <input type="number" class="form-control" id="id_quantidade_atual_estoque" name="quantidade_atual_estoque">
+                                <label for="id_quantidade_atual_estoque" style="font-size: 0.8rem;">Quantidade atual em estoque</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-2">
+                                <input type="number" class="form-control" id="id_quantidade_minima_estoque" name="quantidade_minima_estoque">
+                                <label for="id_quantidade_minima_estoque" style="font-size: 0.8rem;">Quantidade mínima em estoque</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-1">
+                        <div class="col-6">
+                            <div class="form-floating mb-2">
+                                <select class="form-select" id="id_is_retornavel" name="is_retornavel">
+                                    <option value="0">Selecione</option>
+                                    <option value="1">Sim</option>
+                                    <option value="0">Não</option>
+                                </select>
+                                <label for="id_is_retornavel" style="font-size: 0.8rem;">É retornável?</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-2">
+                                <input type="date" class="form-control" id="id_data_validade" name="data_validade">
+                                <label for="id_data_validade" style="font-size: 0.8rem;">Data de validade</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-1">
+                        <div class="col-6">
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control money-mask" id="id_preco_compra" name="preco_compra">
+                                <label for="id_preco_compra" style="font-size: 0.8rem;">Preço de compra</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control money-mask" id="id_preco_venda" name="preco_venda">
+                                <label for="id_preco_venda" style="font-size: 0.8rem;">Preço de venda</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control" id="id_fabricante" name="fabricante">
+                        <label for="id_fabricante" style="font-size: 0.8rem;">Fabricante</label>
+                    </div>
+                    <div class="form-floating mb-2">
+                        <textarea class="form-control" id="id_descricao" rows="3" name="descricao"></textarea>
+                        <label for="id_descricao" style="font-size: 0.8rem;">Descrição</label>
+                    </div>
                             
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <div class="col p-1">
-                                                <div class="form-floating mb-2">
-                                                    {{ form_produto.preco_compra_fake }}
-                                                    <label for="id_preco_compra_fake" style="font-size: 0.8rem;">Preço de Compra:</label>
-                                                </div>
-                                            </div>
-                                            <div class="col p-1">
-                                                <div class="form-floating mb-2">
-                                                    {{ form_produto.preco_venda_fake }}
-                                                    <label for="id_preco_venda_fake" style="font-size: 0.8rem;">Preço de Venda:</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>  
-                            
-                        <script>
-                            document.getElementById('form_cadastro').addEventListener('submit', function(event) {
-                                var form = event.target;
-                                if (!form.checkValidity()) {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    form.classList.add('was-validated');
-                                }
-                                else {
-                                    form.classList.remove('was-validated');
+                            <script>
+                                function validate_form() {
+                                    var form = document.getElementById('form_cadastro');
+                                    var inputIDs = ['id_nome', 'id_quantidade_atual_estoque', 'id_quantidade_minima_estoque', 'id_preco_compra', 'id_preco_venda', 'id_fabricante', 'select_loja'];
+                                    status =  Utils.validateInputs(inputIDs);
+                                    if (status == "true") {
+                                        document.getElementById('form_cadastro').submit();
+                                    }
                                 }
 
-                                // Validação personalizada para o campo de preço de compra
-                                var precoCompraInput = document.getElementById('id_preco_compra');
-                                if (precoCompraInput.value < 0) {
-                                    precoCompraInput.classList.add('is-invalid');
-                                }
-                                else {
-                                    precoCompraInput.classList.remove('is-invalid');
-                                    precoCompraInput.classList.add('is-valid');
-                                }
+                                window.onload = function() {
+                                    chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
+                                        if (response.success === true) {
+                                            // Armazenar os dados no localStorage
+                                            atualizarDropdownLojas(response.lojas);
+                                        } else {
+                                            alertCustomer(response.error);
+                                        }
+                                    });
+                                };
+                                
+                                 
+                    // Função para atualizar o dropdown com as lojas
+                    function atualizarDropdownLojas(list_lojas) {
+                        const dropdown = document.getElementById('select_loja');  // Obtém o dropdown de lojas
 
-                                // Validação personalizada para o campo de preço de venda
-                                var precoVendaInput = document.getElementById('id_preco_venda');
-                                if (precoVendaInput.value < 0) {
-                                    precoVendaInput.classList.add('is-invalid');
-                                }
-                                else {
-                                    precoVendaInput.classList.remove('is-invalid');
-                                    precoVendaInput.classList.add('is-valid');
-                                }
-                            });
-                        </script>
+                        // Limpa as opções existentes
+                        dropdown.innerHTML = '';
+
+                        // Adiciona a opção padrão
+                        if(list_lojas.length > 1){
+                            const optionDefault = document.createElement('option');
+                            optionDefault.value = '0';
+                            optionDefault.textContent = 'Selecione';
+                            dropdown.appendChild(optionDefault);
+                        }
+
+                        // Adiciona as opções de lojas
+                        list_lojas.forEach(function(loja) {
+                            const option = document.createElement('option');
+                            option.value = loja.id_loja;
+                            option.textContent = loja.nome_loja;
+                            dropdown.appendChild(option);
+                        });
+                    }
+                                
+                            </script>
+                            
                     {% endif%}
 
-
-    </form>
+                </form>
+  
 </div>
-            <div class="modal-footer " >
-              <a href="{% url 'lista_produtos' %}"   class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
-              {% if form_produto  or  produtos_list %}      <button type="submit" class="btn btn-primary float-end btn-md btn-loading"   >Salvar</button> {% endif%} 
-       
-            </div>  
+            
+         <div class="modal-footer " >
+            <a href="{% url 'lista_produtos' %}"   class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
+            {% if form_produto  or  produtos_list %}      <button type="button" onclick="validate_form();" class="btn btn-primary float-end btn-md btn-loading"   >Salvar</button> {% endif%} 
+     
+          </div>  
          
         </div>
       </div>
