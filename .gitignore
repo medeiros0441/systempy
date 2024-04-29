@@ -22,7 +22,7 @@ __pycache__/
 
 # Diretórios
 app/__pycache__/
-
+local_settings.py
 # Arquivos de compilação Python (repetidos)
 *.pyc
 
