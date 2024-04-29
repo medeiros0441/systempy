@@ -10,6 +10,12 @@
  $('.quantidade-mask').mask('00000000');
  $('.money-mask').mask('000.000.000,00', {reverse: true,}); 
 
+
+
+
+ 
+
+
  function manageLoading(status, id_container) {
   var container = document.getElementById(id_container);
   

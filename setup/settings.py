@@ -35,11 +35,8 @@ import secrets
 SECRET_KEY = ''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50))
 
 DEBUG = False
-ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS",
-    default=["comercioprime.azurewebsites.net"],
-    cast=lambda v: [s.strip() for s in v.split(",")],
-)
+ALLOWED_HOSTS =  ["comercioprime.azurewebsites.net","*"]
+ 
 
 # Lista de apps do Django
 DJANGO_APPS = [

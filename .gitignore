@@ -28,7 +28,4 @@ app/__pycache__/
 
 # Logs e arquivos de saída
 *.cache
-
-# Diretórios e arquivos de ambiente gerados pelo sistema operacional
-.DS_Store
-Thumbs.db
+ 

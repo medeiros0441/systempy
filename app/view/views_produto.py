@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from ..static import Alerta, UserInfo
 from ..models import Loja, Produto
 from ..forms.form_produto import ProdutoForm as Form
-
+import datetime
 
 class views_produto:
     @staticmethod
@@ -29,33 +29,103 @@ class views_produto:
     def criar_produto(request):
         try:
             if request.method == "POST":
-                form_produto = Form(request.POST, request=request)
-
-                if form_produto.is_valid():
-                    form_produto.save()  # Cria um novo registro de Loja
+                status, obj = views_produto.validate_form(request.POST)
+                if status:
+                    produto = Produto(**obj)  # Cria uma instância do Produto
+                    produto.save()  # Salvando o produto no banco de dados
                     Alerta.set_mensagem("Cadastrado com Sucesso.")
                     return redirect("lista_produtos")
                 else:
-                    if not form_produto.is_valid():
-                        Alerta.set_mensagem("Formulário inválido.")
-                    # Renderiza o template com os formulários inválidos
+                    Alerta.set_mensagem(mensagem_erro)
                     return views_produto.lista_produtos(
                         request,
-                        {
-                            "open_modal": True,
-                            "form_produto": form_produto,
-                        },
+                        {"open_modal": True, "form_produto": True},
                     )
             else:
-                form = Form(request=request)
                 return views_produto.lista_produtos(
                     request,
-                    {"open_modal": True, "form_produto": form},
+                    {"open_modal": True, "form_produto": True},
                 )
         except Exception as e:
             mensagem_erro = str(e)
             return utils.erro(request, mensagem_erro)
 
+    def validate_form(form_data):
+        loja = form_data.get('loja')
+        nome = form_data.get('nome', '')
+        quantidade_atual_estoque = form_data.get('quantidade_atual_estoque', '')
+        quantidade_minima_estoque = form_data.get('quantidade_minima_estoque', '')
+        is_retornavel = form_data.get('is_retornavel', '')
+        data_validade = form_data.get('data_validade', '')
+        preco_compra = form_data.get('preco_compra', '')
+        preco_venda = form_data.get('preco_venda', '')
+        fabricante = form_data.get('fabricante', '')
+        descricao = form_data.get('descricao', '')
+
+        # Validando os campos
+        if loja == "0":
+            return False, "Selecione uma loja."
+
+        if not nome:
+            return False, "O nome do produto é obrigatório."
+
+        try:
+            quantidade_atual_estoque = int(quantidade_atual_estoque)
+            if quantidade_atual_estoque < 0:
+                raise ValueError
+        except ValueError:
+            return False, "A quantidade atual em estoque deve ser um número inteiro positivo."
+
+        try:
+            quantidade_minima_estoque = int(quantidade_minima_estoque)
+            if quantidade_minima_estoque < 0:
+                raise ValueError
+        except ValueError:
+            return False, "A quantidade mínima em estoque deve ser um número inteiro positivo."
+
+        if is_retornavel not in ['0', '1']:
+            return False, "Selecione se o produto é retornável."
+
+        if data_validade:
+            try:
+                datetime.datetime.strptime(data_validade,'%Y-%m-%d')
+            except ValueError:
+                return False, "A data de validade deve estar no formato YYYY-MM-DD."
+
+        try:
+            preco_compra = float(preco_compra)
+            if preco_compra < 0:
+                raise ValueError
+        except ValueError:
+            return False, "O preço de compra deve ser um número positivo."
+
+        try:
+            preco_venda = float(preco_venda)
+            if preco_venda < 0:
+                raise ValueError
+        except ValueError:
+            return False, "O preço de venda deve ser um número positivo."
+
+        if not fabricante:
+            return False, "O fabricante é obrigatório."
+
+        if not descricao:
+            return False, "A descrição é obrigatória."
+
+        produto = Produto(
+            loja=loja,
+            nome=nome,
+            quantidade_atual_estoque=quantidade_atual_estoque,
+            quantidade_minima_estoque=quantidade_minima_estoque,
+            is_retornavel=bool(int(is_retornavel)),
+            data_validade=data_validade,
+            preco_compra=preco_compra,
+            preco_venda=preco_venda,
+            fabricante=fabricante,
+            descricao=descricao
+        )
+
+        return True, produto
     @staticmethod
     @utils.verificar_permissoes(6)
     def editar_produto(request, id_produto):
@@ -101,6 +171,7 @@ class views_produto:
             mensagem_erro = str(e)
             return utils.erro(request, mensagem_erro)
 
+ 
     @staticmethod
     @utils.verificar_permissoes(6)
     def acrescentar_produto(request):
