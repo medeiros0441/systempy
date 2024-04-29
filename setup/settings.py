@@ -9,6 +9,7 @@ ENVIRONMENT = "production"
 
 # Carrega as variáveis de ambiente para produção
 from dotenv import load_dotenv
+
 load_dotenv(".env.prod")
 
 # Diretório base do projeto
@@ -32,11 +33,11 @@ DATABASES = {
 import secrets
 
 # Gera uma chave secreta aleatória
-SECRET_KEY ="p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
+SECRET_KEY = "p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
 
 DEBUG = False
-ALLOWED_HOSTS =  ["comercioprime.azurewebsites.net","*"]
- 
+ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
+
 
 # Lista de apps do Django
 DJANGO_APPS = [
@@ -123,3 +124,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Configuração para compressão de arquivos estáticos
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True
+
+# Configurações de segurança para produção
+SECURE_HSTS_SECONDS = 31536000  # 1 ano
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CORS_ORIGIN_WHITELIST = ["https://comercioprime.azurewebsites.net"]
