@@ -1,16 +1,17 @@
 # Arquivos de ambiente local
 .env.dev
- 
+
 # Arquivos de log de desenvolvimento
 *.log
 
 # Arquivos de bytecode Python
-__pycache__/
-*.pyc
+**/__pycache__/
 
 # Arquivos de configuração de IDEs
 .idea/
 .vscode/
 *.sublime-workspace
 *.sublime-project
+
+# Arquivo de configuração específico do Django
 local_settings.py
