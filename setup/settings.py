@@ -1,68 +1,35 @@
 from pathlib import Path
 from decouple import config
 import os
-from django.core.exceptions import ImproperlyConfigured
-from requests.exceptions import ConnectionError
 
-# Determina o ambiente atual como produção
-ENVIRONMENT = "production"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Carrega as variáveis de ambiente para produção
 from dotenv import load_dotenv
 
-load_dotenv(".env.prod")
+ENVIRONMENT = "production"
 
-# Diretório base do projeto
-BASE_DIR = Path(__file__).resolve().parent.parent
-ROOT_URLCONF = "setup.urls"
-SESSION_COOKIE_AGE = 8 * 60 * 60
+if ENVIRONMENT == "production":
+    load_dotenv(".env.prod")
 
-# Configurações do banco de dados
-DATABASES = {
-    "default": {
-        "ENGINE": config("DB_ENGINE"),
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": config("DB_PORT", cast=int),
-    }
-}
 
-# Configurações gerais
-import secrets
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-# Gera uma chave secreta aleatória
+ALLOWED_HOSTS = ["*"]
 SECRET_KEY = "p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
 
-DEBUG = False
-ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
 
-
-# Lista de apps do Django
-DJANGO_APPS = [
+INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-]
-
-# Apps de terceiros
-THIRD_PARTY_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
-]
-
-# Apps personalizados
-MY_APPS = [
     "app",
 ]
 
-INSTALLED_APPS = MY_APPS + THIRD_PARTY_APPS + DJANGO_APPS
-
-# Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -75,8 +42,9 @@ MIDDLEWARE = [
     "app.middlewares.ErrorLoggingMiddleware",
 ]
 
-APPEND_SLASH = True
-PREPEND_WWW = False
+
+ROOT_URLCONF = "setup.urls"
+
 # Templates
 TEMPLATES = [
     {
@@ -93,6 +61,24 @@ TEMPLATES = [
         },
     },
 ]
+
+
+WSGI_APPLICATION = "setup.wsgi.application"
+
+# Database
+# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+SESSION_COOKIE_AGE = 8 * 60 * 60
+
+DATABASES = {
+    "default": {
+        "ENGINE": config("DB_ENGINE"),
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),
+        "PORT": config("DB_PORT", cast=int),
+    }
+}
 
 # Senhas de validação
 AUTH_PASSWORD_VALIDATORS = [
@@ -113,22 +99,21 @@ AUTH_PASSWORD_VALIDATORS = [
 # Configurações de localização e fuso horário
 LANGUAGE_CODE = "pt-BR"
 TIME_ZONE = "America/Sao_Paulo"
+
 USE_I18N = True
+
+USE_L10N = True
+
 USE_TZ = True
 
-# Diretórios estáticos
-STATIC_URL = "assents/"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_URL = "static/"
+if DEBUG:
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, "static"),
+    ]
+else:
+    # In production, collect static files to a single directory
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-# Configuração para compressão de arquivos estáticos
-COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True
 
-# Configurações de segurança para produção
-SECURE_HSTS_SECONDS = 31536000  # 1 ano
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-CORS_ORIGIN_WHITELIST = ["https://comercioprime.azurewebsites.net"]
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

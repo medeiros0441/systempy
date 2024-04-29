@@ -10,6 +10,12 @@
  $('.quantidade-mask').mask('00000000');
  $('.money-mask').mask('000.000.000,00', {reverse: true,}); 
 
+
+
+
+ 
+
+
  function manageLoading(status, id_container) {
   var container = document.getElementById(id_container);
   
@@ -46,17 +52,7 @@
       // Exibe novamente os elementos filhos
       toggleContainerAnimation(id_container, false);
   }  
-}
-   // Função para obter um item do local storage
-   function getLocalStorageItem(key) {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : null;
-  }
-  
-  // Função para definir um item no local storage
-  function setLocalStorageItem(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
+} 
   
 function toggleContainerAnimation(containerId, isOpen) {
   const container = document.getElementById(containerId);
@@ -93,9 +89,10 @@ function chamarFuncaoPython(url, data,type, callback)  {
       },
       
   };
-    if (data) {
-            requestOptions.body = JSON.stringify(data);
-        }
+  if (type === 'POST' || type === 'PUT') {
+    requestOptions.body = JSON.stringify(data);
+  }
+
   // Fazer uma requisição Fetch para o backend
   fetch(url, requestOptions)
       .then(response => response.json())

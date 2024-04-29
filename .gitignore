@@ -23,7 +23,6 @@ venv/**/*.pyc  # Ignora todos os arquivos .pyc na pasta venv e em seus subdiret�
 
 # Diretórios
 app/__pycache__/
-local_settings.py
 
 # Logs e arquivos de saída
 *.cache
