@@ -12,7 +12,7 @@ if ENVIRONMENT == "production":
     load_dotenv(".env.prod")
 
 
-DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+DEBUG =False 
 
 ALLOWED_HOSTS = ["*" ,"comercioprime.azurewebsites.net"]
 SECRET_KEY = "p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
