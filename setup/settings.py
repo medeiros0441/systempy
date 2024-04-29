@@ -74,6 +74,8 @@ MIDDLEWARE = [
     "app.middlewares.ErrorLoggingMiddleware",
 ]
 
+APPEND_SLASH = True
+PREPEND_WWW = False
 # Templates
 TEMPLATES = [
     {
