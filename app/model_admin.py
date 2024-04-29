@@ -17,7 +17,7 @@ class PlanoGestao(models.Model):
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
     class Meta:
-        db_table = "smw_plano_gestao"
+        db_table = "cps_plano_gestao"
 
 
 class InscricaoGestao(models.Model):
@@ -39,7 +39,7 @@ class InscricaoGestao(models.Model):
     )
 
     class Meta:
-        db_table = "smw_inscricao_gestao"
+        db_table = "cps_inscricao_gestao"
 
 
 class HistoricoCliente(models.Model):
@@ -55,7 +55,7 @@ class HistoricoCliente(models.Model):
     )
 
     class Meta:
-        db_table = "smw_historico_cliente"
+        db_table = "cps_historico_cliente"
 
 
 class ConfiguracaoPlataforma(models.Model):
@@ -77,7 +77,7 @@ class ConfiguracaoPlataforma(models.Model):
     )
 
     class Meta:
-        db_table = "smw_configuracao_plataforma"
+        db_table = "cps_configuracao_plataforma"
 
 
 class Sessao(models.Model):
@@ -90,7 +90,7 @@ class Sessao(models.Model):
     update = models.DateTimeField(db_column="date_time_update", null=True)
 
     class Meta:
-        db_table = "smw_historico_cliente"
+        db_table = "cps_historico_cliente"
 
 
 class Registro(models.Model):
@@ -109,4 +109,4 @@ class Registro(models.Model):
     )
 
     class Meta:
-        db_table = "smw_registro"
+        db_table = "cps_registro"

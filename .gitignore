@@ -3,9 +3,7 @@
 
 # Arquivos de log de desenvolvimento
 *.log
-
-# Arquivos de bytecode Python
-**/__pycache__/
+*/__pycache__
 
 # Arquivos de configuração de IDEs
 .idea/
@@ -13,23 +11,5 @@
 *.sublime-workspace
 *.sublime-project
 
-<<<<<<< HEAD
 # Arquivo de configuração específico do Django
 local_settings.py
-=======
-# Arquivos temporários
-*.pyc
-*.pyo
-*.bak
-*.swp
-
-# Diretórios
-app/__pycache__/
-
-# Arquivos de compilação Python (repetidos)
-*.pyc
-
-# Logs e arquivos de saída
-*.cache
- 
->>>>>>> be65931cb24d81d5407c86d5d919f46fe9c3c235

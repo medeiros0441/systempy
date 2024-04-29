@@ -125,4 +125,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True
 
+# Configurações de segurança para produção
+SECURE_HSTS_SECONDS = 31536000  # 1 ano
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 CORS_ORIGIN_WHITELIST = ["https://comercioprime.azurewebsites.net"]
