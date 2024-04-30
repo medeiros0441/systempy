@@ -43,7 +43,8 @@ MIDDLEWARE = [
 
 
 ROOT_URLCONF = "setup.urls"
-
+COMPRESS_ENABLED  =  True
+COMPRESS_OFFLINE  =  True
 # Templates
 TEMPLATES = [
     {
