@@ -175,69 +175,71 @@
                     {% csrf_token %}
                     <div class="form-floating mb-2">
                         <select class="form-select " id="select_loja" name="select_loja">
+                            {% if form_produto.loja %} <option value="{{form_produto.loja_id}}" select  >{{form_produto.loja.nome_loja}}</option>{% endif %}
                         </select>
                         <label for="select_loja">Loja:</label>
                     </div>
-                    <div class="form-floating mb-2">
-                        <input type="text" class="form-control" id="id_nome" name="nome">
-                        <label for="id_nome" style="font-size: 0.8rem;">Nome do produto</label>
-                    </div>
-                    <div class="row g-1">
-                        <div class="col-6">
-                            <div class="form-floating mb-2">
-                                <input type="number" class="form-control" id="id_quantidade_atual_estoque" name="quantidade_atual_estoque">
-                                <label for="id_quantidade_atual_estoque" style="font-size: 0.8rem;">Quantidade atual em estoque</label>
+                                        
+                        <div class="form-floating mb-2">
+                            <input type="text" class="form-control" id="id_nome" name="nome" value="{{ form_produto.nome }}">
+                            <label for="id_nome" style="font-size: 0.8rem;">Nome do produto</label>
+                        </div>
+                        <div class="row g-1">
+                            <div class="col-6">
+                                <div class="form-floating mb-2">
+                                    <input type="number" class="form-control" id="id_quantidade_atual_estoque" name="quantidade_atual_estoque" value="{{ form_produto.quantidade_atual_estoque }}">
+                                    <label for="id_quantidade_atual_estoque" style="font-size: 0.8rem;">Quantidade atual em estoque</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-floating mb-2">
+                                    <input type="number" class="form-control" id="id_quantidade_minima_estoque" name="quantidade_minima_estoque" value="{{ form_produto.quantidade_minima_estoque }}">
+                                    <label for="id_quantidade_minima_estoque" style="font-size: 0.8rem;">Quantidade mínima em estoque</label>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="form-floating mb-2">
-                                <input type="number" class="form-control" id="id_quantidade_minima_estoque" name="quantidade_minima_estoque">
-                                <label for="id_quantidade_minima_estoque" style="font-size: 0.8rem;">Quantidade mínima em estoque</label>
+                        <div class="row g-1">
+                            <div class="col-6">
+                                <div class="form-floating mb-2">
+                                    <select class="form-select" id="id_is_retornavel" name="is_retornavel">
+                                        <option {% if form_produto.is_retornavel %}selected{% endif %} value="1">Sim</option>
+                                        <option {% if not form_produto.is_retornavel %}selected{% endif %} value="0">Não</option>
+                                    </select>
+                                    <label for="id_is_retornavel" style="font-size: 0.8rem;">É retornável?</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-floating mb-2">
+                                    <input type="date" class="form-control" id="id_data_validade" name="data_validade" value="{{ form_produto.data_validade }}">
+                                    <label for="id_data_validade" style="font-size: 0.8rem;">Data de validade</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row g-1">
-                        <div class="col-6">
-                            <div class="form-floating mb-2">
-                                <select class="form-select" id="id_is_retornavel" name="is_retornavel">
-                                    <option value="0">Selecione</option>
-                                    <option value="1">Sim</option>
-                                    <option value="0">Não</option>
-                                </select>
-                                <label for="id_is_retornavel" style="font-size: 0.8rem;">É retornável?</label>
+                        <div class="row g-1">
+                            <div class="col-6">
+                                <div class="form-floating mb-2">
+                                    <input type="text" class="form-control money-mask" id="id_preco_compra" name="preco_compra" value="{{ form_produto.preco_compra }}">
+                                    <label for="id_preco_compra" style="font-size: 0.8rem;">Preço de compra</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-floating mb-2">
+                                    <input type="text" class="form-control money-mask" id="id_preco_venda" name="preco_venda" value="{{ form_produto.preco_venda }}">
+                                    <label for="id_preco_venda" style="font-size: 0.8rem;">Preço de venda</label>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="form-floating mb-2">
-                                <input type="date" class="form-control" id="id_data_validade" name="data_validade">
-                                <label for="id_data_validade" style="font-size: 0.8rem;">Data de validade</label>
-                            </div>
+                        <div class="form-floating mb-2">
+                            <input type="text" class="form-control" id="id_fabricante" name="fabricante" value="{{ form_produto.fabricante }}">
+                            <label for="id_fabricante" style="font-size: 0.8rem;">Fabricante</label>
                         </div>
-                    </div>
-                    <div class="row g-1">
-                        <div class="col-6">
-                            <div class="form-floating mb-2">
-                                <input type="text" class="form-control money-mask" id="id_preco_compra" name="preco_compra">
-                                <label for="id_preco_compra" style="font-size: 0.8rem;">Preço de compra</label>
-                            </div>
+                        <div class="form-floating mb-2">
+                            <textarea class="form-control" id="id_descricao" rows="3" name="descricao">{{ form_produto.descricao }}</textarea>
+                            <label for="id_descricao" style="font-size: 0.8rem;">Descrição</label>
                         </div>
-                        <div class="col-6">
-                            <div class="form-floating mb-2">
-                                <input type="text" class="form-control money-mask" id="id_preco_venda" name="preco_venda">
-                                <label for="id_preco_venda" style="font-size: 0.8rem;">Preço de venda</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-floating mb-2">
-                        <input type="text" class="form-control" id="id_fabricante" name="fabricante">
-                        <label for="id_fabricante" style="font-size: 0.8rem;">Fabricante</label>
-                    </div>
-                    <div class="form-floating mb-2">
-                        <textarea class="form-control" id="id_descricao" rows="3" name="descricao"></textarea>
-                        <label for="id_descricao" style="font-size: 0.8rem;">Descrição</label>
-                    </div>
                             
                             <script>
+                                 
                                 function validate_form() {
                                     var form = document.getElementById('form_cadastro');
                                     var inputIDs = ['id_nome', 'id_quantidade_atual_estoque', 'id_quantidade_minima_estoque', 'id_preco_compra', 'id_preco_venda', 'id_fabricante', 'select_loja'];
@@ -246,6 +248,7 @@
                                         document.getElementById('form_cadastro').submit();
                                     }
                                 }
+                    {% if form_produto.loja is None %}   
 
                                 window.onload = function() {
                                     chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
@@ -282,7 +285,7 @@
                             dropdown.appendChild(option);
                         });
                     }
-                                
+                    {% endif %}
                             </script>
                             
                     {% endif%}

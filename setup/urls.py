@@ -81,10 +81,14 @@ from app.view.views_loja import views_loja
 url_loja = [
     # lojas
     path("lojas/", views_loja.lista_lojas, name="lista_lojas"),
-    path("lojas/criar",  views_loja.criar_loja, name="criar_loja"),
-    path("lojas/editar/<int:id_loja>/",  views_loja.editar_loja, name="editar_loja"),
-    path("lojas/selecionar/<int:id_loja>/",  views_loja.selecionar_loja, name="selecionar_loja"),
-    path("lojas/excluir/<int:id_loja>/",  views_loja.excluir_loja, name="excluir_loja"),
+    path("lojas/criar", views_loja.criar_loja, name="criar_loja"),
+    path("lojas/editar/<int:id_loja>/", views_loja.editar_loja, name="editar_loja"),
+    path(
+        "lojas/selecionar/<int:id_loja>/",
+        views_loja.selecionar_loja,
+        name="selecionar_loja",
+    ),
+    path("lojas/excluir/<int:id_loja>/", views_loja.excluir_loja, name="excluir_loja"),
 ]
 
 
@@ -94,7 +98,7 @@ url_produto = [  # produtos
     path("produtos/", views_produto.lista_produtos, name="lista_produtos"),
     path(
         "produtos/editar/<uuid:id_produto>/",
-        views_produto.editar_produto,
+        views_produto.form_produto,
         name="editar_produto",
     ),
     path(
@@ -102,7 +106,7 @@ url_produto = [  # produtos
         views_produto.acrescentar_produto,
         name="acrescentar_produto",
     ),
-    path("produtos/criar/", views_produto.criar_produto, name="criar_produto"),
+    path("produtos/criar/", views_produto.form_produto, name="criar_produto"),
     path(
         "produtos/selecionar/<uuid:id_produto>/",
         views_produto.selecionar_produto,
@@ -223,13 +227,21 @@ url_endereco = [
         name="delete_endereco",
     ),
 ]
- 
+
 from app.view.view_api import views_api
 
 url_funcJs = [  # funçoes js
     path("enviar-codigo/<str:email>/", utils.enviar_codigo, name="enviar_codigo"),
-    path("confirmar-codigo/<str:codigo>/", utils.confirmar_codigo, name="confirmar_codigo"),
-    path("atualizar-senha/<str:nova_senha>/", utils.atualizar_senha, name="atualizar_senha"),
+    path(
+        "confirmar-codigo/<str:codigo>/",
+        utils.confirmar_codigo,
+        name="confirmar_codigo",
+    ),
+    path(
+        "atualizar-senha/<str:nova_senha>/",
+        utils.atualizar_senha,
+        name="atualizar_senha",
+    ),
     path("api/status_on/", views_sessao.status_on, name="status_on"),
     path("api/status_off/", views_sessao.status_off, name="status_off"),
     path("buscar_lojas/", views_api.buscar_lojas, name="buscar_lojas"),
@@ -251,10 +263,9 @@ url_funcJs = [  # funçoes js
     ),
     # Adicione outras URLs conforme necessário
 ]
-from app.view.views_configuracao import  views_configuracao
+from app.view.views_configuracao import views_configuracao
 
-url_configuracao = [ 
-]
+url_configuracao = []
 
 from app.view.views_motoboy import views_motoboy
 

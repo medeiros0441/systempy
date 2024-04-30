@@ -18,5 +18,5 @@ class Endereco(models.Model):
     estado = models.CharField(max_length=50, null=True)
     codigo_postal = models.CharField(max_length=30, null=True)
     descricao = models.TextField(null=True, max_length=500)
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(null=True)
+    insert = models.DateTimeField(default=timezone.now, editable=False)
+    update = models.DateTimeField(auto_now=True)

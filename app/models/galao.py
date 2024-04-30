@@ -12,8 +12,8 @@ class Galao(models.Model):
     descricao = models.TextField(null=True)
     quantidade = models.IntegerField(default=0)  # Quantidade de galões
     titulo = models.CharField(max_length=100, null=True)  # Título do galão
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(null=True)
+    insert = models.DateTimeField(default=timezone.now, editable=False) 
+    update = models.DateTimeField(auto_now=True)
     loja = models.ForeignKey(Loja, on_delete=models.CASCADE, null=True)
 
 
@@ -34,6 +34,6 @@ class GestaoGalao(models.Model):
         null=True,
     )
     venda = models.ForeignKey(Venda, on_delete=models.CASCADE, null=True)
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(null=True)
+    insert = models.DateTimeField(default=timezone.now, editable=False) 
+    update = models.DateTimeField(auto_now=True)
     descricao = models.TextField(null=True)

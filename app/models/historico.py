@@ -9,8 +9,8 @@ class Historico(models.Model):
         primary_key=True, default=uuid.uuid4, editable=False
     )
     descricao = models.TextField(blank=True, null=True)
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(default=timezone.now, null=True)
+    insert = models.DateTimeField(default=timezone.now, editable=False) 
+    update = models.DateTimeField(auto_now=True)
     usuario = models.UUIDField(
         Usuario,
     )

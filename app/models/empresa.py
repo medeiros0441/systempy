@@ -16,6 +16,6 @@ class Empresa(models.Model):
     email = models.EmailField()
     nro_cpf = models.TextField()
     telefone = models.TextField()
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(null=True)
+    insert = models.DateTimeField(default=timezone.now, editable=False) 
+    update = models.DateTimeField(auto_now=True)
 

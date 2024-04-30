@@ -18,8 +18,8 @@ class Usuario(models.Model):
     senha = models.CharField(
         max_length=200,
     )
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(null=True)
+    insert = models.DateTimeField(default=timezone.now, editable=False)
+    update = models.DateTimeField(auto_now=True)
     nivel_usuario = models.IntegerField()
     status_acesso = models.BooleanField(
         default=False,

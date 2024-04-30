@@ -30,12 +30,16 @@ class Produto(models.Model):
     )
     quantidade_atual_estoque = models.IntegerField(null=True)
     quantidade_minima_estoque = models.IntegerField(null=True)
-    codigo = models.IntegerField(null=True)
-    is_retornavel = models.BooleanField(null=True,blank=True)
+    codigo = models.PositiveIntegerField(unique=True, editable=False)
 
-    data_validade = models.DateField(null=True,blank=True)
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(default=timezone.now, null=True)
+    is_retornavel = models.BooleanField(null=True, blank=True)
+    data_validade = models.CharField(null=True, blank=True, max_length=50)
+    insert = models.DateTimeField(
+        default=timezone.now, editable=False
+    )  # Valor padrão é o momento atual
+    update = models.DateTimeField(
+        auto_now=True
+    )  # Atualiza automaticamente durante qualquer alteração
     preco_compra = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -54,6 +58,13 @@ class Produto(models.Model):
         Loja,
         on_delete=models.CASCADE,
     )
+
+    def save(self, *args, **kwargs):
+        if not self.codigo:
+            ultimo_codigo = Produto.objects.order_by("-codigo").first()
+            novo_codigo = ultimo_codigo.codigo + 1 if ultimo_codigo else 1
+            self.codigo = novo_codigo
+        super().save(*args, **kwargs)
 
     def preco_compra_f(self):
         return formatar_moeda(self.preco_compra)

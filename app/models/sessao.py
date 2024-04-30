@@ -31,8 +31,8 @@ class Sessao(models.Model):
     status = models.BooleanField(
         default=True,
     )
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(null=True)
+    insert = models.DateTimeField(default=timezone.now, editable=False)
+    update = models.DateTimeField(auto_now=True)
 
     # Novos campos para dados de localização
     cidade = models.CharField(

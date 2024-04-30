@@ -17,8 +17,8 @@ class Loja(models.Model):
     sexta = models.BooleanField(default=False)
     sabado = models.BooleanField(default=False)
     domingo = models.BooleanField(default=False)
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(default=timezone.now, null=True)
+    insert = models.DateTimeField(default=timezone.now, editable=False)
+    update = models.DateTimeField(auto_now=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True)
 
@@ -27,8 +27,8 @@ class Associado(models.Model):
     id_associado = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
-    insert = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(default=timezone.now, null=True)
+    insert = models.DateTimeField(default=timezone.now, editable=False)
+    update = models.DateTimeField(auto_now=True)
     status_acesso = models.BooleanField(null=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, null=True)
     loja = models.ForeignKey(Loja, on_delete=models.CASCADE, null=True)

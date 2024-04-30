@@ -14,7 +14,7 @@ class PlanoGestao(models.Model):
     duracao_meses = models.IntegerField(db_column="duracao_meses_plano_gestao")
     status = models.BooleanField(db_column="status_plano_gestao", default=True)
     insert = models.DateTimeField(db_column="date_time_insert")
-    update = models.DateTimeField(db_column="date_time_update", null=True)
+    update = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "cps_plano_gestao"
@@ -30,7 +30,7 @@ class InscricaoGestao(models.Model):
     periodo_faturamento = models.IntegerField(db_column="periodo_faturamento_inscricao")
     status = models.BooleanField(db_column="status_inscricao")
     insert = models.DateTimeField(db_column="date_time_insert")
-    update = models.DateTimeField(db_column="date_time_update", null=True)
+    update = models.DateTimeField(auto_now=True)
     plano_gestao = models.ForeignKey(
         PlanoGestao, on_delete=models.CASCADE, db_column="fk_plano_gestao"
     )
@@ -47,7 +47,7 @@ class HistoricoCliente(models.Model):
     data_evento = models.DateTimeField(db_column="data_evento")
     descricao_evento = models.CharField(max_length=500, db_column="descricao_evento")
     insert = models.DateTimeField(db_column="date_time_insert")
-    update = models.DateTimeField(db_column="date_time_update", null=True)
+    update = models.DateTimeField(auto_now=True)
     empresa = models.ForeignKey(
         Empresa,
         on_delete=models.CASCADE,
@@ -69,7 +69,7 @@ class ConfiguracaoPlataforma(models.Model):
         max_length=500, db_column="descricao_configuracao_plataforma"
     )
     insert = models.DateTimeField(db_column="date_time_insert")
-    update = models.DateTimeField(db_column="date_time_update", null=True)
+    update = models.DateTimeField(auto_now=True)
     empresa = models.ForeignKey(
         Empresa,
         on_delete=models.CASCADE,
@@ -87,7 +87,7 @@ class Sessao(models.Model):
     navegador = models.CharField(max_length=255, db_column="navegador_sessao")
     status = models.BooleanField(db_column="status_sessao")
     insert = models.DateTimeField(db_column="date_time_insert")
-    update = models.DateTimeField(db_column="date_time_update", null=True)
+    update = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "cps_historico_cliente"
@@ -100,7 +100,7 @@ class Registro(models.Model):
     sistema_texto = models.TextField(db_column="sistema_texto")
     nivel = models.CharField(max_length=255, db_column="nivel")
     insert = models.DateTimeField(db_column="date_time_insert")
-    update = models.DateTimeField(db_column="date_time_update", null=True)
+    update = models.DateTimeField(auto_now=True)
     sessao = models.ForeignKey(
         Sessao,
         on_delete=models.CASCADE,
