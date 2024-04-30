@@ -1,5 +1,4 @@
-# Arquivos de ambiente local
-.env.dev
+ 
 
 # Arquivos de log de desenvolvimento
 *.log
@@ -8,7 +7,7 @@
 __pycache__/
 *.pyc
 **/__pycache__/
-venv/**/*.pyc  # Ignora todos os arquivos .pyc na pasta venv e em seus subdiretórios
+venv/**/*.pyc   
 
 # Arquivos de configuração de IDEs
 .idea/

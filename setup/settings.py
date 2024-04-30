@@ -6,15 +6,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 from dotenv import load_dotenv
 
-ENVIRONMENT = "production"
-
+# Carregar variáveis de ambiente do arquivo correspondente ao ambiente atual
+ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
 if ENVIRONMENT == "production":
+    DEBUG = False
     load_dotenv(".env.prod")
+else:
+    load_dotenv(".env.dev")
+    DEBUG = True
 
-
-DEBUG =False 
-
-ALLOWED_HOSTS = ["comercioprime.azurewebsites.net"]
+ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
 SECRET_KEY = "p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
 
 INSTALLED_APPS = [
@@ -43,8 +44,8 @@ MIDDLEWARE = [
 
 
 ROOT_URLCONF = "setup.urls"
-COMPRESS_ENABLED  =  True
-COMPRESS_OFFLINE  =  True
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
 # Templates
 TEMPLATES = [
     {
@@ -106,14 +107,17 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = "static/"
+# Diretórios estáticos
+STATIC_URL = "assents/"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+# Configuração para compressão de arquivos estáticos
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
+# Configurações de segurança
 if DEBUG:
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, "static"),
-    ]
-else:
-    # In production, collect static files to a single directory
-    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
