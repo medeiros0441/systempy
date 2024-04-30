@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -25,12 +25,16 @@ jobs:
 
       - name: Zip artifact for deployment
         run: zip -r deploy-package.zip .
+        
+      # Aqui está a etapa adicionada para compactar o pacote de implantação
+      - name: Compact deployment package
+        run: gzip deploy-package.zip
 
       - name: Upload deployment artifact
         uses: actions/upload-artifact@v2
         with:
           name: deploy-package
-          path: deploy-package.zip
+          path: deploy-package.zip.gz
 
       - name: Deploy to Azure Web App using Web Deploy
         uses: azure/webapps-deploy@v2
