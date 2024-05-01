@@ -30,55 +30,55 @@ class views_produto:
     @staticmethod
     @utils.verificar_permissoes(6)
     def form_produto(request, id_produto=None):
-    try:
-        produto = None
+        try:
+            produto = None
 
-        if id_produto is not None:
-            produto = Produto.objects.get(id_produto=id_produto)
+            if id_produto is not None:
+                produto = Produto.objects.get(id_produto=id_produto)
 
-        if request.method == "POST" or request.method == "PUT":
-            status, mensagem, data = views_produto.validate_form(request.POST)
-            if status:
-                if id_produto is None:
-                    produto = Produto()  # Criar um novo produto apenas se id_produto for None
+            if request.method == "POST" or request.method == "PUT":
+                status, mensagem, data = views_produto.validate_form(request.POST)
+                if status:
+                    if id_produto is None:
+                        produto = Produto()  # Criar um novo produto apenas se id_produto for None
+                    else:
+                        produto = Produto.objects.get(id_produto=id_produto)  # Buscar o produto existente
+
+                    # Atribuir os valores aos campos do produto
+                    produto.loja_id = int(data["loja"])
+                    produto.nome = data["nome"]
+                    produto.quantidade_atual_estoque = data["quantidade_atual_estoque"]
+                    produto.quantidade_minima_estoque = data["quantidade_minima_estoque"]
+                    produto.is_retornavel = bool(int(data["is_retornavel"]))
+                    produto.data_validade = data["data_validade"]
+                    produto.preco_compra = data["preco_compra"]
+                    produto.preco_venda = data["preco_venda"]
+                    produto.fabricante = data["fabricante"]
+                    produto.descricao = data["descricao"]
+
+                    produto.save()  # Salvando o produto no banco de dados
+
+                    if id_produto is None:
+                        Alerta.set_mensagem("Cadastrado com Sucesso.")
+                    else:
+                        Alerta.set_mensagem("Editado com Sucesso.")
+
+                    return redirect("lista_produtos")
                 else:
-                    produto = Produto.objects.get(id_produto=id_produto)  # Buscar o produto existente
-
-                # Atribuir os valores aos campos do produto
-                produto.loja_id = int(data["loja"])
-                produto.nome = data["nome"]
-                produto.quantidade_atual_estoque = data["quantidade_atual_estoque"]
-                produto.quantidade_minima_estoque = data["quantidade_minima_estoque"]
-                produto.is_retornavel = bool(int(data["is_retornavel"]))
-                produto.data_validade = data["data_validade"]
-                produto.preco_compra = data["preco_compra"]
-                produto.preco_venda = data["preco_venda"]
-                produto.fabricante = data["fabricante"]
-                produto.descricao = data["descricao"]
-
-                produto.save()  # Salvando o produto no banco de dados
-
-                if id_produto is None:
-                    Alerta.set_mensagem("Cadastrado com Sucesso.")
-                else:
-                    Alerta.set_mensagem("Editado com Sucesso.")
-
-                return redirect("lista_produtos")
+                    Alerta.set_mensagem(mensagem)
+                    return views_produto.lista_produtos(
+                        request, {"open_modal": True, "form_produto": data}
+                    )
             else:
-                Alerta.set_mensagem(mensagem)
+                if produto is None:
+                    produto = True
                 return views_produto.lista_produtos(
-                    request, {"open_modal": True, "form_produto": data}
+                    request,
+                    {"open_modal": True, "form_produto": produto},
                 )
-        else:
-            if produto is None:
-                produto = True
-            return views_produto.lista_produtos(
-                request,
-                {"open_modal": True, "form_produto": produto},
-            )
-    except Exception as e:
-        mensagem_erro = str(e)
-        return utils.erro(request, mensagem_erro)
+        except Exception as e:
+            mensagem_erro = str(e)
+            return utils.erro(request, mensagem_erro)
 
 
 

@@ -46,16 +46,12 @@ class views_loja:
                     Alerta.set_mensagem("Cadastrado com Sucesso.")
 
                     id_usuario = UserInfo.get_id_usuario(request)
-                    usuario = Usuario.objects.get(id_usuario=id_usuario)
-                    associacao = Associado.objects.create(
-                        usuario_id=id_usuario, loja=loja
-                    )
-                    if usuario.nivel_usuario == 1:
-                        associacao.status_acesso = True
-                    else:
-                        associacao.status_acesso = False
-                    associacao.save
-
+                    usuario_adm = Usuario.objects.get(empresa_id=loja.empresa_id, nivel_usuario=1)
+                    
+                    Associado.objects.bulk_create([
+                        Associado(usuario_id=id_usuario, loja=loja, status_acesso=True),
+                        Associado(usuario=usuario_adm, loja=loja, status_acesso=True)
+                    ])
                     Alerta.set_mensagem(f"Loja {loja.nome_loja} criada com sucesso")
                     return redirect("lista_lojas")
                 else:

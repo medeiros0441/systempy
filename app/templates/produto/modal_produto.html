@@ -64,11 +64,9 @@
             {% if produtos_list %} 
                 {% csrf_token %}
                         <div class="form-floating mb-2">
-                            <select class="form-select" id="id_loja" name="id_loja"  >
+                            <select class="form-select classe_select_lojas" id="id_loja" name="id_loja"  >
                                 <option class="small font-monospace mt-2" selected disabled>Selecione a loja</option>
-                                {% for loja in lojas %}
-                                <option class="small font-monospace" value="{{ loja.id_loja }}">{{ loja.nome_loja }}</option>
-                                {% endfor %}
+                                 
                             </select>
                             <label for="id_loja" style="font-size: 0.8rem;">Loja:</label>
                         </div>
@@ -78,7 +76,7 @@
                             <select class="form-select" id="id_nome" name="id_produto" aria-label="Selecione">
                                 <option class="small font-monospace mt-2" selected disabled>Selecione o produto</option>
                                 {% for produto in produtos_list %}
-                                <option  class="small font-monospace" value="{{ produto.id }}" data-loja="{{ produto.id_loja }}">{{ produto.nome }}</option>
+                                <option  class="small font-monospace" value="{{ produto.id_produto }}" data-loja="{{ produto.id_loja }}">{{ produto.nome }}</option>
                                 {% endfor %}
                             </select>
                             <label for="id_nome" style="font-size: 0.8rem;">Nome:</label>
@@ -95,21 +93,15 @@
                         </div>
                     
                     <script>
-                        document.getElementById('form_cadastro').addEventListener('submit', function(event) {  
-                            event.preventDefault(); // Evita que o formulário seja submetido
-                            
-                            var idLoja = document.getElementById('id_loja').value;
-                            var idProduto = document.getElementById('id_nome').value;
-                            var id_quantidade_acrescentar = document.getElementById('id_quantidade_acrescentar').value;
-                        
-                            if (idLoja === "" || idProduto === "" || id_quantidade_acrescentar === "") {
-                                alertCustomer("Por favor, preencha todos os campos.");
-                            
-                            } else {
-                                // Se todos os campos estiverem preenchidos, envie o formulário
+                  
+                        function validate_form() {
+                            var form = document.getElementById('form_cadastro');
+                            var inputIDs = ['id_nome', 'id_quantidade_acrescentar',   'id_loja'];
+                            status =  Utils.validateInputs(inputIDs);
+                            if (status == "true") {
                                 document.getElementById('form_cadastro').submit();
                             }
-                        });
+                        }
                         
                     
                         // Renderizando os dados do Django no JavaScript
@@ -174,7 +166,7 @@
             {% if form_produto %}   
                     {% csrf_token %}
                     <div class="form-floating mb-2">
-                        <select class="form-select " id="select_loja" name="select_loja">
+                        <select  {% if form_produto.loja  %}   class="    form-select" {% else %}  class="form-select classe_select_lojas"    {% endif %}id="select_loja" name="select_loja">
                             {% if form_produto.loja %} <option value="{{form_produto.loja_id}}" select  >{{form_produto.loja.nome_loja}}</option>{% endif %}
                         </select>
                         <label for="select_loja">Loja:</label>
@@ -250,41 +242,8 @@
                                 }
                     {% if form_produto.loja is None %}   
 
-                                window.onload = function() {
-                                    chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
-                                        if (response.success === true) {
-                                            // Armazenar os dados no localStorage
-                                            atualizarDropdownLojas(response.lojas);
-                                        } else {
-                                            alertCustomer(response.error);
-                                        }
-                                    });
-                                };
+                               
                                 
-                                 
-                    // Função para atualizar o dropdown com as lojas
-                    function atualizarDropdownLojas(list_lojas) {
-                        const dropdown = document.getElementById('select_loja');  // Obtém o dropdown de lojas
-
-                        // Limpa as opções existentes
-                        dropdown.innerHTML = '';
-
-                        // Adiciona a opção padrão
-                        if(list_lojas.length > 1){
-                            const optionDefault = document.createElement('option');
-                            optionDefault.value = '0';
-                            optionDefault.textContent = 'Selecione';
-                            dropdown.appendChild(optionDefault);
-                        }
-
-                        // Adiciona as opções de lojas
-                        list_lojas.forEach(function(loja) {
-                            const option = document.createElement('option');
-                            option.value = loja.id_loja;
-                            option.textContent = loja.nome_loja;
-                            dropdown.appendChild(option);
-                        });
-                    }
                     {% endif %}
                             </script>
                             
