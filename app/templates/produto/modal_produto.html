@@ -102,35 +102,13 @@
                                 document.getElementById('form_cadastro').submit();
                             }
                         }
-                        
-                    
-                        // Renderizando os dados do Django no JavaScript
-                        var lojas = [
-                            {% for loja in lojas %}
-                                {
-                                    id: "{{ loja.id_loja }}",
-                                    nome: "{{ loja.nome_loja }}"
-                                },
-                            {% endfor %}
-                        ];
-                    
-                        var produtos = [
-                            {% for produto in produtos_list %}
-                                {
-                                    id: "{{ produto.id_produto }}",
-                                    nome: "{{ produto.nome}}",
-                                    id_loja: "{{ produto.loja.id_loja }}",
-                                    quantidade_atual_estoque: "{{ produto.quantidade_atual_estoque }}"
-                                },
-                            {% endfor %}
-                        ];
-                    
                         // Adiciona um ouvinte de evento de mudança ao seletor da loja
-
                         document.getElementById('id_nome').addEventListener('change', function () {
+                           
+                            const produtos = Utils.getLocalStorageItem('data_produtos');
                             var selected = this.value;
                             produtos.forEach(function (produto) {
-                                if (produto.id=== selected  ) {
+                                if (produto.id_produto=== selected  ) {
                                 document.getElementById('id_quantidade_atual_estoque').textContent = produto.quantidade_atual_estoque;
                             }
                             }); 
@@ -151,11 +129,13 @@
                             idNomeSelect.appendChild(option); // Adiciona a opção ao seletor de produtos
                             document.getElementById('id_quantidade_atual_estoque').textContent = "";
 
+                            const produtos = Utils.getLocalStorageItem('data_produtos');
+                            id = parseInt(selectedLoja);
                             // Adiciona as opções dos produtos filtrados com base na loja selecionada
                             produtos.forEach(function (produto) {
-                                if (produto.id_loja === selectedLoja ||selectedLoja   === '') {
+                                if (produto.loja_id ===  id  ||selectedLoja   === '') {
                                     var option = document.createElement('option');
-                                    option.value = produto.id;
+                                    option.value = produto.id_produto;
                                     option.textContent = produto.nome;
                                     idNomeSelect.appendChild(option);
                             }

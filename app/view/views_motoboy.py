@@ -5,7 +5,7 @@ from ..static import UserInfo, Alerta
 from functools import wraps
 from ..utils import utils
 from django.views.decorators.csrf import csrf_exempt
-
+import json
 
 class views_motoboy:
 
@@ -38,9 +38,9 @@ class views_motoboy:
     @utils.verificar_permissoes(codigo_model=9)
     def create_motoboy(request):
         if request.method == "POST":
-            data = request.POST
-            nome = data.get("nome")
-            numero = data.get("numero")
+            dados = json.loads(request.body)
+            nome = dados.get("nome")
+            numero = dados.get("telefone")
             id_empresa = UserInfo.get_id_empresa(request, True)
 
             if nome and numero and id_empresa:

@@ -4,7 +4,7 @@ document.getElementById('id_metodo_entrega').addEventListener('change', function
     var containerEntrega = document.getElementById('id_container_entrega');
 
     // Verifica se a opção selecionada é "entrega_no_local"
-    if (selectedOption === 'entrega_no_local') {
+    if (selectedOption === 'entrega no local') {
       containerEntrega.classList.remove('d-none'); // Remove a classe d-none
     } else {
       containerEntrega.classList.add('d-none'); // Adiciona a classe d-none
@@ -55,35 +55,7 @@ function gerencia_container_cliente(obj) {
         btnCadastrarCliente.onclick =function() { gerencia_container_cliente(1); };
         toggleGestaoCliente(true);
     }
-} 
-function listarMotoboys() {
-    var container = document.getElementById('container_gestao_entrega');
-    manageLoading(true,"container_gestao_entrega"); 
-    if (container) {
-        listarMotoboysPorEmpresa()
-        .then(result => {
-            if (result.success) {
-                var selectMotoboy = document.getElementById('id_motoboy');
-                selectMotoboy.innerHTML = ''; // Limpar as opções existentes
-                
-                // Adicionar as opções dos motoboys
-                result.data.forEach(motoboy => {
-                    var option = document.createElement('option');
-                    option.value = motoboy.id_motoboy;
-                    option.text = motoboy.nome;
-                    selectMotoboy.appendChild(option);
-                });
-            alertCustomer('Lista de motoboys atualizada.');
-            } else {
-                alertCustomer(result.data);
-            }
-        manageLoading(false,"container_gestao_entrega"); 
-        })
-    .catch(error => {
-        alertCustomer(error.message);
-    });
-}
-}
+}  
 
 // Função para carregar e manipular a lista de clientes
 function carregarListaClientes() {
@@ -137,7 +109,7 @@ function insertCliente() {
         if (response.data) {
             alertCustomer("Cliente criado com sucesso!");
             manageLoading(false, "cadastrar_cliente");
-            toggleGestaoCliente(1)
+            toggleGestaoCliente(1);
             montarInfoCliente(response.data,"info_cliente");
             new_carregarListaClientes();
 
@@ -273,29 +245,38 @@ function montarInfoCliente(data, id_container) {
     // Exibir o container de informações
     container.classList.remove("d-none");
 }
- 
+ function close_cliente(){
+    document.getElementById('id_cliente').value = "0";
+    document.getElementById('info_cliente').classList.add("d-none")
+    toggleResultadoPesquisa(true);
+    alertCustomer(`Cliente Retirado de Selecão`);
+ }
 
 // Função para atualizar o dropdown com as lojas
-function atualizarDropdownLojas(list_lojas) {
-    const dropdown = document.getElementById('id_loja');  // Obtém o dropdown de lojas
+function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
+    // Seleciona todos os elementos select com a classe especificada
+    const selects = document.querySelectorAll('.' + classe_select_lojas);
 
-    // Limpa as opções existentes
-    dropdown.innerHTML = '';
+    // Itera sobre cada select encontrado
+    selects.forEach(function(select) {
+        // Limpa as opções existentes
+        select.innerHTML = '';
 
-    // Adiciona a opção padrão
-    if(list_lojas.length > 1){
-        const optionDefault = document.createElement('option');
-        optionDefault.value = '0';
-        optionDefault.textContent = 'Selecione';
-        dropdown.appendChild(optionDefault);
-    }
+        // Adiciona a opção padrão, se houver mais de uma loja na lista
+        if (list_lojas.length > 1) {
+            const optionDefault = document.createElement('option');
+            optionDefault.value = '0';
+            optionDefault.textContent = 'Selecione';
+            select.appendChild(optionDefault);
+        }
 
-    // Adiciona as opções de lojas
-    list_lojas.forEach(function(loja) {
-        const option = document.createElement('option');
-        option.value = loja.id_loja;
-        option.textContent = loja.nome_loja;
-        dropdown.appendChild(option);
+        // Adiciona as opções de lojas
+        list_lojas.forEach(function(loja) {
+            const option = document.createElement('option');
+            option.value = loja.id_loja;
+            option.textContent = loja.nome_loja;
+            select.appendChild(option);
+        });
     });
 }
 // Função para carregar e manipular a lista de clientes
@@ -303,18 +284,41 @@ function carregarListaClientes() {
         data_clientes = Utils.getLocalStorageItem('data_clientes');
         manipularPesquisaClientes(data_clientes);   
 }
+
+
+function listarMotoboys() {
+        chamarFuncaoPython('/listar_motoboys_por_empresa/', null, 'GET', function(response) {
+            if (response.motoboys) {
+                var selectMotoboy = document.getElementById('id_motoboy');
+                selectMotoboy.innerHTML = ''; // Limpar as opções existentes
+                // Adicionar as opções dos motoboys
+                if(response.motoboys.length > 0){
+                    response.motoboys.forEach(motoboy => {
+                    var option = document.createElement('option');
+                    option.value = motoboy.id_motoboy;
+                    option.text = motoboy.nome;
+                    selectMotoboy.appendChild(option);
+                });
+                alertCustomer('Lista de motoboys atualizada.');
+    
+            } else {
+                alertCustomer('nenhum motoboy cadastrado');
+            }
+     }
+    });
+}
 function toggleGestaoEntrega() {
     var container = document.getElementById("container_gestao_entrega");
     var iconeOpen = document.getElementById("icone_entrega_open");
     var iconeClose = document.getElementById("icone_entrega_close");
 
     if (container.classList.contains("d-none")) {
-        listarMotoboys();
         // Se o container estiver oculto, mostrá-lo e trocar os ícones
         container.classList.remove("d-none");
         iconeOpen.classList.remove("d-none");
         iconeClose.classList.add("d-none");
-    } else {
+     
+} else {
         // Se o container estiver visível, ocultá-lo e trocar os ícones
         container.classList.add("d-none");
         iconeOpen.classList.add("d-none");
@@ -335,8 +339,7 @@ function toggleMotoboyFields() {
         cadastrarMotoboy.classList.add("d-none");
         // Altera o texto do botão para "Cadastrar Motoboy" e adiciona um ícone adequado 
         btnCadastrarBoy.innerHTML = '<i class="bi bi-person-plus"></i>';
-        listarMotoboys();
-    } else {
+    } else  {
     // Se estiver visível, mostra o campo de cadastro e oculta o campo de seleção de motoboy
         selectMotoboy.classList.add("d-none");
         cadastrarMotoboy.classList.remove("d-none");
@@ -350,6 +353,35 @@ function toggleMotoboyFields() {
         iconeClose.classList.add("d-none");
     }
 }
+function insertMotoboy() {
+    var nome  = document.getElementById('nome_motoboy').value.trim();
+    var telefone  = document.getElementById('telefone_motoboy').value.trim();
+    manageLoading(true,"cadastrar_motoboy"); 
+    // Validar se os campos não estão vazios
+    if (nome === '') {
+        alertCustomer('insira o nome do motoboy.');
+            manageLoading(false,"cadastrar_motoboy");
+            return false;
+    }
+    if (telefone === '') {
+        alertCustomer('insira o telefone do motoboy.');
+            manageLoading(false,"cadastrar_motoboy");
+            return false;
+    }
+    chamarFuncaoPython('/create_motoboy/', {nome, telefone}, 'POST', function(response) {
+        if (response.status === 'success') {
+            // Limpar os campos após a criação bem-sucedida
+            document.getElementById('nome_motoboy').value = '';
+            document.getElementById('telefone_motoboy').value = '';
+            toggleMotoboyFields();
+            listarMotoboys();
+        } else {
+            alertCustomer('Erro ao cadastrar motoboy');
+        }
+    });
+    manageLoading(false,"cadastrar_motoboy");
+}
+
 function toggleGestaproduto() {
     var container = document.getElementById("body_gestao_pay");
     var iconeOpen = document.getElementById("icone_pagamento_open");
@@ -367,40 +399,7 @@ function toggleGestaproduto() {
         iconeClose.classList.remove("d-none");
     }
 }
-
-function insertMotoboy() {
-    var nomeMotoboy = document.getElementById('nome_motoboy').value.trim();
-    var telefoneMotoboy = document.getElementById('telefone_motoboy').value.trim();
-    manageLoading(true,"cadastrar_motoboy"); 
-    // Validar se os campos não estão vazios
-    if (nomeMotoboy === '') {
-        alertCustomer('insira o nome do motoboy.');
-        return;
-    }
-    if (telefoneMotoboy === '') {
-        alertCustomer('insira o telefone do motoboy.');
-        return;
-    }
-
-
-// Chamar a função para criar um motoboy, passando o objeto de dados como parâmetro
-createMotoboy(nomeMotoboy, telefoneMotoboy)
-    .then(result => {
-        if (result.success) {
-            // Limpar os campos após a criação bem-sucedida
-            document.getElementById('nome_motoboy').value = '';
-            document.getElementById('telefone_motoboy').value = '';
-        }
-        manageLoading(false,"cadastrar_motoboy");
-        toggleMotoboyFields()
-    })
-    .catch(error => {
-        alertCustomer('Ocorreu um erro ao criar o motoboy: ' + error.message);
-        // Habilitar o contêiner e remover o indicador de carregamento em caso de erro
-        container.classList.remove('disabled');
-    });
-}
-
+ 
 
 // Defina sua função de verificação
 function verificarAntesDoSubmit() {
@@ -422,7 +421,7 @@ function verificarAntesDoSubmit() {
         return false;  
     } 
     // Se o método de entrega for "entrega_no_local", verifica se foi inserido um valor no campo de taxa de entrega
-    else if (metodoEntrega == "entrega_no_local") {
+    else if (metodoEntrega == "entrega no local") {
         var taxaEntrega = document.getElementById('txt_taxa_entrega').value;
         if (taxaEntrega.trim() === '') {
             alertCustomer('informe a taxa de entrega antes de enviar o formulário.');
@@ -453,19 +452,16 @@ function enviarDadosVenda() {
             if (response.success===true) {
                 alertCustomer(response.message);
                 close_modal();
-                get_data();
-
             } else {
                 alertCustomer(response.error);
             }
-            manageLoading(false,"form_cadastro"); 
         },
         error: function(xhr, errmsg, err) {
             console.log(xhr.responseText); // Exibe o erro no console do navegador
             alertCustomer("Ocorreu um erro ao processar a venda. Por favor, tente novamente mais tarde.");
-         manageLoading(false,"form_cadastro"); 
         }
     }); 
+    manageLoading(false,"form_cadastro"); 
 } 
 document.getElementById("btnSubmit").addEventListener("click", function(event) {
     // Chama a função de verificação antes de permitir o envio do formulário
@@ -516,11 +512,11 @@ function atualizarCamposCarrinho() {
         var selectedOption = this.options[this.selectedIndex];
         var selectedValue = selectedOption.value;
 
-        if (selectedValue === "retirado_na_loja") {
+        if (selectedValue === "retirado na loja") {
             document.getElementById("id_estado_transacao").value = "finalizado";
         }
 
-        if (selectedValue === "entrega_no_local") {
+        if (selectedValue === "entrega no local") {
             document.getElementById("id_estado_transacao").value = "processando";
             toggleGestaoEntrega();
         }
@@ -677,14 +673,14 @@ function new_carregarListaClientes (){
       }
   });  }
  function FormModalVendas() {
-
+    listarMotoboys();
     
     new_carregarListaClientes();
     // Chamar a função para preencher a tabela ao carregar a página
     produtosArray = Utils.getLocalStorageItem('data_produtos');
 
     lojas_data = Utils.getLocalStorageItem('data_lojas');
-    atualizarDropdownLojas(lojas_data);
+    atualizarDropdownLojas(lojas_data ,"select_lojas");
     // Adiciona ouvintes de evento de entrada aos campos relevantes
     document.getElementById('txt_taxa_entrega').addEventListener('input', calcularTroco);
     document.getElementById('txt_desconto').addEventListener('input', calcularTroco);
@@ -749,7 +745,12 @@ adicionarBtn.addEventListener("click", function () {
     // Itera sobre a lista de produtos para encontrar o produto selecionado
    // Variável de controle para indicar se o loop deve continuar ou parar
     let continuarLoop = true;
-
+    // Verificar as condições do produto
+    if (produtoInput.value == "") {
+        alertCustomer("Selecione um produto da lista de sugestões..");
+        continuarLoop = false; // Definir para false para parar o loop
+        return;
+    }
     // Iterar sobre a lista de produtos
     produtosArray.forEach(function(produto) {
         // Verificar se o loop deve continuar
@@ -757,12 +758,7 @@ adicionarBtn.addEventListener("click", function () {
             return; // Se não, saia do loop
         }
 
-        // Verificar as condições do produto
-        if (produtoInput.value == "") {
-            alertCustomer("Selecione um produto da lista de sugestões..");
-            continuarLoop = false; // Definir para false para parar o loop
-            return;
-        }
+        
 
         if (produto.id_produto == produtoId) {
             if (produto.quantidade_atual_estoque >= 1) {
@@ -838,7 +834,7 @@ adicionarBtn.addEventListener("click", function () {
     }
 
     // Função para gerar os inputs dinamicamente com base no número de galões que estão saindo
-    function gerarInputs(numeroGaloes) {
+    function gerarInputs(numeroGaloes,valores=null) {
         var formGestaoGalao = document.getElementById("form_galaoGestao");
         
 
@@ -855,7 +851,7 @@ adicionarBtn.addEventListener("click", function () {
                         <label class="form-label" style="font-size: 1.rem">Galão que está entrando ${i+1}.</label>
                         <div class="col mx-1 p-0">
                             <div class="form-floating mb-2">
-                                <input type="text" id="data_validade_entrada_${i}" name="data_validade_entrada_${i}" class="form-control data-validade data-mes-ano-mask">
+                                <input type="text" id="data_validade_entrada_${i}" name="data_validade_entrada_${i}" values="${valores.data_validade_entrada_}" class="form-control data-validade data-mes-ano-mask">
                                 <label for="data_validade_entrada_${i}" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                             </div>
                         </div>
@@ -1008,14 +1004,15 @@ function detalhes_modal_cliente(id_venda) {
         if (response.success === true) {
             // Obtém a lista de produtos da resposta
             var produtos = response.list_produtos;
-
+            var ul_produtos = document.getElementById("ul_produtos");
+            ul_produtos.innerHTML = ""
             // Itera sobre os produtos e os exibe
             produtos.forEach(function(valor) {
                 var ul_produtos = document.getElementById("ul_produtos");
                 var novoItemLista = document.createElement("li");
                 novoItemLista.classList.add("list-group-item", "item-list-carrinho", "d-flex", "justify-content-between", "align-items-center");
                 novoItemLista.innerHTML = `
-                    <span class="badge text-bg-primary me-1 rounded-pill quantidade">${valor.quantidade_atual_estoque}</span>
+                    <span class="badge text-bg-primary me-1 rounded-pill quantidade">${valor.quantidade}</span>
                     <span class="text-small small" style="font-size: 0.8rem;">${valor.nome} R$ ${valor.preco_venda} Unid</span>
                 `;
                 ul_produtos.appendChild(novoItemLista);
@@ -1027,14 +1024,17 @@ function detalhes_modal_cliente(id_venda) {
          
         manageLoading(false,"ul_produtos");
     });
-    manageLoading(true,"details-cliente");
     chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
         if (response.success === true) {
-        montarInfoCliente(response.cliente,"details-cliente");
+            document.getElementById("informativo_not_cliente").classList.add("d-none");
+            montarInfoCliente(response.cliente,"details-cliente");
+            document.getElementById("details-cliente").classList.remove("d-none");
+
         } else {
             alertCustomer(response.message);
+            document.getElementById("informativo_not_cliente").classList.remove("d-none");
+            document.getElementById("details-cliente").classList.add("d-none");
         }
-        manageLoading(false,"details-cliente");
     });
     // Função para formatar números em moeda
     function formatarMoeda(valor) {
@@ -1090,12 +1090,21 @@ function detalhes_modal_cliente(id_venda) {
     
     chamarFuncaoPython("/api/retornaveis/by/venda/" + id_venda, {}, "GET", function(response) {
         if (response.success === true) {
+            if(response.list_retornaveis.length >0){
+                document.getElementById("details-retonaveis").classList.remove("d-none");
+                document.getElementById("informativo_not_retonaveis").classList.add("d-none");
             ProdutosRetornaveis(response.list_retornaveis);
+            }else{
+                document.getElementById("informativo_not_retonaveis").classList.remove("d-none");
+                document.getElementById("details-retonaveis").classList.add("d-none");
+            }
+
         } else {
             alertCustomer(response.message);
         }
         manageLoading(false,"details-retonaveis");
-    });function ProdutosRetornaveis(data_list) {
+    });
+    function ProdutosRetornaveis(data_list) {
         const container = document.getElementById('details-retonaveis');
     
         for (let i = 0; i < data_list.length; i++) {

@@ -5,7 +5,7 @@
         <div class="modal-dialog  modal-lg modal-fullscreen-lg-down modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold font-monospace" id="lojaModalLabel" > </h5>
+                    <h5 class="modal-title fw-bold font-monospace" id="ModalLabel" > </h5>
                 </div>
                 <div class="modal-body detalhes-venda font-monospace" id="container-detalhes">
 <!--card detalhes do cliente  -->
@@ -107,6 +107,15 @@
     <div class="d-flex align-items-center font-monospace">
     <span class="me-auto fs-6 text-white text-center">Produtos retornáveis </span>
     </div>  </div>
+
+    <div id="informativo_not_retonaveis" class="d-none card-body">
+        <div class="text-center">
+        <p class="font-monospace  fw-bold">Não há produtos retonaveis nessa venda.</p>
+    </div>
+    <div class="text-center">
+        <img src="/static/img/undraw/undraw_faq_re_31cw.svg" class="img-fluid col-10" style="max-width: 300px; max-height: 300px;">
+        </div>
+        </div>
     <div id="details-retonaveis" class="  card-body ">
 
     </div>
@@ -118,7 +127,16 @@
                             <div class="d-flex align-items-center font-monospace">
                                 <span class="me-auto fs-6 text-white text-center">Informações do Cliente</span>
                             </div>  </div>
-                        <div   id="details-cliente">
+                            <div id="informativo_not_cliente" class="d-none card-body">
+                                <div class="text-center">
+                                <p class="font-monospace   fw-bold">Não há cliente associado à venda.</p>
+                            </div>
+                            <div class="text-center">
+                                <img src="/static/img/undraw/undraw_faq_re_31cw.svg" class="img-fluid col-10" style="max-width: 300px; max-height: 300px;">
+                                </div>
+                                </div>
+                        <div   id="details-cliente" class="d-none">
+                            
                             <div  class="  card-body row d-flex"  >
                             <div class="col-auto d-inline-flex">
                                 <i class="bi bi-person-fill me-1"></i>
@@ -193,7 +211,7 @@
             {% csrf_token %}
        
             <div class="form-floating mb-2">
-                            <select name="loja" class="form-select" id="id_loja">
+                            <select name="loja" class="form-select select_lojas" id="id_loja">
                                 <option value="0">Selecione</option>
                             
                             </select>
@@ -232,8 +250,8 @@
                         <div class="form-floating mb-2">
                         <select name="metodo_entrega" class="form-select" id="id_metodo_entrega">
                         <option value="0">Selecione</option>
-                        <option value="retirado_na_loja">Retirado na Loja</option>
-                        <option value="entrega_no_local">Entrega no Local</option>
+                        <option value="retirado na loja">Retirado na Loja</option>
+                        <option value="entrega no local">Entrega no Local</option>
                         </select>
                         <label for="metodo_entrega">Método de Entrega:</label></div>  
 
@@ -254,8 +272,8 @@
                             <option value="0">Selecione</option>
                             <option value="dinheiro">Dinheiro</option>
                             <option value="pix">Pix</option>
-                            <option value="cartao_credito">Cartão de Crédito</option>
-                            <option value="cartao_debito">Cartão de Débito</option>
+                            <option value="cartao credito">Cartão de Crédito</option>
+                            <option value="cartao debito">Cartão de Débito</option>
                             <option value="fiado">Fiado</option>
                         </select>
                         <label for="forma_pagamento">Forma de Pagamento:</label> </div> 
@@ -322,7 +340,7 @@
                             <div class="m-0 p-0 " id="select_motoboy">
                                 <div class="form-floating mb-2">
                                     <select id="id_motoboy" name="motoboy" class="form-select">
-                                        <option value="0">Selecione um motoboy</option>
+                    <option  value="0" class="small font-monospace mt-2"  >Selecione</option>
                                     </select>
                                     <label for="id_motoboy">Selecione Motoboy:</label>
                                 </div> </div>
@@ -332,7 +350,7 @@
                                     <label for="nome_motoboy" class="form-label">Nome do Motoboy:</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="text" class="form-control" id="telefone_motoboy" placeholder=" ">
+                                    <input type="text" class="form-control telefone-mask" id="telefone_motoboy" placeholder=" ">
                                     <label for="telefone_motoboy" class="form-label">Telefone do Motoboy:</label>
                                 </div>
                                 <button type="button" class="btn btn-primary btn-loading" id="btnCriarBoy" onclick="insertMotoboy()">Cadastrar Motoboy</button>
@@ -376,7 +394,10 @@
                 <div id="info_cliente" class="d-none font-monospace row d-flex card">
                     <div class="card-header bg-dark text-white">
                         <div class="d-flex align-items-center font-monospace">
-                            <span class="me-auto fs-6 text-white text-center">Cliente Selecionado</span>
+                            <span class="me-auto d-inline-flex fs-6 text-white text-center">Cliente Selecionado</span>
+
+                            <button type="button" style="font-size:20px;" class="btn btn-sm text-white  bi-x-circle " onclick="close_cliente();">
+                            </button>
                         </div>
                     </div>
                     <div  class="  card-body row d-flex">
@@ -532,7 +553,8 @@
 
                 <input  name="troco" id="troco" type="hidden" value="0" > 
                 <input  name="total_apagar" id="total_apagar" type="hidden" value="0" > 
-                <input id="id_cliente" name="id_cliente" name="id_cliente" type="hidden" value="0" > 
+                <input id="id_cliente" name="id_cliente" type="hidden" value="0" > 
+                <input id="id_venda_editar" name="id_venda_editar"   type="hidden" value="" > 
                 <div class="modal-footer ">
                         <button type="button" onclick="close_modal();"  class="btn btn-secondary float-start me-auto btn-sm">Cancelar</a>
                         <button type="button" id="btnSubmit" class="btn btn-primary float-end btn-md btn-loading" >Salvar</button>

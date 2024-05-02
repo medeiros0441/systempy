@@ -16,14 +16,14 @@ class Alerta:
 
 
 from django.contrib.auth.hashers import check_password
-from .models.usuario import Usuario
+from app import models
 
 
 class UserInfo:
     @staticmethod
     def set_id_usuario(request, email, senha):
         try:
-            usuario = Usuario.objects.get(email=email)
+            usuario = models.usuario.objects.get(email=email)
             # Verifica se a senha fornecida corresponde ao hash armazenado
             if check_password(senha, usuario.senha):
                 request.session["id_usuario"] = usuario.id_usuario
@@ -31,7 +31,7 @@ class UserInfo:
                 return True, "Usuário autenticado com sucesso."
             else:
                 return False, "Senha inválida"
-        except Usuario.DoesNotExist:
+        except models.Usuario.DoesNotExist:
             return False, "E-mail inválido"
 
     @staticmethod

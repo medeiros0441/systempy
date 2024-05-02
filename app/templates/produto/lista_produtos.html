@@ -16,16 +16,7 @@
 {%endif%}
 <a  type="button"  href="{% url 'criar_produto' %}"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Novo Produto</a>
     </div>
-
-    <div id="filtroProdutos" class="mb-2 mx-auto card-md card">
-        <div class="card-header">
-            <h5 class="card-title mb-0">
-                <button id="btnAbrirFiltro" class="btn btn-text border-1" type="button" data-bs-toggle="collapse" data-bs-target="#filtroCollapse" aria-expanded="false" aria-controls="filtroCollapse">
-                    <i class="bi bi-funnel me-2"></i>Filtro de Produtos
-                </button>
-            </h5>
-        </div>
-        <div class="collapse" id="filtroCollapse">
+  
             <div class="card-body">
 
                 <div class="form-floating mb-2 form-loja">
@@ -40,8 +31,6 @@
                 </div>
      
             </div>
-        </div>
-    </div>
     
     
     <ul id="listaProdutos" class="list-group"></ul>

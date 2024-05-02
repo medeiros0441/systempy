@@ -121,20 +121,26 @@ class processos:
             desc_venda = data_formulario.get("descricao_venda")
             print(data_formulario)
 
-            # Criando uma instância do modelo Venda com os dados do formulário de forma síncrona
-            venda = Venda.objects.create(
-                forma_pagamento=forma_pagamento,
-                estado_transacao=estado_transacao,
-                metodo_entrega=metodo_entrega,
-                desconto=desconto,
-                valor_total=valor_total,
-                valor_entrega=taxa_entrega,
-                valor_pago=valor_pago,
-                troco=troco,
-                descricao=desc_venda,
-                cliente=cliente,
-                usuario=user,
-                loja=loja,
+            id_venda = data_formulario.get("id_venda_editar",None)
+            if id_venda == "":
+                id_venda= None
+            # Cria ou atualiza a venda conforme necessário
+            venda, created = Venda.objects.update_or_create(
+                id_venda=id_venda,
+                defaults={
+                    'forma_pagamento': forma_pagamento,
+                    'estado_transacao': estado_transacao,
+                    'metodo_entrega': metodo_entrega,
+                    'desconto': desconto,
+                    'valor_total': valor_total,
+                    'valor_entrega': taxa_entrega,
+                    'valor_pago': valor_pago,
+                    'troco': troco,
+                    'descricao': desc_venda,
+                    'cliente': cliente,
+                    'usuario': user,
+                    'loja': loja,
+                }
             )
 
             return venda, None

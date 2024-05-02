@@ -2,6 +2,7 @@ from django.db import models
 from .loja import Loja
 from django.utils import timezone
 import uuid
+from ..utils import utils
 
 
 def formatar_moeda(valor):
@@ -35,7 +36,7 @@ class Produto(models.Model):
     is_retornavel = models.BooleanField(null=True, blank=True)
     data_validade = models.CharField(null=True, blank=True, max_length=50)
     insert = models.DateTimeField(
-        default=timezone.now, editable=False
+        default=utils.obter_data_hora_atual(), editable=False
     )  # Valor padrão é o momento atual
     update = models.DateTimeField(
         auto_now=True

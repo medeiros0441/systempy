@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 import uuid
-
+from ..utils import utils
 
 class Empresa(models.Model):
 
@@ -16,6 +16,6 @@ class Empresa(models.Model):
     email = models.EmailField()
     nro_cpf = models.TextField()
     telefone = models.TextField()
-    insert = models.DateTimeField(default=timezone.now, editable=False) 
-    update = models.DateTimeField(auto_now=True)
+    insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100) 
+    update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
 

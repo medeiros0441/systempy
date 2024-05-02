@@ -178,6 +178,7 @@ class views_venda:
                     "id_produto": item.produto.id_produto,
                     "nome": item.produto.nome,
                     "preco_venda": item.produto.preco_venda,
+                    "quantidade": item.quantidade,
                     "quantidade_atual_estoque": item.produto.quantidade_atual_estoque,
                     "fabricante": item.produto.fabricante,
                     "descricao": item.produto.descricao,

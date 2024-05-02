@@ -3,6 +3,7 @@ from django.utils import timezone
 from .usuario import Usuario
 import uuid
 
+from ..utils import utils
 
 class Sessao(models.Model):
     id_sessao = models.AutoField(
@@ -22,17 +23,17 @@ class Sessao(models.Model):
     )
     time_iniciou = models.DateTimeField(
         null=True,
-        default=timezone.now,
+        default=utils.obter_data_hora_atual(),
     )
     time_iniciou = models.DateTimeField(
         null=True,
-        default=timezone.now,
+        default=utils.obter_data_hora_atual(),
     )
     status = models.BooleanField(
         default=True,
     )
-    insert = models.DateTimeField(default=timezone.now, editable=False)
-    update = models.DateTimeField(auto_now=True)
+    insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100)
+    update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
 
     # Novos campos para dados de localização
     cidade = models.CharField(
