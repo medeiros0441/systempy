@@ -42,6 +42,7 @@
             ".vscode{,/**}"
         ],
         "appService.defaultWebAppToDeploy": "/subscriptions/937ab133-981d-4769-b236-9d15f8db6239/resourceGroups/wms/providers/Microsoft.Web/sites/wmsolutions",
-        "appService.deploySubpath": "."
+        "appService.deploySubpath": ".",
+        "python.REPL.enableREPLSmartSend": false
 
 }

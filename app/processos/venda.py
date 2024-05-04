@@ -4,21 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from ..utils import utils
 from ..static import Alerta, UserInfo
-from ..models import (
-    Venda,
-    Configuracao,
-    Usuario,
-    Associado,
-    Loja,
-    Cliente,
-    Produto,
-    ItemCompra,
-    Transacao,
-    Caixa,
-    GestaoGalao,
-    Galao,
-    Entrega,
-)
+from app import models 
 from django.db.models import Q
 from datetime import datetime
 from django.utils.dateparse import parse_date
@@ -26,26 +12,52 @@ from django.utils import timezone
 from decimal import Decimal
 from django.core.exceptions import ObjectDoesNotExist
 import traceback
-
+from django.db.models import F, Sum
 
 class processos:
 
-    def _processar_carrinho(list_carrinho, venda):
+    def _processar_carrinho(carrinho, venda):
         try:
-            for item_carrinho in list_carrinho.getlist("item_carrinho"):
-                id_produto, quantidade = item_carrinho.split("|")
-                quantidade = int(quantidade)
-                # Obtenha o produto de forma síncrona
-                produto = Produto.objects.get(id_produto=id_produto)
+            # Criar um dicionário para armazenar as alterações no estoque do produto
+            alteracoes_estoque = {}
 
-                # Criar os itens de compra associados à venda de forma síncrona
-                ItemCompra.objects.create(
-                    venda=venda, produto=produto, quantidade=quantidade
-                )
+            # Limpar os itens de compra associados a esta venda
+            # venda.itens_compra.all().delete()
 
-                valor_atual = produto.quantidade_atual_estoque - quantidade
-                produto.quantidade_atual_estoque = valor_atual
-                produto.save()
+            # Iterar sobre os itens do carrinho
+            for id_produto, quantidade in carrinho.items():
+            # Obter o produto
+                produto = models.Produto.objects.get(id_produto=id_produto)
+                
+                # Verificar se o produto já foi adquirido nesta venda
+                item_comprado = models.ItemCompra.objects.filter(
+                    produto_id=id_produto, venda_id=venda.id_venda
+                ).first()
+                
+                if item_comprado:
+                    # Se a quantidade for igual, não há alteração no carrinho
+                    if item_comprado.quantidade == quantidade:
+                        continue
+                    
+                    # Se a quantidade no carrinho for maior, capturar a diferença para cadastrar os produtos devolvidos
+                    if item_comprado.quantidade < quantidade:
+                        diferenca = quantidade - item_comprado.quantidade
+                        produto.quantidade_atual_estoque += diferenca
+                    # Se a quantidade no carrinho for menor, capturar a diferença para remover os produtos
+                    else:
+                        diferenca = item_comprado.quantidade - quantidade
+                        produto.quantidade_atual_estoque -= diferenca
+                    
+                    produto.save()
+                
+                # Se o produto não foi adquirido anteriormente nesta venda, apenas atualizamos a quantidade em estoque
+                else:
+                    produto.quantidade_atual_estoque -= quantidade
+                    produto.save()
+                # Criar o item de compra
+                models.ItemCompra.objects.update_or_create(
+                    venda=venda, produto=produto, defaults={"quantidade": quantidade})
+
         except Exception as e:
             # Trate possíveis erros
             print(f"Erro ao processar carrinho: {e}")
@@ -66,80 +78,23 @@ class processos:
         except (ValueError, TypeError):
             return Decimal(0)
 
-    def _processar_venda(data_formulario, id):
-        # Função para converter um valor para decimal e tratar exceções
-
+    def criar_ou_atualizar_venda(dados):
         try:
-            # Validando os dados do formulário
-            estado_transacao = data_formulario.get("estado_transacao")
-            forma_pagamento = data_formulario.get("forma_pagamento")
-            desconto = data_formulario.get("desconto", None)
-            desconto = processos.converter_para_decimal(desconto)
-            metodo_entrega = data_formulario.get("metodo_entrega", "").strip()
-            taxa_entrega = data_formulario.get("taxa_entrega", "").strip()
-            if metodo_entrega != "0":
-                if metodo_entrega == "entrega_no_local":
-                    taxa_entrega_decimal = processos.converter_para_decimal(
-                        taxa_entrega
-                    )
-                    if taxa_entrega_decimal is None or taxa_entrega_decimal <= 0:
-                        return None, "Taxa de entrega inválida."
-
-            if estado_transacao == "0" or forma_pagamento == "0":
-                return None, "Estado da transação ou forma de pagamento inválidos."
-
-            valor_pago = data_formulario.get("valor_pago").strip()
-            total_apagar = data_formulario.get("total_apagar").strip()
-            valor_pago = processos.converter_para_decimal(valor_pago)
-            total_apagar = processos.converter_para_decimal(total_apagar)
-            troco = data_formulario.get("troco", 0.0)
-            troco = processos.converter_para_decimal(troco)
-            if forma_pagamento == "dinheiro":
-
-                if (
-                    valor_pago is None
-                    or total_apagar is None
-                    or valor_pago <= 0.0
-                    or valor_pago < total_apagar
-                ):
-                    return None, "Valor pago inválido."
-            else:
-                valor_pago = total_apagar
-            id_loja = data_formulario.get("loja")
-            if id_loja == "0":
-                return None, "Loja não está selecionada."
-            loja = Loja.objects.get(id_loja=id_loja)
-            id_cliente = data_formulario.get("id_cliente")
-            if id_cliente != "0":
-                cliente = Cliente.objects.get(id_cliente=id_cliente)
-            else:
-                cliente = None
-            # Preenchendo campos relacionados ao troco, se aplicável
-            valor_total = data_formulario.get("total_apagar")
-            valor_total = processos.converter_para_decimal(valor_total)
-            user = Usuario.objects.get(id_usuario=id)
-            desc_venda = data_formulario.get("descricao_venda")
-            print(data_formulario)
-
-            id_venda = data_formulario.get("id_venda_editar",None)
-            if id_venda == "":
-                id_venda= None
-            # Cria ou atualiza a venda conforme necessário
-            venda, created = Venda.objects.update_or_create(
-                id_venda=id_venda,
+            venda, created = models.Venda.objects.update_or_create(
+                id_venda=dados['id_venda'],
                 defaults={
-                    'forma_pagamento': forma_pagamento,
-                    'estado_transacao': estado_transacao,
-                    'metodo_entrega': metodo_entrega,
-                    'desconto': desconto,
-                    'valor_total': valor_total,
-                    'valor_entrega': taxa_entrega,
-                    'valor_pago': valor_pago,
-                    'troco': troco,
-                    'descricao': desc_venda,
-                    'cliente': cliente,
-                    'usuario': user,
-                    'loja': loja,
+                    'forma_pagamento': dados['forma_pagamento'],
+                    'estado_transacao': dados['estado_transacao'],
+                    'metodo_entrega': dados['metodo_entrega'],
+                    'desconto': dados['desconto'],
+                    'valor_total': dados['valor_total'],
+                    'valor_entrega': dados['taxa_entrega'],
+                    'valor_pago': dados['valor_pago'],
+                    'troco': dados['troco'],
+                    'descricao': dados['desc_venda'],
+                    'cliente': dados['cliente'],
+                    'usuario': dados['user'],
+                    'loja': dados['loja'],
                 }
             )
 
@@ -155,23 +110,27 @@ class processos:
             if "id_entrega" in kwargs:
                 # Atualizar o horário de finalização da entrega
                 id_entrega = kwargs["id_entrega"]
-                entrega = Entrega.objects.get(id_entrega=id_entrega)
+                entrega = models.Entrega.objects.get(id_entrega=id_entrega)
                 entrega.time_finalizacao = timezone.now().time()
                 entrega.save()
+                return True  # Retorna True em caso de sucesso
             elif "venda" in kwargs and "id_motoboy" in kwargs:
-                # Criar uma nova entrega
+                # Criar uma nova entrega ou atualizar se já existir
                 venda = kwargs["venda"]
                 id_motoboy = kwargs["id_motoboy"]
-                entrega = Entrega.objects.create(
+                valor_entrega = processos.converter_para_decimal(venda.valor_entrega)
+                
+                entrega, created = models.Entrega.objects.update_or_create(
                     venda=venda,
-                    valor_entrega=processos.converter_para_decimal(venda.valor_entrega),
-                    time_pedido=timezone.now().time(),
-                    motoboy_id=id_motoboy,
+                    defaults={
+                        'valor_entrega': valor_entrega,
+                        'time_pedido': timezone.now().time(),
+                        'motoboy_id': id_motoboy,
+                    }
                 )
+                return True  # Retorna True em caso de sucesso
             else:
                 raise ValueError("Parâmetros inválidos para processo_entrega")
-
-            return True  # Retorna True em caso de sucesso
         except ObjectDoesNotExist:
             # Tratar caso o objeto não seja encontrado
             return False
@@ -180,14 +139,15 @@ class processos:
             print(f"Erro ao processar entrega: {e}")
             return False
 
+
     @staticmethod
     def get_caixa_atual(loja_id):
 
         hoje = date.today()
         try:
-            return Caixa.objects.get(loja_id=loja_id, insert__date=hoje)
+            return models.Caixa.objects.get(loja_id=loja_id, insert__date=hoje)
         except ObjectDoesNotExist:
-            caixa_atual = Caixa.objects.create(loja_id=loja_id, saldo_inicial=100)
+            caixa_atual = models.Caixa.objects.create(loja_id=loja_id, saldo_inicial=100)
             return caixa_atual
 
     @staticmethod
@@ -239,13 +199,13 @@ class processos:
         descricao_saida = "Troco de venda"
 
         # Adicionar transações ao caixa
-        Transacao.objects.create(
+        models.Transacao.objects.create(
             caixa=caixa_atual,
             venda=venda,
             valor=valor_entrada,
             descricao=descricao_entrada,
         )
-        Transacao.objects.create(
+        models.Transacao.objects.create(
             caixa=caixa_atual, venda=venda, valor=valor_saida, descricao=descricao_saida
         )
 
@@ -307,14 +267,14 @@ class processos:
                     # Processar cada entrada e saída da troca
                     for entrada, saida in zip(troca["entradas"], troca["saidas"]):
                         # Criar galões de entrada e saída
-                        galao_entrada, created_entrada = Galao.objects.get_or_create(
+                        galao_entrada, created_entrada = models.Galao.objects.get_or_create(
                             data_validade=entrada["data_validade"],
                             data_fabricacao=entrada["data_fabricacao"],
                             titulo=entrada["titulo"],
                             loja=venda.loja,
                         )
 
-                        galao_saida, created_saida = Galao.objects.get_or_create(
+                        galao_saida, created_saida = models.Galao.objects.get_or_create(
                             data_validade=saida["data_validade"],
                             data_fabricacao=saida["data_fabricacao"],
                             titulo=saida["titulo"],
@@ -335,7 +295,7 @@ class processos:
                         galao_saida.save()
 
                     # Criar um objeto GestaoGalao
-                    gestao_galao = GestaoGalao()
+                    gestao_galao = models.GestaoGalao()
                     gestao_galao.descricao = troca["descricao"]
                     gestao_galao.galao_entrando = galao_entrada
                     gestao_galao.galao_saiu = galao_saida

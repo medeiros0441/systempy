@@ -1,11 +1,11 @@
 from django.http import JsonResponse
 from django.utils import timezone
-from ..models import Motoboy, Configuracao
+from ..models import Motoboy, Configuracao, Entrega
 from ..static import UserInfo, Alerta
-from functools import wraps
 from ..utils import utils
 from django.views.decorators.csrf import csrf_exempt
 import json
+
 
 class views_motoboy:
 
@@ -19,7 +19,7 @@ class views_motoboy:
                 motoboys = Motoboy.objects.filter(empresa_id=id_empresa)
                 motoboy_list = [
                     {
-                        "id_motoboy": str(motoboy.id_motoboy),
+                        "id_motoboy": motoboy.id_motoboy,
                         "nome": motoboy.nome,
                         "numero": motoboy.numero,
                     }
@@ -114,6 +114,43 @@ class views_motoboy:
             else:
                 return JsonResponse(
                     {"status": "error", "message": "ID da empresa não encontrado"}
+                )
+        else:
+            return JsonResponse({"status": "error", "message": "Método não permitido"})
+
+    @staticmethod
+    @csrf_exempt
+    @utils.verificar_permissoes(codigo_model=9)
+    def get_motoboy_by_venda(request, id_venda):
+        if request.method == "GET":
+            if id_venda:
+                try:
+                    entrega = Entrega.objects.get(venda_id=id_venda)
+                    motoboy = Motoboy.objects.filter(
+                        id_motoboy=entrega.motoboy_id
+                    ).first()
+                    if motoboy:
+                        obj = {
+                            "id_motoboy": motoboy.id_motoboy,
+                            "nome": motoboy.nome,
+                            "telefone": motoboy.numero,
+                        }
+                        return JsonResponse({"status": "success", "motoboy": obj})
+                    else:
+                        return JsonResponse(
+                            {"status": "error", "message": "Motoboy não encontrado"}
+                        )
+                except Motoboy.DoesNotExist:
+                    return JsonResponse(
+                        {"status": "error", "message": "Motoboy não encontrado"}
+                    )
+                except Entrega.DoesNotExist:
+                    return JsonResponse(
+                        {"status": "error", "message": "Entrega não encontrada"}
+                    )
+            else:
+                return JsonResponse(
+                    {"status": "error", "message": "ID da venda não fornecido"}
                 )
         else:
             return JsonResponse({"status": "error", "message": "Método não permitido"})

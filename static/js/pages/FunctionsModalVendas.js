@@ -1,3 +1,23 @@
+// Função para verificar e atualizar a lista de produtos
+function verificarListaProdutos() {
+    var listaProdutos = document.getElementById("listaProdutos").innerHTML.trim();
+
+    // Verifica se a lista de produtos está vazia
+    if (listaProdutos === "") {
+        // Adiciona automaticamente o item padrão
+        document.getElementById("listaProdutos").innerHTML = `
+            <li id="info_carrinho" class=" bg-dark text-white fw-bold d-flex justify-content-center align-items-center">
+                Nada adicionado
+            </li>`;
+    }else{
+        var infoCarrinho = document.getElementById("info_carrinho");
+        if (infoCarrinho) {
+            infoCarrinho.remove();
+        }
+    }
+}
+
+// Adiciona um ouvinte de evento para verificar a lista de produtos sempre que houver uma mudança
 
 document.getElementById('id_metodo_entrega').addEventListener('change', function() {
     var selectedOption = this.value; // Obtém o valor selecionado
@@ -216,6 +236,29 @@ function toggleResultadoPesquisa(status=null) {
         }
     }
 }// Função para montar o container de informações
+function limparInfoCliente(id_container) {
+    var container = document.getElementById(id_container);
+    // Limpar os textos dos campos no container
+    container.querySelector("#info_nome_cliente").textContent = "";
+    container.querySelector("#info_telefone_cliente").textContent = "";
+    container.querySelector("#info_tipo_cliente").textContent = "";
+    container.querySelector("#info_descricao_cliente").textContent = "";
+    container.querySelector("#info_codigo_postal").textContent = "";
+    container.querySelector("#info_rua").textContent = "";
+    container.querySelector("#info_numero").textContent = "";
+    container.querySelector("#info_bairro").textContent = "";
+    container.querySelector("#info_cidade").textContent = "";
+    container.querySelector("#info_estado").textContent = "";
+    container.querySelector("#info_descricao_endereco").textContent = "";
+    container.querySelector("#info_ultima_venda_descricao").textContent = "";
+    container.querySelector("#info_ultima_venda_data_venda").textContent = "";
+    container.querySelector("#info_ultima_venda_forma_pagamento").textContent = "";
+    container.querySelector("#info_ultima_venda_valor_total").textContent = "";
+    container.querySelector("#info_ultima_venda_produtos").textContent = "";
+    // Exibir o container vazio
+    container.classList.add("d-none");
+}
+
 function montarInfoCliente(data, id_container) {
     var container = document.getElementById(id_container);
     // Atualizar os valores dos campos com os dados fornecidos
@@ -299,11 +342,8 @@ function listarMotoboys() {
                     option.text = motoboy.nome;
                     selectMotoboy.appendChild(option);
                 });
-                alertCustomer('Lista de motoboys atualizada.');
     
-            } else {
-                alertCustomer('nenhum motoboy cadastrado');
-            }
+            }  
      }
     });
 }
@@ -422,7 +462,7 @@ function verificarAntesDoSubmit() {
     } 
     // Se o método de entrega for "entrega_no_local", verifica se foi inserido um valor no campo de taxa de entrega
     else if (metodoEntrega == "entrega no local") {
-        var taxaEntrega = document.getElementById('txt_taxa_entrega').value;
+        var taxaEntrega = document.getElementById('id_taxa_entrega').value;
         if (taxaEntrega.trim() === '') {
             alertCustomer('informe a taxa de entrega antes de enviar o formulário.');
             return false;
@@ -521,19 +561,48 @@ function atualizarCamposCarrinho() {
             toggleGestaoEntrega();
         }
     }); 
- 
-
+    
+    // Adiciona um evento de mudança ao select de lojas
     document.getElementById('id_loja').addEventListener('change', function() {
-        var selectedLoja = parseInt(this.value); 
+        // Obtém o ID da loja selecionada convertendo para um número inteiro
+        var selectedLoja = parseInt(this.value);
+        // Obtém a lista de produtos e limpa os produtos existentes
         var produtosList = document.getElementById('produtosList');
-        produtosList.innerHTML = ''; // Limpar os produtos existentes
-        // Adicionar produtos relevantes ao datalist
-        produtosArray.forEach(function(produto) {
+        produtosList.innerHTML = '';
+
+        // Adiciona produtos relevantes ao datalist
+        produtos_data = Utils.getLocalStorageItem('data_produtos');
+
+        // Verifica se há produtos na lista atual
+        if (document.getElementById("listaProdutos").innerHTML !== "") {
+            var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+            var mensagemExibida = false; // Variável de controle para verificar se a mensagem já foi exibida
+
+            // Itera sobre os itens da lista para verificar se o produto já está na lista
+            itensLista.forEach(function (item) {
+                var idExistente = item.getAttribute("data-id-produto");
+                var produto = produtos_data.find(item => item.id_produto == idExistente);
+
+                // Remove o item da lista se ele não pertencer à loja selecionada
+                if (produto.loja_id !== selectedLoja) {
+                    item.parentNode.removeChild(item);
+                    // Verifica se a mensagem já foi exibida
+                    if (!mensagemExibida) {
+                        alertCustomer("Não é possível vender produtos de diferentes lojas. Por isso, removemos os produtos da loja selecionada anteriormente.");
+                        mensagemExibida = true; // Marca que a mensagem foi exibida
+                    }
+                }
+            });
+            calcularValorTotal();
+        }
+
+        // Itera sobre os produtos e adiciona aqueles que pertencem à loja selecionada ao datalist
+        produtos_data.forEach(function(produto) {
             if (selectedLoja === '0' || produto.loja_id === selectedLoja) {
                 var option = document.createElement('option');
                 option.dataset.idProduto = produto.id_produto;
                 option.value = produto.nome;
-                produtosList.appendChild(option); 
+                produtosList.appendChild(option);
                 produtoInput.setAttribute('list', 'produtosList');
             }
         });
@@ -541,13 +610,16 @@ function atualizarCamposCarrinho() {
 
 
     function calcularValorTotal() {
+
         var itensLista = listaProdutos.querySelectorAll(".list-group-item");
         var valorTotal = 0;
         // Itera sobre os itens da lista e calcula o valor total
             itensLista.forEach(function (item) {
                 var quantidade = parseInt(item.querySelector(".quantidade").textContent);
                 var idProduto = item.getAttribute("data-id-produto");
-                    produtosArray.forEach(function(produto) {
+                    produtos_data = Utils.getLocalStorageItem('data_produtos');
+
+                    produtos_data.forEach(function(produto) {
                             if(produto.id_produto == idProduto){
                                 var valorUnitario = parseFloat(produto.preco_venda);
                                 valorTotal += quantidade * valorUnitario;
@@ -571,12 +643,12 @@ function atualizarCamposCarrinho() {
         var valorTotal = parseFloat(valorTotalText.replace(',', '.')) || 0;
     
         // Obtém a taxa de entrega
-        var taxaEntregaInput = document.getElementById('txt_taxa_entrega');
+        var taxaEntregaInput = document.getElementById('id_taxa_entrega');
         var taxaEntregaText = taxaEntregaInput ? taxaEntregaInput.value.trim() : '';
         var taxaEntrega = parseFloat(taxaEntregaText.replace(',', '.')) || 0;
     
         // Obtém o desconto
-        var descontoInput = document.getElementById('txt_desconto');
+        var descontoInput = document.getElementById('id_desconto');
         var descontoText = descontoInput ? descontoInput.value.trim() : '';
         var desconto = parseFloat(descontoText.replace(',', '.')) || 0;
     
@@ -584,7 +656,7 @@ function atualizarCamposCarrinho() {
         var valorTotalComTaxaDesconto = valorTotal + taxaEntrega - desconto;
     
         // Define o valor total a ser pago
-        document.getElementById('id_valor_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
+        document.getElementById('txt_valor_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
         document.getElementById('total_apagar').value = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
     
         // Obtém o valor pago
@@ -600,10 +672,10 @@ function atualizarCamposCarrinho() {
             var valorFaltante = (valorTotalComTaxaDesconto - valorPago).toFixed(2);
 
             // Exibe a mensagem informando o valor faltante
-            $('#id_troco').text('Está Faltando: R$ ' + valorFaltante.replace('.', ',')).css('color', 'red');
+            $('#txt_troco').text('Está Faltando: R$ ' + valorFaltante.replace('.', ',')).css('color', 'red');
         } else {
             // Exibe a mensagem informando o troco
-            $('#id_troco').text('Troco  R$ ' + troco.toFixed(2).replace('.', ',')).css('color', 'green');
+            $('#txt_troco').text('Troco  R$ ' + troco.toFixed(2).replace('.', ',')).css('color', 'green');
         }
     }
     
@@ -612,8 +684,9 @@ function aumentarQuantidade(elemento) {
     var pai = elemento.closest(".list-group-item");
     // Obtém o ID do produto do atributo data-id-produto do elemento pai
     var idProduto = pai.getAttribute("data-id-produto");
+    produtos_data = Utils.getLocalStorageItem('data_produtos');
 
-    produtosArray.forEach(function(produto) {
+    produtos_data.forEach(function(produto) {
         if(produto.id_produto == idProduto) {
             var quantidadeSpan = pai.querySelector(".quantidade");
             var quantidadeAtual = parseInt(quantidadeSpan.textContent);
@@ -628,6 +701,7 @@ function aumentarQuantidade(elemento) {
 }
 
 function diminuirQuantidade(elemento) {
+
     var quantidadeSpan = elemento.parentElement.querySelector(".quantidade");
     var quantidadeAtual = parseInt(quantidadeSpan.textContent);
     if (quantidadeAtual > 1) {
@@ -636,9 +710,11 @@ function diminuirQuantidade(elemento) {
          elemento.parentElement.remove();
     }
     calcularValorTotal();
+    verificarListaProdutos();
+
 }
 
-function toggleGestaoRetornavel( status ) {
+function toggleGestaoRetornavel(status) {
     var container = document.getElementById("body_gestaoRetornavel");
     var iconeOpen = document.getElementById("icone_produto_open");
     var iconeClose = document.getElementById("icone_produto_close");
@@ -672,144 +748,140 @@ function new_carregarListaClientes (){
           alertCustomer(response.message);
       }
   });  }
- function FormModalVendas() {
+window.addEventListener('DOMContentLoaded', function() {
     listarMotoboys();
-    
+    verificarListaProdutos();
     new_carregarListaClientes();
     // Chamar a função para preencher a tabela ao carregar a página
-    produtosArray = Utils.getLocalStorageItem('data_produtos');
 
-    lojas_data = Utils.getLocalStorageItem('data_lojas');
-    atualizarDropdownLojas(lojas_data ,"select_lojas");
+    atualizarDropdownLojas(Utils.getLocalStorageItem('data_lojas') ,"select_lojas");
     // Adiciona ouvintes de evento de entrada aos campos relevantes
-    document.getElementById('txt_taxa_entrega').addEventListener('input', calcularTroco);
-    document.getElementById('txt_desconto').addEventListener('input', calcularTroco);
+    document.getElementById('id_taxa_entrega').addEventListener('input', calcularTroco);
+    document.getElementById('id_desconto').addEventListener('input', calcularTroco);
     document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
- 
-    var selectElement = document.getElementById("id_forma_pagamento");
-    var containerElement = document.querySelector(".gestaotroco");
-
-    selectElement.addEventListener("change", function () {
+  
+    document.getElementById("id_forma_pagamento").addEventListener("change", function () {
         var selectedOption = this.options[this.selectedIndex];
         var selectedValue = selectedOption.value;
 
             if (selectedValue === "dinheiro") {
-                containerElement.classList.remove("d-none"); // Remove a classe que oculta o container
+                document.querySelector(".gestaotroco").classList.remove("d-none"); // Remove a classe que oculta o container
             } else {
-                containerElement.classList.add("d-none"); // Adiciona a classe que oculta o container
+                document.querySelector(".gestaotroco").classList.add("d-none"); // Adiciona a classe que oculta o container
             }
     }); 
      // Obtém a lista de produtos do DOM e itera sobre cada produto
+     produtos_data = Utils.getLocalStorageItem('data_produtos');
+    // Chamar a função para preencher a tabela ao carregar a página 
+    var produtosList = document.getElementById('produtosList');
+        produtos_data.forEach(function(produto) {
+            // Cria uma nova opção para cada produto e a adiciona à lista de produtos
+            var option = document.createElement('option');
+            option.dataset.idProduto = produto.id_produto; // Define o atributo de dados 'idProduto' na opção
+            option.value = produto.nome; // Define o valor da opção como o nome do produto
+            produtosList.appendChild(option);
+        });
 
-// Chamar a função para preencher a tabela ao carregar a página 
-var produtosList = document.getElementById('produtosList');
-    produtosArray.forEach(function(produto) {
-        // Cria uma nova opção para cada produto e a adiciona à lista de produtos
-        var option = document.createElement('option');
-        option.dataset.idProduto = produto.id_produto; // Define o atributo de dados 'idProduto' na opção
-        option.value = produto.nome; // Define o valor da opção como o nome do produto
-        produtosList.appendChild(option);
-    });
-
-// Obtém o input do produto
-var produtoInput = document.getElementById("produtoInput");
-// Adiciona um evento de entrada para detectar a seleção de uma opção
-produtoInput.addEventListener("input", function() {
-    // Obtém a opção selecionada com base no valor do input do produto
-    var selectedOption = document.querySelector("#produtosList option[value='" + this.value + "']");
-    if (selectedOption) {
-        // Chama a função OptionSelection passando a opção selecionada como argumento
-        OptionSelection(selectedOption);
-    }
-});
-
-// Função para lidar com a seleção de opção
-function OptionSelection(option) {
-    // Obtém o ID do produto da opção selecionada e define o atributo de dados 'idProduto' no input do produto
-    var produtoId = option.getAttribute("data-id-produto");
-    produtoInput.dataset.idProduto = produtoId;
-}
-
-// Obtém o botão de adicionar produto do DOM
-var adicionarBtn = document.getElementById("adicionarProdutoBtn");
-
-// Obtém a lista de produtos do DOM
-var listaProdutos = document.getElementById("listaProdutos");
-
-// Adiciona um ouvinte de evento para calcular o valor total e atualizar o label quando o botão de adicionar produto é clicado
-adicionarBtn.addEventListener("click", function () {
     // Obtém o input do produto
     var produtoInput = document.getElementById("produtoInput");
-    var produtoSelecionado = null;
-    var produtoId = produtoInput.getAttribute("data-id-produto");
-    // Itera sobre a lista de produtos para encontrar o produto selecionado
-   // Variável de controle para indicar se o loop deve continuar ou parar
-    let continuarLoop = true;
-    // Verificar as condições do produto
-    if (produtoInput.value == "") {
-        alertCustomer("Selecione um produto da lista de sugestões..");
-        continuarLoop = false; // Definir para false para parar o loop
-        return;
-    }
-    // Iterar sobre a lista de produtos
-    produtosArray.forEach(function(produto) {
-        // Verificar se o loop deve continuar
-        if (!continuarLoop) {
-            return; // Se não, saia do loop
+    // Adiciona um evento de entrada para detectar a seleção de uma opção
+    produtoInput.addEventListener("input", function() {
+        // Obtém a opção selecionada com base no valor do input do produto
+        var selectedOption = document.querySelector("#produtosList option[value='" + this.value + "']");
+        if (selectedOption) {
+            // Chama a função OptionSelection passando a opção selecionada como argumento
+            OptionSelection(selectedOption);
+        }
+    });
+
+    // Função para lidar com a seleção de opção
+    function OptionSelection(option) {
+        // Obtém o ID do produto da opção selecionada e define o atributo de dados 'idProduto' no input do produto
+        var produtoId = option.getAttribute("data-id-produto");
+        produtoInput.dataset.idProduto = produtoId;
         }
 
-        
 
-        if (produto.id_produto == produtoId) {
-            if (produto.quantidade_atual_estoque >= 1) {
-                produtoInput.value = "";
-                produtoSelecionado = produto;
-            } else {
-                produtoInput.value = "";
-                alertCustomer("Não há mais produto disponível no estoque.");
-            }
+    // Obtém a lista de produtos do DOM
+    var listaProdutos = document.getElementById("listaProdutos");
+
+    // Adiciona um ouvinte de evento para calcular o valor total e atualizar o label quando o botão de adicionar produto é clicado
+    document.getElementById("adicionarProdutoBtn").addEventListener("click", function () {
+        // Obtém o input do produto
+       
+        var produtoInput = document.getElementById("produtoInput");
+        var produtoSelecionado = null;
+        var produtoId = produtoInput.getAttribute("data-id-produto");
+        // Itera sobre a lista de produtos para encontrar o produto selecionado
+    // Variável de controle para indicar se o loop deve continuar ou parar
+        let continuarLoop = true;
+        // Verificar as condições do produto
+        if (produtoInput.value == "") {
+            alertCustomer("Selecione um produto da lista de sugestões..");
             continuarLoop = false; // Definir para false para parar o loop
             return;
         }
-    });
-    // Verifica se o valor do input do produto não está vazio
-    if (produtoSelecionado != null) {
-        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-        var produtoExistente = false;
-        
-        // Itera sobre os itens da lista para verificar se o produto já está na lista
-        itensLista.forEach(function (item) {
-            var idExistente = item.getAttribute("data-id-produto");
-            if (idExistente === produtoId) {
-                // Se o produto já existir na lista, aumenta a quantidade
-                var quantidadeSpan = item.querySelector(".quantidade");
-                var quantidadeAtual = parseInt(quantidadeSpan.textContent);
-                quantidadeSpan.textContent = quantidadeAtual + 1;
-                produtoExistente = true;
+        produtos_data = Utils.getLocalStorageItem('data_produtos');
+        // Iterar sobre a lista de produtos
+        produtos_data.forEach(function(produto) {
+            // Verificar se o loop deve continuar
+            if (!continuarLoop) {
+                return; // Se não, saia do loop
+            }
+           
+                 if (produto.id_produto == produtoId ) {
+                if (produto.quantidade_atual_estoque >= 1) {
+                    produtoInput.value = "";
+                    produtoSelecionado = produto;
+                } else {
+                    produtoInput.value = "";
+                    alertCustomer("Não há mais produto disponível no estoque.");
+                }
+                continuarLoop = false; // Definir para false para parar o loop
+                return;
             }
         });
-        if (!produtoExistente) {
-            // Se o produto não existir na lista, cria um novo item na lista de produtos
-            var novoItemLista = document.createElement("li");
-            novoItemLista.classList.add("list-group-item",'item-list-carrinho', "d-flex", "justify-content-between", "align-items-center");
-            novoItemLista.setAttribute("data-id-produto", produtoSelecionado.id_produto);
-            novoItemLista.setAttribute("data-retornavel", produtoSelecionado.is_retornavel); 
-            novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
-            // Preenche o HTML do novo item na lista de produtos
-            novoItemLista.innerHTML = `
-                <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                <span class="text-small small " style="font-size: 0.8rem;" >${produtoSelecionado.nome} R$ ${produtoSelecionado.preco_venda} Unid</span>
-                <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.id_produto}" onclick="aumentarQuantidade(this)"></span>
-                <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
-            `;
-            listaProdutos.appendChild(novoItemLista);
+        // Verifica se o valor do input do produto não está vazio
+        if (produtoSelecionado != null ) {
+            var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+            var produtoExistente = false;
+
+            
+            // Itera sobre os itens da lista para verificar se o produto já está na lista
+            itensLista.forEach(function (item) {
+                var idExistente = item.getAttribute("data-id-produto");
+                 
+                if (idExistente === produtoId ) {
+                    // Se o produto já existir na lista, aumenta a quantidade
+                    var quantidadeSpan = item.querySelector(".quantidade");
+                    var quantidadeAtual = parseInt(quantidadeSpan.textContent);
+                    quantidadeSpan.textContent = quantidadeAtual + 1;
+                    produtoExistente = true;
+                }
+            });
+            if (!produtoExistente) {
+                // Se o produto não existir na lista, cria um novo item na lista de produtos
+                var novoItemLista = document.createElement("li");
+                novoItemLista.classList.add("list-group-item",'item-list-carrinho',"bg-dark","text-white","fw-bold", "d-flex", "justify-content-between", "align-items-center");
+                novoItemLista.setAttribute("data-id-produto", produtoSelecionado.id_produto);
+                novoItemLista.setAttribute("data-retornavel", produtoSelecionado.is_retornavel); 
+                novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
+                // Preenche o HTML do novo item na lista de produtos
+                novoItemLista.innerHTML = `
+                    <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
+                    <span class="text-small small my-auto " style="font-size: 0.8rem;" >${produtoSelecionado.nome} R$ ${produtoSelecionado.preco_venda} Unididade</span>
+                    <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.id_produto}" onclick="aumentarQuantidade(this)"></span>
+                    <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
+                `;
+                listaProdutos.appendChild(novoItemLista);
+            }
+            // Calcula o valor total dos produtos e atualiza o label
+            calcularValorTotal();
+            // Limpa o valor do input do produto
+            produtoInput.value ="";
         }
-        // Calcula o valor total dos produtos e atualiza o label
-        calcularValorTotal();
-        // Limpa o valor do input do produto
-        produtoInput.value ="";
-    }
-});
+        verificarListaProdutos();
+    });
 
     // Função para verificar os produtos retornáveis
     function verificarRetornaveis() {
@@ -833,338 +905,152 @@ adicionarBtn.addEventListener("click", function () {
         }
     }
 
-    // Função para gerar os inputs dinamicamente com base no número de galões que estão saindo
-    function gerarInputs(numeroGaloes,valores=null) {
-        var formGestaoGalao = document.getElementById("form_galaoGestao");
-        
+        // Função para gerar os inputs dinamicamente com base no número de galões que estão saindo
+        function gerarInputs(numeroGaloes,obj={}) {
+            var formGestaoGalao = document.getElementById("form_galaoGestao");
+            // Limpa os formulários de entrada e saída
+            formGestaoGalao.innerHTML = '';
 
-        // Limpa os formulários de entrada e saída
-        formGestaoGalao.innerHTML = '';
-        formGestaoGalao.innerHTML = '';
-
-    // Adiciona inputs para os galões que estão entrando e saindo
-            for (var i = 0; i < numeroGaloes; i++) {
-                // Inputs para os galões que estão entrando
-                formGestaoGalao.innerHTML += `
-                    <div class=" border-dark border rounded bg-success p-3 m-0 text-dark bg-opacity-25 mb-1">
-                    <div class="row ">
-                        <label class="form-label" style="font-size: 1.rem">Galão que está entrando ${i+1}.</label>
-                        <div class="col mx-1 p-0">
-                            <div class="form-floating mb-2">
-                                <input type="text" id="data_validade_entrada_${i}" name="data_validade_entrada_${i}" values="${valores.data_validade_entrada_}" class="form-control data-validade data-mes-ano-mask">
-                                <label for="data_validade_entrada_${i}" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+            // Adiciona inputs para os galões que estão entrando e saindo
+                for (var i = 0; i < numeroGaloes; i++) {
+                    // Inputs para os galões que estão entrando
+                  // Verificando e preenchendo os campos para o galão que está entrando
+                    formGestaoGalao.innerHTML += `
+                    <div class="border-dark border rounded bg-success p-3 m-0 text-dark bg-opacity-25 mb-1">
+                        <div class="row">
+                            <label class="form-label" style="font-size: 1rem">Galão que está entrando ${i + 1}.</label>
+                            <div class="col mx-1 p-0">
+                                <div class="form-floating mb-2">
+                                    <input type="text" id="data_validade_entrada_${i}" name="data_validade_entrada_${i}" value="${obj.validade_entrada ? obj.validade_entrada : ''}" class="form-control data-validade data-mes-ano-mask">
+                                    <label for="data_validade_entrada_${i}" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                                </div>
+                            </div>
+                            <div class="col mx-1 p-0">
+                                <div class="form-floating mb-2">
+                                    <input type="text" id="data_fabricacao_entrada_${i}" name="data_fabricacao_entrada_${i}" value="${obj.fabricacao_entrada ? obj.fabricacao_entrada : ''}" class="form-control data-fabricacao data-mes-ano-mask">
+                                    <label for="data_fabricacao_entrada_${i}" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                                </div>
                             </div>
                         </div>
-                        <div class="col mx-1 p-0">
-                            <div class="form-floating mb-2">
-                                <input type="text" id="data_fabricacao_entrada_${i}" name="data_fabricacao_entrada_${i}" class="form-control data-fabricacao data-mes-ano-mask">
-                                <label for="data_fabricacao_entrada_${i}" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
-                            </div>
-                        </div>
-                    </div>
                         <div class="form-floating mb-2">
                             <select id="tipo_entrada_${i}" name="tipo_entrada_${i}" class="form-select">
                                 <option value="Não Selecionado" disabled>Selecione</option>
+                                ${obj.tipo_entrada ? `<option value="${obj.tipo_entrada}" selected>${obj.tipo_entrada}</option>` : ''}
                                 <option value="Galão 20 Litros">Galão 20 Litros</option>
                                 <option value="Galão 10 Litros">Galão 10 Litros</option>
-                                <option value="Galão 10 Litros">Galão 5 Litros</option>
-                                <option value="outro">outro</option>
+                                <option value="Galão 5 Litros">Galão 5 Litros</option>
+                                <option value="outro">Outro</option>
                             </select>
                             <label for="tipo_entrada_${i}" style="font-size: 0.7rem" class="form-label">Tipo de entrada:</label>
-                        </div> 
-                        </div> `;
-
-                // Inputs para os galões que estão saindo
-                formGestaoGalao.innerHTML += `
-                    <div class=" border-dark border rounded bg-danger p-3 m-0 text-dark bg-opacity-25 mb-2">
-                    <div class="row">
-                        <label class="form-label" style="font-size: 1.rem">Galão que está saindo ${i+1}.</label>
-                        <div class="col mx-1 p-0">
-                            <div class="form-floating mb-2">
-                                <input type="text" id="data_validade_saida_${i}" name="data_validade_saida_${i}" class="form-control data-validade data-mes-ano-mask">
-                                <label for="data_validade_saida_${i}" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
-                            </div>
-                        </div>
-                        <div class="col mx-1 p-0">
-                            <div class="form-floating mb-2">
-                                <input type="text" id="data_fabricacao_saida_${i}" name="data_fabricacao_saida_${i}" class="form-control data-fabricacao data-mes-ano-mask">
-                                <label for="data_fabricacao_saida_${i}" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
-                            </div>
                         </div>
                     </div>
-                    <div class="form-floating mb-2">
-                        <select id="tipo_saida_${i}" name="tipo_saida_${i}" class="form-select">
-                            <option value="Não Selecionado" disabled>Selecione</option>
-                            <option value="Galão 20 Litros">Galão 20 Litros</option>
-                            <option value="Galão 10 Litros">Galão 10 Litros</option>
-                            <option value="Galão 10 Litros">Galão 5 Litros</option>
-                            <option value="outro">outro</option>
-                        </select>
-                        <label for="tipo_saida_${i}" style="font-size: 0.7rem" class="form-label">Tipo de saída:</label>
-                    </div>
-                    <div class="form-floating mb-2">
-                        <input type="text" id="id_descricao_gestão_galao${i}" name="id_descricao_gestão_galao" class="form-control  ">
-                        <label for="id_descricao_gestão_galao${i}" style="font-size: 0.7rem" class="form-label">Descricao: <span style="font-size: 0.6rem;">(opicional)</span></label>
-                    </div>
-                    </div>
-                   
                     `;
-            }
-        }
 
-            // Opções para o observador de mutação
-            var observerOptions = {
-                childList: true, // Observar mudanças nos filhos do elemento
-                subtree: true // Observar todos os descendentes do elemento
-            };
+                    // Verificando e preenchendo os campos para o galão que está saindo
+                    formGestaoGalao.innerHTML += `
+                    <div class="border-dark border rounded bg-danger p-3 m-0 text-dark bg-opacity-25 mb-2">
+                        <div class="row">
+                            <label class="form-label" style="font-size: 1rem">Galão que está saindo ${i + 1}.</label>
+                            <div class="col mx-1 p-0">
+                                <div class="form-floating mb-2">
+                                    <input type="text" id="data_validade_saida_${i}" name="data_validade_saida_${i}" value="${obj.validade_saida ? obj.validade_saida : ''}" class="form-control data-validade data-mes-ano-mask">
+                                    <label for="data_validade_saida_${i}" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                                </div>
+                            </div>
+                            <div class="col mx-1 p-0">
+                                <div class="form-floating mb-2">
+                                    <input type="text" id="data_fabricacao_saida_${i}" name="data_fabricacao_saida_${i}" value="${obj.fabricacao_saida ? obj.fabricacao_saida : ''}" class="form-control data-fabricacao data-mes-ano-mask">
+                                    <label for="data_fabricacao_saida_${i}" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-2">
+                            <select id="tipo_saida_${i}" name="tipo_saida_${i}" class="form-select">
+                                ${obj.tipo_saida ? `<option value="${obj.tipo_saida}" selected>${obj.tipo_saida}</option>` : ''}
+                                <option value="Não Selecionado" disabled>Selecione</option>
+                                <option value="Galão 20 Litros">Galão 20 Litros</option>
+                                <option value="Galão 10 Litros">Galão 10 Litros</option>
+                                <option value="Galão 5 Litros">Galão 5 Litros</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                            <label for="tipo_saida_${i}" style="font-size: 0.7rem" class="form-label">Tipo de saída:</label>
+                        </div>
+                        <div class="form-floating mb-2">
+                            <input type="text" id="id_descricao_gestão_galao${i}" value="${obj.descricao_gestao ? obj.descricao_gestao : ''}" name="id_descricao_gestão_galao" class="form-control">
+                            <label for="id_descricao_gestão_galao${i}" style="font-size: 0.7rem" class="form-label">Descrição: <span style="font-size: 0.6rem;">(Opcional)</span></label>
+                        </div>
+                    </div>
+                    `;
 
-        // Função de callback para o observador de mutação
-        var observerCallback = function(mutationsList, observer) {
-            for (var mutation of mutationsList) {
-                if (mutation.type === 'childList') {
-                    verificarRetornaveis();
-                    $('.data-mes-ano-mask').mask('00/0000');
-                        document.querySelectorAll(".data-validade").forEach(function(input) {
-                            input.addEventListener("input", function() {
-                                // Limpa qualquer timeout existente
-                                clearTimeout(input.timeoutId);
-                                
-                                // Configura um novo timeout para esperar que o usuário pare de digitar
-                                input.timeoutId = setTimeout(function() {
-                                    // Obtém o valor do campo data_validade
-                                    var dataValidade = input.value.trim();
-                                    
-                                    // Verifica se a entrada está vazia
-                                    if (dataValidade === "") {
-                                        return; // Não faz nada se estiver vazio
-                                    }
-                                    
-                                    // Verifica se a entrada possui o formato esperado (MM/AAAA)
-                                    var regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
-                                    if (!regex.test(dataValidade)) {
-                                      
-                                        return; // Não faz nada se o formato for inválido
-                                    }
-                                    
-                                    // Extrai o mês e o ano da entrada
-                                    var partes = dataValidade.split("/");
-                                    var mes = parseInt(partes[0], 10);
-                                    var ano = parseInt(partes[1], 10);
-                                    
-                                    // Calcula a data de fabricação subtraindo três anos da data de validade
-                                    var dataFabricacao = ("0" + mes).slice(-2) + "/" + (ano - 3);
-                                
-                                    
-                                    // Encontra o campo de entrada data_fabricacao correspondente
-                                    var dataFabricacaoField = input.closest('.row').querySelector(".data-fabricacao");
-                                    
-                                    // Define o valor do campo data_fabricacao se encontrado
-                                    if (dataFabricacaoField) {
-                                        dataFabricacaoField.value = dataFabricacao;
-                                    }
-                                }, 500); // Aguarda 500ms após a última entrada antes de executar o cálculo
-                            });
-                        });
-                            
-                    break;
                 }
             }
-        };
 
-        // Elemento alvo para observar as mutações
-        var listaProdutos = document.getElementById("listaProdutos");
+                // Opções para o observador de mutação
+                var observerOptions = {
+                    childList: true, // Observar mudanças nos filhos do elemento
+                    subtree: true // Observar todos os descendentes do elemento
+                };
 
-        // Cria um observador de mutação
-        var observer = new MutationObserver(observerCallback);
+            // Função de callback para o observador de mutação
+            var observerCallback = function(mutationsList, observer) {
+                for (var mutation of mutationsList) {
+                    if (mutation.type === 'childList') {
+                        verificarRetornaveis();
+                        $('.data-mes-ano-mask').mask('00/0000');
+                            document.querySelectorAll(".data-validade").forEach(function(input) {
+                                input.addEventListener("input", function() {
+                                    // Limpa qualquer timeout existente
+                                    clearTimeout(input.timeoutId);
+                                    
+                                    // Configura um novo timeout para esperar que o usuário pare de digitar
+                                    input.timeoutId = setTimeout(function() {
+                                        // Obtém o valor do campo data_validade
+                                        var dataValidade = input.value.trim();
+                                        
+                                        // Verifica se a entrada está vazia
+                                        if (dataValidade === "") {
+                                            return; // Não faz nada se estiver vazio
+                                        }
+                                        
+                                        // Verifica se a entrada possui o formato esperado (MM/AAAA)
+                                        var regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
+                                        if (!regex.test(dataValidade)) {
+                                        
+                                            return; // Não faz nada se o formato for inválido
+                                        }
+                                        
+                                        // Extrai o mês e o ano da entrada
+                                        var partes = dataValidade.split("/");
+                                        var mes = parseInt(partes[0], 10);
+                                        var ano = parseInt(partes[1], 10);
+                                        
+                                        // Calcula a data de fabricação subtraindo três anos da data de validade
+                                        var dataFabricacao = ("0" + mes).slice(-2) + "/" + (ano - 3);
+                                    
+                                        
+                                        // Encontra o campo de entrada data_fabricacao correspondente
+                                        var dataFabricacaoField = input.closest('.row').querySelector(".data-fabricacao");
+                                        
+                                        // Define o valor do campo data_fabricacao se encontrado
+                                        if (dataFabricacaoField) {
+                                            dataFabricacaoField.value = dataFabricacao;
+                                        }
+                                    }, 500); // Aguarda 500ms após a última entrada antes de executar o cálculo
+                                });
+                            });
+                                
+                        break;
+                    }
+                }
+            };
+            // Elemento alvo para observar as mutações
+            var listaProdutos = document.getElementById("listaProdutos");
+            // Cria um observador de mutação
+            var observer = new MutationObserver(observerCallback);
+            // Inicia a observação do elemento alvo
+            observer.observe(listaProdutos, observerOptions);
+            // Verifica os produtos retornáveis ao carregar a página
+            verificarRetornaveis();
 
-        // Inicia a observação do elemento alvo
-        observer.observe(listaProdutos, observerOptions);
-
-        // Verifica os produtos retornáveis ao carregar a página
-        verificarRetornaveis();
-    };
-
-
-
-function detalhes_modal_cliente(id_venda) {
-    var data_vendas = Utils.getLocalStorageItem("data_vendas");
-    var venda_selecionada = {};
-    // Encontra a venda selecionada
-    data_vendas.forEach(function(item) {
-        if (item.id_venda === id_venda) {
-            venda_selecionada = item;
-        }
     });
-    atualizarDetalhesTransacao(venda_selecionada);
-
-    // Chama a API para obter os produtos da venda
-    manageLoading(true,"ul_produtos");
-    chamarFuncaoPython("/api/produtos/by/venda/" + id_venda, {}, "GET", function(response) {
-        // Verifica se a resposta foi bem-sucedida
-        if (response.success === true) {
-            // Obtém a lista de produtos da resposta
-            var produtos = response.list_produtos;
-            var ul_produtos = document.getElementById("ul_produtos");
-            ul_produtos.innerHTML = ""
-            // Itera sobre os produtos e os exibe
-            produtos.forEach(function(valor) {
-                var ul_produtos = document.getElementById("ul_produtos");
-                var novoItemLista = document.createElement("li");
-                novoItemLista.classList.add("list-group-item", "item-list-carrinho", "d-flex", "justify-content-between", "align-items-center");
-                novoItemLista.innerHTML = `
-                    <span class="badge text-bg-primary me-1 rounded-pill quantidade">${valor.quantidade}</span>
-                    <span class="text-small small" style="font-size: 0.8rem;">${valor.nome} R$ ${valor.preco_venda} Unid</span>
-                `;
-                ul_produtos.appendChild(novoItemLista);
-            });
-        }
-        else {
-            alertCustomer(response.message);
-        }
-         
-        manageLoading(false,"ul_produtos");
-    });
-    chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
-        if (response.success === true) {
-            document.getElementById("informativo_not_cliente").classList.add("d-none");
-            montarInfoCliente(response.cliente,"details-cliente");
-            document.getElementById("details-cliente").classList.remove("d-none");
-
-        } else {
-            alertCustomer(response.message);
-            document.getElementById("informativo_not_cliente").classList.remove("d-none");
-            document.getElementById("details-cliente").classList.add("d-none");
-        }
-    });
-    // Função para formatar números em moeda
-    function formatarMoeda(valor) {
-        // Converte o valor para um número decimal
-        const valorDecimal = parseFloat(valor);
-    
-        // Verifica se o valorDecimal é um número
-        if (!isNaN(valorDecimal)) {
-            // Se for um número, formata para moeda e retorna
-            return "R$ " + valorDecimal.toFixed(2);
-        } else {
-            // Se não for um número, retorna "N/A"
-            return "N/A";
-        }
-    }
-
-        // Função para atualizar os detalhes da transação com base nos dados recebidos
-    function atualizarDetalhesTransacao(data) {
-        manageLoading(true,"details-cliente");
-        document.getElementById("detalhes_data_venda").textContent = data.data_venda || "N/A";
-        document.getElementById("detalhes_forma_pagamento").textContent = data.forma_pagamento || "N/A";
-        document.getElementById("detalhes_estado_transacao").textContent = data.estado_transacao || "N/A";
-        document.getElementById("detalhes_metodo_entrega").textContent = data.metodo_entrega || "N/A";
-        document.getElementById("detalhes_desconto").textContent = formatarMoeda(data.desconto);
-        document.getElementById("detalhes_valor_total").textContent = formatarMoeda(data.valor_total);
-        document.getElementById("detalhes_valor_entrega").textContent = formatarMoeda(data.valor_entrega);
-        document.getElementById("detalhes_valor_pago").textContent = formatarMoeda(data.valor_pago);
-        document.getElementById("detalhes_troco").textContent = formatarMoeda(data.troco);
-        document.getElementById("detalhes_descricao").textContent = data.descricao || "N/A";
-
-        const dataVenda = Utils.formatarDataHoraBR(data.data_venda, 1);
-        const horarioVenda = Utils.formatarDataHoraBR(data.insert, 2);
-        const Atualizacao = Utils.formatarDataHoraBR(data.update, 0);
-    
-        // Imprimir os dados nos spans correspondentes
-        document.getElementById("detalhes_data_venda").textContent = dataVenda;
-        document.getElementById("detalhes_horario_venda").textContent = horarioVenda;
-        document.getElementById("detalhes_atualizacao").textContent = Atualizacao;
-
-        var data_lojas = Utils.getLocalStorageItem("data_lojas");
-        // Encontra a venda selecionada
-        data_lojas.forEach(function(item) {
-            if (item.id_loja === data.loja_id) {
-                document.getElementById("detalhes_loja_venda").textContent = item.nome_loja;
-            }
-        });
-        manageLoading(false,"details-cliente");
-
-    }
-     
-
-    manageLoading(true,"details-retonaveis");
-    
-    chamarFuncaoPython("/api/retornaveis/by/venda/" + id_venda, {}, "GET", function(response) {
-        if (response.success === true) {
-            if(response.list_retornaveis.length >0){
-                document.getElementById("details-retonaveis").classList.remove("d-none");
-                document.getElementById("informativo_not_retonaveis").classList.add("d-none");
-            ProdutosRetornaveis(response.list_retornaveis);
-            }else{
-                document.getElementById("informativo_not_retonaveis").classList.remove("d-none");
-                document.getElementById("details-retonaveis").classList.add("d-none");
-            }
-
-        } else {
-            alertCustomer(response.message);
-        }
-        manageLoading(false,"details-retonaveis");
-    });
-    function ProdutosRetornaveis(data_list) {
-        const container = document.getElementById('details-retonaveis');
-    
-        for (let i = 0; i < data_list.length; i++) {
-            const galaoEntrando = data_list[i];
-    
-            // Preencher os campos para o galão que está entrando
-            const divEntrada = document.createElement('div');
-            divEntrada.classList.add('border-dark', 'border', 'rounded', 'bg-success', 'p-3', 'm-0', 'text-dark', 'bg-opacity-25', 'mb-1');
-            divEntrada.innerHTML = `
-            <label class="form-label">Galão que entrou ${i + 1}.</label>
-                <div class="col mx-1 p-0">
-                        <span class="bi bi-calendar"></span>
-                        <label class="form-label">Data de Validade:</label>
-                        <span class="ml-1">${galaoEntrando.data_validade}</span>
-                    </div>
-                <div class="col mx-1 p-0">
-                        <span class="bi bi-calendar"></span>
-                        <label class="form-label">Data de Fabricação:</label>
-                        <span class="ml-1">${galaoEntrando.data_fabricacao}</span>
-                </div>
-            <div class="col">
-                <span class="bi bi-sign-in"></span>
-                <label class="form-label">Tipo de entrada:</label>
-                <span class="ml-1">${galaoEntrando.titulo}</span>
-            </div>
-            `;
-            container.appendChild(divEntrada);
-    
-            const galaoSaindo = data_list[i];
-    
-            // Preencher os campos para o galão que está saindo
-            const divSaida = document.createElement('div');
-            divSaida.classList.add('border-dark', 'border', 'rounded', 'bg-danger', 'p-3', 'm-0', 'text-dark', 'bg-opacity-25', 'mb-2');
-            divSaida.innerHTML = `
-                        
-                    <label class="form-label">Galão que saiu ${i + 1}.</label>
-                        <div class="col mx-1 p-0">
-                                <span class="bi bi-calendar"></span>
-                                <label class="form-label">Data de Validade:</label>
-                                <span class="ml-1">${galaoSaindo.data_validade}</span>
-                        </div>
-                        <div class="col mx-1 p-0">
-                                <span class="bi bi-calendar"></span>
-                                <label class="form-label">Data de Fabricação:</label>
-                                <span class="ml-1">${galaoSaindo.data_fabricacao}</span>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <span class="bi bi-sign-out"></span>
-                        <label class="form-label">Tipo de saída:</label>
-                        <span class="ml-1">${galaoSaindo.titulo}</span>
-                    </div>
-                    <div class="col">
-                        <span class="bi bi-info-circle"></span>
-                        <label class="form-label">Descrição:</label>
-                        <span class="ml-1">${galaoSaindo.descricao || 'Nenhuma descrição disponível'}</span>
-                    </div>
-            `;
-            container.appendChild(divSaida);
-        }
-    }
-    
-}
+ 

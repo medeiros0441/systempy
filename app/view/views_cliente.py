@@ -15,7 +15,7 @@ class views_cliente:
     @staticmethod
     @utils.verificar_permissoes(codigo_model=8)
     def lista_clientes(request):
-        if get_status(request):
+        if utils.get_status(request):
             clientes = Cliente.objects.all()
             return render(
                 request, "cliente/lista_clientes.html", {"clientes": clientes}
@@ -26,7 +26,7 @@ class views_cliente:
             )
 
     def criar_cliente(request):
-        if get_status(request):
+        if utils.get_status(request):
             if request.method == "POST":
                 nome_cliente = request.POST.get("nome_cliente")
                 telefone = request.POST.get("telefone")
@@ -50,7 +50,7 @@ class views_cliente:
             )
 
     def editar_cliente(request, cliente_id):
-        if get_status(request):
+        if utils.utis.get_status(request):
             cliente = get_object_or_404(Cliente, id_cliente=cliente_id)
             if request.method == "POST":
                 cliente.nome_cliente = request.POST.get("nome_cliente")
@@ -68,7 +68,7 @@ class views_cliente:
             )
 
     def selecionar_cliente(request, cliente_id):
-        if get_status(request):
+        if utils.get_status(request):
             cliente = get_object_or_404(Cliente, id_cliente=cliente_id)
             return render(request, "selecionar_cliente.html", {"cliente": cliente})
         else:
@@ -77,7 +77,7 @@ class views_cliente:
             )
 
     def excluir_cliente(request, cliente_id):
-        if get_status(request):
+        if utils.get_status(request):
             cliente = get_object_or_404(Cliente, id_cliente=cliente_id)
             if request.method == "POST":
                 # Lógica para excluir o cliente
@@ -234,7 +234,7 @@ class views_cliente:
 
                     # Construir o dicionário de dados do cliente e sua última venda
                     cliente_data = {
-                        "id_cliente": (cliente.id_cliente),
+                        "id_cliente": cliente.id_cliente,
                         "nome": cliente.nome_cliente,
                         "telefone": cliente.telefone_cliente,
                         "descricao": cliente.descricao_cliente,
@@ -263,7 +263,7 @@ class views_cliente:
                                 ultima_venda.descricao if ultima_venda else None
                             ),
                             "data_venda": (
-                                ultima_venda.data_venda.isoformat()
+                                ultima_venda.data_venda
                                 if ultima_venda
                                 else None
                             ),

@@ -10,7 +10,7 @@
 
     <div class="d-flex  mt-3 mb-2 justify-content-between">
          <span   class=" font-monospace fw-border my-auto" style="font-size: 1.0rem;">Lista de Vendas</span>
-        <button type="button"  onclick="open_modal(1);"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Cadastrar Venda</a>
+        <a href="{%url 'criar_venda'%}"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Cadastrar Venda</a>
     </div>
 </div>
 <div class="container bg-light mb-2 mx-auto">
@@ -53,8 +53,8 @@
                     <option value="0">Selecione</option>
                     <option value="dinheiro">Dinheiro</option>
                     <option value="pix">Pix</option>
-                    <option value="cartao_credito">Cartão de Crédito</option>
-                    <option value="cartao_debito">Cartão de Débito</option>
+                    <option value="cartao credito">Cartão de Crédito</option>
+                    <option value="cartao debito">Cartão de Débito</option>
                     <option value="fiado">Fiado</option>
                 </select>
                 <label for="select_forma_pagamento">Forma de Pagamento:</label>
@@ -174,20 +174,14 @@ function preencherTabelaVendas(vendas) {
 
                 btnVer.addEventListener('click', function() {
                     detalhes_modal_cliente(venda.id_venda);
-                    open_modal(2);
+                    open_modal();
                 });
 
-                const btnEditar = document.createElement('button');
-                btnEditar.setAttribute('type', 'button');
+                const btnEditar = document.createElement('a');
+                btnEditar.setAttribute('href', 'vendas/editar/'+venda.id_venda);
                 btnEditar.classList.add('btn', 'btn-warning', 'btn-sm');
                 btnEditar.innerHTML = '<i class="bi bi-pencil me-1" style="font-size: 0.8rem;"></i>';
 
-                btnEditar.addEventListener('click', function() {
-                    // Chamada da função com o id_venda como parâmetro
-                    editarVenda(venda.id_venda);
-                    open_modal(3);
-                });
-                
 
                 divBtnGroup.appendChild(btnVer);
                 divBtnGroup.appendChild(btnEditar);
@@ -215,186 +209,75 @@ function preencherTabelaVendas(vendas) {
         console.error("Erro ao chamar a função Python:", error);
     }
 }
+ 
+// Função para atualizar o dropdown com as lojas
+function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
+    // Seleciona todos os elementos select com a classe especificada
+    const selects = document.querySelectorAll('.' + classe_select_lojas);
 
-// Função para editar a venda
-function editarVenda(id_venda) {
-    // Busca os dados de vendas do armazenamento local
-    const vendas = Utils.getLocalStorageItem("data_vendas");
-    open_modal(3);
-    // Encontra a venda correspondente com base no idVenda fornecido
-    const venda = vendas.find(venda => venda.id_venda === id_venda);
-    const container_pay = document.getElementById("body_gestao_pay");
-    FormModalVendas();
-    // Verifica se a venda foi encontrada
-    if (venda) {
-                // Atribui os valores aos inputs correspondentes
-            document.getElementById("id_venda_editar").value = venda.id_venda;
-            document.getElementById("id_metodo_entrega").value = venda.metodo_entrega;
-            document.getElementById("id_estado_transacao").value = venda.estado_transacao;
-            document.getElementById("id_forma_pagamento").value = venda.forma_pagamento;
-            document.getElementById("txt_desconto").value = parseFloat(venda.desconto).toFixed(2);
-            document.getElementById("id_valor_apagar").textContent = parseFloat(venda.valor_total).toFixed(2);
-            document.getElementById("txt_taxa_entrega").value = parseFloat(venda.valor_entrega).toFixed(2);
-            document.getElementById("id_valor_pago").value = parseFloat(venda.valor_pago).toFixed(2);
-            document.getElementById("id_troco").textContent = parseFloat(venda.troco).toFixed(2);
-            document.getElementById("id_descricao").value = venda.descricao;
-            document.getElementById("id_loja").value = venda.loja_id;
-                    
-            document.getElementById("id_loja").dispatchEvent(new Event('change'));
-            document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
-            document.getElementById("id_estado_transacao").dispatchEvent(new Event('change'));
-            document.getElementById("txt_taxa_entrega").dispatchEvent(new Event('change'));
-            document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
-            document.getElementById("txt_desconto").dispatchEvent(new Event('change'));
-            document.getElementById("id_valor_pago").dispatchEvent(new Event('change'));
-    } else {
-        console.log("Venda não encontrada.");
-    }
-    chamarFuncaoPython("/api/produtos/by/venda/" + id_venda, {}, "GET", function(response) {
-        // Verifica se a resposta foi bem-sucedida
-        if (response.success === true) {
-            // Obtém a lista de produtos da resposta
-            var produtos = response.list_produtos;
-            var ul_produtos = document.getElementById("ul_produtos");
-            ul_produtos.innerHTML = ""
-            // Itera sobre os produtos e os exibe
-            produtos.forEach(function(produto) {
-                    var novoItemLista = document.createElement("li");
-                    novoItemLista.classList.add("list-group-item",'item-list-carrinho', "d-flex", "justify-content-between", "align-items-center");
-                    novoItemLista.setAttribute("data-id-produto", produto.id_produto);
-                    novoItemLista.setAttribute("data-retornavel", produto.is_retornavel); 
-                    novoItemLista.setAttribute("data-valor", produto.valor);
-                    // Preenche o HTML do novo item na lista de produtos
-                    novoItemLista.innerHTML = `
-                        <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                        <span class="text-small small " style="font-size: 0.8rem;" >${produto.nome} R$ ${produto.preco_venda} Unid</span>
-                        <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produto.id_produto}" onclick="aumentarQuantidade(this)"></span>
-                        <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
-                    `;
-                listaProdutos.appendChild(novoItemLista);
-            });
+    // Itera sobre cada select encontrado
+    selects.forEach(function(select) {
+        // Limpa as opções existentes
+        select.innerHTML = '';
+
+        // Adiciona a opção padrão, se houver mais de uma loja na lista
+        if (list_lojas.length > 1) {
+            const optionDefault = document.createElement('option');
+            optionDefault.value = '0';
+            optionDefault.textContent = 'Selecione';
+            select.appendChild(optionDefault);
         }
-        else {
-            alertCustomer(response.message);
-        }
-         
-        manageLoading(false,"ul_produtos");
-    });
-    chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
-        if (response.success === true) {
-            toggleGestaoCliente(1);
-            montarInfoCliente(response.cliente,"info_cliente");
-        } else {
-            alertCustomer(response.message);
-           
-        }
+
+        // Adiciona as opções de lojas
+        list_lojas.forEach(function(loja) {
+            const option = document.createElement('option');
+            option.value = loja.id_loja;
+            option.textContent = loja.nome_loja;
+            select.appendChild(option);
+        });
     });
 }
-    function get_data(){
-        manageLoading(true, "container_load");
+function get_data(){
+    manageLoading(true, "container_load");
 
-        try {
-            chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
-                if (response.success === true) {
-                    // Armazenar os dados no localStorage
-                    Utils.setLocalStorageItem('data_lojas', response.lojas);
-                    Utils.setLocalStorageItem('data_vendas', response.vendas);
-                    Utils.setLocalStorageItem('data_produtos', response.produtos);
-                    atualizarDropdownLojas(response.lojas, "select_lojas")
-                    preencherTabelaVendas(response.vendas);
-                } else {
-                    alertCustomer(response.error);
-                }
-                manageLoading(false, "container_load");
-            });
-        } catch (error) {
-            console.error("Erro ao chamar a função Python:", error);
-        }
-        
+    try {
+        chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
+            if (response.success === true) {
+                // Armazenar os dados no localStorage
+                Utils.setLocalStorageItem('data_lojas', response.lojas);
+                Utils.setLocalStorageItem('data_vendas', response.vendas);
+                Utils.setLocalStorageItem('data_produtos', response.produtos);
+                atualizarDropdownLojas(response.lojas, "select_lojas")
+                preencherTabelaVendas(response.vendas);
+            } else {
+                alertCustomer(response.error);
+            }
+            manageLoading(false, "container_load");
+        });
+    } catch (error) {
+        console.error("Erro ao chamar a função Python:", error);
     }
     
+}var myModal; // Defina a variável myModal no escopo global
+
+// Função para abrir o modal
+function open_modal() {
+    myModal = new bootstrap.Modal(document.getElementById('ModalVenda'));
+    myModal.show();
+}
+
+// Função para fechar o modal
+function close_modal() {
+    if (myModal) { // Verifique se myModal está definido antes de chamá-lo
+        myModal.hide();
+    } else {
+        console.error('myModal não está definido.');
+    }
+}
 // Chamar a função para preencher a tabela ao carregar a página
 window.addEventListener('DOMContentLoaded', function() {
+    get_data();
+});
 
-     
-        get_data();
-
-        $(document).ready(function() {
-            $('th').click(function() {
-                const index = $(this).index();
-                const isAscending = $(this).hasClass('ascending');
-                
-                $('th').removeClass('ascending descending');
-                $(this).addClass(isAscending ? 'descending' : 'ascending');
-        
-                const rows = $('tbody tr').get();
-                rows.sort(function(a, b) {
-                    const aValue = $(a).find('td').eq(index).text();
-                    const bValue = $(b).find('td').eq(index).text();
-                    return (isAscending ? 1 : -1) * aValue.localeCompare(bValue);
-                });
-        
-                $.each(rows, function(index, row) {
-                    $('tbody').append(row);
-                });
-            });
-        });
-    });
-
-
-
-    var modalElement = document.getElementById('ModalVenda');
-   var  myModal;
-    // Função para abrir o modal
-    function open_modal(modalType) {
-        myModal = new bootstrap.Modal(modalElement);
-        updateModalContent(modalType);
-        myModal.show();
-    }
-    
-    // Função para fechar o modal
-    function close_modal() { 
-        myModal.hide();
-    }
-
-    function updateModalContent(modalType) {
-        var modalElement = document.getElementById('ModalVenda');
-        var formElements = document.querySelectorAll('.form-venda');
-        var detalhesElements = document.querySelectorAll('.detalhes-venda');
-        var modalTitleElement = document.getElementById('ModalLabel');
-    
-        // Oculta todos os elementos de formulário e detalhes
-        formElements.forEach(function(formElement) {
-            formElement.style.display = 'none';
-        });
-        detalhesElements.forEach(function(detalhesElement) {
-            detalhesElement.style.display = 'none';
-        });
-    
-        // Verifica o tipo de modal e decide quais elementos mostrar
-        if (modalType === 1) {
-            // Exibe os elementos de formulário
-            formElements.forEach(function(formElement) {
-                formElement.style.display = 'block';
-            });
-            FormModalVendas();
-            modalTitleElement.textContent = 'Criar  Venda';
-        } else if (modalType === 2) {
-            // Exibe os elementos de detalhes
-            detalhesElements.forEach(function(detalhesElement) {
-                detalhesElement.style.display = 'block';
-            });
-            
-            modalTitleElement.textContent = 'Detalhes de Venda';
-        } else if (modalType === 3) {
-            // Exibe os elementos de detalhes
-             // Exibe os elementos de formulário
-             formElements.forEach(function(formElement) {
-                formElement.style.display = 'block';
-            });
-            modalTitleElement.textContent = 'Editar Venda';
-        }
-    }
-    
 </script>
         {% endblock %}

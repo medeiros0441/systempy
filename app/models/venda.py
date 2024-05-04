@@ -31,10 +31,7 @@ class Venda(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
 
-    def save(self, *args, **kwargs):
-        if self.pk:
-            self.update = timezone.now()
-        super().save(*args, **kwargs)
+    
 
 
 class ItemCompra(models.Model):
@@ -47,10 +44,7 @@ class ItemCompra(models.Model):
     insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100) 
     update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
 
-    def save(self, *args, **kwargs):
-        if self.pk:
-            self.update = timezone.now()
-        super().save(*args, **kwargs)
+    
 
 
 class Motoboy(models.Model):
@@ -61,10 +55,7 @@ class Motoboy(models.Model):
     update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True)
 
-    def save(self, *args, **kwargs):
-        if self.pk:
-            self.update = timezone.now()
-        super().save(*args, **kwargs)
+    
 
 
 class Entrega(models.Model):
@@ -82,10 +73,7 @@ class Entrega(models.Model):
     )
     descricao = models.TextField(null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if self.pk:
-            self.update = timezone.now()
-        super().save(*args, **kwargs)
+    
 
 
 class Caixa(models.Model):
@@ -100,10 +88,7 @@ class Caixa(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
 
-    def save(self, *args, **kwargs):
-        if self.pk:
-            self.update = timezone.now()
-        super().save(*args, **kwargs)
+    
 
 
 class Transacao(models.Model):
@@ -114,7 +99,4 @@ class Transacao(models.Model):
     insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100) 
     update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
 
-    def save(self, *args, **kwargs):
-        if self.pk:
-            self.update = timezone.now()
-        super().save(*args, **kwargs)
+    

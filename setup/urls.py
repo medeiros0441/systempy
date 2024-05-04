@@ -286,6 +286,11 @@ url_motoboy = [
         views_motoboy.delete_motoboy,
         name="delete_motoboy",
     ),
+    path(
+        "get_motoboy_by_venda/<uuid:id_venda>/",
+        views_motoboy.get_motoboy_by_venda,
+        name="get_motoboy_by_venda",
+    ),
 ]
 
 
