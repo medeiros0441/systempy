@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
 if ENVIRONMENT == "production":
     DEBUG = False
-    load_dotenv(".env.prod")
+    load_dotenv(".env")
 else:
     load_dotenv(".env.dev")
     DEBUG = True
