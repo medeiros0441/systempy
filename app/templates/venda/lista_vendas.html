@@ -17,6 +17,14 @@
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
         <div class="col p-1">
             <div class="form-floating">
+                <input type="text" id="datePickerInput" name="daterange" class="form-control"  >
+                <label for="datePickerInput">Selecione o intervalo de datas:</label>
+            </div>
+        </div>
+        
+    <div class="col p-1">
+
+            <div class="form-floating">
                 <select name="id_loja_list" class="form-select-sm form-select select_lojas" id="filtro_select_loja">
                     <option  value="0" class="small font-monospace mt-2" >Selecione</option>
                 </select>
@@ -28,8 +36,8 @@
             <div class="form-floating">
                 <select name="metodo_entrega" class="form-select-sm form-select" id="filtro_select_metodo_entrega">
                     <option  value="0" class="small font-monospace mt-2"  >Selecione</option>
-                    <option value="retirado_na_loja">Retirado na Loja</option>
-                    <option value="entrega_no_local">Entrega no Local</option>
+                    <option value="retirado na loja">Retirado na Loja</option>
+                    <option value="entrega no local">Entrega no Local</option>
                 </select>
                 <label for="select_metodo_entrega">Método de Entrega:</label>
             </div>
@@ -87,129 +95,149 @@
     const selectMetodoEntrega = document.getElementById('filtro_select_metodo_entrega');
     const selectEstadoTransacao = document.getElementById('filtro_select_estado_transacao');
     const selectFormaPagamento = document.getElementById('filtro_select_forma_pagamento');
+    const datePickerInput = document.getElementById('datePickerInput');
     
     selectLoja.addEventListener('change', filtrarVendas);
     selectMetodoEntrega.addEventListener('change', filtrarVendas);
     selectEstadoTransacao.addEventListener('change', filtrarVendas);
     selectFormaPagamento.addEventListener('change', filtrarVendas);
+    datePickerInput.addEventListener('change', filtrarVendas);
+    let flatpickrInstance; // Declare a variável flatpickrInstance
+
+        
     function filtrarVendas() {
-        // Recupera os dados de pedidos do LocalStorage
+        // Verifique se o Flatpickr foi inicializado
+        if (!flatpickrInstance) {
+            console.error('Flatpickr não foi inicializado.');
+            return;
+        }
+
+        // Obtenha os dias selecionados usando a instância do Flatpickr
+        const selectedDates = flatpickrInstance.selectedDates;
+
+        // Verifique se pelo menos um dia foi selecionado
+        if (selectedDates.length === 0) {
+            console.error('Nenhuma data foi selecionada.');
+            return;
+        }
+
+        // Recupere os dados de pedidos do LocalStorage
         const vendas = Utils.getLocalStorageItem('data_vendas');
-    
-        // Verifica se os dados foram recuperados com sucesso
+
+        // Verifique se os dados foram recuperados com sucesso
         if (!vendas) {
             console.error('Erro ao recuperar os dados de vendas do LocalStorage.');
             return;
         }
-    
+
         const valorSelectLoja = parseInt(selectLoja.value);
         const valorSelectMetodoEntrega = selectMetodoEntrega.value;
         const valorSelectEstadoTransacao = selectEstadoTransacao.value;
         const valorSelectFormaPagamento = selectFormaPagamento.value;
-    
-        // Filtrar pedidos com base nos selects
-        const vendasFiltrados = vendas.filter(venda => {
-            // Verifica se uma loja foi selecionada
+
+        // Filtrar pedidos com base nos selects e nos dias selecionados
+        const vendasFiltradas = vendas.filter(venda => {
             const lojaSelecionada = valorSelectLoja === 0 || venda.loja_id === valorSelectLoja;
-
-            // Verifica se o método de entrega corresponde ao selecionado
             const metodoEntregaCorrespondente = valorSelectMetodoEntrega === '0' || venda.metodo_entrega === valorSelectMetodoEntrega;
-
-            // Verifica se o estado da transação corresponde ao selecionado
             const estadoTransacaoCorrespondente = valorSelectEstadoTransacao === '0' || venda.estado_transacao === valorSelectEstadoTransacao;
-
-            // Verifica se a forma de pagamento corresponde à selecionada
             const formaPagamentoCorrespondente = valorSelectFormaPagamento === '0' || venda.forma_pagamento === valorSelectFormaPagamento;
+            const dataInsercao = new Date(venda.insert);
 
-            // Retorna true se todos os critérios forem atendidos
-            return lojaSelecionada && metodoEntregaCorrespondente && estadoTransacaoCorrespondente && formaPagamentoCorrespondente;
+            // Verifique se a data de inserção do pedido está entre os dias selecionados
+            return lojaSelecionada && metodoEntregaCorrespondente && estadoTransacaoCorrespondente && formaPagamentoCorrespondente && selectedDates.some(selectedDate => {
+                const dataSelecionadaInicio = new Date(selectedDate);
+                dataSelecionadaInicio.setHours(0, 0, 0, 0); // Define a hora para 00:00:00
+                const dataSelecionadaFim = new Date(selectedDate);
+                dataSelecionadaFim.setHours(23, 59, 59, 999); // Define a hora para 23:59:59.999
+
+                return dataInsercao >= dataSelecionadaInicio && dataInsercao <= dataSelecionadaFim;
+            });
         });
 
-    
-        // Atualiza a tabela de pedidos com os pedidos filtrados
-        preencherTabelaVendas(vendasFiltrados);
-    }   
-        // Função para preencher a tabela de vendas com os dados do localStorage
-function preencherTabelaVendas(vendas) {
-    try {
-        const tbody = document.getElementById('table_list_vendas');
-         // Limpar qualquer conteúdo existente na tabela
-        tbody.innerHTML = '';
+    // Atualize a tabela de pedidos com os pedidos filtrados
+    preencherTabelaVendas(vendasFiltradas);
+    }
+            // Função para preencher a tabela de vendas com os dados do localStorage
+    function preencherTabelaVendas(vendas) {
+        try {
+            const tbody = document.getElementById('table_list_vendas');
+            // Limpar qualquer conteúdo existente na tabela
+            tbody.innerHTML = '';
 
-        // Verificar se existem dados de vendas no localStorage
-        if (vendas && vendas.length > 0) {
-            // Iterar sobre os dados de vendas e criar uma linha na tabela para cada venda
-            vendas.forEach(venda => {
+            // Verificar se existem dados de vendas no localStorage
+            if (vendas && vendas.length > 0) {
+                // Iterar sobre os dados de vendas e criar uma linha na tabela para cada venda
+                vendas.forEach(venda => {
+                    const tr = document.createElement('tr');
+
+                    const tdLoja = document.createElement('td');
+                data_lojas = Utils.getLocalStorageItem('data_lojas');
+                data_lojas.forEach(function(loja) {
+                    if (loja.id_loja === venda.loja_id) {
+                        tdLoja.textContent = loja.nome_loja;
+                        tdLoja.classList.add( 'd-sm-table-cell', 'order-1', 'text-start');
+                        return; // Parar de percorrer o array assim que entrar no if
+                    }
+                });
+                    const tdEstado = document.createElement('td');
+                    tdEstado.textContent = venda.estado_transacao;
+                    tdEstado.classList.add('d-sm-table-cell', 'order-1', 'text-start');
+
+                    const tdValor = document.createElement('td');
+                    tdValor.textContent = venda.valor_total;
+                    tdValor.classList.add('d-sm-table-cell', 'order-2', 'text-start');
+
+                    const tdAcoes = document.createElement('td');
+                    tdAcoes.classList.add('text-end');
+
+                    const divBtnGroup = document.createElement('div');
+                    divBtnGroup.classList.add('btn-group');
+                    divBtnGroup.setAttribute('role', 'group');
+                    divBtnGroup.setAttribute('aria-label', 'Ações do Usuário');
+                
+                    const btnVer = document.createElement('button');
+                    btnVer.setAttribute('type', 'button');
+                    btnVer.classList.add('btn', 'btn-success', 'btn-sm');
+                    btnVer.innerHTML = '<i class="bi bi-eye me-1" style="font-size: 0.8rem;"></i>';
+
+                    btnVer.addEventListener('click', function() {
+                        detalhes_modal_cliente(venda.id_venda);
+                        open_modal();
+                    });
+
+                    const btnEditar = document.createElement('a');
+                    btnEditar.setAttribute('href', '/vendas/editar/'+venda.id_venda+"/");
+                    btnEditar.classList.add('btn', 'btn-warning', 'btn-sm');
+                    btnEditar.innerHTML = '<i class="bi bi-pencil me-1" style="font-size: 0.8rem;"></i>';
+
+
+                    divBtnGroup.appendChild(btnVer);
+                    divBtnGroup.appendChild(btnEditar);
+                    tdAcoes.appendChild(divBtnGroup);
+
+                    tr.appendChild(tdLoja);
+                    tr.appendChild(tdEstado);
+                    tr.appendChild(tdValor);
+                    tr.appendChild(tdAcoes);
+
+                    tbody.appendChild(tr);
+                });
+            } else {
+                // Se não houver dados de vendas no localStorage, exibir uma mensagem na tabela
                 const tr = document.createElement('tr');
 
-                const tdLoja = document.createElement('td');
-            data_lojas = Utils.getLocalStorageItem('data_lojas');
-            data_lojas.forEach(function(loja) {
-                if (loja.id_loja === venda.loja_id) {
-                    tdLoja.textContent = loja.nome_loja;
-                    tdLoja.classList.add( 'd-sm-table-cell', 'order-1', 'text-start');
-                    return; // Parar de percorrer o array assim que entrar no if
-                }
-            });
-                const tdEstado = document.createElement('td');
-                tdEstado.textContent = venda.estado_transacao;
-                tdEstado.classList.add('d-sm-table-cell', 'order-1', 'text-start');
+                const tdMensagem = document.createElement('td');
+                tdMensagem.textContent = 'Nenhuma venda encontrada';
+                tdMensagem.setAttribute('colspan', '4');
 
-                const tdValor = document.createElement('td');
-                tdValor.textContent = venda.valor_total;
-                tdValor.classList.add('d-sm-table-cell', 'order-2', 'text-start');
-
-                const tdAcoes = document.createElement('td');
-                tdAcoes.classList.add('text-end');
-
-                const divBtnGroup = document.createElement('div');
-                divBtnGroup.classList.add('btn-group');
-                divBtnGroup.setAttribute('role', 'group');
-                divBtnGroup.setAttribute('aria-label', 'Ações do Usuário');
-            
-                const btnVer = document.createElement('button');
-                btnVer.setAttribute('type', 'button');
-                btnVer.classList.add('btn', 'btn-success', 'btn-sm');
-                btnVer.innerHTML = '<i class="bi bi-eye me-1" style="font-size: 0.8rem;"></i>';
-
-                btnVer.addEventListener('click', function() {
-                    detalhes_modal_cliente(venda.id_venda);
-                    open_modal();
-                });
-
-                const btnEditar = document.createElement('a');
-                btnEditar.setAttribute('href', 'vendas/editar/'+venda.id_venda);
-                btnEditar.classList.add('btn', 'btn-warning', 'btn-sm');
-                btnEditar.innerHTML = '<i class="bi bi-pencil me-1" style="font-size: 0.8rem;"></i>';
-
-
-                divBtnGroup.appendChild(btnVer);
-                divBtnGroup.appendChild(btnEditar);
-                tdAcoes.appendChild(divBtnGroup);
-
-                tr.appendChild(tdLoja);
-                tr.appendChild(tdEstado);
-                tr.appendChild(tdValor);
-                tr.appendChild(tdAcoes);
-
+                tr.appendChild(tdMensagem);
                 tbody.appendChild(tr);
-            });
-        } else {
-            // Se não houver dados de vendas no localStorage, exibir uma mensagem na tabela
-            const tr = document.createElement('tr');
-
-            const tdMensagem = document.createElement('td');
-            tdMensagem.textContent = 'Nenhuma venda encontrada';
-            tdMensagem.setAttribute('colspan', '4');
-
-            tr.appendChild(tdMensagem);
-            tbody.appendChild(tr);
+            }
+        } catch (error) {
+            console.error("Erro ao chamar a função Python:", error);
         }
-    } catch (error) {
-        console.error("Erro ao chamar a função Python:", error);
     }
-}
- 
+    
 // Função para atualizar o dropdown com as lojas
 function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
     // Seleciona todos os elementos select com a classe especificada
@@ -277,7 +305,29 @@ function close_modal() {
 // Chamar a função para preencher a tabela ao carregar a página
 window.addEventListener('DOMContentLoaded', function() {
     get_data();
+    // Função para obter a data atual formatada como "dd/mm/yyyy"
+    function getCurrentDateFormatted() {
+        var hoje = new Date();
+        var dia = hoje.getDate().toString().padStart(2, '0');
+        var mes = (hoje.getMonth() + 1).toString().padStart(2, '0');
+        var ano = hoje.getFullYear();
+        return dia + "/" + mes + "/" + ano;
+    }
+
+    const datePickerInput = document.getElementById('datePickerInput');
+
+    // Inicialize o Flatpickr e atribua a instância a flatpickrInstance
+    flatpickrInstance = flatpickr(datePickerInput, {
+        mode: "range", // Modo de seleção de intervalo
+        dateFormat: "d/m/Y", // Formato da data
+        allowInput: true, // Permite que o usuário insira manualmente as datas
+        defaultDate: [getCurrentDateFormatted(), getCurrentDateFormatted()], // Define o valor inicial para o dia atual
+        locale: {
+            rangeSeparator: " até " // Altera o texto "to" para " até "
+        }
+    });
 });
+
 
 </script>
         {% endblock %}

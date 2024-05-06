@@ -29,7 +29,7 @@ class GestaoGalao(models.Model):
     )
     galao_entrando = models.ForeignKey(
         Galao,
-        on_delete=models.CASCADE,
+    on_delete=models.CASCADE,
         related_name="galao_entrando_set",
         null=True,
     )

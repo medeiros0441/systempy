@@ -124,18 +124,15 @@ function insertCliente() {
     }
 
     // Ativar o indicador de carregamento
-    manageLoading(true, "cadastrar_cliente");
     chamarFuncaoPython('/api/cliente/create/', formInputs, 'POST', function(response) {
         if (response.data) {
             alertCustomer("Cliente criado com sucesso!");
-            manageLoading(false, "cadastrar_cliente");
-            toggleGestaoCliente(1);
+            gerencia_container_cliente(1)
             montarInfoCliente(response.data,"info_cliente");
             new_carregarListaClientes();
 
         } else {
             alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error);
-            manageLoading(false, "cadastrar_cliente"); // Chamando o callback sem dados do cliente e com o erro
         }
     } );
      
@@ -443,6 +440,8 @@ function toggleGestaproduto() {
 
 // Defina sua função de verificação
 function verificarAntesDoSubmit() {
+     
+
 
    // Verifica se uma loja foi selecionada
     if (document.getElementById('id_loja').value == "0") {
@@ -450,7 +449,8 @@ function verificarAntesDoSubmit() {
         return false;  
     }
     // Verifica se há itens no carrinho
-    if (!atualizarCamposCarrinho()) {
+    var carrinho = atualizarCamposCarrinho();
+    if (carrinho === false) {
         alertCustomer('Não foram adicionados itens ao formulário. adicione itens ao carrinho antes de enviar.');
         return false;
     }
@@ -481,27 +481,120 @@ function verificarAntesDoSubmit() {
     }
     return true; // Permite o envio do formulário
 }
+
+function obterValores() {
+    var dados = {}; // Objeto para armazenar os dados
+
+    // Método de Entrega
+    var loja = document.getElementById('id_loja');
+    dados['loja'] = loja.value;
+
+    var metodoEntrega = document.getElementById('id_metodo_entrega');
+    dados['metodo_entrega'] = metodoEntrega.value;
+
+    // Taxa de Entrega (se visível)
+    var containerEntrega = document.getElementById('id_container_entrega');
+    if (containerEntrega.classList.contains('d-none') === false) {
+        var taxaEntrega = document.getElementById('id_taxa_entrega');
+        dados['taxa_entrega'] = taxaEntrega.value;
+    }
+
+    // Estado da Transação
+    var estadoTransacao = document.getElementById('id_estado_transacao');
+    dados['estado_transacao'] = estadoTransacao.value;
+
+    // Forma de Pagamento
+    var formaPagamento = document.getElementById('id_forma_pagamento');
+    dados['forma_pagamento'] = formaPagamento.value;
+
+    // Desconto
+    var desconto = document.getElementById('id_desconto');
+    dados['desconto'] = desconto.value;
+
+    // Valor Pago (se visível)
+    var valorPago = document.getElementById('id_valor_pago');
+    dados['valor_pago'] = valorPago.value;
+
+    // Descrição da Venda
+    var descricaoVenda = document.getElementById('id_descricao_venda');
+    dados['descricao_venda'] = descricaoVenda.value;
+
+    // Motoboy
+    var motoboy = document.getElementById('id_motoboy');
+    dados['motoboy'] = motoboy.value;
+
+    // Troco
+    var trocoElemento = document.getElementById('txt_troco');
+    var trocoTexto = trocoElemento.innerText;
+
+    // Verifica se trocoTexto é uma string antes de tentar substituir
+    if (typeof trocoTexto === 'string') {
+        var trocoLimpo = trocoTexto.replace(/[^\d,]/g, '');
+        dados['troco'] = trocoLimpo;
+    } else {
+        dados['troco'] = 0; 
+    }
+    // Total a Pagar
+    var totalApagar = document.getElementById('total_apagar');
+    dados['total_apagar'] = totalApagar.value;
+
+    // ID do Cliente
+    var idCliente = document.getElementById('id_cliente');
+    dados['id_cliente'] = idCliente.value;
+
+
+    var formGestaoGalao = document.getElementById("form_galaoGestao");
+    var inputsContainers = formGestaoGalao.querySelectorAll('.container_galao_troca');
+    var list = {};
+    inputsContainers.forEach((container, index) => {
+        var inputs = container.querySelectorAll('input, select');
+        var troca = {};
+
+        inputs.forEach(input => {
+            troca[input.name] = input.value;
+        });
+
+        list['obj' + (index + 1)] = troca;
+    });
+    dados["galoes_troca"] = list
+
+    // Obter valores do carrinho
+    var carrinho = atualizarCamposCarrinho();
+    if (carrinho !== false) {
+        dados['carrinho'] = carrinho;
+    }
+      // Obtém a URL da página
+      var url = window.location.href;
+
+      // Divide a URL pelo caractere "/"
+      var partesUrl = url.split("/");
+  
+      // Obtém o último elemento da lista (que deve ser o ID)
+      var ultimoElemento = partesUrl[partesUrl.length - 1];
+  
+      // Verifica se o último elemento é igual ao ID
+      if (ultimoElemento !=null) {
+        dados["id_venda"]=ultimoElemento;
+    } 
+      
+    return dados
+}
+
+// Exemplo de como usar a função para obter os valores
+
 function enviarDadosVenda() {
-    manageLoading(true,"form_cadastro"); 
-    $.ajax({
-        url: '/vendas/criar/insert_venda_ajax/',
-        type: 'POST',
-        data: $('#form_cadastro').serialize(),
-        success: function(response) {
-            console.log(response); // Exibe a resposta no console do navegador
+    data= obterValores()
+    chamarFuncaoPython('/vendas/criar/insert_venda_ajax/',data,'POST',function(response){
             if (response.success===true) {
                 alertCustomer(response.message);
-                close_modal();
+                alertCustomer("Venda cadastrada com sucesso",1);
+
             } else {
                 alertCustomer(response.error);
             }
-        },
-        error: function(xhr, errmsg, err) {
-            console.log(xhr.responseText); // Exibe o erro no console do navegador
-            alertCustomer("Ocorreu um erro ao processar a venda. Por favor, tente novamente mais tarde.");
-        }
     }); 
-    manageLoading(false,"form_cadastro"); 
+    clean_form();
+    alertCustomer("formulario limpo",4);
 } 
 document.getElementById("btnSubmit").addEventListener("click", function(event) {
     // Chama a função de verificação antes de permitir o envio do formulário
@@ -513,40 +606,28 @@ document.getElementById("btnSubmit").addEventListener("click", function(event) {
 });
 function atualizarCamposCarrinho() {
     var itensLista = document.querySelectorAll('.item-list-carrinho');
-    var itensCarrinho = [];
 
     // Verificar se há itens na lista de produtos
     if (itensLista.length === 0) {
         return false; // Retorna false se não houver itens
     }
 
-    // Seleciona todos os inputs com o atributo name igual a 'item_carrinho'
-    var inputsCarrinho = document.querySelectorAll('input[name="item_carrinho"]');
-
-    // Verifica se há inputs encontrados
-    if (inputsCarrinho.length > 0) {
-        // Itera sobre cada input encontrado
-        inputsCarrinho.forEach(function(input) {
-            // Remove o input
-            input.remove();
-        });
-    }
-
+    var carrinho = [];
+    
     itensLista.forEach(function(item) {
         var idProduto = item.getAttribute('data-id-produto');
         var quantidade = parseInt(item.querySelector(".quantidade").textContent);
-        // Concatenar o ID do produto e a quantidade com |
-        var valorInput = idProduto + '|' + quantidade;
-        // Criar um input oculto para cada item do carrinho
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'item_carrinho';
-        input.value = valorInput;
-        document.getElementById('form_cadastro').appendChild(input);
+        var produto = {
+            "id_produto": idProduto,
+            "quantidade": quantidade
+        };
+        carrinho.push(produto);
     });
 
-    return true; // Retorna true se os itens foram adicionados com sucesso
+    var data = { "carrinho": carrinho };
+    return data; // Retorna os itens do carrinho dentro de um objeto data
 }
+
 
     document.getElementById('id_metodo_entrega').addEventListener('change', function() {
         var selectedOption = this.options[this.selectedIndex];
@@ -901,6 +982,8 @@ window.addEventListener('DOMContentLoaded', function() {
             gerarInputs(numeroGaloes);
             toggleGestaoRetornavel(true);
         } else { 
+            document.getElementById("form_galaoGestao").innerHTML= "";
+            
             toggleGestaoRetornavel(false);
         }
     }
@@ -908,32 +991,37 @@ window.addEventListener('DOMContentLoaded', function() {
         // Função para gerar os inputs dinamicamente com base no número de galões que estão saindo
         function gerarInputs(numeroGaloes,obj={}) {
             var formGestaoGalao = document.getElementById("form_galaoGestao");
-            // Limpa os formulários de entrada e saída
-            formGestaoGalao.innerHTML = '';
+                // Encontra o número de formulários já existentes
+                var numFormulariosExistentes = formGestaoGalao.querySelectorAll('.container_galao_troca').length;
 
-            // Adiciona inputs para os galões que estão entrando e saindo
-                for (var i = 0; i < numeroGaloes; i++) {
+                // Calcula quantos novos formulários precisam ser adicionados
+                var numNovosFormularios = numeroGaloes - numFormulariosExistentes;
+               var i  = numFormulariosExistentes;
+                
+                // Adiciona apenas os novos formulários que faltam
+                for (var o = 0; o < numNovosFormularios; o++) {
                     // Inputs para os galões que estão entrando
                   // Verificando e preenchendo os campos para o galão que está entrando
-                    formGestaoGalao.innerHTML += `
-                    <div class="border-dark border rounded bg-success p-3 m-0 text-dark bg-opacity-25 mb-1">
+                  container_galao_troca = `
+                    <div class=" container_galao_troca">
+                    <div class="border-dark border rounded    bg-success p-3 m-0 text-dark bg-opacity-25 mb-1">
                         <div class="row">
                             <label class="form-label" style="font-size: 1rem">Galão que está entrando ${i + 1}.</label>
                             <div class="col mx-1 p-0">
                                 <div class="form-floating mb-2">
-                                    <input type="text" id="data_validade_entrada_${i}" name="data_validade_entrada_${i}" value="${obj.validade_entrada ? obj.validade_entrada : ''}" class="form-control data-validade data-mes-ano-mask">
-                                    <label for="data_validade_entrada_${i}" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                                    <input type="text" id="data_validade_entrada" name="data_validade_entrada" value="${obj.validade_entrada ? obj.validade_entrada : ''}" class="form-control data-validade data-mes-ano-mask">
+                                    <label for="data_validade_entrada" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                                 </div>
                             </div>
                             <div class="col mx-1 p-0">
                                 <div class="form-floating mb-2">
-                                    <input type="text" id="data_fabricacao_entrada_${i}" name="data_fabricacao_entrada_${i}" value="${obj.fabricacao_entrada ? obj.fabricacao_entrada : ''}" class="form-control data-fabricacao data-mes-ano-mask">
-                                    <label for="data_fabricacao_entrada_${i}" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                                    <input type="text" id="data_fabricacao_entrada" name="data_fabricacao_entrada" value="${obj.fabricacao_entrada ? obj.fabricacao_entrada : ''}" class="form-control data-fabricacao data-mes-ano-mask">
+                                    <label for="data_fabricacao_entrada" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                                 </div>
                             </div>
                         </div>
                         <div class="form-floating mb-2">
-                            <select id="tipo_entrada_${i}" name="tipo_entrada_${i}" class="form-select">
+                            <select id="tipo_entrada" name="tipo_entrada" class="form-select">
                                 <option value="Não Selecionado" disabled>Selecione</option>
                                 ${obj.tipo_entrada ? `<option value="${obj.tipo_entrada}" selected>${obj.tipo_entrada}</option>` : ''}
                                 <option value="Galão 20 Litros">Galão 20 Litros</option>
@@ -941,31 +1029,27 @@ window.addEventListener('DOMContentLoaded', function() {
                                 <option value="Galão 5 Litros">Galão 5 Litros</option>
                                 <option value="outro">Outro</option>
                             </select>
-                            <label for="tipo_entrada_${i}" style="font-size: 0.7rem" class="form-label">Tipo de entrada:</label>
+                            <label for="tipo_entrada" style="font-size: 0.7rem" class="form-label">Tipo de entrada:</label>
                         </div>
-                    </div>
-                    `;
-
-                    // Verificando e preenchendo os campos para o galão que está saindo
-                    formGestaoGalao.innerHTML += `
+                    </div> 
                     <div class="border-dark border rounded bg-danger p-3 m-0 text-dark bg-opacity-25 mb-2">
                         <div class="row">
                             <label class="form-label" style="font-size: 1rem">Galão que está saindo ${i + 1}.</label>
                             <div class="col mx-1 p-0">
                                 <div class="form-floating mb-2">
-                                    <input type="text" id="data_validade_saida_${i}" name="data_validade_saida_${i}" value="${obj.validade_saida ? obj.validade_saida : ''}" class="form-control data-validade data-mes-ano-mask">
-                                    <label for="data_validade_saida_${i}" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                                    <input type="text" id="data_validade_saida" name="data_validade_saida" value="${obj.validade_saida ? obj.validade_saida : ''}" class="form-control data-validade data-mes-ano-mask">
+                                    <label for="data_validade_saida" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                                 </div>
                             </div>
                             <div class="col mx-1 p-0">
                                 <div class="form-floating mb-2">
-                                    <input type="text" id="data_fabricacao_saida_${i}" name="data_fabricacao_saida_${i}" value="${obj.fabricacao_saida ? obj.fabricacao_saida : ''}" class="form-control data-fabricacao data-mes-ano-mask">
-                                    <label for="data_fabricacao_saida_${i}" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                                    <input type="text" id="data_fabricacao_saida" name="data_fabricacao_saida" value="${obj.fabricacao_saida ? obj.fabricacao_saida : ''}" class="form-control data-fabricacao data-mes-ano-mask">
+                                    <label for="data_fabricacao_saida" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                                 </div>
                             </div>
                         </div>
                         <div class="form-floating mb-2">
-                            <select id="tipo_saida_${i}" name="tipo_saida_${i}" class="form-select">
+                            <select id="tipo_saida" name="tipo_saida" class="form-select">
                                 ${obj.tipo_saida ? `<option value="${obj.tipo_saida}" selected>${obj.tipo_saida}</option>` : ''}
                                 <option value="Não Selecionado" disabled>Selecione</option>
                                 <option value="Galão 20 Litros">Galão 20 Litros</option>
@@ -973,16 +1057,30 @@ window.addEventListener('DOMContentLoaded', function() {
                                 <option value="Galão 5 Litros">Galão 5 Litros</option>
                                 <option value="outro">Outro</option>
                             </select>
-                            <label for="tipo_saida_${i}" style="font-size: 0.7rem" class="form-label">Tipo de saída:</label>
+                            <label for="tipo_saida" style="font-size: 0.7rem" class="form-label">Tipo de saída:</label>
                         </div>
                         <div class="form-floating mb-2">
-                            <input type="text" id="id_descricao_gestão_galao${i}" value="${obj.descricao_gestao ? obj.descricao_gestao : ''}" name="id_descricao_gestão_galao" class="form-control">
-                            <label for="id_descricao_gestão_galao${i}" style="font-size: 0.7rem" class="form-label">Descrição: <span style="font-size: 0.6rem;">(Opcional)</span></label>
+                            <input type="text" id="id_descricao_gestão_galao" value="${obj.descricao_gestao ? obj.descricao_gestao : ''}" name="id_descricao_gestão_galao" class="form-control">
+                            <label for="id_descricao_gestão_galao" style="font-size: 0.7rem" class="form-label">Descrição: <span style="font-size: 0.6rem;">(Opcional)</span></label>
                         </div>
+                    </div>
                     </div>
                     `;
 
+                    formGestaoGalao.insertAdjacentHTML('beforeend', container_galao_troca);
                 }
+
+                // Se houver mais formulários do que galões especificados, remova o último container
+                if (numFormulariosExistentes > numeroGaloes) {
+                    for (var j = 0; j < numFormulariosExistentes - numeroGaloes; j++) {
+                        // Encontra os containers de entrada e saída
+                        var container_galao_troca = formGestaoGalao.querySelector('.container_galao_troca:last-child');
+
+                        // Remove os containers do formulário
+                        container_galao_troca.remove();
+                    }
+                }
+                
             }
 
                 // Opções para o observador de mutação
@@ -1054,3 +1152,96 @@ window.addEventListener('DOMContentLoaded', function() {
 
     });
  
+
+
+function editarVenda(id_venda) {
+    // Busca os dados de vendas do armazenamento local
+    const vendas = Utils.getLocalStorageItem("data_vendas");
+    // Encontra a venda correspondente com base no idVenda fornecido
+    const venda = vendas.find(venda => venda.id_venda === id_venda);
+
+   id_venda = document.getElementById('id_venda').value;
+
+    const container_pay = document.getElementById("body_gestao_pay");
+    // Verifica se a venda foi encontrada
+    if (venda) {
+            document.getElementById("id_metodo_entrega").selectedIndex = venda.metodo_entrega;
+            document.getElementById("id_estado_transacao").selectedIndex = venda.estado_transacao;
+            document.getElementById("id_forma_pagamento").selectedIndex = venda.forma_pagamento;
+            document.getElementById("id_desconto").value = parseFloat(venda.desconto).toFixed(2);
+            document.getElementById("txt_valor_apagar").textContent = parseFloat(venda.valor_total).toFixed(2);
+            document.getElementById("id_taxa_entrega").value = parseFloat(venda.valor_entrega).toFixed(2);
+            document.getElementById("id_valor_pago").value = parseFloat(venda.valor_pago).toFixed(2);
+            document.getElementById("txt_troco").textContent = parseFloat(venda.troco).toFixed(2);
+            document.getElementById("id_descricao").value = venda.descricao;
+            document.getElementById("id_loja").selectedIndex = venda.loja_id;
+            document.getElementById("id_motoboy").selectedIndex = venda.motoboy;
+                    
+            document.getElementById("id_loja").dispatchEvent(new Event('change'));
+            document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
+            document.getElementById("id_estado_transacao").dispatchEvent(new Event('change'));
+            document.getElementById("id_taxa_entrega").dispatchEvent(new Event('change'));
+            document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
+            document.getElementById("id_desconto").dispatchEvent(new Event('change'));
+            document.getElementById("id_valor_pago").dispatchEvent(new Event('change'));
+    } else {
+        console.log("Venda não encontrada.");
+    }
+    chamarFuncaoPython("/api/produtos/by/venda/" + id_venda, {}, "GET", function(response) {
+        // Verifica se a resposta foi bem-sucedida
+        if (response.success === true) {
+            // Obtém a lista de produtos da resposta
+            var produtos = response.list_produtos;
+            var ul_produtos = document.getElementById("ul_produtos");
+            ul_produtos.innerHTML = ""
+            // Itera sobre os produtos e os exibe
+            produtos.forEach(function(produto) {
+                    var novoItemLista = document.createElement("li");
+                    novoItemLista.classList.add("list-group-item",'item-list-carrinho', "d-flex", "justify-content-between", "align-items-center");
+                    novoItemLista.setAttribute("data-id-produto", produto.id_produto);
+                    novoItemLista.setAttribute("data-retornavel", produto.is_retornavel); 
+                    novoItemLista.setAttribute("data-valor", produto.valor);
+                    // Preenche o HTML do novo item na lista de produtos
+                    novoItemLista.innerHTML = `
+                        <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
+                        <span class="text-small small " style="font-size: 0.8rem;" >${produto.nome} R$ ${produto.preco_venda} Unid</span>
+                        <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produto.id_produto}" onclick="aumentarQuantidade(this)"></span>
+                        <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
+                    `;
+                listaProdutos.appendChild(novoItemLista);
+            });
+        }
+        else {
+            alertCustomer(response.message);
+        }
+         
+        manageLoading(false,"ul_produtos");
+    });
+    chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
+        if (response.success === true) {
+            toggleGestaoCliente(1);
+            montarInfoCliente(response.cliente,"info_cliente");
+        }  
+    });
+
+        chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
+            if (response.success === true) {
+                toggleGestaoCliente(1);
+                montarInfoCliente(response.cliente,"info_cliente");
+            }  
+        });
+
+
+    
+    chamarFuncaoPython("/api/retornaveis/by/venda/" + id_venda, {}, "GET", function(response) {
+        if (response.success === true) {
+            if(response.list_retornaveis.length >0){
+                response.list_retornaveis.forEach(obj => {
+                    gerarInputs(1, obj);
+                });
+            } 
+        } 
+    });
+
+
+}

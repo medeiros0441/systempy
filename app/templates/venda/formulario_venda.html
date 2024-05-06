@@ -108,7 +108,7 @@
                                     <label id="txt_troco" style="font-size: 0.8rem;" class="small text-small">00,00</label> </div>
                     </div>
                     <div class="form-floating mb-2">
-                    <textarea name="descricao_venda" cols="40" rows="5" class="form-control" id="id_descricao"></textarea>
+                    <textarea name="descricao_venda" cols="40" rows="5" class="form-control" id="id_descricao_venda"></textarea>
                     <label for="descricao">Descrição:</label> </div>
                     
                 </div> 
@@ -177,7 +177,7 @@
                 <span class="fw-bold">Descrição do Cliente: </span>
                 <span id="info_descricao_cliente"></span>
             </div>
-            </div>
+            </div>txt_troco
             <hr class="my-2">
             <div class="  card-body row d-flex">
             <h5 class="mb-1 text-center" style="font:size 0.6rem">Informações de Endereço</h5>
@@ -280,7 +280,7 @@
                 <input type="text" name="rua" maxlength="255"  class=" form-control form-control-validate input"  id="id_rua">
                 <label for="id_rua">Rua</label>    </div>
             <div class="form-floating mb-2  ">
-                <input type="text" name="numero" maxlength="10"   lass=" form-control form-control-validate input"   id="id_numero">
+                <input type="text" name="numero" maxlength="10"   class=" form-control form-control-validate input"   id="id_numero">
                 <label for="id_numero">Número</label></div>
             
             <div class="form-floating mb-2  ">
@@ -346,7 +346,7 @@
                         <div class="m-0 p-0 " id="select_motoboy">
                             <div class="form-floating mb-2">
                                 <select id="id_motoboy" name="motoboy" class="form-select">
-                <option  value="0" class="small font-monospace mt-2"  >Selecione</option>
+                                 <option value="0">Selecione</option>
                                 </select>
                                 <label for="id_motoboy">Selecione Motoboy:</label>
                             </div> </div>
@@ -366,10 +366,10 @@
         </div>
       
 
+            <input type="hidden" id="id_venda" value="{{ id_venda }}">
             <input  name="troco" id="troco" type="hidden" value="0" > 
             <input  name="total_apagar" id="total_apagar" type="hidden" value="0" > 
             <input id="id_cliente" name="id_cliente" type="hidden" value="0" > 
-            <input id="id_venda_editar" name="id_venda_editar"   type="hidden" value="" > 
             <div class="modal-footer ">
                     <button type="button" onclick="clean_form();"  class="btn btn-secondary float-start me-auto btn-sm">Limpar</a>
                     <button type="button" id="btnSubmit" class="btn btn-primary float-end btn-md btn-loading" >Salvar</button>
@@ -400,133 +400,36 @@
             console.error("Erro ao chamar a função Python:", error);
         }
         
-    }
-{% if type == 1 %}
-{% endif %}
+    } 
  
-
-
 function clean_form() {
-    document.getElementById("id_loja").value = "";
-
-    const inputsToClean = [
-        "id_venda_editar",
-        "id_metodo_entrega",
-        "id_estado_transacao",
-        "id_forma_pagamento",
-        "id_desconto",
-        "id_taxa_entrega",
-        "id_valor_pago",
-        "id_descricao"
-    ];
-
-    inputsToClean.forEach(inputId => {
-        document.getElementById(inputId).value = "";
-    });
-
-    // Limpar também os elementos de texto
-    document.getElementById("txt_valor_apagar").textContent = "00,00";
+    document.getElementById('id_taxa_entrega').innerText= "";
+    document.getElementById('id_desconto').innerText= "";
+    document.getElementById('id_valor_pago').innerText="";
+    document.getElementById('id_descricao_venda').innerText= "";
+    document.getElementById('txt_troco').innerText = "";
+    document.getElementById("txt_valor_apagar").textContent = "";
     document.getElementById("txt_troco").textContent = "00,00";
+    document.getElementById("listaProdutos").innerHTML = "";
+    document.getElementById("id_motoboy").value= "0";
+
+    document.getElementById('id_forma_pagamento').selectedIndex= 0;
+    document.getElementById("id_loja").selectedIndex = 0
+    document.getElementById('id_estado_transacao').selectedIndex= 0;
+    document.getElementById('id_metodo_entrega').selectedIndex = 0;
+    document.getElementById('id_motoboy').selectedIndex = 0;
+    document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
+    document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
+    close_cliente();
+    alertCustomer("formulario limpo",4);
 }
 
 {%if type == 2 %}
-
-// Função para editar a venda
-function editarVenda(id_venda) {
-    // Busca os dados de vendas do armazenamento local
-    const vendas = Utils.getLocalStorageItem("data_vendas");
-    // Encontra a venda correspondente com base no idVenda fornecido
-    const venda = vendas.find(venda => venda.id_venda === id_venda);
-    const container_pay = document.getElementById("body_gestao_pay");
-    FormModalVendas();
-    // Verifica se a venda foi encontrada
-    if (venda) {
-                // Atribui os valores aos inputs correspondentes
-            document.getElementById("id_venda_editar").value = venda.id_venda;
-            document.getElementById("id_metodo_entrega").value = venda.metodo_entrega;
-            document.getElementById("id_estado_transacao").value = venda.estado_transacao;
-            document.getElementById("id_forma_pagamento").value = venda.forma_pagamento;
-            document.getElementById("id_desconto").value = parseFloat(venda.desconto).toFixed(2);
-            document.getElementById("txt_valor_apagar").textContent = parseFloat(venda.valor_total).toFixed(2);
-            document.getElementById("id_taxa_entrega").value = parseFloat(venda.valor_entrega).toFixed(2);
-            document.getElementById("id_valor_pago").value = parseFloat(venda.valor_pago).toFixed(2);
-            document.getElementById("txt_troco").textContent = parseFloat(venda.troco).toFixed(2);
-            document.getElementById("id_descricao").value = venda.descricao;
-            document.getElementById("id_loja").value = venda.loja_id;
-                    
-            document.getElementById("id_loja").dispatchEvent(new Event('change'));
-            document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
-            document.getElementById("id_estado_transacao").dispatchEvent(new Event('change'));
-            document.getElementById("id_taxa_entrega").dispatchEvent(new Event('change'));
-            document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
-            document.getElementById("id_desconto").dispatchEvent(new Event('change'));
-            document.getElementById("id_valor_pago").dispatchEvent(new Event('change'));
-    } else {
-        console.log("Venda não encontrada.");
-    }
-    chamarFuncaoPython("/api/produtos/by/venda/" + id_venda, {}, "GET", function(response) {
-        // Verifica se a resposta foi bem-sucedida
-        if (response.success === true) {
-            // Obtém a lista de produtos da resposta
-            var produtos = response.list_produtos;
-            var ul_produtos = document.getElementById("ul_produtos");
-            ul_produtos.innerHTML = ""
-            // Itera sobre os produtos e os exibe
-            produtos.forEach(function(produto) {
-                    var novoItemLista = document.createElement("li");
-                    novoItemLista.classList.add("list-group-item",'item-list-carrinho', "d-flex", "justify-content-between", "align-items-center");
-                    novoItemLista.setAttribute("data-id-produto", produto.id_produto);
-                    novoItemLista.setAttribute("data-retornavel", produto.is_retornavel); 
-                    novoItemLista.setAttribute("data-valor", produto.valor);
-                    // Preenche o HTML do novo item na lista de produtos
-                    novoItemLista.innerHTML = `
-                        <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                        <span class="text-small small " style="font-size: 0.8rem;" >${produto.nome} R$ ${produto.preco_venda} Unid</span>
-                        <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produto.id_produto}" onclick="aumentarQuantidade(this)"></span>
-                        <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
-                    `;
-                listaProdutos.appendChild(novoItemLista);
-            });
-        }
-        else {
-            alertCustomer(response.message);
-        }
-         
-        manageLoading(false,"ul_produtos");
-    });
-    chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
-        if (response.success === true) {
-            toggleGestaoCliente(1);
-            montarInfoCliente(response.cliente,"info_cliente");
-        }  
-    });
-
-
-    if(id_venda){
-
-        chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
-            if (response.success === true) {
-                toggleGestaoCliente(1);
-                montarInfoCliente(response.cliente,"info_cliente");
-            }  
-        });
-        const obj = {
-            validade_entrada: "01/2025", // Exemplo de data de validade para entrada
-            fabricacao_entrada: "", // Exemplo de data de fabricação para entrada
-            tipo_entrada: "Galão 20 Litros", // Exemplo de tipo de entrada
-        
-            validade_saida: "01/2025", // Exemplo de data de validade para saída
-            fabricacao_saida: "01/2024", // Exemplo de data de fabricação para saída
-            tipo_saida: "Galão 20 Litros", // Exemplo de tipo de saída
-            descricao_gestao: "Descrição do galão que está saindo" // Exemplo de descrição
-        };
-    gerarInputs(1,obj);
-
-
-    }
-
-
-}
+window.addEventListener('DOMContentLoaded', function() {
+   id_venda = document.getElementById('id_venda').value;
+    
+    editarVenda(id_venda);
+}); 
 {%endif%}
 </script>
 </div>

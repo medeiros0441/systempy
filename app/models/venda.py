@@ -79,6 +79,7 @@ class Entrega(models.Model):
 class Caixa(models.Model):
     id_caixa = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     loja = models.ForeignKey(Loja, on_delete=models.CASCADE)
+    dia = models.CharField(editable=False, null=True ,max_length=50) 
     insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100) 
     update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
     saldo_inicial = models.DecimalField(

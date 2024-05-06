@@ -8,7 +8,7 @@ from django.http import JsonResponse
 
 from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import model_to_dict
-
+import json
 from app import models
 
 
@@ -26,13 +26,15 @@ class views_venda:
 
     @staticmethod
     @utils.verificar_permissoes(codigo_model=7)
-    def editar_venda(request, venda_id):
+    def editar_venda(request, id_venda):
         try:
             context = {}
             alerta = Alerta.get_mensagem()
             if alerta:
                 context["alerta_js"] = utils.criar_alerta_js(alerta)
             context["type"] = 2
+            context["id_venda"] = id_venda
+            
             return render(request, "venda/formulario_venda.html", context)
         except Exception as e:
             mensagem_erro = str(e)
@@ -102,24 +104,27 @@ class views_venda:
         try:
             # Processa a venda
             id = UserInfo.get_id_usuario(request)
-            dados, mensagem_erro = views_venda.validar_dados_formulario(request.POST, id)
-            venda, mensagem_erro = processos.criar_ou_atualizar_venda(dados)
+
+            dados = json.loads(request.body.decode('utf-8'))
+ 
+
+            data, mensagem_erro = views_venda.validar_dados_formulario(dados, id)
+            venda, mensagem_erro = processos.criar_ou_atualizar_venda(data)
             if venda is not None:
-                if venda.metodo_entrega == "entrega_no_local":
-                    id_motoboy = request.POST.get("motoboy", "").strip()
+
+                if venda.metodo_entrega == "entrega no local":
+                    id_motoboy = dados.get("motoboy", "").strip()
                     if id_motoboy != "0":
                         processos.processo_entrega(venda=venda, id_motoboy=id_motoboy)
                 if venda.forma_pagamento == "dinheiro":
                     processos.processar_caixa(venda)
+
                 # Processa o carrinho
-                carrinho = {}
-                # Iterar sobre os itens do carrinho
-                for item_carrinho in request.POST.getlist("item_carrinho"):
-                    id_produto, quantidade = item_carrinho.split("|")
-                    carrinho[int(id_produto)] = int(quantidade)
+                carrinho = dados.get('carrinho')
                 processos._processar_carrinho(carrinho, venda)
                 # Processa os dados dos galões
-                processos._processar_dados_galoes(request, venda)
+                galoes_troca = dados.get('galoes_troca')
+                processos._processar_dados_galoes(galoes_troca, venda)
 
                 return JsonResponse({"success": True, "message": "venda processada."})
             elif mensagem_erro:
@@ -132,8 +137,8 @@ class views_venda:
     def validar_dados_formulario(data_formulario, id):
         dados = {}
 
-        try:
-            # Validando os dados do formulário
+        try: 
+
             estado_transacao = data_formulario.get("estado_transacao")
             forma_pagamento = data_formulario.get("forma_pagamento")
             desconto = data_formulario.get("desconto", None)
@@ -141,7 +146,7 @@ class views_venda:
             metodo_entrega = data_formulario.get("metodo_entrega", "").strip()
             taxa_entrega = data_formulario.get("taxa_entrega", "").strip()
             if metodo_entrega != "0":
-                if metodo_entrega == "entrega_no_local":
+                if metodo_entrega == "entrega no local":
                     taxa_entrega_decimal = processos.converter_para_decimal(taxa_entrega)
                     if taxa_entrega_decimal is None or taxa_entrega_decimal <= 0:
                         return None, "Taxa de entrega inválida."
@@ -177,6 +182,9 @@ class views_venda:
             else:
                 dados['cliente'] = None
 
+
+
+
             # Adicionando os valores essenciais ao dicionário
             dados['forma_pagamento'] = forma_pagamento
             dados['estado_transacao'] = estado_transacao
@@ -191,7 +199,7 @@ class views_venda:
             dados['user'] = models.Usuario.objects.get(id_usuario=id)
             dados['desc_venda'] = data_formulario.get("descricao_venda")
 
-            dados['id_venda'] = data_formulario.get("id_venda_editar", None)
+            dados['id_venda'] = data_formulario.get("id_venda", None)
             if dados['id_venda'] == "":
                 dados['id_venda'] = None
 

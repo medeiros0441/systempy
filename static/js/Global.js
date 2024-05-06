@@ -8,9 +8,7 @@
  $('.data-mask').mask('00/00/0000');
  $('.data-mes-ano-mask').mask('00/0000');
  $('.quantidade-mask').mask('00000000');
- $('.money-mask').mask('000.000.000,00', {reverse: true,}); 
-
-
+ $('.money-mask').mask('000.000.000,00', {reverse: true,});  
 
 
  
@@ -106,60 +104,109 @@ function chamarFuncaoPython(url, data,type, callback)  {
 }
 
 //alerta customizado
-function alertCustomer(text,time=180000) {
+function alertCustomer(text,type=null,time=180000) {
     // Verificar se o container já existe
     let toastContainer = document.querySelector('.toast-container');
+    if (type===null){
+        // Se não existir, criar um novo container
+        if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.classList.add('toast-container', 'position-fixed', 'top-0', 'end-0', 'p-3');
+        document.body.appendChild(toastContainer);
+        }
 
-    // Se não existir, criar um novo container
-    if (!toastContainer) {
-      toastContainer = document.createElement('div');
-      toastContainer.classList.add('toast-container', 'position-fixed', 'top-0', 'end-0', 'p-3');
-      document.body.appendChild(toastContainer);
-    }
+        // Criar um novo toast
+        const toastElement = document.createElement('div');
+        toastElement.classList.add('toast');
+        toastElement.setAttribute('role', 'alert');
+        toastElement.setAttribute('aria-live', 'assertive');
+        toastElement.setAttribute('aria-atomic', 'true');
 
-    // Criar um novo toast
-    const toastElement = document.createElement('div');
-    toastElement.classList.add('toast');
-    toastElement.setAttribute('role', 'alert');
-    toastElement.setAttribute('aria-live', 'assertive');
-    toastElement.setAttribute('aria-atomic', 'true');
+        // Criar o cabeçalho do toast
+        const toastHeader = document.createElement('div');
+        toastHeader.classList.add('toast-header');
+        const strongElement = document.createElement('strong');
+        strongElement.classList.add('me-auto', 'Font-Gliker', 'fw-bold');
+        strongElement.innerText = '{ C P S }';
+        const buttonClose = document.createElement('button');
+        buttonClose.setAttribute('type', 'button');
+        buttonClose.classList.add('btn-close');
+        buttonClose.setAttribute('data-bs-dismiss', 'toast');
+        buttonClose.setAttribute('aria-label', 'Close');
 
-    // Criar o cabeçalho do toast
-    const toastHeader = document.createElement('div');
-    toastHeader.classList.add('toast-header');
-    const strongElement = document.createElement('strong');
-    strongElement.classList.add('me-auto', 'Font-Gliker', 'fw-bold');
-    strongElement.innerText = '{ S M W }';
-    const buttonClose = document.createElement('button');
-    buttonClose.setAttribute('type', 'button');
-    buttonClose.classList.add('btn-close');
-    buttonClose.setAttribute('data-bs-dismiss', 'toast');
-    buttonClose.setAttribute('aria-label', 'Close');
+        // Criar o corpo do toast
+        const toastBody = document.createElement('div');
+        toastBody.classList.add('toast-body');
+        toastBody.classList.add('bg-white');
+        toastBody.classList.add('rounded-bottom');
+        toastBody.classList.add('shadow-lg');
+        toastBody.innerText = text;
 
-    // Criar o corpo do toast
-    const toastBody = document.createElement('div');
-    toastBody.classList.add('toast-body');
-    toastBody.classList.add('bg-white');
-    toastBody.classList.add('rounded-bottom');
-    toastBody.classList.add('shadow-lg');
-    toastBody.innerText = text;
+        // Montar a estrutura do toast
+        toastHeader.appendChild(strongElement);
+        toastHeader.appendChild(buttonClose);
+        toastElement.appendChild(toastHeader);
+        toastElement.appendChild(toastBody);
+        toastContainer.appendChild(toastElement);
 
-    // Montar a estrutura do toast
-    toastHeader.appendChild(strongElement);
-    toastHeader.appendChild(buttonClose);
-    toastElement.appendChild(toastHeader);
-    toastElement.appendChild(toastBody);
-    toastContainer.appendChild(toastElement);
+        // Inicializar o Bootstrap Toast
+        const toastBootstrap = new bootstrap.Toast(toastElement);
+        toastBootstrap.show();
 
-    // Inicializar o Bootstrap Toast
-    const toastBootstrap = new bootstrap.Toast(toastElement);
-    toastBootstrap.show();
-
-    // Remover o toast após um tempo padrão (por exemplo, 5 segundos)
-    setTimeout(() => {
-      toastContainer.removeChild(toastElement);
-    }, time); // Tempo em milissegundos, ajuste conforme necessário
-  
+        // Remover o toast após um tempo padrão (por exemplo, 5 segundos)
+        setTimeout(() => {
+        toastContainer.removeChild(toastElement);
+        }, time); // Tempo em milissegundos, ajuste conforme necessário
+    }else if (type != null ){
+            var container = document.getElementById("id_alert_container");
+            var alertClass = "";
+            var iconClass = "";
+            
+            // Definindo a classe e o ícone com base no tipo
+            switch (type) {
+                case 1:
+                    alertClass = "alert-success";
+                    iconClass = "bi-check-circle-fill"; // Ícone de alerta de sucesso
+                    break;
+                case 2:
+                    alertClass = "alert-danger";
+                    iconClass = "bi-exclamation-circle-fill"; // Ícone de alerta de erro
+                    break;
+                case 3:
+                    alertClass = "alert-warning";
+                    iconClass = "bi-exclamation-triangle-fill"; // Ícone de alerta de aviso
+                    break;
+                default:
+                    alertClass = "alert-info";
+                    iconClass = "bi-info-circle-fill"; // Ícone de alerta de informação
+                    break;
+            }
+            
+            // Criando o elemento do alerta
+            var alertDiv = document.createElement("div");
+            alertDiv.classList.add("alert", alertClass, "alert-dismissible", "fade", "show");
+            alertDiv.setAttribute("role", "alert");
+            
+            // Adicionando o botão de fechar ao alerta
+            var closeButton = document.createElement("button");
+            closeButton.classList.add("btn-close");
+            closeButton.setAttribute("type", "button");
+            closeButton.setAttribute("data-bs-dismiss", "alert");
+            closeButton.setAttribute("aria-label", "Close");
+            alertDiv.appendChild(closeButton);
+            
+            // Adicionando o ícone ao alerta
+            var iconSpan = document.createElement("span");
+            iconSpan.classList.add("bi", iconClass);
+            iconSpan.setAttribute("aria-hidden", "true");
+            alertDiv.appendChild(iconSpan);
+            
+            // Adicionando a mensagem ao alerta
+            alertDiv.appendChild(document.createTextNode(" " + text));
+            
+            // Adicionando o alerta ao container
+            container.appendChild(alertDiv);
+        }
   }
 
   // Função para buscar o endereço com base no CEP
