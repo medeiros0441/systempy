@@ -8,12 +8,12 @@ from dotenv import load_dotenv
 
 # Carregar variáveis de ambiente do arquivo correspondente ao ambiente atual
 ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
-if ENVIRONMENT == "production":
-    DEBUG = False
-    load_dotenv(".env")
-else:
+if ENVIRONMENT == "dev":
     load_dotenv(".env.dev")
     DEBUG = True
+else:
+    DEBUG = False
+    load_dotenv(".env")
 
 ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
 SECRET_KEY = "p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
@@ -119,5 +119,14 @@ if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
+else:
 
+    # Defina as origens confiáveis para CSRF
+    CSRF_TRUSTED_ORIGINS = [
+        "comercioprime.azurewebsites.net",
+        # Outros domínios confiáveis, se aplicável
+    ]
+
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
