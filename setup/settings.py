@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 
 # Carregar variáveis de ambiente do arquivo correspondente ao ambiente atual
 ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
-if ENVIRONMENT == "dev":
+if ENVIRONMENT == "development":
     load_dotenv(".env.dev")
     DEBUG = True
 else:
-    DEBUG = False
+    DEBUG = True
     load_dotenv(".env")
 
 ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
@@ -40,12 +40,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "app.middlewares.AtualizarDadosClienteMiddleware",
     "app.middlewares.ErrorLoggingMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 
 ROOT_URLCONF = "setup.urls"
-COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True
 # Templates
 TEMPLATES = [
     {
@@ -110,23 +109,25 @@ USE_TZ = True
 # Diretórios estáticos
 STATIC_URL = "assents/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = BASE_DIR + "/staticfiles"
+
+import logging
+
+logger = logging.getLogger(__name__)
+logger.info("O valor de STATIC_ROOT é: %s", STATIC_ROOT)
 # Configuração para compressão de arquivos estáticos
-COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True
 # Configurações de segurança
-if DEBUG:
+if DEBUG == False:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
 else:
-
     # Defina as origens confiáveis para CSRF
     CSRF_TRUSTED_ORIGINS = [
+        "*",
         "comercioprime.azurewebsites.net",
-        # Outros domínios confiáveis, se aplicável
     ]
 
     CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = False
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
