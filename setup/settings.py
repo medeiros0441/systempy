@@ -12,7 +12,7 @@ if ENVIRONMENT == "development":
     load_dotenv(".env.dev")
     DEBUG = True
 else:
-    DEBUG = True
+    DEBUG = False
     load_dotenv(".env")
 
 ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
@@ -117,13 +117,14 @@ logger = logging.getLogger(__name__)
 logger.info("O valor de STATIC_ROOT é: %s", STATIC_ROOT)
 # Configuração para compressão de arquivos estáticos
 # Configurações de segurança
-if DEBUG == False:
+if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
 else:
     # Defina as origens confiáveis para CSRF
     CSRF_TRUSTED_ORIGINS = [
+        "https://comercioprime.azurewebsites.net",
         "*",
         "comercioprime.azurewebsites.net",
     ]
