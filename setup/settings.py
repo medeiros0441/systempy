@@ -119,7 +119,7 @@ STATIC_ROOT = BASE_DIR + "/staticfiles"
 import logging
 
 logger = logging.getLogger(__name__)
-logger.info("O valor de STATIC_ROOT é: %s", STATIC_ROOT)
+logger.info("O valor de STATIC_ROOT : %s", STATIC_ROOT)
 # Configuração para compressão de arquivos estáticos
 # Configurações de segurança
 if DEBUG:
