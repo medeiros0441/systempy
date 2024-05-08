@@ -15,6 +15,11 @@ else:
     DEBUG = False
     load_dotenv(".env")
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://comercioprime.azurewebsites.net",
+    "*",
+    "comercioprime.azurewebsites.net",
+]
 ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
 SECRET_KEY = "p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
 
@@ -123,11 +128,6 @@ if DEBUG:
     SECURE_SSL_REDIRECT = False
 else:
     # Defina as origens confiáveis para CSRF
-    CSRF_TRUSTED_ORIGINS = [
-        "https://comercioprime.azurewebsites.net",
-        "*",
-        "comercioprime.azurewebsites.net",
-    ]
 
     CSRF_COOKIE_SECURE = True
     CSRF_COOKIE_HTTPONLY = False
