@@ -23,6 +23,7 @@ django-appconf==1.0.6
 django-background-tasks==1.2.5
 django-compat==1.0.15
 django-compressor==4.4
+django-cors-headers==4.3.1
 django-crispy-forms==2.1
 djangorestframework==3.15.1
 docopt==0.6.2
