@@ -113,7 +113,7 @@ USE_TZ = True
 # Diretórios estáticos
 STATIC_URL = "assents/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATIC_ROOT = BASE_DIR + "/staticfiles"
+STATIC_ROOT = "../app/staticfiles"
 
 import logging
 
