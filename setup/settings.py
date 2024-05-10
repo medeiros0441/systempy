@@ -46,7 +46,7 @@ MIDDLEWARE = [
     "app.middlewares.AtualizarDadosClienteMiddleware",
     "app.middlewares.ErrorLoggingMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "corsheaders.middleware.Corsheaders"
+    "corsheaders.middleware.Corsheaders",
 ]
 
 
@@ -115,13 +115,12 @@ USE_TZ = True
 # Diretórios estáticos
 STATIC_URL = "assents/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATIC_ROOT = "../app/staticfiles"
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+APP_ROOT = os.path.dirname(APP_DIR)
 
-import logging
-
-logger = logging.getLogger(__name__)
-logger.info("O valor de STATIC_ROOT : %s", STATIC_ROOT)
-# Configuração para compressão de arquivos estáticos
+# Diretórios estáticos
+STATIC_URL = "assents/"
+STATIC_ROOT = os.path.join(APP_ROOT, "app", "staticfiles")
 # Configurações de segurança
 if DEBUG:
     SESSION_COOKIE_SECURE = False
