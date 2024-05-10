@@ -16,8 +16,7 @@ else:
     load_dotenv(".env")
     CSRF_TRUSTED_ORIGINS = [
         "https://comercioprime.azurewebsites.net",
-        "https://169.254.129.3/",
-        "comercioprime.azurewebsites.net",
+        "http://comercioprime.azurewebsites.net",
     ]
 ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
 SECRET_KEY = "p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
@@ -46,7 +45,7 @@ MIDDLEWARE = [
     "app.middlewares.AtualizarDadosClienteMiddleware",
     "app.middlewares.ErrorLoggingMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "corsheaders.middleware.Corsheaders",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 
