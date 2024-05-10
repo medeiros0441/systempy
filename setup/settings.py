@@ -18,7 +18,11 @@ else:
         "https://comercioprime.azurewebsites.net",
         "http://comercioprime.azurewebsites.net",
     ]
-ALLOWED_HOSTS = ["comercioprime.azurewebsites.net", "*"]
+ALLOWED_HOSTS = [
+    "*",
+    "https://comercioprime.azurewebsites.net",
+    "http://comercioprime.azurewebsites.net",
+]
 SECRET_KEY = "p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
 
 INSTALLED_APPS = [
