@@ -117,7 +117,7 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             id_usuario = request.session.get("id_usuario", 0)
             if id_usuario > 0:
 
-                usuario = get_object_or_404(Usuario, pk=id_usuario)
+                usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
                 empresa = usuario.empresa
                 if empresa.id_empresa:
                     request.session["id_empresa"] = int(empresa.id_empresa)

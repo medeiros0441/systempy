@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 from dotenv import load_dotenv
 
 # Carregar variáveis de ambiente do arquivo correspondente ao ambiente atual
-ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
+ENVIRONMENT = os.getenv("DJANGO_ENV", "")
 if ENVIRONMENT == "development":
     load_dotenv(".env.dev")
     DEBUG = True
