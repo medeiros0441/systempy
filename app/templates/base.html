@@ -24,7 +24,7 @@
             <div class="    mx-auto container-xl  row">
                 <div class=" col-12 container  justify-content-between row align-items-center ">
                     <a class="col  text-sm-center text-start text-decoration-none  " href="{% url 'home' %}">
-                        <p class="logo-siglas mb-2   text-white" style="font-size: 30px;"></p>
+                        <p class="Font-Gliker mb-2   text-white " style="font-size: 30px;  "><span class=" Font-Gliker  " style="font-size: 30px; color: var(--tema-verde);">{</span> Comércio Prime <span style="font-size: 30px; color: var(--tema-verde);" class=" Font-Gliker  ">}</span></p>
                     </a>
                     <button class=" btn text-white col-auto d-inline-flex ms-auto d-sm-none" type="button" onclick="toggleMenu()">
                         <span class=" bi bi-list" id="menuIcon" style="font-size: 30px;"></span>
@@ -124,6 +124,15 @@
 
 
 {% endblock %}
+{% if request.session.isCliente is not True %}
+<div id="whatsapp-icon" class="whatsapp-icon" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+    <a href="https://api.whatsapp.com/send?phone=+5511971486656&amp;text=Ol%C3%A1%20gostaria%20de%20saber%20mais%20sobre%20os%20servi%C3%A7os%20da%20empresa%20Com%C3%A9rcio%20Prime" target="_blank">
+      <img src="/assents/img/biblioteca/whatsapp_5968841.png" alt="WhatsApp" style="width: 50px; height: auto;">
+    </a>
+</div>
+{% endif %}
+
+
 
         </div>
     </div>
