@@ -117,19 +117,19 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
 
     def process_response(self, request, response):
         try:
-            id_usuario = request.session.get("id_usuario", 0)
-            if id_usuario > 0:
-                usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
-                empresa = usuario.empresa
-                if empresa.id_empresa:
-                    request.session["id_empresa"] = int(empresa.id_empresa)
-                ip = request.META.get("REMOTE_ADDR")
-                sessao, created = Sessao.objects.get_or_create(ip_sessao=ip)
-                sessao.usuario = usuario
+            #id_usuario = request.session.get("id_usuario", 0)
+           # if id_usuario > 0:
+              #  usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
+             #   empresa = usuario.empresa
+             #   if empresa.id_empresa:
+             #       request.session["id_empresa"] = int(empresa.id_empresa)
+             #   ip = request.META.get("REMOTE_ADDR")
+                #sessao, created = Sessao.objects.get_or_create(ip_sessao=ip)
+                #sessao.usuario = usuario
                # sessao.time_finalizou = timezone.now()
-                sessao.save()
-                request.session["isCliente"] = True
-                request.session["id_usuario"] = id_usuario
+               # sessao.save()
+               # request.session["isCliente"] = True
+                #request.session["id_usuario"] = id_usuario
             return response
         except Exception as e:
             traceback_str = traceback.format_exc()
