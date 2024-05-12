@@ -126,7 +126,7 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
                 ip = request.META.get("REMOTE_ADDR")
                 sessao, created = Sessao.objects.get_or_create(ip_sessao=ip)
                 sessao.usuario = usuario
-                sessao.time_finalizou = timezone.now()
+               # sessao.time_finalizou = timezone.now()
                 sessao.save()
                 request.session["isCliente"] = True
                 request.session["id_usuario"] = id_usuario
