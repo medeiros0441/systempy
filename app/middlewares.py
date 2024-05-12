@@ -10,6 +10,7 @@ from django.conf import settings
 from .view import views_sessao
 from .static import UserInfo
 from django.core.exceptions import ObjectDoesNotExist
+import traceback
 
 
 class ErrorLoggingMiddleware:
@@ -108,8 +109,11 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
                     return redirect("login")
 
         except Exception as e:
+            traceback_info = traceback.format_exc()
+            # Constrói a mensagem de erro com a página e a linha específica
+            error_message = f"Erro durante a autenticação: {str(e)}. Página: {request.path}. Linha: {traceback_info.splitlines()[-2]}"
             # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
-            return utils.erro(request, f"Erro durante a autenticação: {str(e)}")
+            return utils.erro(request,error_message)
 
     # process_response é chamado após a view ser executada e recebe a resposta gerada
     def process_response(self, request, response):
@@ -130,5 +134,8 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
                 request.session["id_usuario"] = id_usuario
             return response
         except Exception as e:
+            traceback_info = traceback.format_exc()
+            # Constrói a mensagem de erro com a página e a linha específica
+            error_message = f"Erro durante a autenticação: {str(e)}. Página: {request.path}. Linha: {traceback_info.splitlines()[-2]}"
             # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
-            return utils.erro(request, f"Erro durante a autenticação: {str(e)}")
+            return utils.erro(request,error_message)
