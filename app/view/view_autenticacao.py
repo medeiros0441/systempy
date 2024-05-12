@@ -7,7 +7,6 @@ from ..utils import utils
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
 from ..static import Alerta, UserInfo
-import traceback
 
 
 def autenticar_usuario(request, email, senha_digitada):
@@ -37,8 +36,5 @@ def autenticar_usuario(request, email, senha_digitada):
         else:
             return False
     except Exception as e:
-        traceback_info = traceback.format_exc()
-            # Constrói a mensagem de erro com a página e a linha específica
-        error_message = f"Erro durante a autenticação: {str(e)}. Página: {request.path}. Linha: {traceback_info.splitlines()[-2]}"
-            # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
+        error_message = f"Erro durante a autenticação: {str(e)}." 
         return utils.erro(request,error_message)

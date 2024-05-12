@@ -23,12 +23,7 @@ class Sessao(models.Model):
     )
     time_iniciou = models.DateTimeField(
         null=True,
-        default=utils.obter_data_hora_atual(),
-    )
-    time_iniciou = models.DateTimeField(
-        null=True,
-        default=utils.obter_data_hora_atual(),
-    )
+    ) 
     status = models.BooleanField(
         default=True,
     )

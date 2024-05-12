@@ -115,18 +115,16 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
             return utils.erro(request,error_message)
 
-    # process_response é chamado após a view ser executada e recebe a resposta gerada
     def process_response(self, request, response):
         try:
             id_usuario = request.session.get("id_usuario", 0)
             if id_usuario > 0:
-
                 usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
                 empresa = usuario.empresa
                 if empresa.id_empresa:
                     request.session["id_empresa"] = int(empresa.id_empresa)
                 ip = request.META.get("REMOTE_ADDR")
-                sessao = Sessao.objects.filter(ip_sessao=ip).first()
+                sessao, created = Sessao.objects.get_or_create(ip_sessao=ip)
                 sessao.usuario = usuario
                 sessao.time_finalizou = timezone.now()
                 sessao.save()
@@ -134,8 +132,6 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
                 request.session["id_usuario"] = id_usuario
             return response
         except Exception as e:
-            traceback_info = traceback.format_exc()
-            # Constrói a mensagem de erro com a página e a linha específica
-            error_message = f"Erro durante a autenticação: {str(e)}. Página: {request.path}. Linha: {traceback_info.splitlines()[-2]}"
-            # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
-            return utils.erro(request,error_message)
+            traceback_str = traceback.format_exc()
+            error_message = f"Erro durante a autenticação: {str(e)}\n{traceback_str}"
+            return utils.erro(request, error_message)

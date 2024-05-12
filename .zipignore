@@ -1,0 +1,17 @@
+# Arquivo .zipignore
+
+# Python bytecode files
+*.pyc
+*.pyo
+*$py.class
+
+# Diretórios gerados pelo Python
+__pycache__/
+
+# Arquivos gerados pelo SQLite
+*.db
+
+# Arquivos gerados pelo processo de construção
+build/
+dist/
+*.egg-info/
