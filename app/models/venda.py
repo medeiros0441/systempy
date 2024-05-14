@@ -12,7 +12,7 @@ from ..utils import utils
 class Venda(models.Model):
     id_venda = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     data_venda = models.CharField(
-        default=utils.obter_data_hora_atual(True), editable=False, max_length=100
+        default=utils.obter_data_hora_atual, editable=False, max_length=100
     )
     forma_pagamento = models.CharField(max_length=50)
     estado_transacao = models.CharField(max_length=20, null=True)

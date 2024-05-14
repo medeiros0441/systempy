@@ -16,11 +16,7 @@ class views_cliente:
     @utils.verificar_permissoes(codigo_model=8)
     def lista_clientes(request, Alerta=None):
         if utils.get_status(request):
-            id_empresa = UserInfo.get_id_empresa(request)
-            clientes = Cliente.objects.filter(empresa_id=id_empresa)
-            return render(
-                request, "cliente/lista_clientes.html", {"clientes": clientes}
-            )
+            return render(request, "cliente/lista_clientes.html")
         else:
             return utils.erro(
                 request, "Você não está autorizado a fazer esta requisição."

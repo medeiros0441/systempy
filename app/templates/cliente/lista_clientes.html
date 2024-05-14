@@ -3,49 +3,122 @@
 {% block title %}Lista de Clientes{% endblock %}
 
 {% block content %}
-<div class="my-5 container-xl mx-auto">
-    <h2>Lista de Clientes</h2>
+{% include 'cliente/modal_cliente.html' %}
 
-
+<div class="my-3   container-xl mx-auto">
     <div class="d-flex justify-content-between mb-2 row">
-        <h1 class="text-start col" style="font-size: 1.3rem;"><i class="bi bi-box"></i> Lista de Produtos</h1>
-        <a  type="button"  href="{% url 'criar_cliente' %}"  id="btnCriar" class="btn btn-warning btn-sm  my-1 col-sm-auto ms-auto me-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Novo Produto</a>
+        <h1 class="text-start col" style="font-size: 1.3rem;"><i class="bi bi-people-fill"></i> Lista de Clientes</h1>
+        <a  type="button"  href="{% url 'criar_cliente' %}"  id="btnCriar" class="btn btn-success btn-sm   col-10 col-sm-auto mx-auto me-sm-2 style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Cliente</a>
         </div>
 
-<div class="container-xl p-3   mx-auto bg-dark rounded">
+<div class="container-xl p-3   mx-auto bg-dark rounded" id="container-table">
     <table class="table table-hover table-responsive table-sm table-dark">
         <thead>
             <tr>
-                <th scope="col">Nome</th>
-                <th scope="col">Telefone</th>
-                <th scope="col">Rua</th>
-                <th scope="col">Ações</th>
+                <th scope="col" class="me-auto text-start">Nome</th>
+                <th scope="col" class="mx-auto text-center">Telefone</th>
+                <th scope="col" class="mx-auto text-center d-none d-sm-table-cell order-1">Endereço</th>
+                <th scope="col" class="ms-auto text-end">Ações</th>
             </tr>
         </thead>
-        <tbody class="table-group-divider">
-            {% for cliente in clientes %}
-            <tr>
-                <th scope="row">{{ cliente.nome }}</th>
-                <td>{{ cliente.telefone }}</td>
-                <td>{{ cliente.endereco.rua }}</td>
-                <td>
-                    <div class="btn-group" role="group" aria-label="Ações do Cliente">
-                        <a type="button" class="btn btn-primary btn-sm" href="{% url 'editar_cliente' cliente.id_cliente %}">
-                            <i class="bi bi-pencil"></i>  
-                        </button>
-                        <a type="button" class="btn btn-danger btn-sm btn-confirmacao" href="{% url 'excluir_cliente' cliente.id_cliente %}"
-                        data-acao="excluir" 
-                        data-titulo="Excluir Cliente" 
-                        data-descricao="Tem certeza de que deseja excluir este Cliente? dados não será possivel recuperar."
-                        >
-                            <i class="bi bi-trash"></i>  
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
+        <tbody class="table-group-divider" id="tabela-clientes">
+            
         </tbody>
     </table>
 </div>
 </div>
+
+<script>
+    window.onload = function() {
+        manageLoading(true,"container-table");
+        chamarFuncaoPython('/api/cliente/by_empresa/', null, 'GET', function(response) {
+            if (response.success === true) {
+                Utils.setLocalStorageItem('data-clientes', response.clientes);
+                montarTabelaClientes(response.clientes)
+            } else {
+                alertCustomer(response.error);
+            }
+        manageLoading(false,"container-table");
+    });
+    };
+    var myModal; // Defina a variável myModal no escopo global
+
+        // Função para abrir o modal
+        function open_modal() {
+            myModal = new bootstrap.Modal(document.getElementById('ModalCliente'));
+            myModal.show();
+        }
+
+        // Função para fechar o modal
+        function close_modal() {
+            if (myModal) { // Verifique se myModal está definido antes de chamá-lo
+                myModal.hide();
+            } else {
+                console.error('myModal não está definido.');
+            }
+        }
+    function montarTabelaClientes(clientes) {
+        var tbody = document.getElementById("tabela-clientes");
+        tbody.innerHTML = ""; // Limpa o conteúdo atual da tabela
+
+        clientes.forEach(function(cliente) {
+            var tr = document.createElement("tr");
+
+            var th = document.createElement("th");
+            th.className = "me-auto text-start";
+            th.textContent = cliente.nome;
+            tr.appendChild(th);
+
+            var tdTelefone = document.createElement("td");
+            tdTelefone.className = "mx-auto text-center";
+            tdTelefone.textContent = cliente.telefone;
+            tr.appendChild(tdTelefone);
+
+            var tdEndereco = document.createElement("td");
+            tdEndereco.className = "text-truncate mx-auto text-center d-none d-sm-table-cell order-1";
+
+            var enderecoString = "";
+
+            if (cliente.rua) {
+                enderecoString += '<span class="bi bi-geo-alt"></span> ' + cliente.rua + ' &nbsp;';
+            }
+            
+            if (cliente.numero) {
+                enderecoString += '<span class="bi bi-house"></span> ' + cliente.numero + ' &nbsp;';
+            }
+            
+            if (cliente.bairro) {
+                enderecoString += '<span class="bi bi-map"></span> ' + cliente.bairro;
+            }
+            
+            if (enderecoString !== "") {
+                tdEndereco.innerHTML = enderecoString;
+            } else {
+                tdEndereco.innerHTML = '<span class="bi bi-exclamation-triangle"></span> Endereço não cadastrado';
+            }
+            tr.appendChild(tdEndereco);
+
+            var tdAcoes = document.createElement("td");
+            tdAcoes.className = "ms-auto text-end";
+            var divAcoes = document.createElement("div");
+            divAcoes.className = "btn-group text-end";
+            divAcoes.setAttribute("role", "group");
+            divAcoes.setAttribute("aria-label", "Ações do Cliente");
+                        
+            divAcoes.innerHTML = '<button type="button" class="btn btn-success btn-sm"  onclick="select_cliente(\'' + cliente.id_cliente + '\');">' +
+                '<i class="bi bi-eye"></i></button>' +
+                '<button type="button" class="btn btn-primary btn-sm" onclick="select_cliente(\'' + cliente.id_cliente + '\');">' +
+                '<i class="bi bi-pencil"></i></button>' +
+                '<a type="button" class="btn btn-danger btn-sm btn-confirmacao" href="/clientes/excluir/' + cliente.id_cliente + '"' +
+                'data-acao="excluir" data-titulo="Excluir Cliente" data-descricao="Tem certeza de que deseja excluir este Cliente? dados não será possivel recuperar.">' +
+                '<i class="bi bi-trash"></i></a>';
+                tdAcoes.appendChild(divAcoes);
+
+            tr.appendChild(tdAcoes);
+
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+
 {% endblock %}

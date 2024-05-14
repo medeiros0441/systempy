@@ -1,31 +1,110 @@
-{% extends 'base.html' %}
+{% load static%}
 
 {% block content %}
-<div class="container">
-    <h1>Editar Cliente</h1>
-    <div class="card">
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="nome_cliente" class="form-label">Nome:</label>
-                    <input type="text" class="form-control" id="nome_cliente" name="nome_cliente" value="{{ cliente.nome }}">
+    <div class="modal fade" id="ModalCliente" data-bs-backdrop="static"   data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog  modal-lg modal-fullscreen-lg-down modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold font-monospace" id="ModalLabel" >Detalhes de Venda</h5>
                 </div>
-                <div class="mb-3">
-                    <label for="telefone" class="form-label">Telefone:</label>
-                    <input type="text" class="form-control" id="telefone" name="telefone" value="{{ cliente.telefone }}">
+                <div class="modal-body  font-monospace" id="container-form">
                 </div>
-                <div class="mb-3">
-                    <label for="ultima_compra" class="form-label">Última Compra:</label>
-                    <input type="date" class="form-control" id="ultima_compra" name="ultima_compra" value="{{ cliente.ultima_compra }}">
-                </div>
-                <div class="mb-3">
-                    <label for="tipo_cliente" class="form-label">Tipo de Cliente:</label>
-                    <input type="text" class="form-control" id="tipo_cliente" name="tipo_cliente" value="{{ cliente.tipo_cliente }}">
-                </div>
-                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-            </form>
+                <div class="modal-body  font-monospace d-none" id="container-info">
+                    <div  class=" card-body row d-flex"  >
+                        <div class="col-auto d-inline-flex">
+                            <i class="bi bi-person-fill me-1"></i>
+                            <span class="fw-bold">Nome: </span>
+                            <span id="info_nome_cliente"></span>
+                        </div>
+                        <div class="col-auto d-inline-flex">
+                            <i class="bi bi-phone-fill me-1"></i>
+                            <span class="fw-bold">Telefone: </span>
+                            <span id="info_telefone_cliente"></span>
+                        </div>
+                        <div class="col-auto d-inline-flex">
+                            <i class="bi bi-people-fill me-1"></i>
+                            <span class="fw-bold">Tipo de Cliente: </span>
+                            <span id="info_tipo_cliente"></span>
+                        </div>
+                        <div class=" mb-1 ">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <span class="fw-bold">Descrição: </span>
+                            <span id="info_descricao_cliente"></span>
+                        </div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="  card-body row d-flex">
+                        <h5 class="mb-1 text-center" style="font:size 0.5rem">Informações de Endereço</h5>
+                        <div class="col-sm-6 d-inline-flex">
+                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <span class="fw-bold">Código Postal: </span>
+                            <span id="info_codigo_postal"></span>
+                        </div>
+                        <div class="col-sm-6 d-inline-flex">
+                            <i class="bi bi-house-fill me-1"></i>
+                            <span class="fw-bold">Rua: </span>
+                            <span id="info_rua"></span>
+                        </div>
+                        <div class="col-sm-6 d-inline-flex">
+                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <span class="fw-bold">Número: </span>
+                            <span id="info_numero"></span>
+                        </div>
+                        <div class="col-sm-6 d-inline-flex">
+                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <span class="fw-bold">Bairro: </span>
+                            <span id="info_bairro"></span>
+                        </div>
+                        <div class="col-sm-6 d-inline-flex">
+                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <span class="fw-bold">Cidade: </span>
+                            <span id="info_cidade"></span>
+                        </div>
+                        <div class="col-sm-6 d-inline-flex">
+                            <i class="bi bi-flag-fill me-2"></i>
+                            <span class="fw-bold">Estado: </span>
+                            <span id="info_estado"></span>
+                        </div>
+                        <div class=" mb-1 ">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <span class="fw-bold">Descrição: </span>
+                            <span id="info_descricao_endereco"></span>
+                        </div>
+                    </div>
+                </div>  
+                <div class="modal-footer ">
+                        <button type="button" onclick="close_modal();"  class="btn btn-secondary float-start ms-auto btn-sm">Fechar</a>
+                </div>  
+            </div>
         </div>
     </div>
-</div>
+
+<script>
+    function select_cliente(id) {
+        var dadosLocalStorage = Utils.getLocalStorageItem('data-clientes');
+        var cliente = dadosLocalStorage.find(function(item) {
+            return item.id_cliente === id;
+        });
+        if (cliente) {
+            preencherDados(cliente);
+        } else {
+            alertCustomer("Cliente não foi encontrado.",3)
+        }
+        open_modal();
+    }
+    function preencherDados(dados) {
+        document.getElementById("info_nome_cliente").textContent = dados.nome;
+        document.getElementById("info_telefone_cliente").textContent = dados.telefone;
+        document.getElementById("info_tipo_cliente").textContent = dados.tipoCliente;
+        document.getElementById("info_descricao_cliente").textContent = dados.descricao;
+        document.getElementById("info_codigo_postal").textContent = dados.codigoPostal;
+        document.getElementById("info_rua").textContent = dados.rua;
+        document.getElementById("info_numero").textContent = dados.numero;
+        document.getElementById("info_bairro").textContent = dados.bairro;
+        document.getElementById("info_cidade").textContent = dados.cidade;
+        document.getElementById("info_estado").textContent = dados.estado;
+        document.getElementById("info_descricao_endereco").textContent = dados.descricaoEndereco;
+        document.getElementById("container-info").classList.remove("d-none");
+    }
+</script>
 {% endblock %}

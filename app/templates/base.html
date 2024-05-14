@@ -16,15 +16,22 @@
 
         
         {{ alerta_js|safe }}
+
+    <style>
+        ::-webkit-scrollbar {
+          display: none;  
+       }
+      
+   </style>
 </head>
-<body class="  container-fluid m-0 p-0 wrapper  bg-light " background="#f5f7fa">
+<body class="    container-fluid m-0 p-0 wrapper  bg-light " background="#f5f7fa">
       <div  class="wrapper"> 
     <div  class="content">
         <nav class="  navbar-expand-md navbar-dark p-2 " style="background: var(--tema-blue)">
-            <div class="    mx-auto container-xl  row">
-                <div class=" col-12 container  justify-content-between row align-items-center ">
+            <div class="  p-0 m-0   mx-auto container-xl  row">
+                <div class=" p-0 m-0 col-12 container  justify-content-between row align-items-center ">
                     <a class="col  text-sm-center text-start text-decoration-none  " href="{% url 'home' %}">
-                        <p class="Font-Gliker mb-2   text-white " style="font-size: 30px;  "><span class=" Font-Gliker  " style="font-size: 30px; color: var(--tema-verde);">{</span> Comércio Prime <span style="font-size: 30px; color: var(--tema-verde);" class=" Font-Gliker  ">}</span></p>
+                        <p class="Font-Gliker mb-2   text-white " style="font-size: 20px;  "><span class=" Font-Gliker  " style="font-size: 30px; color: var(--tema-verde);">{</span> Comércio Prime <span style="font-size: 30px; color: var(--tema-verde);" class=" Font-Gliker  ">}</span></p>
                     </a>
                     <button class=" btn text-white col-auto d-inline-flex ms-auto d-sm-none" type="button" onclick="toggleMenu()">
                         <span class=" bi bi-list" id="menuIcon" style="font-size: 30px;"></span>
@@ -183,29 +190,7 @@
             icon.classList.add('bi-list');
         }
     }
-    </script>
-    <style>
-        /* Largura da barra de rolagem */
-        ::-webkit-scrollbar {
-          width: 08px;
-      }
-      
-      /* Track (a trilha da barra de rolagem) */
-      ::-webkit-scrollbar-track {
-          background: #f1f1f1; /* Cor de fundo */
-      }
-      
-      /* Thumb (o "botão" da barra de rolagem) */
-      ::-webkit-scrollbar-thumb {
-          background: #2f2f34; /* Cor de fundo do botão */
-          border-radius: 5px; /* Cantos arredondados */
-      }
-      
-      /* On hover, adiciona cor à thumb */
-      ::-webkit-scrollbar-thumb:hover {
-          background: #555; /* Cor de fundo ao passar o mouse */
-      }
-    </style>
+    </script> 
 
     
 
