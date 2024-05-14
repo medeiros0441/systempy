@@ -5,6 +5,7 @@ import uuid
 
 from ..utils import utils
 
+
 class Sessao(models.Model):
     id_sessao = models.AutoField(
         primary_key=True,
@@ -23,12 +24,14 @@ class Sessao(models.Model):
     )
     time_iniciou = models.DateTimeField(
         null=True,
-    ) 
+    )
     status = models.BooleanField(
         default=True,
     )
-    insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100)
-    update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
+    insert = models.CharField(
+        default=utils.obter_data_hora_atual, editable=False, max_length=100
+    )
+    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
 
     # Novos campos para dados de localização
     cidade = models.CharField(

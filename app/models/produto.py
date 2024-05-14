@@ -35,11 +35,11 @@ class Produto(models.Model):
 
     is_retornavel = models.BooleanField(null=True, blank=True)
     data_validade = models.CharField(null=True, blank=True, max_length=50)
-    insert = models.DateTimeField(
-        default=utils.obter_data_hora_atual(), editable=False
+    insert = models.CharField(
+        default=utils.obter_data_hora_atual, editable=False, max_length=50
     )  # Valor padrão é o momento atual
-    update = models.DateTimeField(
-        auto_now=True
+    update = models.CharField(
+        default=utils.obter_data_hora_atual, max_length=50
     )  # Atualiza automaticamente durante qualquer alteração
     preco_compra = models.DecimalField(
         max_digits=10,

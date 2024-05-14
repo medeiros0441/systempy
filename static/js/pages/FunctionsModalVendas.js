@@ -742,7 +742,7 @@ function atualizarCamposCarrinho() {
     
         // Obtém o valor pago
         var valorPagoInput = document.getElementById('id_valor_pago');
-        var valorPago = valorPagoInput ? parseFloat(valorPagoInput.value) : 0;
+        var valorPago = valorPagoInput ? parseFloat(valorPagoInput.value.replace(',', '.')) : 0;
     
         // Calcula o troco apenas se o valor pago for maior ou igual ao total
         var troco = valorPago - valorTotalComTaxaDesconto;

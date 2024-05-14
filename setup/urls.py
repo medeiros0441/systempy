@@ -170,17 +170,17 @@ url_cliente = [  # clientes
     path("clientes/", views_cliente.lista_clientes, name="lista_clientes"),
     path("clientes/criar/", views_cliente.criar_cliente, name="criar_cliente"),
     path(
-        "clientes/editar/<int:cliente_id>/",
+        "clientes/editar/<uuid:id_cliente>/",
         views_cliente.editar_cliente,
         name="editar_cliente",
     ),
     path(
-        "clientes/selecionar/<int:cliente_id>/",
+        "clientes/selecionar/<uuid:id_cliente>/",
         views_cliente.selecionar_cliente,
         name="selecionar_cliente",
     ),
     path(
-        "clientes/excluir/<int:cliente_id>/",
+        "clientes/excluir/<uuid:id_cliente>/",
         views_cliente.excluir_cliente,
         name="excluir_cliente",
     ),

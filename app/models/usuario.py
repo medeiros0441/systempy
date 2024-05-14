@@ -19,8 +19,10 @@ class Usuario(models.Model):
     senha = models.CharField(
         max_length=200,
     )
-    insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100)
-    update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
+    insert = models.CharField(
+        default=utils.obter_data_hora_atual, editable=False, max_length=100
+    )
+    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
     nivel_usuario = models.IntegerField()
     status_acesso = models.BooleanField(
         default=False,

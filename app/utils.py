@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from pytz import timezone
 class utils: 
-
+    @staticmethod                                                                                                           
     def obter_data_hora_atual(brasil_date_only=False):
         # Obtém a data e hora atual no fuso horário do Brasil
         brasil_tz = timezone('America/Sao_Paulo')

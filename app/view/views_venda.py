@@ -34,7 +34,7 @@ class views_venda:
                 context["alerta_js"] = utils.criar_alerta_js(alerta)
             context["type"] = 2
             context["id_venda"] = id_venda
-            
+
             return render(request, "venda/formulario_venda.html", context)
         except Exception as e:
             mensagem_erro = str(e)
@@ -105,8 +105,7 @@ class views_venda:
             # Processa a venda
             id = UserInfo.get_id_usuario(request)
 
-            dados = json.loads(request.body.decode('utf-8'))
- 
+            dados = json.loads(request.body.decode("utf-8"))
 
             data, mensagem_erro = views_venda.validar_dados_formulario(dados, id)
             venda, mensagem_erro = processos.criar_ou_atualizar_venda(data)
@@ -120,10 +119,10 @@ class views_venda:
                     processos.processar_caixa(venda)
 
                 # Processa o carrinho
-                carrinho = dados.get('carrinho')
+                carrinho = dados.get("carrinho")
                 processos._processar_carrinho(carrinho, venda)
                 # Processa os dados dos galões
-                galoes_troca = dados.get('galoes_troca')
+                galoes_troca = dados.get("galoes_troca")
                 processos._processar_dados_galoes(galoes_troca, venda)
 
                 return JsonResponse({"success": True, "message": "venda processada."})
@@ -137,7 +136,7 @@ class views_venda:
     def validar_dados_formulario(data_formulario, id):
         dados = {}
 
-        try: 
+        try:
 
             estado_transacao = data_formulario.get("estado_transacao")
             forma_pagamento = data_formulario.get("forma_pagamento")
@@ -147,7 +146,9 @@ class views_venda:
             taxa_entrega = data_formulario.get("taxa_entrega", "").strip()
             if metodo_entrega != "0":
                 if metodo_entrega == "entrega no local":
-                    taxa_entrega_decimal = processos.converter_para_decimal(taxa_entrega)
+                    taxa_entrega_decimal = processos.converter_para_decimal(
+                        taxa_entrega
+                    )
                     if taxa_entrega_decimal is None or taxa_entrega_decimal <= 0:
                         return None, "Taxa de entrega inválida."
 
@@ -174,34 +175,33 @@ class views_venda:
             id_loja = data_formulario.get("loja")
             if id_loja == "0":
                 return None, "Loja não está selecionada."
-            dados['loja'] = models.Loja.objects.get(id_loja=id_loja)
+            dados["loja"] = models.Loja.objects.get(id_loja=id_loja)
 
             id_cliente = data_formulario.get("id_cliente")
             if id_cliente != "0":
-                dados['cliente'] = models.Cliente.objects.get(id_cliente=id_cliente)
+                dados["cliente"] = models.Cliente.objects.get(id_cliente=id_cliente)
             else:
-                dados['cliente'] = None
-
-
-
+                dados["cliente"] = None
 
             # Adicionando os valores essenciais ao dicionário
-            dados['forma_pagamento'] = forma_pagamento
-            dados['estado_transacao'] = estado_transacao
-            dados['desconto'] = desconto
-            dados['metodo_entrega'] = metodo_entrega
-            dados['taxa_entrega'] = taxa_entrega
-            dados['valor_pago'] = valor_pago
-            dados['troco'] = troco
+            dados["forma_pagamento"] = forma_pagamento
+            dados["estado_transacao"] = estado_transacao
+            dados["desconto"] = desconto
+            dados["metodo_entrega"] = metodo_entrega
+            dados["taxa_entrega"] = taxa_entrega
+            dados["valor_pago"] = valor_pago
+            dados["troco"] = troco
 
             # Preenchendo campos relacionados ao troco, se aplicável
-            dados['valor_total'] = processos.converter_para_decimal(data_formulario.get("total_apagar"))
-            dados['user'] = models.Usuario.objects.get(id_usuario=id)
-            dados['desc_venda'] = data_formulario.get("descricao_venda")
+            dados["valor_total"] = processos.converter_para_decimal(
+                data_formulario.get("total_apagar")
+            )
+            dados["user"] = models.Usuario.objects.get(id_usuario=id)
+            dados["desc_venda"] = data_formulario.get("descricao_venda")
 
-            dados['id_venda'] = data_formulario.get("id_venda", None)
-            if dados['id_venda'] == "":
-                dados['id_venda'] = None
+            dados["id_venda"] = data_formulario.get("id_venda", None)
+            if dados["id_venda"] == "":
+                dados["id_venda"] = None
 
             return dados, None
         except Exception as e:
@@ -347,10 +347,10 @@ class views_venda:
             if cliente:
                 # Construir o dicionário de dados do cliente e sua última venda
                 data = {
-                    "id_cliente": (cliente.id_cliente),
-                    "nome": cliente.nome_cliente,
-                    "telefone": cliente.telefone_cliente,
-                    "descricao": cliente.descricao_cliente,
+                    "id_cliente": cliente.id_cliente,
+                    "nome": cliente.nome,
+                    "telefone": cliente.telefone,
+                    "descricao": cliente.descricao,
                     "tipo_cliente": cliente.tipo_cliente,
                     "rua": cliente.endereco.rua if cliente.endereco else None,
                     "numero": (cliente.endereco.numero if cliente.endereco else None),

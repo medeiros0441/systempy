@@ -14,8 +14,10 @@ class Log(models.Model):
         max_length=100
     )  # Origem do log (nome do módulo, função, etc.)
     descricao = models.TextField()  # Descrição do log
-    insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100) 
-    update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
+    insert = models.CharField(
+        default=utils.obter_data_hora_atual, editable=False, max_length=100
+    )
+    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
     usuario = models.ForeignKey(
         Usuario,
         on_delete=models.SET_NULL,

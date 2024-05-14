@@ -11,19 +11,17 @@ class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = [
-            "nome_cliente",
-            "telefone_cliente",
+            "nome",
+            "telefone",
             "ultima_compra",
             "tipo_cliente",
-            "descricao_cliente",
+            "descricao",
             "endereco",
             "empresa",
         ]
         widgets = {
-            "nome_cliente": forms.TextInput(
-                attrs={"class": "form-control", "required": False}
-            ),
-            "telefone_cliente": forms.TextInput(
+            "nome": forms.TextInput(attrs={"class": "form-control", "required": False}),
+            "telefone": forms.TextInput(
                 attrs={"class": "form-control telefone-mask", "required": False}
             ),
             "ultima_compra": forms.DateInput(
@@ -32,7 +30,7 @@ class ClienteForm(forms.ModelForm):
             "tipo_cliente": forms.TextInput(
                 attrs={"class": "form-control", "required": False}
             ),
-            "descricao_cliente": forms.Textarea(
+            "descricao": forms.Textarea(
                 attrs={"class": "form-control", "required": False}
             ),
             # 'endereco' e 'empresa' são tratados automaticamente pelos subformulários

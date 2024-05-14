@@ -14,6 +14,8 @@ class Configuracao(models.Model):
     titulo = models.TextField(blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
     descricao_interna = models.TextField(blank=True, null=True)
-    insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100)
-    update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
+    insert = models.CharField(
+        default=utils.obter_data_hora_atual, editable=False, max_length=100
+    )
+    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
     status_acesso = models.BooleanField(default=True)

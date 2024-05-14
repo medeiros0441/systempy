@@ -18,8 +18,10 @@ class Loja(models.Model):
     sexta = models.BooleanField(default=False)
     sabado = models.BooleanField(default=False)
     domingo = models.BooleanField(default=False)
-    insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100)
-    update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
+    insert = models.CharField(
+        default=utils.obter_data_hora_atual, editable=False, max_length=100
+    )
+    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True)
 
@@ -28,8 +30,10 @@ class Associado(models.Model):
     id_associado = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
-    insert = models.CharField(default=utils.obter_data_hora_atual(), editable=False,  max_length=100)
-    update = models.CharField(default=utils.obter_data_hora_atual(), max_length=100)
+    insert = models.CharField(
+        default=utils.obter_data_hora_atual, editable=False, max_length=100
+    )
+    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
     status_acesso = models.BooleanField(null=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, null=True)
     loja = models.ForeignKey(Loja, on_delete=models.CASCADE, null=True)

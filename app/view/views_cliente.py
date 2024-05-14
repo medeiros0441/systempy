@@ -14,9 +14,10 @@ class views_cliente:
 
     @staticmethod
     @utils.verificar_permissoes(codigo_model=8)
-    def lista_clientes(request):
+    def lista_clientes(request, Alerta=None):
         if utils.get_status(request):
-            clientes = Cliente.objects.all()
+            id_empresa = UserInfo.get_id_empresa(request)
+            clientes = Cliente.objects.filter(empresa_id=id_empresa)
             return render(
                 request, "cliente/lista_clientes.html", {"clientes": clientes}
             )
@@ -32,9 +33,10 @@ class views_cliente:
                 telefone = request.POST.get("telefone")
                 ultima_compra = request.POST.get("ultima_compra")
                 tipo_cliente = request.POST.get("tipo_cliente")
+                decricao = request.POST.get("decricao")
 
                 cliente = Cliente.objects.create(
-                    nome_cliente=nome_cliente,
+                    nome=nome_cliente,
                     telefone=telefone,
                     ultima_compra=ultima_compra,
                     tipo_cliente=tipo_cliente,
@@ -53,7 +55,7 @@ class views_cliente:
         if utils.utis.get_status(request):
             cliente = get_object_or_404(Cliente, id_cliente=cliente_id)
             if request.method == "POST":
-                cliente.nome_cliente = request.POST.get("nome_cliente")
+                cliente.nome = request.POST.get("nome_cliente")
                 cliente.telefone = request.POST.get("telefone")
                 cliente.ultima_compra = request.POST.get("ultima_compra")
                 cliente.tipo_cliente = request.POST.get("tipo_cliente")
@@ -101,21 +103,21 @@ class views_cliente:
                 data = json.loads(request.body)
 
                 # Cria o objeto Endereco
-                endereco = Endereco.objects.create(
-                    rua=data["rua"],
-                    numero=data["numero"],
-                    bairro=data["bairro"],
-                    cidade=data["cidade"],
-                    estado=data["estado"],
-                    codigo_postal=data["cep"],
-                    descricao=data["descricao_endereco"],
-                )
-
+                if data["rua"] == "" and data["numero"] == "" and data["bairro"] == "":
+                    endereco = Endereco.objects.create(
+                        rua=data["rua"],
+                        numero=data["numero"],
+                        bairro=data["bairro"],
+                        cidade=data["cidade"],
+                        estado=data["estado"],
+                        codigo_postal=data["cep"],
+                        descricao=data["descricao_endereco"],
+                    )
                 # Cria o objeto Cliente associado ao endereço
                 cliente = Cliente.objects.create(
-                    nome_cliente=data["nome"],
-                    telefone_cliente=data["telefone"],
-                    descricao_cliente=data.get("descricao", None),
+                    nome=data["nome"],
+                    telefone=data["telefone"],
+                    descricao=data.get("descricao", None),
                     tipo_cliente=data.get("tipo_cliente", None),
                     endereco=endereco,
                     insert=timezone.now(),
@@ -127,9 +129,9 @@ class views_cliente:
                     {
                         "data": {
                             "id_cliente": str(cliente.id_cliente),
-                            "nome": cliente.nome_cliente,
-                            "telefone": cliente.telefone_cliente,
-                            "descricao": cliente.descricao_cliente,
+                            "nome": cliente.nome,
+                            "telefone": cliente.telefone,
+                            "descricao": cliente.descricao,
                             "tipo_cliente": cliente.tipo_cliente,
                             "rua": endereco.rua,
                             "numero": endereco.numero,
@@ -156,11 +158,11 @@ class views_cliente:
         cliente = get_object_or_404(Cliente, pk=cliente_id)
         cliente_data = {
             "id_cliente": cliente.pk,
-            "nome_cliente": cliente.nome_cliente,
-            "telefone_cliente": cliente.telefone_cliente,
+            "nome_cliente": cliente.nome,
+            "telefone": cliente.telefone,
             "ultima_compra": cliente.ultima_compra,
             "tipo_cliente": cliente.tipo_cliente,
-            "descricao_cliente": cliente.descricao_cliente,
+            "descricao_cliente": cliente.descricao,
             "empresa_id": cliente.empresa_id,
         }
         return JsonResponse(cliente_data)
@@ -171,22 +173,18 @@ class views_cliente:
     def api_update_cliente(request, cliente_id):
         cliente = get_object_or_404(Cliente, pk=cliente_id)
         if request.method == "PUT":
-            nome_cliente = request.POST.get("nome_cliente", cliente.nome_cliente)
-            telefone_cliente = request.POST.get(
-                "telefone_cliente", cliente.telefone_cliente
-            )
+            nome_cliente = request.POST.get("nome_cliente", cliente.nome)
+            telefone = request.POST.get("telefone", cliente.telefone)
             ultima_compra = request.POST.get("ultima_compra", cliente.ultima_compra)
             tipo_cliente = request.POST.get("tipo_cliente", cliente.tipo_cliente)
-            descricao_cliente = request.POST.get(
-                "descricao_cliente", cliente.descricao_cliente
-            )
+            descricao_cliente = request.POST.get("descricao_cliente", cliente.descricao)
             empresa_id = request.POST.get("empresa_id", cliente.empresa_id)
 
-            cliente.nome_cliente = nome_cliente
-            cliente.telefone_cliente = telefone_cliente
+            cliente.nome = nome_cliente
+            cliente.telefone = telefone
             cliente.ultima_compra = ultima_compra
             cliente.tipo_cliente = tipo_cliente
-            cliente.descricao_cliente = descricao_cliente
+            cliente.descricao = descricao_cliente
             cliente.empresa_id = empresa_id
 
             cliente.save()
@@ -235,9 +233,9 @@ class views_cliente:
                     # Construir o dicionário de dados do cliente e sua última venda
                     cliente_data = {
                         "id_cliente": cliente.id_cliente,
-                        "nome": cliente.nome_cliente,
-                        "telefone": cliente.telefone_cliente,
-                        "descricao": cliente.descricao_cliente,
+                        "nome": cliente.nome,
+                        "telefone": cliente.telefone,
+                        "descricao": cliente.descricao,
                         "tipo_cliente": cliente.tipo_cliente,
                         "rua": cliente.endereco.rua if cliente.endereco else None,
                         "numero": (
@@ -263,9 +261,7 @@ class views_cliente:
                                 ultima_venda.descricao if ultima_venda else None
                             ),
                             "data_venda": (
-                                ultima_venda.data_venda
-                                if ultima_venda
-                                else None
+                                ultima_venda.data_venda if ultima_venda else None
                             ),
                             "forma_pagamento": (
                                 ultima_venda.forma_pagamento if ultima_venda else None
@@ -313,9 +309,9 @@ class views_cliente:
         for cliente in clientes:
             data = {
                 "id_cliente": str(cliente.id_cliente),
-                "nome": cliente.nome_cliente,
-                "telefone": cliente.telefone_cliente,
-                "descricao": cliente.descricao_cliente,
+                "nome": cliente.nome,
+                "telefone": cliente.telefone,
+                "descricao": cliente.descricao,
                 "tipo_cliente": cliente.tipo_cliente,
                 "rua": cliente.endereco.rua,
                 "numero": cliente.endereco.numero,
