@@ -184,6 +184,36 @@ url_cliente = [  # clientes
         views_cliente.excluir_cliente,
         name="excluir_cliente",
     ),
+    path(
+        "api_get_vendas_by_cliente/<uuid:id_cliente>",
+        views_cliente.api_get_vendas_by_cliente,
+        name="vendas_clientes",
+    ),
+     path(
+        "api/cliente/create/",
+        views_cliente.api_create_cliente,
+        name="api_create_cliente",
+    ),
+    path(
+        "api/cliente/<uuid:cliente_id>/",
+        views_cliente.api_get_cliente,
+        name="api_get_cliente",
+    ),
+    path(
+        "api/cliente/<uuid:cliente_id>/update/",
+        views_cliente.api_update_cliente,
+        name="api_update_cliente",
+    ),
+    path(
+        "api/cliente/<uuid:cliente_id>/delete/",
+        views_cliente.api_delete_cliente,
+        name="api_delete_cliente",
+    ),
+    path(
+        "api/cliente/by_empresa/",
+        views_cliente.api_get_clientes_by_empresa,
+        name="api_get_clientes_by_empresa",
+    ),
 ]
 
 from app.view.views_galao import views_galao
@@ -295,34 +325,7 @@ url_motoboy = [
 
 
 from app.view.views_cliente import views_cliente
-
-url_api_cliente = [
-    path(
-        "api/cliente/create/",
-        views_cliente.api_create_cliente,
-        name="api_create_cliente",
-    ),
-    path(
-        "api/cliente/<uuid:cliente_id>/",
-        views_cliente.api_get_cliente,
-        name="api_get_cliente",
-    ),
-    path(
-        "api/cliente/<uuid:cliente_id>/update/",
-        views_cliente.api_update_cliente,
-        name="api_update_cliente",
-    ),
-    path(
-        "api/cliente/<uuid:cliente_id>/delete/",
-        views_cliente.api_delete_cliente,
-        name="api_delete_cliente",
-    ),
-    path(
-        "api/cliente/by_empresa/",
-        views_cliente.api_get_clientes_by_empresa,
-        name="api_get_clientes_by_empresa",
-    ),
-]
+ 
 
 urlpatterns = (
     url_default
@@ -334,7 +337,6 @@ urlpatterns = (
     + url_produto
     + url_loja
     + url_cliente
-    + url_api_cliente
     + url_endereco
     + url_galao
     + url_motoboy

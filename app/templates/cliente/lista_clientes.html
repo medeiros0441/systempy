@@ -8,15 +8,15 @@
 <div class="my-3   container-xl mx-auto">
     <div class="d-flex justify-content-between mb-2 row">
         <h1 class="text-start col" style="font-size: 1.3rem;"><i class="bi bi-people-fill"></i> Lista de Clientes</h1>
-        <a  type="button"  href="{% url 'criar_cliente' %}"  id="btnCriar" class="btn btn-success btn-sm   col-10 col-sm-auto mx-auto me-sm-2 style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Cliente</a>
-        </div>
+        <button type="button" onclick="tipo_modal()" id="btnCriar" class="btn btn-success btn-sm   col-10 col-sm-auto mx-auto me-sm-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Cliente</a>
+    </div>
 
 <div class="container-xl p-3   mx-auto bg-dark rounded" id="container-table">
     <table class="table table-hover table-responsive table-sm table-dark">
         <thead>
             <tr>
-                <th scope="col" class="me-auto text-start">Nome</th>
-                <th scope="col" class="mx-auto text-center">Telefone</th>
+                <th scope="col" style="font-size:0.9rem" class="me-auto text-start">Nome</th>
+                <th scope="col" style="font-size:0.9rem" class="mx-auto text-center">Telefone</th>
                 <th scope="col" class="mx-auto text-center d-none d-sm-table-cell order-1">Endereço</th>
                 <th scope="col" class="ms-auto text-end">Ações</th>
             </tr>
@@ -65,6 +65,7 @@
             var tr = document.createElement("tr");
 
             var th = document.createElement("th");
+            th.style="font-size:0.9rem";
             th.className = "me-auto text-start";
             th.textContent = cliente.nome;
             tr.appendChild(th);
@@ -75,6 +76,7 @@
             tr.appendChild(tdTelefone);
 
             var tdEndereco = document.createElement("td");
+            tdEndereco.style="font-size:0.9rem";
             tdEndereco.className = "text-truncate mx-auto text-center d-none d-sm-table-cell order-1";
 
             var enderecoString = "";
@@ -105,9 +107,9 @@
             divAcoes.setAttribute("role", "group");
             divAcoes.setAttribute("aria-label", "Ações do Cliente");
                         
-            divAcoes.innerHTML = '<button type="button" class="btn btn-success btn-sm"  onclick="select_cliente(\'' + cliente.id_cliente + '\');">' +
+            divAcoes.innerHTML = '<button type="button" class="btn btn-success btn-sm"  onclick="tipo_modal(\'' + cliente.id_cliente + '\');">' +
                 '<i class="bi bi-eye"></i></button>' +
-                '<button type="button" class="btn btn-primary btn-sm" onclick="select_cliente(\'' + cliente.id_cliente + '\');">' +
+                '<button type="button" class="btn btn-primary btn-sm" onclick="tipo_modal(\'' + cliente.id_cliente + '\',true);">' +
                 '<i class="bi bi-pencil"></i></button>' +
                 '<a type="button" class="btn btn-danger btn-sm btn-confirmacao" href="/clientes/excluir/' + cliente.id_cliente + '"' +
                 'data-acao="excluir" data-titulo="Excluir Cliente" data-descricao="Tem certeza de que deseja excluir este Cliente? dados não será possivel recuperar.">' +

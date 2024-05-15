@@ -1,13 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from ..utils import utils
-from ..models.usuario import Usuario
-from ..models import Cliente, Configuracao, Usuario, Endereco, Venda
+from app import models
 from ..static import Alerta, UserInfo
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.utils import timezone
 from uuid import UUID
+from django.db.models import F, DateTimeField
+from django.db.models.functions import Cast
+from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 
 class views_cliente:
@@ -31,7 +34,7 @@ class views_cliente:
                 tipo_cliente = request.POST.get("tipo_cliente")
                 decricao = request.POST.get("decricao")
 
-                cliente = Cliente.objects.create(
+                cliente = models.Cliente.objects.create(
                     nome=nome_cliente,
                     telefone=telefone,
                     ultima_compra=ultima_compra,
@@ -49,7 +52,7 @@ class views_cliente:
 
     def editar_cliente(request, cliente_id):
         if utils.utis.get_status(request):
-            cliente = get_object_or_404(Cliente, id_cliente=cliente_id)
+            cliente = get_object_or_404(models.Cliente, id_cliente=cliente_id)
             if request.method == "POST":
                 cliente.nome = request.POST.get("nome_cliente")
                 cliente.telefone = request.POST.get("telefone")
@@ -67,7 +70,7 @@ class views_cliente:
 
     def selecionar_cliente(request, cliente_id):
         if utils.get_status(request):
-            cliente = get_object_or_404(Cliente, id_cliente=cliente_id)
+            cliente = get_object_or_404(models.Cliente, id_cliente=cliente_id)
             return render(request, "selecionar_cliente.html", {"cliente": cliente})
         else:
             return utils.erro(
@@ -76,7 +79,7 @@ class views_cliente:
 
     def excluir_cliente(request, cliente_id):
         if utils.get_status(request):
-            cliente = get_object_or_404(Cliente, id_cliente=cliente_id)
+            cliente = get_object_or_404(models.Cliente, id_cliente=cliente_id)
             if request.method == "POST":
                 # Lógica para excluir o cliente
                 return redirect("cliente/lista_clientes")
@@ -99,8 +102,8 @@ class views_cliente:
                 data = json.loads(request.body)
 
                 # Cria o objeto Endereco
-                if data["rua"] == "" and data["numero"] == "" and data["bairro"] == "":
-                    endereco = Endereco.objects.create(
+                if data["rua"] != "" and data["numero"] != "" and data["bairro"] != "":
+                    endereco = models.Endereco.objects.create(
                         rua=data["rua"],
                         numero=data["numero"],
                         bairro=data["bairro"],
@@ -109,8 +112,10 @@ class views_cliente:
                         codigo_postal=data["cep"],
                         descricao=data["descricao_endereco"],
                     )
+                else:
+                    endereco = None
                 # Cria o objeto Cliente associado ao endereço
-                cliente = Cliente.objects.create(
+                cliente = models.Cliente.objects.create(
                     nome=data["nome"],
                     telefone=data["telefone"],
                     descricao=data.get("descricao", None),
@@ -136,7 +141,7 @@ class views_cliente:
                             "estado": endereco.estado,
                             "cep": endereco.codigo_postal,
                             "descricao": endereco.descricao,
-                            "insert": cliente.insert.isoformat(),
+                            "insert": cliente.insert,
                             "empresa_id": cliente.empresa_id,
                         },
                         "message": "Cliente e Endereço inseridos com sucesso",
@@ -151,7 +156,7 @@ class views_cliente:
     @staticmethod
     @utils.verificar_permissoes(codigo_model=8)
     def api_get_cliente(request, cliente_id):
-        cliente = get_object_or_404(Cliente, pk=cliente_id)
+        cliente = get_object_or_404(models.Cliente, pk=cliente_id)
         cliente_data = {
             "id_cliente": cliente.pk,
             "nome_cliente": cliente.nome,
@@ -167,7 +172,7 @@ class views_cliente:
     @utils.verificar_permissoes(codigo_model=8)
     @csrf_exempt
     def api_update_cliente(request, cliente_id):
-        cliente = get_object_or_404(Cliente, pk=cliente_id)
+        cliente = get_object_or_404(models.Cliente, pk=cliente_id)
         if request.method == "PUT":
             nome_cliente = request.POST.get("nome_cliente", cliente.nome)
             telefone = request.POST.get("telefone", cliente.telefone)
@@ -192,7 +197,7 @@ class views_cliente:
     @staticmethod
     @utils.verificar_permissoes(codigo_model=8)
     def api_delete_cliente(request, cliente_id):
-        cliente = get_object_or_404(Cliente, pk=cliente_id)
+        cliente = get_object_or_404(models.liente, pk=cliente_id)
         cliente.delete()
         return JsonResponse({"message": "Cliente deletado com sucesso"}, status=204)
 
@@ -202,7 +207,7 @@ class views_cliente:
         empresa_id = UserInfo.get_id_empresa(request)
 
         # Obter clientes da empresa com os dados do endereço
-        clientes = Cliente.objects.filter(empresa_id=empresa_id).select_related(
+        clientes = models.Cliente.objects.filter(empresa_id=empresa_id).select_related(
             "endereco"
         )
 
@@ -221,7 +226,7 @@ class views_cliente:
                 try:
                     # Obter a última venda do cliente
                     ultima_venda = (
-                        Venda.objects.filter(cliente=cliente)
+                        models.Venda.objects.filter(cliente=cliente)
                         .order_by("-insert")
                         .first()
                     )
@@ -249,7 +254,7 @@ class views_cliente:
                         "cidade": (
                             cliente.endereco.cidade if cliente.endereco else None
                         ),
-                        "descricao": (
+                        "descricao_endereco": (
                             cliente.endereco.descricao if cliente.endereco else None
                         ),
                         "ultima_venda": {
@@ -297,7 +302,7 @@ class views_cliente:
             request
         )  # Obtenha o ID da empresa do usuário
         # Obtenha os clientes da empresa com os dados do endereço
-        clientes = Cliente.objects.filter(empresa_id=empresa_id).select_related(
+        clientes = models.Cliente.objects.filter(empresa_id=empresa_id).select_related(
             "endereco"
         )
         # Construa a lista de dicionários contendo os dados de cada cliente
@@ -321,3 +326,69 @@ class views_cliente:
 
         # Retorne a resposta JSON com os dados dos clientes
         return JsonResponse({"data": clientes_data, "sucess": "true"})
+
+    @staticmethod
+    @utils.verificar_permissoes(codigo_model=8)
+    def api_get_vendas_by_cliente(request, id_cliente):
+        try:
+            # Convertendo o campo 'insert' para um campo de data e ordenando pelos mais recentes
+            vendas = (
+                models.Venda.objects.filter(cliente_id=id_cliente)
+                .annotate(insert_date=Cast(F("insert"), output_field=DateTimeField()))
+                .order_by("-insert_date")
+            )
+
+            # Preparar dados para JSON Response
+            vendas_data = []
+
+            for venda in vendas:
+                itens_compra = models.ItemCompra.objects.filter(venda=venda)
+                itens_data = list(
+                    itens_compra.values(
+                        "id_item_compra",
+                        "quantidade",
+                        "insert",
+                        "update",
+                        nome=F("produto__nome"),  # Renomear para "nome"
+                    )
+                )
+
+                venda_data = {
+                    "id_venda": venda.id_venda,
+                    "data_venda": venda.data_venda,
+                    "forma_pagamento": venda.forma_pagamento,
+                    "estado_transacao": venda.estado_transacao,
+                    "metodo_entrega": venda.metodo_entrega,
+                    "desconto": venda.desconto,
+                    "valor_total": venda.valor_total,
+                    "valor_entrega": venda.valor_entrega,
+                    "valor_pago": venda.valor_pago,
+                    "troco": venda.troco,
+                    "insert": venda.insert,
+                    "update": venda.update,
+                    "descricao": venda.descricao,
+                    "usuario": venda.usuario.nome_completo,
+                    "loja": venda.loja.nome_loja,
+                    "cliente_id": venda.cliente_id,
+                    "itens_compra": itens_data,
+                }
+
+                vendas_data.append(venda_data)
+
+            return JsonResponse({"data": vendas_data, "success": True})
+
+        except ObjectDoesNotExist:
+            return JsonResponse(
+                {"error": "Cliente não encontrado.", "success": False}, status=404
+            )
+        except ValidationError as e:
+            return JsonResponse({"error": str(e), "success": False}, status=400)
+        except Exception as e:
+            return JsonResponse(
+                {
+                    "error": "Erro interno no servidor.",
+                    "success": False,
+                    "details": str(e),
+                },
+                status=500,
+            )

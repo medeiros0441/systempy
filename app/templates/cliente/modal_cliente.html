@@ -2,31 +2,80 @@
 
 {% block content %}
     <div class="modal fade" id="ModalCliente" data-bs-backdrop="static"   data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog  modal-lg modal-fullscreen-lg-down modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog  modal-md modal-fullscreen-md-down modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold font-monospace" id="ModalLabel" >Detalhes de Venda</h5>
+                    <h5 class="modal-title fw-bold font-monospace" id="ModalLabel" > </h5>
                 </div>
-                <div class="modal-body  font-monospace" id="container-form">
+                <div class="modal-body  font-monospace d-none" id="container-form">
+                        <input   id="id_cliente" type="hidden" value="0" > 
+                        <div class="form-floating mb-2">
+                            <input type="text" name="nome_cliente"  class="form-control" required="" maxlength="255" id="id_nome_cliente">
+                            <label for="id_nome_cliente" class="form-label">Nome do Cliente:</label>
+                         </div>
+                        <div class="form-floating mb-2">
+                        <input type="text" name="telefone"   class="form-control telefone-mask" required="" maxlength="19" id="id_telefone_cliente">
+                        <label for="id_telefone_cliente" class="form-label">Telefone do Cliente:</label></div>
+                        <div class="form-floating mb-2"  id="form_select_tipo_cliente">
+                            <select class="form-select" id="id_select_tipo_cliente">
+                                <option value="0">selecione</option>
+                                <option value="corporativo">Corporativo</option>
+                                <option value="ocasional">Ocasional</option>
+                                <option value="regular">Regular</option>
+                                <option value="residencial">Residencial</option>
+                            </select>
+                            <label for="id_select_tipo_cliente" class="form-label">Tipo de Cliente:</label>
+                        </div>
+                
+                        <div class="form-floating mb-2">
+                        <textarea name="descricao_cliente"  cols="40" rows="10" class="form-control" maxlength="300" id="id_descricao_cliente"></textarea>
+                        <label for="id_descricao_cliente" class="form-label">Descrição do Cliente:</label></div>
+                        <h5 class="modal-title mx-auto fw-bold font-monospace" style="font:size 1rem">  Formulario de  Endereço  </h5>
+                            <div class="form-floating mb-2  ">
+                                    <input type="text" name="codigo_postal"   maxlength="9" class="form-control form-control-validate cep-mask input form-control form-control-validate input" required="" id="id_codigo_postal">
+                                    <label for="id_codigo_postal">Código Postal</label> </div>  
+                            <div class="form-floating mb-2  ">
+                                <input type="text" name="rua" maxlength="255"  class=" form-control form-control-validate input"  id="id_rua">
+                                <label for="id_rua">Rua</label>    </div>
+                            <div class="form-floating mb-2  ">
+                                <input type="text" name="numero" maxlength="10"   class=" form-control form-control-validate input"   id="id_numero">
+                                <label for="id_numero">Número</label></div>
+                            
+                            <div class="form-floating mb-2  ">
+                                <input type="text" name="bairro" maxlength="100"  class=" form-control form-control-validate input"   id="id_bairro">
+                                <label for="id_bairro">Bairro</label></div>
+                            
+                            <div class="form-floating mb-2  ">
+                                <input type="text" name="cidade" maxlength="100"  class=" form-control form-control-validate input"  id="id_cidade">
+                                <label for="id_cidade">Cidade</label></div>
+                            
+                            <div class="form-floating mb-2  ">
+                                <input type="text" name="estado" maxlength="50"   class=" form-control form-control-validate input"   id="id_estado">
+                                <label for="id_estado">Estado</label></div>
+                            
+                            <div class="form-floating mb-2 "  >
+                                <textarea name="descricao_endereco" cols="40" rows="10"  maxlength="100" class=" form-control form-control-validate input" required="False" id="id_descricao_endereco"></textarea>
+                                <label for="id_descricao">Descrição</label>
+                            </div> 
                 </div>
                 <div class="modal-body  font-monospace d-none" id="container-info">
                     <div  class=" card-body row d-flex"  >
-                        <div class="col-auto d-inline-flex">
+                        <div class="col-12">
                             <i class="bi bi-person-fill me-1"></i>
                             <span class="fw-bold">Nome: </span>
                             <span id="info_nome_cliente"></span>
                         </div>
-                        <div class="col-auto d-inline-flex">
+                        <div class="col-12">
                             <i class="bi bi-phone-fill me-1"></i>
                             <span class="fw-bold">Telefone: </span>
                             <span id="info_telefone_cliente"></span>
                         </div>
-                        <div class="col-auto d-inline-flex">
+                        <div class="col-12">
                             <i class="bi bi-people-fill me-1"></i>
                             <span class="fw-bold">Tipo de Cliente: </span>
                             <span id="info_tipo_cliente"></span>
                         </div>
-                        <div class=" mb-1 ">
+                        <div class=" col-12 ">
                             <i class="bi bi-info-circle me-1"></i>
                             <span class="fw-bold">Descrição: </span>
                             <span id="info_descricao_cliente"></span>
@@ -35,32 +84,32 @@
                     <hr class="my-2">
                     <div class="  card-body row d-flex">
                         <h5 class="mb-1 text-center" style="font:size 0.5rem">Informações de Endereço</h5>
-                        <div class="col-sm-6 d-inline-flex">
+                        <div class="col-sm-auto d-inline-flex">
                             <i class="bi bi-geo-alt-fill me-1"></i>
                             <span class="fw-bold">Código Postal: </span>
                             <span id="info_codigo_postal"></span>
                         </div>
-                        <div class="col-sm-6 d-inline-flex">
+                        <div class="col-sm-auto d-inline-flex">
                             <i class="bi bi-house-fill me-1"></i>
                             <span class="fw-bold">Rua: </span>
                             <span id="info_rua"></span>
                         </div>
-                        <div class="col-sm-6 d-inline-flex">
+                        <div class="col-sm-auto d-inline-flex">
                             <i class="bi bi-geo-alt-fill me-1"></i>
                             <span class="fw-bold">Número: </span>
                             <span id="info_numero"></span>
                         </div>
-                        <div class="col-sm-6 d-inline-flex">
+                        <div class="col-sm-auto d-inline-flex">
                             <i class="bi bi-geo-alt-fill me-1"></i>
                             <span class="fw-bold">Bairro: </span>
                             <span id="info_bairro"></span>
                         </div>
-                        <div class="col-sm-6 d-inline-flex">
+                        <div class="col-sm-auto d-inline-flex">
                             <i class="bi bi-geo-alt-fill me-1"></i>
                             <span class="fw-bold">Cidade: </span>
                             <span id="info_cidade"></span>
                         </div>
-                        <div class="col-sm-6 d-inline-flex">
+                        <div class="col-sm-auto d-inline-flex">
                             <i class="bi bi-flag-fill me-2"></i>
                             <span class="fw-bold">Estado: </span>
                             <span id="info_estado"></span>
@@ -71,40 +120,199 @@
                             <span id="info_descricao_endereco"></span>
                         </div>
                     </div>
+                    <div id="container_vendas_cliente" class="container">
+
+                    </div>
                 </div>  
                 <div class="modal-footer ">
-                        <button type="button" onclick="close_modal();"  class="btn btn-secondary float-start ms-auto btn-sm">Fechar</a>
+                            <button type="button" onclick="close_modal();"  class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
+                        <button type="submit"  id="btnSalvar" class="btn btn-primary float-start ms-auto btn-sm">Salvar</a>
                 </div>  
             </div>
         </div>
     </div>
 
 <script>
-    function select_cliente(id) {
+    function tipo_modal(id=false,isEditar=false) {
         var dadosLocalStorage = Utils.getLocalStorageItem('data-clientes');
         var cliente = dadosLocalStorage.find(function(item) {
             return item.id_cliente === id;
         });
-        if (cliente) {
-            preencherDados(cliente);
-        } else {
-            alertCustomer("Cliente não foi encontrado.",3)
+        if(id === false){
+            document.getElementById("container-info").classList.add("d-none");
+            document.getElementById("container-form").classList.remove("d-none");
+            document.getElementById("ModalLabel").innerHTML="Formulario";
+            document.getElementById("btnSalvar").classList.remove("d-none");
         }
+        if (cliente){
+                if(isEditar){
+                    document.getElementById("container-info").classList.add("d-none");
+                    document.getElementById("container-form").classList.remove("d-none");
+                    document.getElementById("ModalLabel").innerHTML="Formulario";
+                    document.getElementById("btnSalvar").classList.remove("d-none");
+                    document.getElementById("id_cliente").value.trim=id;
+                    preencherDadosForm(cliente);
+                    
+                }   else{
+                    document.getElementById("container-info").classList.remove("d-none");
+                    document.getElementById("container-form").classList.add("d-none");
+                     preencherDadosInfo(cliente);
+                    document.getElementById("btnSalvar").classList.add("d-none");
+                     get_vendas_by_cliente(id);
+                    document.getElementById("ModalLabel").innerHTML="Detalhes";
+                }
+        }  
         open_modal();
     }
-    function preencherDados(dados) {
+    function get_vendas_by_cliente(id_cliente) {
+        manageLoading(true,"container_vendas_cliente");
+            chamarFuncaoPython('/api_get_vendas_by_cliente/'+id_cliente, null, 'GET', function(response) {
+            if (response.success === true) {
+                renderizarVendas(response.data);
+            } else {
+                alertCustomer(response.error);
+            }
+            manageLoading(false,"container_vendas_cliente");
+        });
+    }
+    function preencherDadosInfo(dados) {
         document.getElementById("info_nome_cliente").textContent = dados.nome;
         document.getElementById("info_telefone_cliente").textContent = dados.telefone;
-        document.getElementById("info_tipo_cliente").textContent = dados.tipoCliente;
+        document.getElementById("info_tipo_cliente").textContent = dados.tipo_cliente;
         document.getElementById("info_descricao_cliente").textContent = dados.descricao;
-        document.getElementById("info_codigo_postal").textContent = dados.codigoPostal;
+        document.getElementById("info_codigo_postal").textContent = dados.cep;
         document.getElementById("info_rua").textContent = dados.rua;
         document.getElementById("info_numero").textContent = dados.numero;
         document.getElementById("info_bairro").textContent = dados.bairro;
         document.getElementById("info_cidade").textContent = dados.cidade;
         document.getElementById("info_estado").textContent = dados.estado;
-        document.getElementById("info_descricao_endereco").textContent = dados.descricaoEndereco;
-        document.getElementById("container-info").classList.remove("d-none");
+        document.getElementById("info_descricao_endereco").textContent = dados.descricao_endereco;
     }
+    function preencherDadosForm(dados) {
+        document.getElementById("id_nome_cliente").value = dados.nome;
+        document.getElementById("id_telefone_cliente").value = dados.telefone;
+        document.getElementById("id_select_tipo_cliente").value = dados.tipo_cliente;
+        document.getElementById("id_descricao_cliente").value = dados.descricao; 
+        document.getElementById("id_codigo_postal").value = dados.cep;
+        document.getElementById("id_rua").value = dados.rua;
+        document.getElementById("id_numero").value = dados.numero;
+        document.getElementById("id_bairro").value = dados.bairro;
+        document.getElementById("id_cidade").value = dados.cidade;
+        document.getElementById("id_estado").value = dados.estado;
+        document.getElementById("id_descricao_endereco").value = dados.descricao_endereco;
+    }
+    function renderizarVendas(vendas) {
+        const container = document.getElementById('container_vendas_cliente');
+        container.innerHTML = ''; // Limpa o conteúdo atual do contêiner
+    
+        vendas.forEach(venda => {
+            // Criação do card para a venda
+            const card = document.createElement('div');
+            card.className = 'my-1 font-monospace row d-flex card border border-dark';
+    
+            // Criação do header do card
+            const cardHeader = document.createElement('div');
+            cardHeader.className = 'card-header bg-dark text-white';
+            const headerContent = document.createElement('div');
+            headerContent.className = 'd-flex align-items-center font-monospace';
+            const headerTitle = document.createElement('span');
+            headerTitle.className = 'me-auto  text-white text-center';
+            headerTitle.innerText = 'Compra do Cliente';
+            headerContent.appendChild(headerTitle);
+            cardHeader.appendChild(headerContent);
+            card.appendChild(cardHeader);
+    
+            // Criação do corpo do card
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body';
+    
+            // Informações adicionais da venda
+            const infoVenda = document.createElement('div');
+            infoVenda.className = 'mt-2';
+            infoVenda.innerHTML = `
+            <div class="row d-flex" style="font-size: 0.9rem;">
+                    <p class="mb-1 col-12 d-inline-flex  "><span class="fw-bold"><i class="bi bi-person"></i> Nome Usuário: </span> ${venda.usuario}</p>
+                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-shop"></i> Nome Loja: </span> ${venda.loja}</p>
+                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-credit-card"></i> Forma de Pagamento: </span> ${venda.forma_pagamento}</p>
+                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-exclamation-circle"></i> Status: </span> ${venda.estado_transacao}</p>
+                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-truck"></i> Entrega: </span> ${venda.metodo_entrega}</p> 
+                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash-stack"></i> Desconto: </span> ${venda.desconto}</p>
+                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash"></i> Valor Total: </span> ${venda.valor_total}</p>
+                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-truck"></i> Valor de Entrega: </span> ${venda.valor_entrega}</p>
+                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash-stack"></i> Valor Pago: </span> ${venda.valor_pago}</p>
+                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash-stack"></i> Troco: </span> ${venda.troco}</p>
+                    <p  class="mb-1 col-12 d-inline-flex  "><span class="fw-bold"><i class="bi bi-clock"></i> Data: </span> ${venda.insert}</p>
+                    <p class="mb-2 col-12"><span class="fw-bold"><i class="bi bi-card-text"></i> Descrição: </span> ${venda.descricao}</p> 
+            </div>
+        `;
+        
+        // Adicionando classe do Bootstrap e a fonte monoespaçada
+        infoVenda.classList.add('font-monospace');
+        
+            cardBody.appendChild(infoVenda);
+    
+            // Lista de produtos
+            const ulProdutos = document.createElement('ul');
+            ulProdutos.className = 'list-group';
+            
+            venda.itens_compra.forEach(item => {
+                var novoItemLista = document.createElement("li");
+                novoItemLista.classList.add("list-group-item", "d-flex","bg-dark", "text-white","justify-content-between", "align-items-center");
+                novoItemLista.innerHTML = `
+                    <span class="badge text-bg-primary me-1 rounded-pill quantidade"> ${item.quantidade}</span>
+                    <span class="text-small small " style="font-size: 0.8rem;" >${item.nome} </span>
+                `;
+                ulProdutos.appendChild(novoItemLista);
+            });
+    
+            cardBody.appendChild(ulProdutos);
+            card.appendChild(cardBody);
+     
+            // Adiciona o card ao contêiner
+            container.appendChild(card);
+        });
+    }
+
+document.getElementById("btnSalvar").addEventListener("click", function(event) {
+        insertCliente()
+});
+function insertCliente() {
+    id_cliente = document.getElementById('id').value;
+    
+    const formInputs = {
+        'id_cliente':id_cliente,
+        'nome': document.getElementById('id_nome_cliente').value.trim(),
+        'telefone': document.getElementById('id_telefone_cliente').value.trim(),
+        'descricao': document.getElementById('id_descricao_cliente').value.trim(),
+        'rua': document.getElementById('id_rua').value.trim(),
+        'numero': document.getElementById('id_numero').value.trim(),
+        'cep': document.getElementById('id_codigo_postal').value.trim(),
+        'estado': document.getElementById('id_estado').value.trim(),
+        'bairro': document.getElementById('id_bairro').value.trim(),
+        'cidade': document.getElementById('id_cidade').value.trim(),
+        'descricao_endereco': document.getElementById('id_descricao_endereco').value.trim(),
+        'tipo_cliente': document.getElementById('id_select_tipo_cliente').value.trim()
+    };
+
+    // Verificar se todos os campos obrigatórios estão preenchidos
+    const obrigatoryFields = ['nome', 'telefone', 'tipo_cliente'];
+    for (const field of obrigatoryFields) {
+        if (!formInputs[field]) {
+            alertCustomer(`preencha o campo ${field}, é obrigatório.`);
+            return;
+        }
+    }
+
+    // Ativar o indicador de carregamento
+    chamarFuncaoPython('/api/cliente/create/', formInputs, 'POST', function(response) {
+        if (response.data) {
+            alertCustomer("Salvo sucesso!");
+
+        } else {
+            alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error);
+        }
+    } );
+     
+}
 </script>
 {% endblock %}

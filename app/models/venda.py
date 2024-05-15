@@ -29,9 +29,9 @@ class Venda(models.Model):
     )
     update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
     descricao = models.TextField(null=True, blank=True)
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
     loja = models.ForeignKey(Loja, on_delete=models.CASCADE)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True)
     produtos = models.ManyToManyField(Produto, through="ItemCompra", blank=True)
     nota_fiscal = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
