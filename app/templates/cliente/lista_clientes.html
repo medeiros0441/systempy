@@ -5,13 +5,21 @@
 {% block content %}
 {% include 'cliente/modal_cliente.html' %}
 
-<div class="my-3   container-xl mx-auto">
-    <div class="d-flex justify-content-between mb-2 row">
+<div class="my-3 p-1  container-xl mx-auto">
+    <div class="d-flex justify-content-between mb-2 row container mx-auto">
         <h1 class="text-start col" style="font-size: 1.3rem;"><i class="bi bi-people-fill"></i> Lista de Clientes</h1>
-        <button type="button" onclick="tipo_modal()" id="btnCriar" class="btn btn-success btn-sm   col-10 col-sm-auto mx-auto me-sm-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Cliente</a>
+        <button type="button" onclick="tipo_modal()" id="btnCriar" class="btn btn-success btn-sm   col-auto  mx-auto me-sm-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Cliente</a>
     </div>
+<div class="container  p-3   mx-auto bg-dark rounded my-2">
+    <label class="form-label  font-monospace fs-5 text-white">Filtro</label>
 
-<div class="container-xl p-3   mx-auto bg-dark rounded" id="container-table">
+    <div class="form-floating mb-1">
+        <input type="text" name="pesquisa"  class="form-control" oninput="filtroCliente()"  maxlength="255" id="pesquisa">
+        <label for="pesquisa" class="form-label">pesquisar</label>
+     </div>
+</div>
+
+<div class="container p-3   mx-auto bg-dark rounded" id="container-table">
     <table class="table table-hover table-responsive table-sm table-dark">
         <thead>
             <tr>
@@ -28,18 +36,64 @@
 </div>
 </div>
 
-<script>
-    window.onload = function() {
-        manageLoading(true,"container-table");
+<script>var filtroTimeout;
+
+    // Função para converter para minúsculo se for uma string
+    function toLowerCaseIfString(value) {
+        return typeof value === 'string' ? value.toLowerCase() : value;
+    }
+    
+    // Função para filtrar os clientes
+    function filtrarClientes(pesquisa, dadosLocalStorage) {
+        return dadosLocalStorage.filter(function(cliente) {
+            var clienteLowerCase = {
+                nome: toLowerCaseIfString(cliente.nome),
+                telefone: toLowerCaseIfString(cliente.telefone),
+                descricao: toLowerCaseIfString(cliente.descricao),
+                tipoCliente: toLowerCaseIfString(cliente.tipo_cliente),
+                rua: toLowerCaseIfString(cliente.rua),
+                numero: toLowerCaseIfString(cliente.numero?.toString()),
+                bairro: toLowerCaseIfString(cliente.bairro),
+                cidade: toLowerCaseIfString(cliente.cidade),
+                estado: toLowerCaseIfString(cliente.estado),
+                cep: toLowerCaseIfString(cliente.codigo_postal?.toString())
+            };
+            // Verifica se algum dos valores contém a pesquisa
+            return Object.values(clienteLowerCase).some(function(propriedade) {
+                return propriedade && typeof propriedade === 'string' && propriedade.includes(pesquisa);
+            });
+        });
+    }
+     
+    
+    // Função principal para realizar o filtro de clientes
+    function filtroCliente() {
+        clearTimeout(filtroTimeout); // Limpa o timeout anterior
+    
+        filtroTimeout = setTimeout(function() {
+            var pesquisa = document.getElementById('pesquisa').value.trim().toLowerCase();
+            var dadosLocalStorage = Utils.getLocalStorageItem('data-clientes');
+    
+            var clientesFiltrados = filtrarClientes(pesquisa, dadosLocalStorage);
+    
+            montarTabelaClientes(clientesFiltrados);
+        }, 300); // Aguarda 300ms após a última entrada para iniciar o filtro
+    }
+    function carregarClientes() {
+        manageLoading(true, "container-table");
         chamarFuncaoPython('/api/cliente/by_empresa/', null, 'GET', function(response) {
             if (response.success === true) {
                 Utils.setLocalStorageItem('data-clientes', response.clientes);
-                montarTabelaClientes(response.clientes)
+                montarTabelaClientes(response.clientes);
             } else {
                 alertCustomer(response.error);
             }
-        manageLoading(false,"container-table");
-    });
+            manageLoading(false, "container-table");
+        });
+    }
+
+    window.onload = function() {
+        carregarClientes();
     };
     var myModal; // Defina a variável myModal no escopo global
 
@@ -60,66 +114,80 @@
     function montarTabelaClientes(clientes) {
         var tbody = document.getElementById("tabela-clientes");
         tbody.innerHTML = ""; // Limpa o conteúdo atual da tabela
+        if (clientes.length > 0) {
 
-        clientes.forEach(function(cliente) {
-            var tr = document.createElement("tr");
+            clientes.forEach(function(cliente) {
+                var tr = document.createElement("tr");
 
-            var th = document.createElement("th");
-            th.style="font-size:0.9rem";
-            th.className = "me-auto text-start";
-            th.textContent = cliente.nome;
-            tr.appendChild(th);
+                var th = document.createElement("th");
+                th.style="font-size:0.8rem";
+                th.className = "me-auto text-start";
+                th.textContent = cliente.nome;
+                tr.appendChild(th);
 
-            var tdTelefone = document.createElement("td");
-            tdTelefone.className = "mx-auto text-center";
-            tdTelefone.textContent = cliente.telefone;
-            tr.appendChild(tdTelefone);
+                var tdTelefone = document.createElement("td");
+                tdTelefone.className = "mx-auto text-center fs-6";
+                tdTelefone.textContent = cliente.telefone;
+                tr.appendChild(tdTelefone);
 
-            var tdEndereco = document.createElement("td");
-            tdEndereco.style="font-size:0.9rem";
-            tdEndereco.className = "text-truncate mx-auto text-center d-none d-sm-table-cell order-1";
+                var tdEndereco = document.createElement("td");
+                tdEndereco.style="font-size:0.9rem";
+                tdEndereco.className = "text-truncate mx-auto text-center d-none d-sm-table-cell order-1";
 
-            var enderecoString = "";
+                var enderecoString = "";
 
-            if (cliente.rua) {
-                enderecoString += '<span class="bi bi-geo-alt"></span> ' + cliente.rua + ' &nbsp;';
+                if (cliente.rua) {
+                    enderecoString += '<span class="bi bi-geo-alt"></span> ' + cliente.rua + ' &nbsp;';
+                }
+                
+                if (cliente.numero) {
+                    enderecoString += '<span class="bi bi-house"></span> ' + cliente.numero + ' &nbsp;';
+                }
+                
+                if (cliente.bairro) {
+                    enderecoString += '<span class="bi bi-map"></span> ' + cliente.bairro;
+                }
+                
+                if (enderecoString !== "") {
+                    tdEndereco.innerHTML = enderecoString;
+                } else {
+                    tdEndereco.innerHTML = '<span class="bi bi-exclamation-triangle"></span> Endereço não cadastrado';
+                }
+                tr.appendChild(tdEndereco);
+
+                var tdAcoes = document.createElement("td");
+                tdAcoes.className = "ms-auto text-end";
+                var divAcoes = document.createElement("div");
+                divAcoes.className = "btn-group text-end";
+                divAcoes.setAttribute("role", "group");
+                divAcoes.setAttribute("aria-label", "Ações do Cliente");
+                            
+                divAcoes.innerHTML = '<button type="button" class="btn btn-success btn-sm"  onclick="tipo_modal(\'' + cliente.id_cliente + '\');">' +
+                    '<i class="bi bi-eye"></i></button>' +
+                    '<button type="button" class="btn btn-primary btn-sm" onclick="tipo_modal(\'' + cliente.id_cliente + '\',true);">' +
+                    '<i class="bi bi-pencil"></i></button>' +
+                    '<a type="button" class="btn btn-danger btn-sm btn-confirmacao" href="/clientes/excluir/' + cliente.id_cliente + '"' +
+                    'data-acao="excluir" data-titulo="Excluir Cliente" data-descricao="Tem certeza de que deseja excluir este Cliente? dados não será possivel recuperar.">' +
+                    '<i class="bi bi-trash"></i></a>';
+                    tdAcoes.appendChild(divAcoes);
+
+                tr.appendChild(tdAcoes);
+
+                tbody.appendChild(tr);
+                
+            });
             }
-            
-            if (cliente.numero) {
-                enderecoString += '<span class="bi bi-house"></span> ' + cliente.numero + ' &nbsp;';
-            }
-            
-            if (cliente.bairro) {
-                enderecoString += '<span class="bi bi-map"></span> ' + cliente.bairro;
-            }
-            
-            if (enderecoString !== "") {
-                tdEndereco.innerHTML = enderecoString;
-            } else {
-                tdEndereco.innerHTML = '<span class="bi bi-exclamation-triangle"></span> Endereço não cadastrado';
-            }
-            tr.appendChild(tdEndereco);
+        else {
+            // Se não houver dados de vendas no localStorage, exibir uma mensagem na tabela
+            const tr = document.createElement('tr');
 
-            var tdAcoes = document.createElement("td");
-            tdAcoes.className = "ms-auto text-end";
-            var divAcoes = document.createElement("div");
-            divAcoes.className = "btn-group text-end";
-            divAcoes.setAttribute("role", "group");
-            divAcoes.setAttribute("aria-label", "Ações do Cliente");
-                        
-            divAcoes.innerHTML = '<button type="button" class="btn btn-success btn-sm"  onclick="tipo_modal(\'' + cliente.id_cliente + '\');">' +
-                '<i class="bi bi-eye"></i></button>' +
-                '<button type="button" class="btn btn-primary btn-sm" onclick="tipo_modal(\'' + cliente.id_cliente + '\',true);">' +
-                '<i class="bi bi-pencil"></i></button>' +
-                '<a type="button" class="btn btn-danger btn-sm btn-confirmacao" href="/clientes/excluir/' + cliente.id_cliente + '"' +
-                'data-acao="excluir" data-titulo="Excluir Cliente" data-descricao="Tem certeza de que deseja excluir este Cliente? dados não será possivel recuperar.">' +
-                '<i class="bi bi-trash"></i></a>';
-                tdAcoes.appendChild(divAcoes);
+            const tdMensagem = document.createElement('td');
+            tdMensagem.textContent = 'Nenhuma venda encontrada';
+            tdMensagem.setAttribute('colspan', '4');
 
-            tr.appendChild(tdAcoes);
-
+            tr.appendChild(tdMensagem);
             tbody.appendChild(tr);
-        });
+        }
     }
 </script>
 

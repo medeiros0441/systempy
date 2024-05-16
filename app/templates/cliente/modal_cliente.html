@@ -8,7 +8,7 @@
                     <h5 class="modal-title fw-bold font-monospace" id="ModalLabel" > </h5>
                 </div>
                 <div class="modal-body  font-monospace d-none" id="container-form">
-                        <input   id="id_cliente" type="hidden" value="0" > 
+                        <input   id="id_cliente" type="hidden" value="" > 
                         <div class="form-floating mb-2">
                             <input type="text" name="nome_cliente"  class="form-control" required="" maxlength="255" id="id_nome_cliente">
                             <label for="id_nome_cliente" class="form-label">Nome do Cliente:</label>
@@ -143,14 +143,16 @@
             document.getElementById("container-form").classList.remove("d-none");
             document.getElementById("ModalLabel").innerHTML="Formulario";
             document.getElementById("btnSalvar").classList.remove("d-none");
+            document.getElementById('id_cliente').value = '';
         }
         if (cliente){
                 if(isEditar){
+
                     document.getElementById("container-info").classList.add("d-none");
                     document.getElementById("container-form").classList.remove("d-none");
                     document.getElementById("ModalLabel").innerHTML="Formulario";
                     document.getElementById("btnSalvar").classList.remove("d-none");
-                    document.getElementById("id_cliente").value.trim=id;
+                    document.getElementById("id_cliente").value=id;
                     preencherDadosForm(cliente);
                     
                 }   else{
@@ -170,7 +172,7 @@
             if (response.success === true) {
                 renderizarVendas(response.data);
             } else {
-                alertCustomer(response.error);
+                alertCustomer(response.error,2,"");
             }
             manageLoading(false,"container_vendas_cliente");
         });
@@ -277,7 +279,7 @@ document.getElementById("btnSalvar").addEventListener("click", function(event) {
         insertCliente()
 });
 function insertCliente() {
-    id_cliente = document.getElementById('id').value;
+    id_cliente = document.getElementById('id_cliente').value;
     
     const formInputs = {
         'id_cliente':id_cliente,
@@ -306,10 +308,11 @@ function insertCliente() {
     // Ativar o indicador de carregamento
     chamarFuncaoPython('/api/cliente/create/', formInputs, 'POST', function(response) {
         if (response.data) {
-            alertCustomer("Salvo sucesso!");
-
+            alertCustomer(response.message,1);
+            carregarClientes();
+            close_modal();
         } else {
-            alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error);
+            alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error,2,"container-form");
         }
     } );
      

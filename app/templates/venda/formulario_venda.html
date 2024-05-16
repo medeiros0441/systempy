@@ -4,23 +4,19 @@
 {% block title %} Gestão Vendas{% endblock %}
 {% block content %}
 
-
-<div class="container mx-auto my-3 form-venda  font-monospace">
-    <div class="d-flex  mt-3 mb-2 justify-content-between">
+<div class=" container   p-1">
+    <div class=" card  mx-auto my-3 form-venda  font-monospace">
+    <div class="card-header bg-dark text-white">
         <span   class=" font-monospace fw-bord my-auto" style="font-size: 1.5rem;">
-            {% if type == 1 %}
             Formulario de vendas
-        {% endif %}
-        {% if type == 2 %}
-            Editar Venda
-        {% endif %}</span>
+         </span>
    </div>
-    <form   id="form_cadastro" class="needs-validation" autocomplete="off" novalidate>
+    <form   id="form_cadastro" class=" card-body needs-validation" autocomplete="off" novalidate>
         {% csrf_token %}
    
             <div class="mx-auto container mb-2 mb-2 ">
                 <div class="   form-floating mb-2 ">
-                    <select name="loja" class="form-select select_lojas" id="id_loja">
+                    <select name="loja" class="form-select select_lojas"  id="id_loja">
                         <option value="0">Selecione</option>
                     </select>
                     <label for="id_loja" class="fw-bold">Loja:</label>
@@ -29,7 +25,7 @@
                     <label  class="fw-bold ms-2">pesquisar produto:</label>
                     <div class=" input-group ">
                     <input type="text" class="form-control produtoInput"  id="produtoInput" name="produtoInput"   autocomplete="off" />
-                    <button class="btn btn-outline-secondary bi-plus" type="button" id="adicionarProdutoBtn" ></button>
+                    <button class="btn btn-outline-secondary bi-plus" type="button" onclick="Ouvinte();" id="adicionarProdutoBtn" ></button>
                  </div>
             </div>
                     <datalist id="produtosList" class="dropdown-menu" >
@@ -63,7 +59,7 @@
             </div>
                 <div class="card-body mt-0 " id="body_gestao_pay">
                     <div class="form-floating mb-2">
-                    <select name="metodo_entrega" class="form-select" id="id_metodo_entrega">
+                    <select name="metodo_entrega" class="form-select"    id="id_metodo_entrega">
                     <option value="0">Selecione</option>
                     <option value="retirado na loja">Retirado na Loja</option>
                     <option value="entrega no local">Entrega no Local</option>
@@ -83,7 +79,7 @@
                     </select>
                     <label for="estado_transacao">Estado da Transação:</label> </div> 
                     <div class="form-floating mb-2">
-                    <select name="forma_pagamento" class="form-select" id="id_forma_pagamento">
+                    <select name="forma_pagamento" class="form-select"   id="id_forma_pagamento">
                         <option value="0">Selecione</option>
                         <option value="dinheiro">Dinheiro</option>
                         <option value="pix">Pix</option>
@@ -102,7 +98,7 @@
                         <div class="col-sm-8">
                         <div class="form-floating mb-2">
                             <input type="text" name="valor_pago" class="form-control money-mask " id="id_valor_pago" maxlength="14">
-                            <label for="id_valor_pago" style="font-size: 0.6rem;">Valor Pago:  <span  style="font-size: 0.6rem;">R$ 00,00</span></label></div>
+                            <label for="id_valor_pago"  style="font-size: 0.6rem;">Valor Pago:  <span  style="font-size: 0.6rem;">R$ 00,00</span></label></div>
                         </div>
                             <div class="col-sm-4 mx-auto my-auto">
                                     <label id="txt_troco" style="font-size: 0.8rem;" class="small text-small">00,00</label> </div>
@@ -376,6 +372,7 @@
             </div>  
     </form>
 </div> 
+</div> 
 
 <script type="text/javascript" src="{% static '/js/pages/FunctionsModalVendas.js' %}" ></script>
 <script  type="text/javascript" > 
@@ -423,14 +420,7 @@ function clean_form() {
     close_cliente();
     alertCustomer("formulario limpo",4);
 }
-
-{%if type == 2 %}
-window.addEventListener('DOMContentLoaded', function() {
-   id_venda = document.getElementById('id_venda').value;
-    
-    editarVenda(id_venda);
-}); 
-{%endif%}
+ 
 </script>
 </div>
 </div>

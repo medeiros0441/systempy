@@ -191,7 +191,7 @@ url_cliente = [  # clientes
     ),
      path(
         "api/cliente/create/",
-        views_cliente.api_create_cliente,
+        views_cliente.api_create_update_cliente,
         name="api_create_cliente",
     ),
     path(

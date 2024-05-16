@@ -96,63 +96,80 @@ class views_cliente:
     @staticmethod
     @csrf_exempt
     @utils.verificar_permissoes(codigo_model=8)
-    def api_create_cliente(request):
+    def api_create_update_cliente(request):
         try:
             if request.method == "POST":
                 data = json.loads(request.body)
+                cliente_id = data.get("id_cliente",None)
 
-                # Cria o objeto Endereco
-                if data["rua"] != "" and data["numero"] != "" and data["bairro"] != "":
-                    endereco = models.Endereco.objects.create(
-                        rua=data["rua"],
-                        numero=data["numero"],
-                        bairro=data["bairro"],
-                        cidade=data["cidade"],
-                        estado=data["estado"],
-                        codigo_postal=data["cep"],
-                        descricao=data["descricao_endereco"],
+                # Verifica se todos os campos obrigatórios de endereço estão presentes
+                endereco_data = {
+                    "rua": data.get("rua", ""),
+                    "numero": data.get("numero", ""),
+                    "bairro": data.get("bairro", ""),
+                    "cidade": data.get("cidade", ""),
+                    "estado": data.get("estado", ""),
+                    "codigo_postal": data.get("cep", ""),
+                    "descricao": data.get("descricao_endereco", "")
+                }
+                endereco = None
+                if endereco_data["rua"] and endereco_data["numero"] and endereco_data["bairro"]:
+                    endereco, created = models.Endereco.objects.update_or_create(
+                        rua=endereco_data["rua"],
+                        numero=endereco_data["numero"],
+                        bairro=endereco_data["bairro"],
+                        defaults=endereco_data
                     )
-                else:
-                    endereco = None
-                # Cria o objeto Cliente associado ao endereço
-                cliente = models.Cliente.objects.create(
-                    nome=data["nome"],
-                    telefone=data["telefone"],
-                    descricao=data.get("descricao", None),
-                    tipo_cliente=data.get("tipo_cliente", None),
-                    endereco=endereco,
-                    insert=timezone.now(),
-                    empresa_id=UserInfo.get_id_empresa(request),
-                )
 
-                # Retorna os dados do cliente criado
-                return JsonResponse(
-                    {
-                        "data": {
-                            "id_cliente": str(cliente.id_cliente),
-                            "nome": cliente.nome,
-                            "telefone": cliente.telefone,
-                            "descricao": cliente.descricao,
-                            "tipo_cliente": cliente.tipo_cliente,
-                            "rua": endereco.rua,
-                            "numero": endereco.numero,
-                            "bairro": endereco.bairro,
-                            "cidade": endereco.cidade,
-                            "estado": endereco.estado,
-                            "cep": endereco.codigo_postal,
-                            "descricao": endereco.descricao,
-                            "insert": cliente.insert,
-                            "empresa_id": cliente.empresa_id,
-                        },
-                        "message": "Cliente e Endereço inseridos com sucesso",
-                    },
-                    status=201,
-                )
+                if cliente_id:
+                    # Atualiza o cliente existente
+                    cliente = models.Cliente.objects.filter(id_cliente=cliente_id).first()
+                    if cliente:
+                        cliente.nome = data.get("nome", cliente.nome)
+                        cliente.telefone = data.get("telefone", cliente.telefone)
+                        cliente.descricao = data.get("descricao", cliente.descricao)
+                        cliente.tipo_cliente = data.get("tipo_cliente", cliente.tipo_cliente)
+                        cliente.endereco = endereco
+                        cliente.save()
+                        message = "Cliente e Endereço atualizados com sucesso"
+                    else:
+                        return JsonResponse({"error": "Cliente não encontrado"}, status=404)
+                else:
+                    # Cria um novo cliente
+                    cliente = models.Cliente.objects.create(
+                        nome=data["nome"],
+                        telefone=data["telefone"],
+                        descricao=data.get("descricao", None),
+                        tipo_cliente=data.get("tipo_cliente", None),
+                        endereco=endereco,
+                       
+                        empresa_id=UserInfo.get_id_empresa(request),
+                    )
+                    message = "Cliente e Endereço inseridos com sucesso"
+
+                # Retorna os dados do cliente
+                response_data = {
+                    "id_cliente": str(cliente.id_cliente),
+                    "nome": cliente.nome,
+                    "telefone": cliente.telefone,
+                    "descricao": cliente.descricao,
+                    "tipo_cliente": cliente.tipo_cliente,
+                    "rua": endereco.rua if endereco else None,
+                    "numero": endereco.numero if endereco else None,
+                    "bairro": endereco.bairro if endereco else None,
+                    "cidade": endereco.cidade if endereco else None,
+                    "estado": endereco.estado if endereco else None,
+                    "cep": endereco.codigo_postal if endereco else None,
+                    "descricao": endereco.descricao if endereco else None,
+                    "insert": cliente.insert,
+                    "empresa_id": cliente.empresa_id,
+                }
+
+                return JsonResponse({"data": response_data, "message": message}, status=200 if cliente_id else 201)
 
         except Exception as e:
             # Retorna uma resposta de erro em caso de exceção
             return JsonResponse({"error": str(e)}, status=400)
-
     @staticmethod
     @utils.verificar_permissoes(codigo_model=8)
     def api_get_cliente(request, cliente_id):
