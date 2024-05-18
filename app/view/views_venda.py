@@ -108,7 +108,7 @@ class views_venda:
             dados = json.loads(request.body.decode("utf-8"))
 
             data, mensagem_erro = views_venda.validar_dados_formulario(dados, id)
-            venda, mensagem_erro = processos.criar_ou_atualizar_venda(data)
+            venda, menssagem = processos.criar_ou_atualizar_venda(data)
             if venda is not None:
 
                 if venda.metodo_entrega == "entrega no local":
@@ -125,7 +125,7 @@ class views_venda:
                 galoes_troca = dados.get("galoes_troca")
                 processos._processar_dados_galoes(galoes_troca, venda)
 
-                return JsonResponse({"success": True, "message": "venda processada."})
+                return JsonResponse({"success": True, "message":menssagem})
             elif mensagem_erro:
                 return JsonResponse({"error": mensagem_erro})
 

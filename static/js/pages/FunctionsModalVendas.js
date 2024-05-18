@@ -84,7 +84,8 @@ function gerencia_container_cliente(obj) {
         // Atualiza o valor do onclick do botão para chamar toggleGestaoCliente com o argumento 1
         btnCadastrarCliente.onclick =function() { gerencia_container_cliente(2); };
         // Carrega a lista de clientes
-        carregarListaClientes();
+        data_clientes = Utils.getLocalStorageItem('data_clientes');
+        manipularPesquisaClientes(data_clientes);  
     } 
     // Verifica se a chamada foi para mostrar o formulário de cadastro de cliente
     if (obj == 2 && formcliente.classList.contains("d-none")) {
@@ -105,8 +106,7 @@ function carregarListaClientes() {
         manageLoading(true, "select_cliente");
         alertCustomer('Atualizando Lista de clientes');
         // Chama a função para obter os clientes por empresa
-        const url = '/api/cliente/by_empresa/';
-        chamarFuncaoPython(url, null, 'GET', function(response) {
+        chamarFuncaoPython( '/api/cliente/by_empresa/', null, 'GET', function(response) {
             if (response.success == true) {
                 clientesCache = response.clientes;
                 manipularPesquisaClientes(clientesCache);   
@@ -150,7 +150,6 @@ function insertCliente() {
             alertCustomer("Cliente criado com sucesso!");
             gerencia_container_cliente(1)
             montarInfoCliente(response.data,"info_cliente");
-            new_carregarListaClientes();
 
         } else {
             alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error);
@@ -339,13 +338,7 @@ function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
             select.appendChild(option);
         });
     });
-}
-// Função para carregar e manipular a lista de clientes
-function carregarListaClientes() {
-        data_clientes = Utils.getLocalStorageItem('data_clientes');
-        manipularPesquisaClientes(data_clientes);   
-}
-
+} 
 
 function listarMotoboys() {
         chamarFuncaoPython('/listar_motoboys_por_empresa/', null, 'GET', function(response) {
@@ -354,6 +347,11 @@ function listarMotoboys() {
                 selectMotoboy.innerHTML = ''; // Limpar as opções existentes
                 // Adicionar as opções dos motoboys
                 if(response.motoboys.length > 0){
+                    var option = document.createElement('option');
+                    option.value = 0;
+                    option.text = "Selecione";
+                    selectMotoboy.appendChild(option);
+
                     response.motoboys.forEach(motoboy => {
                     var option = document.createElement('option');
                     option.value = motoboy.id_motoboy;
@@ -584,19 +582,9 @@ function obterValores() {
     if (carrinho !== false) {
         dados['carrinho'] = carrinho;
     }
-      // Obtém a URL da página
-      var url = window.location.href;
 
-      // Divide a URL pelo caractere "/"
-      var partesUrl = url.split("/");
-  
-      // Obtém o último elemento da lista (que deve ser o ID)
-      var ultimoElemento = partesUrl[partesUrl.length - 1];
-  
-      // Verifica se o último elemento é igual ao ID
-      if (ultimoElemento !=null) {
-        dados["id_venda"]=ultimoElemento;
-    } 
+     
+    dados["id_venda"]= document.getElementById("id_venda").value;
       
     return dados
 }
@@ -604,18 +592,24 @@ function obterValores() {
 // Exemplo de como usar a função para obter os valores
 
 function enviarDadosVenda() {
-    data= obterValores()
+    data= obterValores();
+    manageLoading(true, "form_cadastro");
+
     chamarFuncaoPython('/vendas/criar/insert_venda_ajax/',data,'POST',function(response){
             if (response.success===true) {
                 alertCustomer(response.message);
-                alertCustomer("Venda cadastrada com sucesso",1);
-
+                inicializarPagina();
+                if(data.id_venda!= ""){
+                    clean_form();
+                    alertCustomer("formulario limpo");
+                }
             } else {
                 alertCustomer(response.error);
             }
     }); 
-    clean_form();
-    alertCustomer("formulario limpo",4);
+     
+    manageLoading(true, "form_cadastro");
+
 } 
 document.getElementById("btnSubmit").addEventListener("click", function(event) {
     // Chama a função de verificação antes de permitir o envio do formulário
@@ -783,16 +777,7 @@ function toggleGestaoRetornavel(status) {
             iconeDesbloqueado.classList.add("d-none");
         }
 }
-function new_carregarListaClientes (){
-    chamarFuncaoPython('/api/cliente/by_empresa/', null, 'GET', function(response) {
-      if (response.success == true) {
-           Utils.setLocalStorageItem('data_clientes', response.clientes);
-
-      } else {
-          alertCustomer(response.message);
-      }
-  });  
-}
+  
  
     // Adiciona um evento de mudança ao select de lojas
     function select_loja(){
@@ -839,127 +824,111 @@ function new_carregarListaClientes (){
             }
         });
     }
-window.onload = function() {
-    listarMotoboys();
-    verificarListaProdutos();
-    new_carregarListaClientes();
-    atualizarDropdownLojas(Utils.getLocalStorageItem('data_lojas') ,"select_lojas");
-    // Adiciona ouvintes de evento de entrada aos campos relevantes
-    document.getElementById('id_taxa_entrega').addEventListener('input', calcularTroco);
-    document.getElementById('id_desconto').addEventListener('input', calcularTroco);
-    document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
-    var formaPagamentoElement = document.getElementById('id_forma_pagamento');
-    formaPagamentoElement.addEventListener('change', forma_pagamento);
-
-    var metodoEntregaElement = document.getElementById('id_metodo_entrega');
-    metodoEntregaElement.addEventListener('change', metodo_entrega);
-
-    var lojaElement = document.getElementById('id_loja');
-    lojaElement.addEventListener('change', select_loja);
-     // Obtém a lista de produtos do DOM e itera sobre cada produto
-     produtos_data = Utils.getLocalStorageItem('data_produtos');
-    // Chamar a função para preencher a tabela ao carregar a página 
-    var produtosList = document.getElementById('produtosList');
-        produtos_data.forEach(function(produto) {
-            // Cria uma nova opção para cada produto e a adiciona à lista de produtos
-            var option = document.createElement('option');
-            option.dataset.idProduto = produto.id_produto; // Define o atributo de dados 'idProduto' na opção
-            option.value = produto.nome; // Define o valor da opção como o nome do produto
-            produtosList.appendChild(option);
-        });
-
-    // Obtém o input do produto
-    var produtoInput = document.getElementById("produtoInput");
-    // Adiciona um evento de entrada para detectar a seleção de uma opção
-    produtoInput.addEventListener("input", function() {
-        // Obtém a opção selecionada com base no valor do input do produto
-        var selectedOption = document.querySelector("#produtosList option[value='" + this.value + "']");
-        if (selectedOption) {
-            // Chama a função OptionSelection passando a opção selecionada como argumento
-            OptionSelection(selectedOption);
-        }
-    });
-
-    // Função para lidar com a seleção de opção
-    function OptionSelection(option) {
+     // Função para lidar com a seleção de opção
+     function OptionSelection(option) {
         // Obtém o ID do produto da opção selecionada e define o atributo de dados 'idProduto' no input do produto
         var produtoId = option.getAttribute("data-id-produto");
         produtoInput.dataset.idProduto = produtoId;
-        }
-    // Obtém a lista de produtos do DOM
-    var listaProdutos = document.getElementById("listaProdutos");
-    verificarListaProdutos();
-         id_venda = document.getElementById('id_venda').value;
-        if(id_venda !==""){
-            editarVenda(id_venda);
-        } 
-
-         // Opções para o observador de mutação
-         var observerOptions = {
-            childList: true, // Observar mudanças nos filhos do elemento
-            subtree: true // Observar todos os descendentes do elemento
-        };
-            // Função de callback para o observador de mutação
-        var observerCallback = function(mutationsList, observer) {
-            for (var mutation of mutationsList) {
-                if (mutation.type === 'childList') {
-                    verificarRetornaveis();
-                    $('.data-mes-ano-mask').mask('00/0000');
-                        document.querySelectorAll(".data-validade").forEach(function(input) {
-                            input.addEventListener("input", function() {
-                                // Limpa qualquer timeout existente
-                                clearTimeout(input.timeoutId);
-                                
-                                // Configura um novo timeout para esperar que o usuário pare de digitar
-                                input.timeoutId = setTimeout(function() {
-                                    // Obtém o valor do campo data_validade
-                                    var dataValidade = input.value.trim();
-                                    
-                                    // Verifica se a entrada está vazia
-                                    if (dataValidade === "") {
-                                        return; // Não faz nada se estiver vazio
-                                    }
-                                    
-                                    // Verifica se a entrada possui o formato esperado (MM/AAAA)
-                                    var regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
-                                    if (!regex.test(dataValidade)) {
-                                    
-                                        return; // Não faz nada se o formato for inválido
-                                    }
-                                    
-                                    // Extrai o mês e o ano da entrada
-                                    var partes = dataValidade.split("/");
-                                    var mes = parseInt(partes[0], 10);
-                                    var ano = parseInt(partes[1], 10);
-                                    
-                                    // Calcula a data de fabricação subtraindo três anos da data de validade
-                                    var dataFabricacao = ("0" + mes).slice(-2) + "/" + (ano - 3);
-                                
-                                    
-                                    // Encontra o campo de entrada data_fabricacao correspondente
-                                    var dataFabricacaoField = input.closest('.row').querySelector(".data-fabricacao");
-                                    
-                                    // Define o valor do campo data_fabricacao se encontrado
-                                    if (dataFabricacaoField) {
-                                        dataFabricacaoField.value = dataFabricacao;
-                                    }
-                                }, 500); // Aguarda 500ms após a última entrada antes de executar o cálculo
-                            });
-                        });
-                            
-                    break;
-                }
-            }
-        };
-        // Elemento alvo para observar as mutações
-        var listaProdutos = document.getElementById("listaProdutos");
-        // Cria um observador de mutação
-        var observer = new MutationObserver(observerCallback);
-        // Inicia a observação do elemento alvo
-        observer.observe(listaProdutos, observerOptions);
-        // Verifica os produtos retornáveis ao carregar a página
+    }window.onload = function() {
+        inicializarPagina();
+    };
+    
+    function inicializarPagina() {
+        listarMotoboys();
+        verificarListaProdutos();
+        carregarListaClientes();
+        atualizarDropdownLojas(Utils.getLocalStorageItem('data_lojas'), "select_lojas");
+        adicionarOuvintesDeEventos();
+        preencherListaDeProdutos();
+        verificarVendaExistente();
+        configurarObservadorDeMutacao();
         verificarRetornaveis();
-};
+    }
+
+function verificarVendaExistente() {
+    const id_venda = document.getElementById('id_venda').value;
+    if (id_venda !== "") {
+        editarVenda(id_venda);
+    }
+}
+
+function detectarSelecaoProduto() {
+    const produtoInput = document.getElementById("produtoInput");
+    const selectedOption = document.querySelector(`#produtosList option[value='${produtoInput.value}']`);
+    if (selectedOption) {
+        OptionSelection(selectedOption);
+    }
+}
+function preencherListaDeProdutos() {
+    const produtos_data = Utils.getLocalStorageItem('data_produtos');
+    const produtosList = document.getElementById('produtosList');
+
+    produtos_data.forEach(function(produto) {
+        const option = document.createElement('option');
+        option.dataset.idProduto = produto.id_produto;
+        option.value = produto.nome;
+        produtosList.appendChild(option);
+    });
+}
+function adicionarOuvintesDeEventos() {
+    document.getElementById('id_taxa_entrega').addEventListener('input', calcularTroco);
+    document.getElementById('id_desconto').addEventListener('input', calcularTroco);
+    document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
+    document.getElementById('id_forma_pagamento').addEventListener('change', forma_pagamento);
+    document.getElementById('id_metodo_entrega').addEventListener('change', metodo_entrega);
+    document.getElementById('id_loja').addEventListener('change', select_loja);
+    document.getElementById('produtoInput').addEventListener('input', detectarSelecaoProduto);
+}
+
+
+function configurarObservadorDeMutacao() {
+    const observerOptions = {
+        childList: true,
+        subtree: true
+    };
+
+    const observerCallback = function(mutationsList) {
+        for (const mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                verificarRetornaveis();
+                configurarMascarasEValidacoes();
+                break;
+            }
+        }
+    };
+
+    const listaProdutos = document.getElementById("listaProdutos");
+    const observer = new MutationObserver(observerCallback);
+    observer.observe(listaProdutos, observerOptions);
+}
+
+function configurarMascarasEValidacoes() {
+    $('.data-mes-ano-mask').mask('00/0000');
+    document.querySelectorAll(".data-validade").forEach(function(input) {
+        input.addEventListener("input", function() {
+            clearTimeout(input.timeoutId);
+            input.timeoutId = setTimeout(function() {
+                validarEAtualizarData(input);
+            }, 500);
+        });
+    });
+}
+
+function validarEAtualizarData(input) {
+    const dataValidade = input.value.trim();
+    if (dataValidade === "") return;
+
+    const regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
+    if (!regex.test(dataValidade)) return;
+
+    const [mes, ano] = dataValidade.split("/").map(Number);
+    const dataFabricacao = ("0" + mes).slice(-2) + "/" + (ano - 3);
+
+    const dataFabricacaoField = input.closest('.row').querySelector(".data-fabricacao");
+    if (dataFabricacaoField) {
+        dataFabricacaoField.value = dataFabricacao;
+    }
+}
 
     function Ouvinte(){
         var produtoInput = document.getElementById("produtoInput");
@@ -1022,7 +991,7 @@ window.onload = function() {
                 // Preenche o HTML do novo item na lista de produtos
                 novoItemLista.innerHTML = `
                     <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                    <span class="text-small small my-auto " style="font-size: 0.8rem;" >${produtoSelecionado.nome} R$ ${produtoSelecionado.preco_venda} Unididade</span>
+                    <span class="text-small small my-auto " style="font-size: 0.8rem;" >${produtoSelecionado.nome} R$ ${produtoSelecionado.preco_venda} Unidade</span>
                     <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.id_produto}" onclick="aumentarQuantidade(this)"></span>
                     <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
                 `;
@@ -1166,27 +1135,30 @@ function editarVenda(id_venda) {
     const container_pay = document.getElementById("body_gestao_pay");
     // Verifica se a venda foi encontrada
     if (venda) {
-            document.getElementById("id_metodo_entrega").value = venda.metodo_entrega;
-            document.getElementById("id_estado_transacao").value = venda.estado_transacao;
-            document.getElementById("id_forma_pagamento").value = venda.forma_pagamento;
-            document.getElementById("id_desconto").value = parseFloat(venda.desconto).toFixed(2);
-            document.getElementById("txt_valor_apagar").textContent = parseFloat(venda.valor_total).toFixed(2);
-            document.getElementById("id_taxa_entrega").value = parseFloat(venda.valor_entrega).toFixed(2);
-            document.getElementById("id_valor_pago").value = parseFloat(venda.valor_pago).toFixed(2);
-            document.getElementById("txt_troco").textContent = parseFloat(venda.troco).toFixed(2);
-            document.getElementById("id_descricao").value = venda.descricao;
-            document.getElementById("id_loja").value = venda.loja_id;
-            document.getElementById("id_motoboy").value = venda.motoboy;
-            document.getElementById("id_loja").dispatchEvent(new Event('change'));
-            document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
-            document.getElementById("id_estado_transacao").dispatchEvent(new Event('change'));
-            document.getElementById("id_taxa_entrega").dispatchEvent(new Event('change'));
-            document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
-            document.getElementById("id_desconto").dispatchEvent(new Event('change'));
-            document.getElementById("id_valor_pago").dispatchEvent(new Event('change'));
+        function setElementValue(id, value) {
+            document.getElementById(id).value = value;
+            document.getElementById(id).dispatchEvent(new Event('change'));
+        }
+        
+        function setTextContent(id, text) {
+            document.getElementById(id).textContent = text;
+        }
+        
+        setElementValue("id_metodo_entrega", venda.metodo_entrega);
+        setElementValue("id_estado_transacao", venda.estado_transacao);
+        setElementValue("id_forma_pagamento", venda.forma_pagamento);
+        setElementValue("id_desconto", parseFloat(venda.desconto).toFixed(2));
+        setTextContent("txt_valor_apagar", parseFloat(venda.valor_total).toFixed(2));
+        setElementValue("id_taxa_entrega", parseFloat(venda.valor_entrega).toFixed(2));
+        setElementValue("id_valor_pago", parseFloat(venda.valor_pago).toFixed(2));
+        setTextContent("txt_troco", parseFloat(venda.troco).toFixed(2));
+        setElementValue("id_descricao", venda.descricao);
+        setElementValue("id_loja", venda.loja_id);
+        setElementValue("id_motoboy", venda.motoboy);
           
     } else {
         console.log("Venda não encontrada.");
+        return alertCustomer("Venda não encontrada.",2);
     }
     chamarFuncaoPython("/api/produtos/by/venda/" + id_venda, {}, "GET", function(response) {
         // Verifica se a resposta foi bem-sucedida
@@ -1198,14 +1170,14 @@ function editarVenda(id_venda) {
             // Itera sobre os produtos e os exibe
             produtos.forEach(function(produto) {
                     var novoItemLista = document.createElement("li");
-                    novoItemLista.classList.add("list-group-item",'item-list-carrinho', "d-flex", "justify-content-between", "align-items-center");
+                    novoItemLista.classList.add("list-group-item",'item-list-carrinho',"bg-dark","text-white","fw-bold", "d-flex", "justify-content-between", "align-items-center");
                     novoItemLista.setAttribute("data-id-produto", produto.id_produto);
                     novoItemLista.setAttribute("data-retornavel", produto.is_retornavel); 
                     novoItemLista.setAttribute("data-valor", produto.valor);
                     // Preenche o HTML do novo item na lista de produtos
                     novoItemLista.innerHTML = `
-                        <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                        <span class="text-small small " style="font-size: 0.8rem;" >${produto.nome} R$ ${produto.preco_venda} Unid</span>
+                        <span class="badge text-bg-primary me-1 rounded-pill quantidade">${produto.quantidade}</span>
+                        <span class="text-small small " style="font-size: 0.8rem;" >${produto.nome} R$ ${produto.preco_venda} Unidade</span>
                         <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produto.id_produto}" onclick="aumentarQuantidade(this)"></span>
                         <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
                     `;
@@ -1234,6 +1206,5 @@ function editarVenda(id_venda) {
             } 
         } 
     });
-
 
 }

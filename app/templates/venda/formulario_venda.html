@@ -173,7 +173,7 @@
                 <span class="fw-bold">Descrição do Cliente: </span>
                 <span id="info_descricao_cliente"></span>
             </div>
-            </div>txt_troco
+            </div> 
             <hr class="my-2">
             <div class="  card-body row d-flex">
             <h5 class="mb-1 text-center" style="font:size 0.6rem">Informações de Endereço</h5>
@@ -377,8 +377,6 @@
 <script type="text/javascript" src="{% static '/js/pages/FunctionsModalVendas.js' %}" ></script>
 <script  type="text/javascript" > 
     function get_data(){
-        manageLoading(true, "container_load");
-
         try {
             chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
                 if (response.success === true) {
@@ -386,12 +384,9 @@
                     Utils.setLocalStorageItem('data_lojas', response.lojas);
                     Utils.setLocalStorageItem('data_vendas', response.vendas);
                     Utils.setLocalStorageItem('data_produtos', response.produtos);
-                    atualizarDropdownLojas(response.lojas, "select_lojas")
-                    preencherTabelaVendas(response.vendas);
                 } else {
                     alertCustomer(response.error);
                 }
-                manageLoading(false, "container_load");
             });
         } catch (error) {
             console.error("Erro ao chamar a função Python:", error);
@@ -404,21 +399,22 @@ function clean_form() {
     document.getElementById('id_desconto').innerText= "";
     document.getElementById('id_valor_pago').innerText="";
     document.getElementById('id_descricao_venda').innerText= "";
-    document.getElementById('txt_troco').innerText = "";
     document.getElementById("txt_valor_apagar").textContent = "";
     document.getElementById("txt_troco").textContent = "00,00";
+    document.getElementById("id_valor_total").textContent = "00,00";
     document.getElementById("listaProdutos").innerHTML = "";
     document.getElementById("id_motoboy").value= "0";
-
     document.getElementById('id_forma_pagamento').selectedIndex= 0;
     document.getElementById("id_loja").selectedIndex = 0
     document.getElementById('id_estado_transacao').selectedIndex= 0;
     document.getElementById('id_metodo_entrega').selectedIndex = 0;
     document.getElementById('id_motoboy').selectedIndex = 0;
+    document.getElementById("id_loja").dispatchEvent(new Event('change'));
     document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
     document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
-    close_cliente();
-    alertCustomer("formulario limpo",4);
+    document.getElementById('id_cliente').value = "0";
+    document.getElementById('info_cliente').classList.add("d-none")
+    toggleResultadoPesquisa(true);
 }
  
 </script>

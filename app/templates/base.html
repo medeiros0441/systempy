@@ -27,17 +27,17 @@
 <body class="    container-fluid m-0 p-0 wrapper  bg-light " background="#f5f7fa">
       <div  class="wrapper"> 
     <div  class="content">
-        <nav class="  navbar-expand-md navbar-dark p-2 " style="background: var(--tema-blue)">
+        <nav class="   navbar-expand-md navbar-dark p-2 " style="background: var(--tema-blue)">
             <div class="  p-0 m-0   mx-auto container-xl  row">
                 <div class=" p-0 m-0 col-12 container  justify-content-between row align-items-center ">
                     <a class="col  text-sm-center text-start text-decoration-none  " href="{% url 'home' %}">
                         <p class="Font-Gliker mb-2   text-white " style="font-size: 20px;  "><span class=" Font-Gliker  " style="font-size: 30px; color: var(--tema-verde);">{</span> Comércio Prime <span style="font-size: 30px; color: var(--tema-verde);" class=" Font-Gliker  ">}</span></p>
                     </a>
                     <button class=" btn text-white col-auto d-inline-flex ms-auto d-sm-none" type="button" onclick="toggleMenu()">
-                        <span class=" bi bi-list" id="menuIcon" style="font-size: 30px;"></span>
+                        <span class=" bi bi-box-arrow-in-up" id="menuIcon" style="font-size: 20px;"></span>
                     </button>
                 </div>
-                <div class="col-12  d-sm-block d-none" id="navbarNav">
+                <div class="col-12  d-sm-block  " id="navbarNav">
                      
                         {% if request.session.isCliente is not True %}
                         <ul class=" text-center text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center text-sm-end  justify-content-center align-items-center " >
@@ -182,12 +182,12 @@
         var icon = document.getElementById('menuIcon');
         if (menu.classList.contains('d-none')) {
             menu.classList.remove('d-none');
-            icon.classList.remove('bi-list');
-            icon.classList.add('bi-x');
+            icon.classList.remove('bi-box-arrow-down');
+            icon.classList.add('bi-box-arrow-in-up');
         } else {
             menu.classList.add('d-none');
-            icon.classList.remove('bi-x');
-            icon.classList.add('bi-list');
+            icon.classList.remove('bi-box-arrow-in-up');
+            icon.classList.add('bi-box-arrow-down');
         }
     }
     </script> 
