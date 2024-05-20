@@ -34,6 +34,7 @@ class Produto(models.Model):
     codigo = models.PositiveIntegerField(unique=True, editable=False)
 
     is_retornavel = models.BooleanField(null=True, blank=True)
+    status = models.BooleanField(null=True, blank=True, default=True)
     data_validade = models.CharField(null=True, blank=True, max_length=50)
     insert = models.CharField(
         default=utils.obter_data_hora_atual, editable=False, max_length=50
@@ -58,9 +59,9 @@ class Produto(models.Model):
     loja = models.ForeignKey(
         Loja,
         on_delete=models.CASCADE,
-    )
-
+        )
     def save(self, *args, **kwargs):
+        self.update = utils.obter_data_hora_atual()
         if not self.codigo:
             ultimo_codigo = Produto.objects.order_by("-codigo").first()
             novo_codigo = ultimo_codigo.codigo + 1 if ultimo_codigo else 1

@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from app.view.sessao import views_sessao
 
 app_name = "app"

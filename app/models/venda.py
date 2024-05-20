@@ -38,6 +38,10 @@ class Venda(models.Model):
     )
 
 
+    def save(self, *args, **kwargs):
+        self.update = utils.obter_data_hora_atual()
+        super().save(*args, **kwargs)
+
 class ItemCompra(models.Model):
     id_item_compra = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
@@ -45,11 +49,15 @@ class ItemCompra(models.Model):
     venda = models.ForeignKey(Venda, on_delete=models.CASCADE, null=True)
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE, null=True)
     quantidade = models.IntegerField()
+    valor_unidade = models.DecimalField(max_digits=10, decimal_places=2,editable=False)
     insert = models.CharField(
         default=utils.obter_data_hora_atual, editable=False, max_length=100
     )
     update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
 
+    def save(self, *args, **kwargs):
+        self.update = utils.obter_data_hora_atual()
+        super().save(*args, **kwargs)
 
 class Motoboy(models.Model):
     id_motoboy = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -61,6 +69,9 @@ class Motoboy(models.Model):
     update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True)
 
+    def save(self, *args, **kwargs):
+        self.update = utils.obter_data_hora_atual()
+        super().save(*args, **kwargs)
 
 class Entrega(models.Model):
     id_entrega = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -79,6 +90,9 @@ class Entrega(models.Model):
     )
     descricao = models.TextField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        self.update = utils.obter_data_hora_atual()
+        super().save(*args, **kwargs)
 
 class Caixa(models.Model):
     id_caixa = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -95,6 +109,9 @@ class Caixa(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
 
+    def save(self, *args, **kwargs):
+        self.update = utils.obter_data_hora_atual()
+        super().save(*args, **kwargs)
 
 class Transacao(models.Model):
     caixa = models.ForeignKey(Caixa, on_delete=models.CASCADE)
@@ -105,3 +122,7 @@ class Transacao(models.Model):
         default=utils.obter_data_hora_atual, editable=False, max_length=100
     )
     update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
+
+    def save(self, *args, **kwargs):
+        self.update = utils.obter_data_hora_atual()
+        super().save(*args, **kwargs)

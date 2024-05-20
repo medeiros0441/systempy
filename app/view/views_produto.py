@@ -21,7 +21,7 @@ class views_produto:
             context["alerta_js"] = utils.criar_alerta_js(alerta)
 
         try:
-            produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa)
+            produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa,status=True)
             context["produtos"] = produtos
         except Produto.DoesNotExist:
             pass
@@ -153,7 +153,7 @@ class views_produto:
         try:
 
             id_empresa = UserInfo.get_id_empresa(request, True)
-            produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa)
+            produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa,status=True)
             for produto in produtos:
                 if produto.loja.empresa.id_empresa != id_empresa:
                     return utils.erro(
@@ -228,7 +228,8 @@ class views_produto:
         try:
             produto = Produto.objects.get(id_produto=id_produto)
             if produto:
-                produto.delete()
+                produto.status=False
+                produto.save()
                 Alerta.set_mensagem("Produto excluído com sucesso.")
                 return redirect("lista_produtos")
         except Produto.DoesNotExist:

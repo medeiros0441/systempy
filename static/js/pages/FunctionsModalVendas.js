@@ -27,7 +27,9 @@ function forma_pagamento() {
             document.querySelector(".gestaotroco").classList.remove("d-none"); // Remove a classe que oculta o container
         } else {
             document.querySelector(".gestaotroco").classList.add("d-none"); // Adiciona a classe que oculta o container
-        }
+            document.getElementById('id_valor_pago').innerText="00,00";
+            document.getElementById('txt_troco').innerText="00,00";
+}
 } 
 function metodo_entrega() {
     var selectedOption = this.value; // Obtém o valor selecionado
@@ -101,23 +103,35 @@ function gerencia_container_cliente(obj) {
 
 // Função para carregar e manipular a lista de clientes
 function carregarListaClientes() {
-    // Verifica se já temos os clientes em cache
-        // Carrega a função manageLoading para mostrar o indicador de carregamento
-        manageLoading(true, "select_cliente");
-        alertCustomer('Atualizando Lista de clientes');
-        // Chama a função para obter os clientes por empresa
-        chamarFuncaoPython( '/api/cliente/by_empresa/', null, 'GET', function(response) {
-            if (response.success == true) {
-                clientesCache = response.clientes;
-                manipularPesquisaClientes(clientesCache);   
-                manageLoading(false, "select_cliente");
+    chamarFuncaoPython( '/api/cliente/by_empresa/', null, 'GET', function(response) {
+        if (response.success == true) {
+            Utils.setLocalStorageItem("data_clientes",response.clientes)
+            manipularPesquisaClientes(response.clientes);   
 
-            } else {
-                alertCustomer(response.message);
-            manageLoading(false, "select_cliente");
-            }
-        });  
-         
+        }  
+    });  
+     
+}
+
+function get_data(){
+
+try {
+    chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
+        if (response.success === true) {
+            // Armazenar os dados no localStorage
+            Utils.setLocalStorageItem('data_lojas', response.lojas);
+            Utils.setLocalStorageItem('data_vendas', response.vendas);
+            Utils.setLocalStorageItem('data_produtos', response.produtos);
+            atualizarDropdownLojas(response.lojas, "select_lojas");
+            filtrarVendas(response.vendas);
+        } else {
+            alertCustomer(response.error);
+        }
+    });
+} catch (error) {
+    console.error("Erro ao chamar a função Python:", error);
+}
+
 }
 
 function insertCliente() {
@@ -298,7 +312,13 @@ function montarInfoCliente(data, id_container) {
         container.querySelector("#info_ultima_venda_forma_pagamento").textContent = data.ultima_venda.forma_pagamento || "N/A";
         container.querySelector("#info_ultima_venda_valor_total").textContent = data.ultima_venda.valor_total || "N/A";
         container.querySelector("#info_ultima_venda_produtos").textContent = data.ultima_venda.produtos ? data.ultima_venda.produtos.join(", ") : "N/A";
-    }  
+    } else{
+        container.querySelector("#info_ultima_venda_descricao").textContent ="";
+        container.querySelector("#info_ultima_venda_data_venda").textContent ="";
+        container.querySelector("#info_ultima_venda_forma_pagamento").textContent = "";
+        container.querySelector("#info_ultima_venda_valor_total").textContent = "";
+        container.querySelector("#info_ultima_venda_produtos").textContent = "";
+    } 
     
     toggleResultadoPesquisa(false);
     alertCustomer(`Cliente selecionado: ${data.nome}`);
@@ -593,22 +613,21 @@ function obterValores() {
 
 function enviarDadosVenda() {
     data= obterValores();
-    manageLoading(true, "form_cadastro");
-
     chamarFuncaoPython('/vendas/criar/insert_venda_ajax/',data,'POST',function(response){
             if (response.success===true) {
-                alertCustomer(response.message);
-                inicializarPagina();
                 if(data.id_venda!= ""){
+                    window.location.href =  "/vendas/"; 
+            }else{
+                    alertCustomer(response.message,1);
                     clean_form();
-                    alertCustomer("formulario limpo");
+                    inicializarPagina();
                 }
+
             } else {
                 alertCustomer(response.error);
             }
     }); 
      
-    manageLoading(true, "form_cadastro");
 
 } 
 document.getElementById("btnSubmit").addEventListener("click", function(event) {
@@ -829,13 +848,16 @@ function toggleGestaoRetornavel(status) {
         // Obtém o ID do produto da opção selecionada e define o atributo de dados 'idProduto' no input do produto
         var produtoId = option.getAttribute("data-id-produto");
         produtoInput.dataset.idProduto = produtoId;
-    }window.onload = function() {
+        
+    }
+    
+    window.onload = function() {
         inicializarPagina();
     };
     
     function inicializarPagina() {
+        get_data();
         listarMotoboys();
-        verificarListaProdutos();
         carregarListaClientes();
         atualizarDropdownLojas(Utils.getLocalStorageItem('data_lojas'), "select_lojas");
         adicionarOuvintesDeEventos();
@@ -843,6 +865,7 @@ function toggleGestaoRetornavel(status) {
         verificarVendaExistente();
         configurarObservadorDeMutacao();
         verificarRetornaveis();
+        verificarListaProdutos();
     }
 
 function verificarVendaExistente() {
@@ -930,79 +953,80 @@ function validarEAtualizarData(input) {
     }
 }
 
-    function Ouvinte(){
-        var produtoInput = document.getElementById("produtoInput");
-        var produtoSelecionado = null;
-        var produtoId = produtoInput.getAttribute("data-id-produto");
-        // Itera sobre a lista de produtos para encontrar o produto selecionado
-    // Variável de controle para indicar se o loop deve continuar ou parar
-        let continuarLoop = true;
-        // Verificar as condições do produto
-        if (produtoInput.value == "") {
-            alertCustomer("Selecione um produto da lista de sugestões..");
+function Ouvinte(){
+    var produtoInput = document.getElementById("produtoInput");
+    var produtoSelecionado = null;
+    var produtoId = produtoInput.getAttribute("data-id-produto");
+    // Itera sobre a lista de produtos para encontrar o produto selecionado
+// Variável de controle para indicar se o loop deve continuar ou parar
+    let continuarLoop = true;
+    // Verificar as condições do produto
+    if (produtoInput.value == "") {
+        alertCustomer("Selecione um produto da lista de sugestões..");
+        continuarLoop = false; // Definir para false para parar o loop
+        return;
+    }
+    produtos_data = Utils.getLocalStorageItem('data_produtos');
+    // Iterar sobre a lista de produtos
+    produtos_data.forEach(function(produto) {
+        // Verificar se o loop deve continuar
+        if (!continuarLoop) {
+            return; // Se não, saia do loop
+        }
+        
+                if (produto.id_produto == produtoId ) {
+            if (produto.quantidade_atual_estoque >= 1) {
+                produtoInput.value = "";
+                produtoSelecionado = produto;
+            } else {
+                produtoInput.value = "";
+                alertCustomer("Não há mais produto disponível no estoque.");
+            }
             continuarLoop = false; // Definir para false para parar o loop
             return;
         }
-        produtos_data = Utils.getLocalStorageItem('data_produtos');
-        // Iterar sobre a lista de produtos
-        produtos_data.forEach(function(produto) {
-            // Verificar se o loop deve continuar
-            if (!continuarLoop) {
-                return; // Se não, saia do loop
-            }
-           
-                 if (produto.id_produto == produtoId ) {
-                if (produto.quantidade_atual_estoque >= 1) {
-                    produtoInput.value = "";
-                    produtoSelecionado = produto;
-                } else {
-                    produtoInput.value = "";
-                    alertCustomer("Não há mais produto disponível no estoque.");
-                }
-                continuarLoop = false; // Definir para false para parar o loop
-                return;
+    });
+    // Verifica se o valor do input do produto não está vazio
+    if (produtoSelecionado != null ) {
+        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+        var produtoExistente = false;
+
+        
+        // Itera sobre os itens da lista para verificar se o produto já está na lista
+        itensLista.forEach(function (item) {
+            var idExistente = item.getAttribute("data-id-produto");
+                
+            if (idExistente === produtoId ) {
+                // Se o produto já existir na lista, aumenta a quantidade
+                var quantidadeSpan = item.querySelector(".quantidade");
+                var quantidadeAtual = parseInt(quantidadeSpan.textContent);
+                quantidadeSpan.textContent = quantidadeAtual + 1;
+                produtoExistente = true;
             }
         });
-        // Verifica se o valor do input do produto não está vazio
-        if (produtoSelecionado != null ) {
-            var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-            var produtoExistente = false;
-
-            
-            // Itera sobre os itens da lista para verificar se o produto já está na lista
-            itensLista.forEach(function (item) {
-                var idExistente = item.getAttribute("data-id-produto");
-                 
-                if (idExistente === produtoId ) {
-                    // Se o produto já existir na lista, aumenta a quantidade
-                    var quantidadeSpan = item.querySelector(".quantidade");
-                    var quantidadeAtual = parseInt(quantidadeSpan.textContent);
-                    quantidadeSpan.textContent = quantidadeAtual + 1;
-                    produtoExistente = true;
-                }
-            });
-            if (!produtoExistente) {
-                // Se o produto não existir na lista, cria um novo item na lista de produtos
-                var novoItemLista = document.createElement("li");
-                novoItemLista.classList.add("list-group-item",'item-list-carrinho',"bg-dark","text-white","fw-bold", "d-flex", "justify-content-between", "align-items-center");
-                novoItemLista.setAttribute("data-id-produto", produtoSelecionado.id_produto);
-                novoItemLista.setAttribute("data-retornavel", produtoSelecionado.is_retornavel); 
-                novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
-                // Preenche o HTML do novo item na lista de produtos
-                novoItemLista.innerHTML = `
-                    <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                    <span class="text-small small my-auto " style="font-size: 0.8rem;" >${produtoSelecionado.nome} R$ ${produtoSelecionado.preco_venda} Unidade</span>
-                    <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.id_produto}" onclick="aumentarQuantidade(this)"></span>
-                    <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
-                `;
-                listaProdutos.appendChild(novoItemLista);
-            }
-            // Calcula o valor total dos produtos e atualiza o label
-            calcularValorTotal();
-            // Limpa o valor do input do produto
-            produtoInput.value ="";
+        if (!produtoExistente) {
+            // Se o produto não existir na lista, cria um novo item na lista de produtos
+            var novoItemLista = document.createElement("li");
+            novoItemLista.classList.add("list-group-item",'item-list-carrinho',"bg-dark","text-white","fw-bold", "d-flex", "justify-content-between", "align-items-center");
+            novoItemLista.setAttribute("data-id-produto", produtoSelecionado.id_produto);
+            novoItemLista.setAttribute("data-retornavel", produtoSelecionado.is_retornavel); 
+            novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
+            // Preenche o HTML do novo item na lista de produtos
+            novoItemLista.innerHTML = `
+                <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
+                <span class="text-small small my-auto " style="font-size: 0.8rem;" >${produtoSelecionado.nome} R$ ${produtoSelecionado.preco_venda} Unidade</span>
+                <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.id_produto}" onclick="aumentarQuantidade(this)"></span>
+                <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
+            `;
+            listaProdutos.appendChild(novoItemLista);
         }
+        // Calcula o valor total dos produtos e atualiza o label
+        calcularValorTotal();
+        // Limpa o valor do input do produto
+        produtoInput.value ="";
     }
+    verificarListaProdutos();
+}
     // Função para verificar os produtos retornáveis
     function verificarRetornaveis() {
         var itensLista = listaProdutos.querySelectorAll(".list-group-item");
@@ -1154,8 +1178,12 @@ function editarVenda(id_venda) {
         setTextContent("txt_troco", parseFloat(venda.troco).toFixed(2));
         setElementValue("id_descricao", venda.descricao);
         setElementValue("id_loja", venda.loja_id);
-        setElementValue("id_motoboy", venda.motoboy);
-          
+
+        chamarFuncaoPython('/get_motoboy_by_venda/'+venda.id_venda+"/", null, 'GET', function(response) {
+            if (response.motoboy) {
+                 setElementValue("id_motoboy", response.motoboy.id_motoboy);
+            }
+        });
     } else {
         console.log("Venda não encontrada.");
         return alertCustomer("Venda não encontrada.",2);

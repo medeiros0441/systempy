@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from ..static import Alerta, UserInfo
 from .views_configuracao import views_configuracao
+from .view_autenticacao import autenticar_usuario
 
 
 def validacao(campos):
@@ -65,11 +66,8 @@ def cadastro_empresa(request):
                         **dados_formulario,
                     },
                 )
-            empresa = criar_empresa(dados_formulario)
             senha = request.POST.get("senha")
-
             senha_hash = make_password(senha)
-
             if senha is None or senha == "":
                 return render(
                     request,
@@ -79,11 +77,14 @@ def cadastro_empresa(request):
                         **dados_formulario,
                     },
                 )
-            elif empresa:
+            empresa = criar_empresa(dados_formulario)
+            if empresa:
                 string_value = criar_user(empresa, senha_hash)
                 if string_value is True:
-
-                    return redirect("login")
+                    if autenticar_usuario(request, email_responsavel, senha):
+                        return redirect("dashbord")
+                    else:
+                        return redirect("login")
                 else:
                     # Se não foi possível criar o usuário, exiba uma mensagem de erro na tela
                     return utils.erro(request, string_value)

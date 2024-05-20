@@ -16,7 +16,7 @@ class views_venda:
 
     @staticmethod
     @utils.verificar_permissoes(codigo_model=7)
-    def lista_vendas(request, context=None, id_loja=None):
+    def lista_vendas(request, context={}, id_loja=None, **kwargs):
 
         alerta = Alerta.get_mensagem()
         if alerta:
@@ -66,7 +66,7 @@ class views_venda:
                 ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
 
                 produtos = models.Produto.objects.filter(
-                    Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa
+                    Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa,status=True
                 )
                 lojas = models.Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
 
@@ -102,32 +102,32 @@ class views_venda:
     @utils.verificar_permissoes(codigo_model=7)
     def insert_venda_ajax(request):
         try:
-            # Processa a venda
-            id = UserInfo.get_id_usuario(request)
+            if request.method == "POST":
+                # Processa a venda
+                id = UserInfo.get_id_usuario(request)
 
-            dados = json.loads(request.body.decode("utf-8"))
+                dados = json.loads(request.body.decode("utf-8"))
 
-            data, mensagem_erro = views_venda.validar_dados_formulario(dados, id)
-            venda, menssagem = processos.criar_ou_atualizar_venda(data)
-            if venda is not None:
+                data, mensagem_erro = views_venda.validar_dados_formulario(dados, id)
+                venda, menssagem = processos.criar_ou_atualizar_venda(data)
+                if venda is not None:
 
-                if venda.metodo_entrega == "entrega no local":
-                    id_motoboy = dados.get("motoboy", "").strip()
-                    if id_motoboy != "0":
-                        processos.processo_entrega(venda=venda, id_motoboy=id_motoboy)
-                if venda.forma_pagamento == "dinheiro":
-                    processos.processar_caixa(venda)
+                    if venda.metodo_entrega == "entrega no local":
+                        id_motoboy = dados.get("motoboy", "").strip()
+                        if id_motoboy != "0":
+                            processos.processo_entrega(venda=venda, id_motoboy=id_motoboy)
+                    if venda.forma_pagamento == "dinheiro":
+                        processos.processar_caixa(venda)
 
-                # Processa o carrinho
-                carrinho = dados.get("carrinho")
-                processos._processar_carrinho(carrinho, venda)
-                # Processa os dados dos galões
-                galoes_troca = dados.get("galoes_troca")
-                processos._processar_dados_galoes(galoes_troca, venda)
-
-                return JsonResponse({"success": True, "message":menssagem})
-            elif mensagem_erro:
-                return JsonResponse({"error": mensagem_erro})
+                    # Processa o carrinho
+                    carrinho = dados.get("carrinho")
+                    processos._processar_carrinho(carrinho, venda)
+                    # Processa os dados dos galões
+                    galoes_troca = dados.get("galoes_troca")
+                    processos._processar_dados_galoes(galoes_troca, venda)
+                    return JsonResponse({"success": True, "message":menssagem})
+                elif mensagem_erro:
+                    return JsonResponse({"error": mensagem_erro})
 
         except Exception as e:
             mensagem_erro = str(e)
@@ -225,7 +225,7 @@ class views_venda:
 
             # Filtra os produtos com base nas lojas associadas
             produtos = models.Produto.objects.filter(
-                Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa
+                Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa,status=True
             )
             context = {
                 "list_produtos": produtos,

@@ -24,7 +24,7 @@
                  <div class=" ">
                     <label  class="fw-bold ms-2">pesquisar produto:</label>
                     <div class=" input-group ">
-                    <input type="text" class="form-control produtoInput"  id="produtoInput" name="produtoInput"   autocomplete="off" />
+                    <input type="text" class="form-control produtoInput"  id="produtoInput" name="produtoInput"  list="produtosList" autocomplete="off" />
                     <button class="btn btn-outline-secondary bi-plus" type="button" onclick="Ouvinte();" id="adicionarProdutoBtn" ></button>
                  </div>
             </div>
@@ -414,7 +414,8 @@ function clean_form() {
     document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
     document.getElementById('id_cliente').value = "0";
     document.getElementById('info_cliente').classList.add("d-none")
-    toggleResultadoPesquisa(true);
+    toggleResultadoPesquisa(false);
+    alertCustomer("Formulario Limpado.");
 }
  
 </script>

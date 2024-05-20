@@ -10,11 +10,11 @@
 <div class="my-5 container-xl mx-auto ">
     <div class="d-flex justify-content-between mb-2 row">
         <h1 class="text-start col" style="font-size: 1.3rem;"><i class="bi bi-box"></i> Lista de Produtos</h1>
-            {% if produtos|length >= 1 %}
             <div class="row  mx-auto ms-sm-auto  col-sm-auto">
-                <a type="button"  href="{% url 'acrescentar_produto' %}" id="btnAcrescentar" class="btn my-1 col-sm-auto btn-success btn-sm ms-auto me-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-box-arrow-in-up me-1"></i> Acrescentar Quantidade de Produto </a>
-    {%endif%}
-    <a  type="button"  href="{% url 'criar_produto' %}"  id="btnCriar" class="btn btn-warning btn-sm  my-1 col-sm-auto ms-auto me-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Novo Produto</a>
+            {% if produtos|length >= 1 %}
+            <a type="button"  href="{% url 'acrescentar_produto' %}" id="btnAcrescentar" class="btn my-1 col-sm-auto btn-success btn-sm ms-auto me-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-box-arrow-in-up me-1"></i> Acrescentar Quantidade de Produto </a>
+             {%endif%}
+            <a  type="button"  href="{% url 'criar_produto' %}"  id="btnCriar" class="btn btn-warning btn-sm  my-1 col-sm-auto ms-auto me-2" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-file-earmark-plus me-1"></i>Criar Novo Produto</a>
         </div>
     </div>
   

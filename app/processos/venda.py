@@ -93,7 +93,7 @@ class processos:
 
                 # Criar o item de compra
                 models.ItemCompra.objects.update_or_create(
-                    venda=venda, produto=produto, defaults={"quantidade": quantidade}
+                    venda=venda, produto=produto, defaults={"quantidade": quantidade,"valor_unidade":produto.preco_venda}
                 )
 
         except Exception as e:

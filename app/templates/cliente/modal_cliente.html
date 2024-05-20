@@ -134,16 +134,19 @@
 
 <script>
     function tipo_modal(id=false,isEditar=false) {
-        var dadosLocalStorage = Utils.getLocalStorageItem('data-clientes');
-        var cliente = dadosLocalStorage.find(function(item) {
-            return item.id_cliente === id;
-        });
+        cliente=false;
         if(id === false){
             document.getElementById("container-info").classList.add("d-none");
             document.getElementById("container-form").classList.remove("d-none");
             document.getElementById("ModalLabel").innerHTML="Formulario";
             document.getElementById("btnSalvar").classList.remove("d-none");
             document.getElementById('id_cliente').value = '';
+        }
+        else{
+            var dadosLocalStorage = Utils.getLocalStorageItem('data-clientes');
+             var cliente = dadosLocalStorage.find(function(item) {
+            return item.id_cliente === id;
+        });
         }
         if (cliente){
                 if(isEditar){
@@ -203,6 +206,34 @@
         document.getElementById("id_estado").value = dados.estado;
         document.getElementById("id_descricao_endereco").value = dados.descricao_endereco;
     }
+    function limparLabels() {
+        document.getElementById("info_nome_cliente").textContent = "";
+        document.getElementById("info_telefone_cliente").textContent = "";
+        document.getElementById("info_tipo_cliente").textContent = "";
+        document.getElementById("info_descricao_cliente").textContent = "";
+        document.getElementById("info_codigo_postal").textContent = "";
+        document.getElementById("info_rua").textContent = "";
+        document.getElementById("info_numero").textContent = "";
+        document.getElementById("info_bairro").textContent = "";
+        document.getElementById("info_cidade").textContent = "";
+        document.getElementById("info_estado").textContent = "";
+        document.getElementById("info_descricao_endereco").textContent = "";
+    }
+    
+    function limparFormulario() {
+        document.getElementById("id_nome_cliente").value = "";
+        document.getElementById("id_telefone_cliente").value = "";
+        document.getElementById("id_select_tipo_cliente").value ="0";
+        document.getElementById("id_descricao_cliente").value = ""; 
+        document.getElementById("id_codigo_postal").value = "";
+        document.getElementById("id_rua").value = "";
+        document.getElementById("id_numero").value = "";
+        document.getElementById("id_bairro").value = "";
+        document.getElementById("id_cidade").value = "";
+        document.getElementById("id_estado").value = "";
+        document.getElementById("id_descricao_endereco").value = "";
+    }
+    
     function renderizarVendas(vendas) {
         const container = document.getElementById('container_vendas_cliente');
         container.innerHTML = ''; // Limpa o conteúdo atual do contêiner

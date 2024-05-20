@@ -7,17 +7,16 @@
 
  
 
-<div class="my-5 container-xl mx-auto ">
-    <div class="d-flex justify-content-between">
-            <span   class=" font-monospace fw-border my-auto" style="font-size: 1.3rem;">Lista de Loja</span>
-            <a  type="button"  href="{% url 'criar_loja' %}"   class="m-0 p-0 text-secondary border-0 text-decoration-none"  style="font-size: 0.7rem;" >
-         Cadastrar Loja  
-                <i class="bi bi-plus pe-1 pt-2 d-inline-block" style="font-size: 1.3rem;"></i>
-            </a>
-    </div>
-    <div class="container-xl p-3  mx-auto bg-white rounded">
+<div class="my-3 p-1  container-xl mx-auto">
 
-        <table class="table table-hover table-responsive table-sm  ">
+    <div class="d-flex justify-content-between mb-2 row container mx-auto">
+        <h1 class="text-start col" style="font-size: 1.3rem;"><i class="bi bi-people-fill"></i> Lista de Loja</h1>
+        <a  type="button"  href="{% url 'criar_loja' %}"  id="btnCriar" class="btn btn-success btn-sm   col-auto  mx-auto me-sm-2" style="font-size: 0.8rem;">
+            <i style="font-size: 0.8rem;" class="bi bi-plus me-1"></i>Criar Loja</a>
+    </div>
+    <div div class="container p-3   mx-auto bg-dark rounded">
+
+        <table class="table table-hover table-responsive table-sm table-dark  ">
             <thead>
                 <tr>
                     <th scope="col" class="text-start" style="font-size: 0.7rem;">Nome loja</th>

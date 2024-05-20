@@ -16,7 +16,7 @@
                                 <span class="me-auto fs-6 text-white text-center">Detalhes da venda</span>
                             </div>  
                         </div>
-                            <div class="  card-body row d-flex">
+                            <div class="  card-body  ">
                                 <div>
                                     <i class="bi bi-shop"></i>
                                     <span><strong>Loja:</strong></span>
@@ -26,17 +26,17 @@
                                 
                                 <div>
                                     <i class="bi bi-calendar"></i>
-                                    <span><strong>Data da Venda:</strong></span>
+                                    <span><strong>Data:</strong></span>
                                     <span id="detalhes_data_venda" class="font-monospace"></span>
                                 </div>
                                 <div>
                                     <i class="bi bi-clock"></i>
-                                    <span><strong>Horário da Venda:</strong></span>
+                                    <span><strong>Horário:</strong></span>
                                     <span id="detalhes_horario_venda" class="font-monospace"></span>
                                 </div>
                                 <div>
                                     <i class="bi bi-arrow-clockwise"></i>
-                                    <span><strong>Atualização da Venda:</strong></span>
+                                    <span><strong>Atualização:</strong></span>
                                     <span id="detalhes_atualizacao" class="font-monospace"></span>
                                 </div>
                                 
@@ -236,9 +236,6 @@ function montarInfoCliente(data, id_container) {
     container.querySelector("#info_cidade").textContent = data.cidade;
     container.querySelector("#info_estado").textContent = data.estado;
     container.querySelector("#info_descricao_endereco").textContent = data.descricao_endereco;
-    toggleResultadoPesquisa(false);
-    alertCustomer(`Cliente selecionado: ${data.nome}`);
-    // Exibir o container de informações
     container.classList.remove("d-none");
 }
  function close_cliente(){
@@ -272,7 +269,7 @@ function detalhes_modal_cliente(id_venda) {
             produtos.forEach(function(valor) {
                 var ul_produtos = document.getElementById("ul_produtos");
                 var novoItemLista = document.createElement("li");
-                novoItemLista.classList.add("list-group-item", "item-list-carrinho", "d-flex", "justify-content-between", "align-items-center");
+                novoItemLista.classList.add("list-group-item", "item-list-carrinho","bg-dark","text-white", "d-flex", "justify-content-between", "align-items-center");
                 novoItemLista.innerHTML = `
                     <span class="badge text-bg-primary me-1 rounded-pill quantidade">${valor.quantidade}</span>
                     <span class="text-small small" style="font-size: 0.8rem;">${valor.nome} R$ ${valor.preco_venda} Unid</span>
@@ -306,8 +303,6 @@ function detalhes_modal_cliente(id_venda) {
                     document.getElementById('info_motoboy').classList.remove("d-none");
                     document.getElementById('nome_motoboy').innerText = response.motoboy.nome;
                     document.getElementById('telefone_motoboy').innerText = response.motoboy.telefone;
-            } else{
-                alertCustomer(response.message);
             }
         });
     }
@@ -329,25 +324,22 @@ function detalhes_modal_cliente(id_venda) {
         // Função para atualizar os detalhes da transação com base nos dados recebidos
     function atualizarDetalhesTransacao(data) {
         manageLoading(true,"details-cliente");
-        document.getElementById("detalhes_data_venda").textContent = data.data_venda || "N/A";
-        document.getElementById("detalhes_forma_pagamento").textContent = data.forma_pagamento || "N/A";
-        document.getElementById("detalhes_estado_transacao").textContent = data.estado_transacao || "N/A";
-        document.getElementById("detalhes_metodo_entrega").textContent = data.metodo_entrega || "N/A";
+        document.getElementById("detalhes_forma_pagamento").textContent = data.forma_pagamento;
+        document.getElementById("detalhes_estado_transacao").textContent = data.estado_transacao;
+        document.getElementById("detalhes_metodo_entrega").textContent = data.metodo_entrega;
         document.getElementById("detalhes_desconto").textContent = formatarMoeda(data.desconto);
         document.getElementById("detalhes_valor_total").textContent = formatarMoeda(data.valor_total);
         document.getElementById("detalhes_valor_entrega").textContent = formatarMoeda(data.valor_entrega);
         document.getElementById("detalhes_valor_pago").textContent = formatarMoeda(data.valor_pago);
         document.getElementById("detalhes_troco").textContent = formatarMoeda(data.troco);
-        document.getElementById("detalhes_descricao").textContent = data.descricao || "N/A";
-
-        const dataVenda = Utils.formatarDataHoraBR(data.data_venda, 1);
-        const horarioVenda = Utils.formatarDataHoraBR(data.insert, 2);
-        const Atualizacao = Utils.formatarDataHoraBR(data.update, 0);
-    
+        document.getElementById("detalhes_descricao").textContent = data.descricao;
         // Imprimir os dados nos spans correspondentes
-        document.getElementById("detalhes_data_venda").textContent = dataVenda;
-        document.getElementById("detalhes_horario_venda").textContent = horarioVenda;
-        document.getElementById("detalhes_atualizacao").textContent = Atualizacao;
+        const dataVendaFormatada = formatarDataHora(data.insert);
+        const dataAtualizacaoFormatada = formatarDataHora(data.update);
+    
+        document.getElementById("detalhes_data_venda").textContent = dataVendaFormatada.data;
+        document.getElementById("detalhes_horario_venda").textContent = dataVendaFormatada.hora;
+        document.getElementById("detalhes_atualizacao").textContent = verificarAtualizacao(data.insert, data.update);
 
         var data_lojas = Utils.getLocalStorageItem("data_lojas");
         // Encontra a venda selecionada
@@ -360,7 +352,22 @@ function detalhes_modal_cliente(id_venda) {
 
     }
      
-
+    function formatarDataHora(dataStr) {
+        const [dia, mes, anoHora] = dataStr.split('/');
+        const [ano, hora] = anoHora.split(' ');
+        return {
+            data: `${dia}/${mes}/${ano}`,
+            hora: hora
+        };
+    }
+    
+    function verificarAtualizacao(dataVenda, dataAtualizacao) {
+        if (dataVenda === dataAtualizacao) {
+            return "Não foi alterado";
+        } else {
+            return dataAtualizacao;
+        }
+    }
     manageLoading(true,"details-retonaveis");
     
     chamarFuncaoPython("/api/retornaveis/by/venda/" + id_venda, {}, "GET", function(response) {

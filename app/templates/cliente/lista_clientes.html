@@ -86,7 +86,7 @@
                 Utils.setLocalStorageItem('data-clientes', response.clientes);
                 montarTabelaClientes(response.clientes);
             } else {
-                alertCustomer(response.error);
+                alertCustomer(response.message);
             }
             manageLoading(false, "container-table");
         });
@@ -107,6 +107,8 @@
         function close_modal() {
             if (myModal) { // Verifique se myModal está definido antes de chamá-lo
                 myModal.hide();
+                limparLabels();
+                limparFormulario(); 
             } else {
                 console.error('myModal não está definido.');
             }
