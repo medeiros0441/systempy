@@ -117,20 +117,17 @@ USE_TZ = True
 
 # Diretórios estáticos
 STATIC_URL = "assents/"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_ROOT = os.path.dirname(APP_DIR)
-
-# Diretórios estáticos
-STATIC_URL = "assents/"
 STATIC_ROOT = os.path.join(APP_ROOT, "app", "staticfiles")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 # Configurações de segurança
 if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
 else:
-    # Defina as origens confiáveis para CSRF
 
     CSRF_COOKIE_SECURE = True
     CSRF_COOKIE_HTTPONLY = False

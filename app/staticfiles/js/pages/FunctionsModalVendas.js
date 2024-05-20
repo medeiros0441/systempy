@@ -19,7 +19,19 @@ function verificarListaProdutos() {
 
 // Adiciona um ouvinte de evento para verificar a lista de produtos sempre que houver uma mudança
 
-document.getElementById('id_metodo_entrega').addEventListener('change', function() {
+function forma_pagamento() {
+    var selectedOption = this.options[this.selectedIndex];
+    var selectedValue = selectedOption.value;
+
+        if (selectedValue === "dinheiro") {
+            document.querySelector(".gestaotroco").classList.remove("d-none"); // Remove a classe que oculta o container
+        } else {
+            document.querySelector(".gestaotroco").classList.add("d-none"); // Adiciona a classe que oculta o container
+            document.getElementById('id_valor_pago').innerText="00,00";
+            document.getElementById('txt_troco').innerText="00,00";
+}
+} 
+function metodo_entrega() {
     var selectedOption = this.value; // Obtém o valor selecionado
     var containerEntrega = document.getElementById('id_container_entrega');
 
@@ -29,7 +41,18 @@ document.getElementById('id_metodo_entrega').addEventListener('change', function
     } else {
       containerEntrega.classList.add('d-none'); // Adiciona a classe d-none
     }
-  });
+
+    var selectedOption = this.options[this.selectedIndex];
+    var selectedValue = selectedOption.value;
+    if (selectedValue === "retirado na loja") {
+        document.getElementById("id_estado_transacao").value = "finalizado";
+    }
+    if (selectedValue === "entrega no local") {
+        document.getElementById("id_estado_transacao").value = "processando";
+        toggleGestaoEntrega();
+    }
+    
+}
  
 function toggleGestaoCliente(status) {
     var container = document.getElementById("container_gestao_cliente");  
@@ -63,7 +86,8 @@ function gerencia_container_cliente(obj) {
         // Atualiza o valor do onclick do botão para chamar toggleGestaoCliente com o argumento 1
         btnCadastrarCliente.onclick =function() { gerencia_container_cliente(2); };
         // Carrega a lista de clientes
-        carregarListaClientes();
+        data_clientes = Utils.getLocalStorageItem('data_clientes');
+        manipularPesquisaClientes(data_clientes);  
     } 
     // Verifica se a chamada foi para mostrar o formulário de cadastro de cliente
     if (obj == 2 && formcliente.classList.contains("d-none")) {
@@ -79,24 +103,35 @@ function gerencia_container_cliente(obj) {
 
 // Função para carregar e manipular a lista de clientes
 function carregarListaClientes() {
-    // Verifica se já temos os clientes em cache
-        // Carrega a função manageLoading para mostrar o indicador de carregamento
-        manageLoading(true, "select_cliente");
-        alertCustomer('Atualizando Lista de clientes');
-        // Chama a função para obter os clientes por empresa
-        const url = '/api/cliente/by_empresa/';
-        chamarFuncaoPython(url, null, 'GET', function(response) {
-            if (response.success == true) {
-                clientesCache = response.clientes;
-                manipularPesquisaClientes(clientesCache);   
-                manageLoading(false, "select_cliente");
+    chamarFuncaoPython( '/api/cliente/by_empresa/', null, 'GET', function(response) {
+        if (response.success == true) {
+            Utils.setLocalStorageItem("data_clientes",response.clientes)
+            manipularPesquisaClientes(response.clientes);   
 
-            } else {
-                alertCustomer(response.message);
-            manageLoading(false, "select_cliente");
-            }
-        });  
-         
+        }  
+    });  
+     
+}
+
+function get_data(){
+
+try {
+    chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
+        if (response.success === true) {
+            // Armazenar os dados no localStorage
+            Utils.setLocalStorageItem('data_lojas', response.lojas);
+            Utils.setLocalStorageItem('data_vendas', response.vendas);
+            Utils.setLocalStorageItem('data_produtos', response.produtos);
+            atualizarDropdownLojas(response.lojas, "select_lojas");
+            filtrarVendas(response.vendas);
+        } else {
+            alertCustomer(response.error);
+        }
+    });
+} catch (error) {
+    console.error("Erro ao chamar a função Python:", error);
+}
+
 }
 
 function insertCliente() {
@@ -129,7 +164,6 @@ function insertCliente() {
             alertCustomer("Cliente criado com sucesso!");
             gerencia_container_cliente(1)
             montarInfoCliente(response.data,"info_cliente");
-            new_carregarListaClientes();
 
         } else {
             alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error);
@@ -278,7 +312,13 @@ function montarInfoCliente(data, id_container) {
         container.querySelector("#info_ultima_venda_forma_pagamento").textContent = data.ultima_venda.forma_pagamento || "N/A";
         container.querySelector("#info_ultima_venda_valor_total").textContent = data.ultima_venda.valor_total || "N/A";
         container.querySelector("#info_ultima_venda_produtos").textContent = data.ultima_venda.produtos ? data.ultima_venda.produtos.join(", ") : "N/A";
-    }  
+    } else{
+        container.querySelector("#info_ultima_venda_descricao").textContent ="";
+        container.querySelector("#info_ultima_venda_data_venda").textContent ="";
+        container.querySelector("#info_ultima_venda_forma_pagamento").textContent = "";
+        container.querySelector("#info_ultima_venda_valor_total").textContent = "";
+        container.querySelector("#info_ultima_venda_produtos").textContent = "";
+    } 
     
     toggleResultadoPesquisa(false);
     alertCustomer(`Cliente selecionado: ${data.nome}`);
@@ -318,13 +358,7 @@ function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
             select.appendChild(option);
         });
     });
-}
-// Função para carregar e manipular a lista de clientes
-function carregarListaClientes() {
-        data_clientes = Utils.getLocalStorageItem('data_clientes');
-        manipularPesquisaClientes(data_clientes);   
-}
-
+} 
 
 function listarMotoboys() {
         chamarFuncaoPython('/listar_motoboys_por_empresa/', null, 'GET', function(response) {
@@ -333,6 +367,11 @@ function listarMotoboys() {
                 selectMotoboy.innerHTML = ''; // Limpar as opções existentes
                 // Adicionar as opções dos motoboys
                 if(response.motoboys.length > 0){
+                    var option = document.createElement('option');
+                    option.value = 0;
+                    option.text = "Selecione";
+                    selectMotoboy.appendChild(option);
+
                     response.motoboys.forEach(motoboy => {
                     var option = document.createElement('option');
                     option.value = motoboy.id_motoboy;
@@ -563,19 +602,9 @@ function obterValores() {
     if (carrinho !== false) {
         dados['carrinho'] = carrinho;
     }
-      // Obtém a URL da página
-      var url = window.location.href;
 
-      // Divide a URL pelo caractere "/"
-      var partesUrl = url.split("/");
-  
-      // Obtém o último elemento da lista (que deve ser o ID)
-      var ultimoElemento = partesUrl[partesUrl.length - 1];
-  
-      // Verifica se o último elemento é igual ao ID
-      if (ultimoElemento !=null) {
-        dados["id_venda"]=ultimoElemento;
-    } 
+     
+    dados["id_venda"]= document.getElementById("id_venda").value;
       
     return dados
 }
@@ -583,18 +612,23 @@ function obterValores() {
 // Exemplo de como usar a função para obter os valores
 
 function enviarDadosVenda() {
-    data= obterValores()
+    data= obterValores();
     chamarFuncaoPython('/vendas/criar/insert_venda_ajax/',data,'POST',function(response){
             if (response.success===true) {
-                alertCustomer(response.message);
-                alertCustomer("Venda cadastrada com sucesso",1);
+                if(data.id_venda!= ""){
+                    window.location.href =  "/vendas/"; 
+            }else{
+                    alertCustomer(response.message,1);
+                    clean_form();
+                    inicializarPagina();
+                }
 
             } else {
                 alertCustomer(response.error);
             }
     }); 
-    clean_form();
-    alertCustomer("formulario limpo",4);
+     
+
 } 
 document.getElementById("btnSubmit").addEventListener("click", function(event) {
     // Chama a função de verificação antes de permitir o envio do formulário
@@ -628,66 +662,8 @@ function atualizarCamposCarrinho() {
     return data; // Retorna os itens do carrinho dentro de um objeto data
 }
 
-
-    document.getElementById('id_metodo_entrega').addEventListener('change', function() {
-        var selectedOption = this.options[this.selectedIndex];
-        var selectedValue = selectedOption.value;
-
-        if (selectedValue === "retirado na loja") {
-            document.getElementById("id_estado_transacao").value = "finalizado";
-        }
-
-        if (selectedValue === "entrega no local") {
-            document.getElementById("id_estado_transacao").value = "processando";
-            toggleGestaoEntrega();
-        }
-    }); 
-    
-    // Adiciona um evento de mudança ao select de lojas
-    document.getElementById('id_loja').addEventListener('change', function() {
-        // Obtém o ID da loja selecionada convertendo para um número inteiro
-        var selectedLoja = parseInt(this.value);
-        // Obtém a lista de produtos e limpa os produtos existentes
-        var produtosList = document.getElementById('produtosList');
-        produtosList.innerHTML = '';
-
-        // Adiciona produtos relevantes ao datalist
-        produtos_data = Utils.getLocalStorageItem('data_produtos');
-
-        // Verifica se há produtos na lista atual
-        if (document.getElementById("listaProdutos").innerHTML !== "") {
-            var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-            var mensagemExibida = false; // Variável de controle para verificar se a mensagem já foi exibida
-
-            // Itera sobre os itens da lista para verificar se o produto já está na lista
-            itensLista.forEach(function (item) {
-                var idExistente = item.getAttribute("data-id-produto");
-                var produto = produtos_data.find(item => item.id_produto == idExistente);
-
-                // Remove o item da lista se ele não pertencer à loja selecionada
-                if (produto.loja_id !== selectedLoja) {
-                    item.parentNode.removeChild(item);
-                    // Verifica se a mensagem já foi exibida
-                    if (!mensagemExibida) {
-                        alertCustomer("Não é possível vender produtos de diferentes lojas. Por isso, removemos os produtos da loja selecionada anteriormente.");
-                        mensagemExibida = true; // Marca que a mensagem foi exibida
-                    }
-                }
-            });
-            calcularValorTotal();
-        }
-
-        // Itera sobre os produtos e adiciona aqueles que pertencem à loja selecionada ao datalist
-        produtos_data.forEach(function(produto) {
-            if (selectedLoja === '0' || produto.loja_id === selectedLoja) {
-                var option = document.createElement('option');
-                option.dataset.idProduto = produto.id_produto;
-                option.value = produto.nome;
-                produtosList.appendChild(option);
-                produtoInput.setAttribute('list', 'produtosList');
-            }
-        });
-    });
+ 
+     
 
 
     function calcularValorTotal() {
@@ -742,7 +718,7 @@ function atualizarCamposCarrinho() {
     
         // Obtém o valor pago
         var valorPagoInput = document.getElementById('id_valor_pago');
-        var valorPago = valorPagoInput ? parseFloat(valorPagoInput.value) : 0;
+        var valorPago = valorPagoInput ? parseFloat(valorPagoInput.value.replace(',', '.')) : 0;
     
         // Calcula o troco apenas se o valor pago for maior ou igual ao total
         var troco = valorPago - valorTotalComTaxaDesconto;
@@ -820,150 +796,237 @@ function toggleGestaoRetornavel(status) {
             iconeDesbloqueado.classList.add("d-none");
         }
 }
-function new_carregarListaClientes (){
-    chamarFuncaoPython('/api/cliente/by_empresa/', null, 'GET', function(response) {
-      if (response.success == true) {
-           Utils.setLocalStorageItem('data_clientes', response.clientes);
-
-      } else {
-          alertCustomer(response.message);
-      }
-  });  }
-window.addEventListener('DOMContentLoaded', function() {
-    listarMotoboys();
-    verificarListaProdutos();
-    new_carregarListaClientes();
-    // Chamar a função para preencher a tabela ao carregar a página
-
-    atualizarDropdownLojas(Utils.getLocalStorageItem('data_lojas') ,"select_lojas");
-    // Adiciona ouvintes de evento de entrada aos campos relevantes
-    document.getElementById('id_taxa_entrega').addEventListener('input', calcularTroco);
-    document.getElementById('id_desconto').addEventListener('input', calcularTroco);
-    document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
   
-    document.getElementById("id_forma_pagamento").addEventListener("change", function () {
-        var selectedOption = this.options[this.selectedIndex];
-        var selectedValue = selectedOption.value;
+ 
+    // Adiciona um evento de mudança ao select de lojas
+    function select_loja(){
+        // Obtém o ID da loja selecionada convertendo para um número inteiro
+        var selectedLoja = parseInt(this.value);
+        // Obtém a lista de produtos e limpa os produtos existentes
+        var produtosList = document.getElementById('produtosList');
+        produtosList.innerHTML = '';
 
-            if (selectedValue === "dinheiro") {
-                document.querySelector(".gestaotroco").classList.remove("d-none"); // Remove a classe que oculta o container
-            } else {
-                document.querySelector(".gestaotroco").classList.add("d-none"); // Adiciona a classe que oculta o container
-            }
-    }); 
-     // Obtém a lista de produtos do DOM e itera sobre cada produto
-     produtos_data = Utils.getLocalStorageItem('data_produtos');
-    // Chamar a função para preencher a tabela ao carregar a página 
-    var produtosList = document.getElementById('produtosList');
-        produtos_data.forEach(function(produto) {
-            // Cria uma nova opção para cada produto e a adiciona à lista de produtos
-            var option = document.createElement('option');
-            option.dataset.idProduto = produto.id_produto; // Define o atributo de dados 'idProduto' na opção
-            option.value = produto.nome; // Define o valor da opção como o nome do produto
-            produtosList.appendChild(option);
-        });
-
-    // Obtém o input do produto
-    var produtoInput = document.getElementById("produtoInput");
-    // Adiciona um evento de entrada para detectar a seleção de uma opção
-    produtoInput.addEventListener("input", function() {
-        // Obtém a opção selecionada com base no valor do input do produto
-        var selectedOption = document.querySelector("#produtosList option[value='" + this.value + "']");
-        if (selectedOption) {
-            // Chama a função OptionSelection passando a opção selecionada como argumento
-            OptionSelection(selectedOption);
-        }
-    });
-
-    // Função para lidar com a seleção de opção
-    function OptionSelection(option) {
-        // Obtém o ID do produto da opção selecionada e define o atributo de dados 'idProduto' no input do produto
-        var produtoId = option.getAttribute("data-id-produto");
-        produtoInput.dataset.idProduto = produtoId;
-        }
-
-
-    // Obtém a lista de produtos do DOM
-    var listaProdutos = document.getElementById("listaProdutos");
-
-    // Adiciona um ouvinte de evento para calcular o valor total e atualizar o label quando o botão de adicionar produto é clicado
-    document.getElementById("adicionarProdutoBtn").addEventListener("click", function () {
-        // Obtém o input do produto
-       
-        var produtoInput = document.getElementById("produtoInput");
-        var produtoSelecionado = null;
-        var produtoId = produtoInput.getAttribute("data-id-produto");
-        // Itera sobre a lista de produtos para encontrar o produto selecionado
-    // Variável de controle para indicar se o loop deve continuar ou parar
-        let continuarLoop = true;
-        // Verificar as condições do produto
-        if (produtoInput.value == "") {
-            alertCustomer("Selecione um produto da lista de sugestões..");
-            continuarLoop = false; // Definir para false para parar o loop
-            return;
-        }
+        // Adiciona produtos relevantes ao datalist
         produtos_data = Utils.getLocalStorageItem('data_produtos');
-        // Iterar sobre a lista de produtos
-        produtos_data.forEach(function(produto) {
-            // Verificar se o loop deve continuar
-            if (!continuarLoop) {
-                return; // Se não, saia do loop
-            }
-           
-                 if (produto.id_produto == produtoId ) {
-                if (produto.quantidade_atual_estoque >= 1) {
-                    produtoInput.value = "";
-                    produtoSelecionado = produto;
-                } else {
-                    produtoInput.value = "";
-                    alertCustomer("Não há mais produto disponível no estoque.");
-                }
-                continuarLoop = false; // Definir para false para parar o loop
-                return;
-            }
-        });
-        // Verifica se o valor do input do produto não está vazio
-        if (produtoSelecionado != null ) {
-            var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-            var produtoExistente = false;
 
-            
+        // Verifica se há produtos na lista atual
+        if (document.getElementById("listaProdutos").innerHTML !== "") {
+            var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+            var mensagemExibida = false; // Variável de controle para verificar se a mensagem já foi exibida
+
             // Itera sobre os itens da lista para verificar se o produto já está na lista
             itensLista.forEach(function (item) {
                 var idExistente = item.getAttribute("data-id-produto");
-                 
-                if (idExistente === produtoId ) {
-                    // Se o produto já existir na lista, aumenta a quantidade
-                    var quantidadeSpan = item.querySelector(".quantidade");
-                    var quantidadeAtual = parseInt(quantidadeSpan.textContent);
-                    quantidadeSpan.textContent = quantidadeAtual + 1;
-                    produtoExistente = true;
+                var produto = produtos_data.find(item => item.id_produto == idExistente);
+
+                // Remove o item da lista se ele não pertencer à loja selecionada
+                if (produto.loja_id !== selectedLoja) {
+                    item.parentNode.removeChild(item);
+                    // Verifica se a mensagem já foi exibida
+                    if (!mensagemExibida) {
+                        alertCustomer("Não é possível vender produtos de diferentes lojas. Por isso, removemos os produtos da loja selecionada anteriormente.");
+                        mensagemExibida = true; // Marca que a mensagem foi exibida
+                    }
                 }
             });
-            if (!produtoExistente) {
-                // Se o produto não existir na lista, cria um novo item na lista de produtos
-                var novoItemLista = document.createElement("li");
-                novoItemLista.classList.add("list-group-item",'item-list-carrinho',"bg-dark","text-white","fw-bold", "d-flex", "justify-content-between", "align-items-center");
-                novoItemLista.setAttribute("data-id-produto", produtoSelecionado.id_produto);
-                novoItemLista.setAttribute("data-retornavel", produtoSelecionado.is_retornavel); 
-                novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
-                // Preenche o HTML do novo item na lista de produtos
-                novoItemLista.innerHTML = `
-                    <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                    <span class="text-small small my-auto " style="font-size: 0.8rem;" >${produtoSelecionado.nome} R$ ${produtoSelecionado.preco_venda} Unididade</span>
-                    <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.id_produto}" onclick="aumentarQuantidade(this)"></span>
-                    <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
-                `;
-                listaProdutos.appendChild(novoItemLista);
-            }
-            // Calcula o valor total dos produtos e atualiza o label
             calcularValorTotal();
-            // Limpa o valor do input do produto
-            produtoInput.value ="";
         }
-        verificarListaProdutos();
-    });
 
+        // Itera sobre os produtos e adiciona aqueles que pertencem à loja selecionada ao datalist
+        produtos_data.forEach(function(produto) {
+            if (selectedLoja === '0' || produto.loja_id === selectedLoja) {
+                var option = document.createElement('option');
+                option.dataset.idProduto = produto.id_produto;
+                option.value = produto.nome;
+                produtosList.appendChild(option);
+                produtoInput.setAttribute('list', 'produtosList');
+            }
+        });
+    }
+     // Função para lidar com a seleção de opção
+     function OptionSelection(option) {
+        // Obtém o ID do produto da opção selecionada e define o atributo de dados 'idProduto' no input do produto
+        var produtoId = option.getAttribute("data-id-produto");
+        produtoInput.dataset.idProduto = produtoId;
+        
+    }
+    
+    window.onload = function() {
+        inicializarPagina();
+    };
+    
+    function inicializarPagina() {
+        get_data();
+        listarMotoboys();
+        carregarListaClientes();
+        atualizarDropdownLojas(Utils.getLocalStorageItem('data_lojas'), "select_lojas");
+        adicionarOuvintesDeEventos();
+        preencherListaDeProdutos();
+        verificarVendaExistente();
+        configurarObservadorDeMutacao();
+        verificarRetornaveis();
+        verificarListaProdutos();
+    }
+
+function verificarVendaExistente() {
+    const id_venda = document.getElementById('id_venda').value;
+    if (id_venda !== "") {
+        editarVenda(id_venda);
+    }
+}
+
+function detectarSelecaoProduto() {
+    const produtoInput = document.getElementById("produtoInput");
+    const selectedOption = document.querySelector(`#produtosList option[value='${produtoInput.value}']`);
+    if (selectedOption) {
+        OptionSelection(selectedOption);
+    }
+}
+function preencherListaDeProdutos() {
+    const produtos_data = Utils.getLocalStorageItem('data_produtos');
+    const produtosList = document.getElementById('produtosList');
+
+    produtos_data.forEach(function(produto) {
+        const option = document.createElement('option');
+        option.dataset.idProduto = produto.id_produto;
+        option.value = produto.nome;
+        produtosList.appendChild(option);
+    });
+}
+function adicionarOuvintesDeEventos() {
+    document.getElementById('id_taxa_entrega').addEventListener('input', calcularTroco);
+    document.getElementById('id_desconto').addEventListener('input', calcularTroco);
+    document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
+    document.getElementById('id_forma_pagamento').addEventListener('change', forma_pagamento);
+    document.getElementById('id_metodo_entrega').addEventListener('change', metodo_entrega);
+    document.getElementById('id_loja').addEventListener('change', select_loja);
+    document.getElementById('produtoInput').addEventListener('input', detectarSelecaoProduto);
+}
+
+
+function configurarObservadorDeMutacao() {
+    const observerOptions = {
+        childList: true,
+        subtree: true
+    };
+
+    const observerCallback = function(mutationsList) {
+        for (const mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                verificarRetornaveis();
+                configurarMascarasEValidacoes();
+                break;
+            }
+        }
+    };
+
+    const listaProdutos = document.getElementById("listaProdutos");
+    const observer = new MutationObserver(observerCallback);
+    observer.observe(listaProdutos, observerOptions);
+}
+
+function configurarMascarasEValidacoes() {
+    $('.data-mes-ano-mask').mask('00/0000');
+    document.querySelectorAll(".data-validade").forEach(function(input) {
+        input.addEventListener("input", function() {
+            clearTimeout(input.timeoutId);
+            input.timeoutId = setTimeout(function() {
+                validarEAtualizarData(input);
+            }, 500);
+        });
+    });
+}
+
+function validarEAtualizarData(input) {
+    const dataValidade = input.value.trim();
+    if (dataValidade === "") return;
+
+    const regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
+    if (!regex.test(dataValidade)) return;
+
+    const [mes, ano] = dataValidade.split("/").map(Number);
+    const dataFabricacao = ("0" + mes).slice(-2) + "/" + (ano - 3);
+
+    const dataFabricacaoField = input.closest('.row').querySelector(".data-fabricacao");
+    if (dataFabricacaoField) {
+        dataFabricacaoField.value = dataFabricacao;
+    }
+}
+
+function Ouvinte(){
+    var produtoInput = document.getElementById("produtoInput");
+    var produtoSelecionado = null;
+    var produtoId = produtoInput.getAttribute("data-id-produto");
+    // Itera sobre a lista de produtos para encontrar o produto selecionado
+// Variável de controle para indicar se o loop deve continuar ou parar
+    let continuarLoop = true;
+    // Verificar as condições do produto
+    if (produtoInput.value == "") {
+        alertCustomer("Selecione um produto da lista de sugestões..");
+        continuarLoop = false; // Definir para false para parar o loop
+        return;
+    }
+    produtos_data = Utils.getLocalStorageItem('data_produtos');
+    // Iterar sobre a lista de produtos
+    produtos_data.forEach(function(produto) {
+        // Verificar se o loop deve continuar
+        if (!continuarLoop) {
+            return; // Se não, saia do loop
+        }
+        
+                if (produto.id_produto == produtoId ) {
+            if (produto.quantidade_atual_estoque >= 1) {
+                produtoInput.value = "";
+                produtoSelecionado = produto;
+            } else {
+                produtoInput.value = "";
+                alertCustomer("Não há mais produto disponível no estoque.");
+            }
+            continuarLoop = false; // Definir para false para parar o loop
+            return;
+        }
+    });
+    // Verifica se o valor do input do produto não está vazio
+    if (produtoSelecionado != null ) {
+        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+        var produtoExistente = false;
+
+        
+        // Itera sobre os itens da lista para verificar se o produto já está na lista
+        itensLista.forEach(function (item) {
+            var idExistente = item.getAttribute("data-id-produto");
+                
+            if (idExistente === produtoId ) {
+                // Se o produto já existir na lista, aumenta a quantidade
+                var quantidadeSpan = item.querySelector(".quantidade");
+                var quantidadeAtual = parseInt(quantidadeSpan.textContent);
+                quantidadeSpan.textContent = quantidadeAtual + 1;
+                produtoExistente = true;
+            }
+        });
+        if (!produtoExistente) {
+            // Se o produto não existir na lista, cria um novo item na lista de produtos
+            var novoItemLista = document.createElement("li");
+            novoItemLista.classList.add("list-group-item",'item-list-carrinho',"bg-dark","text-white","fw-bold", "d-flex", "justify-content-between", "align-items-center");
+            novoItemLista.setAttribute("data-id-produto", produtoSelecionado.id_produto);
+            novoItemLista.setAttribute("data-retornavel", produtoSelecionado.is_retornavel); 
+            novoItemLista.setAttribute("data-valor", produtoSelecionado.valor);
+            // Preenche o HTML do novo item na lista de produtos
+            novoItemLista.innerHTML = `
+                <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
+                <span class="text-small small my-auto " style="font-size: 0.8rem;" >${produtoSelecionado.nome} R$ ${produtoSelecionado.preco_venda} Unidade</span>
+                <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.id_produto}" onclick="aumentarQuantidade(this)"></span>
+                <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
+            `;
+            listaProdutos.appendChild(novoItemLista);
+        }
+        // Calcula o valor total dos produtos e atualiza o label
+        calcularValorTotal();
+        // Limpa o valor do input do produto
+        produtoInput.value ="";
+    }
+    verificarListaProdutos();
+}
     // Função para verificar os produtos retornáveis
     function verificarRetornaveis() {
         var itensLista = listaProdutos.querySelectorAll(".list-group-item");
@@ -989,7 +1052,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
         // Função para gerar os inputs dinamicamente com base no número de galões que estão saindo
-        function gerarInputs(numeroGaloes,obj={}) {
+    function gerarInputs(numeroGaloes,obj={}) {
             var formGestaoGalao = document.getElementById("form_galaoGestao");
                 // Encontra o número de formulários já existentes
                 var numFormulariosExistentes = formGestaoGalao.querySelectorAll('.container_galao_troca').length;
@@ -1081,141 +1144,78 @@ window.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-            }
+        }
 
-                // Opções para o observador de mutação
-                var observerOptions = {
-                    childList: true, // Observar mudanças nos filhos do elemento
-                    subtree: true // Observar todos os descendentes do elemento
-                };
+         
 
-            // Função de callback para o observador de mutação
-            var observerCallback = function(mutationsList, observer) {
-                for (var mutation of mutationsList) {
-                    if (mutation.type === 'childList') {
-                        verificarRetornaveis();
-                        $('.data-mes-ano-mask').mask('00/0000');
-                            document.querySelectorAll(".data-validade").forEach(function(input) {
-                                input.addEventListener("input", function() {
-                                    // Limpa qualquer timeout existente
-                                    clearTimeout(input.timeoutId);
-                                    
-                                    // Configura um novo timeout para esperar que o usuário pare de digitar
-                                    input.timeoutId = setTimeout(function() {
-                                        // Obtém o valor do campo data_validade
-                                        var dataValidade = input.value.trim();
-                                        
-                                        // Verifica se a entrada está vazia
-                                        if (dataValidade === "") {
-                                            return; // Não faz nada se estiver vazio
-                                        }
-                                        
-                                        // Verifica se a entrada possui o formato esperado (MM/AAAA)
-                                        var regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
-                                        if (!regex.test(dataValidade)) {
-                                        
-                                            return; // Não faz nada se o formato for inválido
-                                        }
-                                        
-                                        // Extrai o mês e o ano da entrada
-                                        var partes = dataValidade.split("/");
-                                        var mes = parseInt(partes[0], 10);
-                                        var ano = parseInt(partes[1], 10);
-                                        
-                                        // Calcula a data de fabricação subtraindo três anos da data de validade
-                                        var dataFabricacao = ("0" + mes).slice(-2) + "/" + (ano - 3);
-                                    
-                                        
-                                        // Encontra o campo de entrada data_fabricacao correspondente
-                                        var dataFabricacaoField = input.closest('.row').querySelector(".data-fabricacao");
-                                        
-                                        // Define o valor do campo data_fabricacao se encontrado
-                                        if (dataFabricacaoField) {
-                                            dataFabricacaoField.value = dataFabricacao;
-                                        }
-                                    }, 500); // Aguarda 500ms após a última entrada antes de executar o cálculo
-                                });
-                            });
-                                
-                        break;
-                    }
-                }
-            };
-            // Elemento alvo para observar as mutações
-            var listaProdutos = document.getElementById("listaProdutos");
-            // Cria um observador de mutação
-            var observer = new MutationObserver(observerCallback);
-            // Inicia a observação do elemento alvo
-            observer.observe(listaProdutos, observerOptions);
-            // Verifica os produtos retornáveis ao carregar a página
-            verificarRetornaveis();
-
-    });
  
-
-
 function editarVenda(id_venda) {
     // Busca os dados de vendas do armazenamento local
     const vendas = Utils.getLocalStorageItem("data_vendas");
     // Encontra a venda correspondente com base no idVenda fornecido
     const venda = vendas.find(venda => venda.id_venda === id_venda);
 
-   id_venda = document.getElementById('id_venda').value;
 
     const container_pay = document.getElementById("body_gestao_pay");
     // Verifica se a venda foi encontrada
     if (venda) {
-            document.getElementById("id_metodo_entrega").selectedIndex = venda.metodo_entrega;
-            document.getElementById("id_estado_transacao").selectedIndex = venda.estado_transacao;
-            document.getElementById("id_forma_pagamento").selectedIndex = venda.forma_pagamento;
-            document.getElementById("id_desconto").value = parseFloat(venda.desconto).toFixed(2);
-            document.getElementById("txt_valor_apagar").textContent = parseFloat(venda.valor_total).toFixed(2);
-            document.getElementById("id_taxa_entrega").value = parseFloat(venda.valor_entrega).toFixed(2);
-            document.getElementById("id_valor_pago").value = parseFloat(venda.valor_pago).toFixed(2);
-            document.getElementById("txt_troco").textContent = parseFloat(venda.troco).toFixed(2);
-            document.getElementById("id_descricao").value = venda.descricao;
-            document.getElementById("id_loja").selectedIndex = venda.loja_id;
-            document.getElementById("id_motoboy").selectedIndex = venda.motoboy;
-                    
-            document.getElementById("id_loja").dispatchEvent(new Event('change'));
-            document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
-            document.getElementById("id_estado_transacao").dispatchEvent(new Event('change'));
-            document.getElementById("id_taxa_entrega").dispatchEvent(new Event('change'));
-            document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
-            document.getElementById("id_desconto").dispatchEvent(new Event('change'));
-            document.getElementById("id_valor_pago").dispatchEvent(new Event('change'));
+        function setElementValue(id, value) {
+            document.getElementById(id).value = value;
+            document.getElementById(id).dispatchEvent(new Event('change'));
+        }
+        
+        function setTextContent(id, text) {
+            document.getElementById(id).textContent = text;
+        }
+        
+        setElementValue("id_metodo_entrega", venda.metodo_entrega);
+        setElementValue("id_estado_transacao", venda.estado_transacao);
+        setElementValue("id_forma_pagamento", venda.forma_pagamento);
+        setElementValue("id_desconto", parseFloat(venda.desconto).toFixed(2));
+        setTextContent("txt_valor_apagar", parseFloat(venda.valor_total).toFixed(2));
+        setElementValue("id_taxa_entrega", parseFloat(venda.valor_entrega).toFixed(2));
+        setElementValue("id_valor_pago", parseFloat(venda.valor_pago).toFixed(2));
+        setTextContent("txt_troco", parseFloat(venda.troco).toFixed(2));
+        setElementValue("id_descricao", venda.descricao);
+        setElementValue("id_loja", venda.loja_id);
+
+        chamarFuncaoPython('/get_motoboy_by_venda/'+venda.id_venda+"/", null, 'GET', function(response) {
+            if (response.motoboy) {
+                 setElementValue("id_motoboy", response.motoboy.id_motoboy);
+            }
+        });
     } else {
         console.log("Venda não encontrada.");
+        return alertCustomer("Venda não encontrada.",2);
     }
     chamarFuncaoPython("/api/produtos/by/venda/" + id_venda, {}, "GET", function(response) {
         // Verifica se a resposta foi bem-sucedida
         if (response.success === true) {
             // Obtém a lista de produtos da resposta
             var produtos = response.list_produtos;
-            var ul_produtos = document.getElementById("ul_produtos");
+            var ul_produtos = document.getElementById("listaProdutos");
             ul_produtos.innerHTML = ""
             // Itera sobre os produtos e os exibe
             produtos.forEach(function(produto) {
                     var novoItemLista = document.createElement("li");
-                    novoItemLista.classList.add("list-group-item",'item-list-carrinho', "d-flex", "justify-content-between", "align-items-center");
+                    novoItemLista.classList.add("list-group-item",'item-list-carrinho',"bg-dark","text-white","fw-bold", "d-flex", "justify-content-between", "align-items-center");
                     novoItemLista.setAttribute("data-id-produto", produto.id_produto);
                     novoItemLista.setAttribute("data-retornavel", produto.is_retornavel); 
                     novoItemLista.setAttribute("data-valor", produto.valor);
                     // Preenche o HTML do novo item na lista de produtos
                     novoItemLista.innerHTML = `
-                        <span class="badge text-bg-primary me-1 rounded-pill quantidade">1</span>
-                        <span class="text-small small " style="font-size: 0.8rem;" >${produto.nome} R$ ${produto.preco_venda} Unid</span>
+                        <span class="badge text-bg-primary me-1 rounded-pill quantidade">${produto.quantidade}</span>
+                        <span class="text-small small " style="font-size: 0.8rem;" >${produto.nome} R$ ${produto.preco_venda} Unidade</span>
                         <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produto.id_produto}" onclick="aumentarQuantidade(this)"></span>
                         <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
                     `;
                 listaProdutos.appendChild(novoItemLista);
             });
+            calcularValorTotal();
         }
         else {
             alertCustomer(response.message);
         }
-         
-        manageLoading(false,"ul_produtos");
     });
     chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
         if (response.success === true) {
@@ -1223,15 +1223,7 @@ function editarVenda(id_venda) {
             montarInfoCliente(response.cliente,"info_cliente");
         }  
     });
-
-        chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
-            if (response.success === true) {
-                toggleGestaoCliente(1);
-                montarInfoCliente(response.cliente,"info_cliente");
-            }  
-        });
-
-
+ 
     
     chamarFuncaoPython("/api/retornaveis/by/venda/" + id_venda, {}, "GET", function(response) {
         if (response.success === true) {
@@ -1242,6 +1234,5 @@ function editarVenda(id_venda) {
             } 
         } 
     });
-
 
 }

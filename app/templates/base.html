@@ -159,11 +159,14 @@
                     <ul class="list-unstyled footer-links m-0">
                         <li><a href="{% url 'home' %}" class="text-secondary    text-decoration-none">Home</a></li>
                         <li><a href="{% url 'sobre'%}" class="text-secondary   text-decoration-none">Sobre-nós</a></li>
+                       
+                        {% if request.session.isCliente is not True %}
                         <li><a href="{% url 'login' %}" class="text-secondary     text-decoration-none">Login</a></li>
                         <li><a href="{% url 'cadastro' %}" class="text-secondary  text-decoration-none">Cadastre-se</a></li>
-                    </ul>
+                        {% endif %}
+                </ul>
                 </div> 
-                <a class="col  text-sm-center text-start text-decoration-none  " href="{% url 'home' %}">
+                <a class="col  text-center   text-decoration-none  " href="{% url 'home' %}">
                     <p class="Font-Gliker mb-2   text-white " style="font-size: 20px;  "><span class=" Font-Gliker  " style="font-size: 30px; color: var(--tema-verde);">{</span> Comércio Prime <span style="font-size: 30px; color: var(--tema-verde);" class=" Font-Gliker  ">}</span></p>
                 </a>
             </div>

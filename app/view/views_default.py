@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect
 from ..utils import utils
 from django.utils import timezone
-from .view_cadastro import cadastro_empresa
-from .view_autenticacao import autenticar_usuario
+from .views_autenticacao import views_autenticacao
 from ..gerencia_email.config_email import enviar_email
 from ..static import Alerta, UserInfo
 
@@ -62,10 +61,7 @@ class views_default:
 
     def cadastro(request):
         try:
-            if request.method == "POST":
-                return cadastro_empresa(request)
-            else:
-                return render(request, "default/cadastro.html")
+            return render(request, "default/cadastro.html")
 
         except Exception as e:
             mensagem_erro = str(e)
@@ -93,7 +89,7 @@ class views_default:
                     request.session["checkbox_login"] = None
 
                 # Chama a função para autenticar o usuário com os dados fornecidos
-                if autenticar_usuario(request, email, senha):
+                if views_autenticacao.autenticar_usuario(request, email, senha):
                     return redirect("dashbord")
                 else:
                     context["alerta_js"] = utils.criar_alerta_js(
@@ -105,7 +101,7 @@ class views_default:
                 email_saved = request.session.get("email_saved")
                 senha_saved = request.session.get("senha_saved")
                 if email_saved and senha_saved:
-                    status = autenticar_usuario(request, email_saved, senha_saved)
+                    status = views_autenticacao.autenticar_usuario(request, email_saved, senha_saved)
                     if "set_autenticacao" in context:
                         return status
                     if status:

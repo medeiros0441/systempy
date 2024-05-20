@@ -144,6 +144,31 @@ static setLocalStorageItem(key, value) {
         // Retorna allInputsValid ao final da função
         return allInputsValid;
     }
-            
+    static converterStringParaData(dataString) {
+        try {
+            const partes = dataString.split(/[\s\/:]/); // Divide a string em partes usando espaço, barra ou dois pontos como delimitadores
+            if (partes.length !== 5) {
+                throw new Error('Formato de data inválido. Deve ser "dia/mês/ano hora:minuto".');
+            }
+    
+            const dia = parseInt(partes[0], 10);
+            const mes = parseInt(partes[1], 10) - 1; // Mês é base zero
+            const ano = parseInt(partes[2], 10);
+            const hora = parseInt(partes[3], 10);
+            const minuto = parseInt(partes[4], 10);
+    
+            if (isNaN(dia) || isNaN(mes) || isNaN(ano) || isNaN(hora) || isNaN(minuto)) {
+                throw new Error('Valores de data inválidos.');
+            }
+    
+            return new Date(ano, mes, dia, hora, minuto);
+        } catch (error) {
+            console.error('Erro ao converter string para data:', error.message);
+            return null;
+        }
     }
+    static clean_alert(){
+       document.getElementById("id_alert_container").innerHTML ="";
+    }
+}
     

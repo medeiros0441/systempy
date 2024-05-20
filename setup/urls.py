@@ -1,11 +1,22 @@
 from django.urls import path, re_path
-from app.view.sessao import views_sessao
 
 app_name = "app"
 from django.conf import settings
 from django.conf.urls.static import static
-from app.view.views_default import views_default
 from app.utils import utils
+
+from app.view.views_default import views_default
+from app.view.assinante import views_assinante
+from app.view.views_usuario import views_usuarios
+from app.view.views_loja import views_loja
+from app.view.views_venda import views_venda
+from app.view.views_cliente import views_cliente
+from app.view.views_galao import views_galao
+from app.view.view_api import views_api
+from app.view.views_cadastro import views_cadastro
+from app.view.views_empresa import views_empresa
+from app.view.views_endereco import views_endereco
+from app.view.sessao import views_sessao
 
 url_default = [
     path("", views_default.home, name=""),
@@ -16,14 +27,12 @@ url_default = [
     path("Erro/", utils.erro, name="Erro"),
 ]
 
-from app.view.assinante import views_assinante
 
 url_assinante = [
     path("dashbord/", views_assinante.dashbord, name="dashbord"),
     path("desconect/", views_assinante.desconect, name="desconect"),
 ]
 
-from app.view.views_empresa import views_empresa
 
 url_empresa = [  # empresa
     path("empresas/", views_empresa.listar_empresas, name="listar_empresas"),
@@ -39,7 +48,6 @@ url_empresa = [  # empresa
     ),
 ]
 
-from app.view.views_usuario import views_usuarios
 
 url_usuario = [
     # URLs de usuários
@@ -76,7 +84,6 @@ url_usuario = [
         name="ativar_usuario",
     ),
 ]
-from app.view.views_loja import views_loja
 
 url_loja = [
     # lojas
@@ -119,7 +126,6 @@ url_produto = [  # produtos
     ),
 ]
 
-from app.view.views_venda import views_venda
 
 url_venda = [  # vendas
     path("vendas/", views_venda.lista_vendas, name="lista_vendas"),
@@ -164,7 +170,6 @@ url_venda = [  # vendas
     ),
 ]
 
-from app.view.views_cliente import views_cliente
 
 url_cliente = [  # clientes
     path("clientes/", views_cliente.lista_clientes, name="lista_clientes"),
@@ -189,7 +194,7 @@ url_cliente = [  # clientes
         views_cliente.api_get_vendas_by_cliente,
         name="vendas_clientes",
     ),
-     path(
+    path(
         "api/cliente/create/",
         views_cliente.api_create_update_cliente,
         name="api_create_cliente",
@@ -216,8 +221,6 @@ url_cliente = [  # clientes
     ),
 ]
 
-from app.view.views_galao import views_galao
-
 url_galao = [  ##galoes
     path("galoes/", views_galao.lista_galao, name="lista_galoes"),
     path("galoes/criar", views_galao.editar_galao, name="criar_galao"),
@@ -236,7 +239,6 @@ url_galao = [  ##galoes
     ),
 ]
 
-from app.view.views_endereco import views_endereco
 
 url_endereco = [
     path("endereco/", views_endereco.lista_enderecos, name="lista_enderecos"),
@@ -256,9 +258,22 @@ url_endereco = [
         views_endereco.delete_endereco,
         name="delete_endereco",
     ),
+    path(
+        "endereco/read/<str:endereco_id>/",
+        views_api.read_endereco,
+        name="read_endereco",
+    ),
+    path(
+        "endereco/update/<str:endereco_id>/",
+        views_api.update_endereco,
+        name="update_endereco",
+    ),
+    path(
+        "endereco/delete/<str:endereco_id>/",
+        views_api.delete_endereco,
+        name="delete_endereco",
+    ),
 ]
-
-from app.view.view_api import views_api
 
 url_funcJs = [  # funçoes js
     path("enviar-codigo/<str:email>/", utils.enviar_codigo, name="enviar_codigo"),
@@ -277,19 +292,9 @@ url_funcJs = [  # funçoes js
     path("buscar_lojas/", views_api.buscar_lojas, name="buscar_lojas"),
     path("endereco/create/", views_api.create_endereco, name="create_endereco"),
     path(
-        "endereco/read/<str:endereco_id>/",
-        views_api.read_endereco,
-        name="read_endereco",
-    ),
-    path(
-        "endereco/update/<str:endereco_id>/",
-        views_api.update_endereco,
-        name="update_endereco",
-    ),
-    path(
-        "endereco/delete/<str:endereco_id>/",
-        views_api.delete_endereco,
-        name="delete_endereco",
+        "api_cadastro_clientes",
+        views_cadastro.cadastro_empresa,
+        name="api_cadastro_clientes",
     ),
     # Adicione outras URLs conforme necessário
 ]
@@ -325,7 +330,7 @@ url_motoboy = [
 
 
 from app.view.views_cliente import views_cliente
- 
+
 
 urlpatterns = (
     url_default

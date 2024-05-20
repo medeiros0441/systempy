@@ -4,106 +4,188 @@
 {% block content %}
     
 
+<form   class="form-signin   container mx-auto ">
+
+  <div class="px-sm-2 p-4 my-2 modal modal-signin position-static d-block  align-items-center     ">
+    <div class="modal-dialog m-0 m-sm-auto   " role="document">
+        <div class="modal-content   mb-2 bg-body rounded-3 border " id="container_cadastro">
+                <div class="modal-header  ">
+                    <div class="d-flex align-items-center">
+                      <i  width="32" height="32" class="bi mb-1 bi-person" ></i>
+                            <h1 class=" text-center mb-1 ms-2 fw-normal small  text-dark   mx-auto  fs-5 text-black"  id="label_title" >Cadastro Empresa</h1>
+                    </div> 
+                  </div>
+                <div class="modal-body " id="container_empresa">
+                  <div class="form-floating mb-2">
+                    <input type="text" class="form-control" id="nome_empresa" name="nome_empresa"  >
+                    <label for="nome_empresa">Nome da Empresa</label>
+                </div>
+                <div class="form-floating mb-2">
+                  <input type="text" class="form-control cnpj-mask" id="nro_cnpj" name="nro_cnpj">
+                  <label for="nro_cnpj">Número do CNPJ</label>
+                  <div class="invalid-feedback">Por favor, insira um CNPJ válido.</div>
+              </div>
+              <div class="form-floating mb-2">
+                  <input type="text" class="form-control" id="razao_social_empresa" name="razao_social_empresa"  >
+                  <label for="razao_social_empresa">Razão Social da Empresa</label>
+              </div>
+            </div>
+
+
+      <div class="modal-body d-none" id="container_responsavel">
+        <div class="form-floating mb-2">
+          <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel"  >
+          <label for="nome_responsavel">Nome do Responsável</label>
+        </div>
+        <div class="form-floating mb-2">
+            <input type="text" class="form-control" id="cargo_responsavel" name="cargo_responsavel"  >
+            <label for="cargo_responsavel">Cargo do Responsável</label>
+        </div>
+        <div class="form-floating mb-2">
+            <input type="email" class="form-control" id="email_responsavel" name="email_responsavel"  >
+              <label for="email_responsavel">E-mail do Responsável</label>
+            <div class="invalid-feedback">Por favor, insira um Email válido.</div>
+        </div>
+        <div class="form-floating mb-2">
+            <input type="text" class="form-control telefone-mask" id="telefone_responsavel" name="telefone_responsavel"  >
+            <label for="telefone_responsavel">Telefone do Responsável</label>
+        </div>
+        <div class="form-floating mb-2">
+            <input type="text" class="form-control cpf-mask" id="nro_cpf" name="nro_cpf">
+            <label for="nro_cpf">Número do CPF</label>
+            <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
+        </div>
+        <div class="form-floating mb-2">
+            <input type="password" class="form-control" id="senha" name="senha" oninput="validarSenha()">
+            <label for="senha">Senha</label>
+            <div class="invalid-feedback" id="senha-feedback"></div>
+          </div>
+      </div>
+    <div class="modal-body d-none" id="container_conclusao">
+      <div class="text-center">
+        <p class="font-monospace  fw-bold">Não há produtos retonaveis nessa venda.</p>
+    </div>
+    <div class="text-center">
+        <img src="/assents/img/undraw/undraw_welcome_cats_thqn.svg" class="img-fluid col-10" style="max-width: 300px; max-height: 300px;">
+        </div>
+        </div>
+    </div>
+
+    <div class="  modal-footer d-flex justify-content-center">
+      <button onclick="voltar_modal();"  id="btn_voltar" type="button"  class="btn btn-secondary btn-md d-none me-auto">Voltar</button>
+
+      <button onclick="alter_modal(1);" id="btn_salvar"  type="button" class="btn btn-primary btn-md">Proximo</button>
+    </div>
+          </div>
+        </div>
+    </div>
+</div> 
+    </form>
  
-
-<form method="post" id="form_cadastro"  class=" modal-body   container form-signin    mx-auto my-4 " action="{% url 'cadastro' %}">
-  <div class="  mx-sm-5  -4 modal-signin modal-body">
-<div class="modal-content">
-
-    {% csrf_token %}
-  <div class="   card " id="container1">
-      <div class="card-header text-center">
-        <h1 class="-title fs-5 text-black" >Cadastro Empresa</h1>
-    </div>
-    <div class="card-body">
-
-      <div class="form-floating mb-2">
-        <input type="text" class="form-control" id="nome_empresa" name="nome_empresa"  >
-        <label for="nome_empresa">Nome da Empresa</label>
-    </div>
-    <div class="form-floating mb-2">
-      <input type="text" class="form-control cnpj-mask" id="nro_cnpj" name="nro_cnpj">
-      <label for="nro_cnpj">Número do CNPJ</label>
-      <div class="invalid-feedback">Por favor, insira um CNPJ válido.</div>
-  </div>
-  <div class="form-floating mb-2">
-      <input type="text" class="form-control" id="razao_social_empresa" name="razao_social_empresa"  >
-      <label for="razao_social_empresa">Razão Social da Empresa</label>
-  </div>
-</div>
-<div class="  card-footer d-flex justify-content-center">
-  <button onclick="hideContainer1()" id="proximo"  type="button" class="btn btn-primary btn-md">Proximo</button>
-</div>
-</div>
-
-<div class="    card  d-none  " id="container2">
-<div class="card-header text-center">
-  <h1 class="-title fs-5 text-back" >Cadastro Responsavel</h1>
-</div>
-<div class="card-body">
-
-<div class="form-floating mb-2">
-  <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel"  >
-  <label for="nome_responsavel">Nome do Responsável</label>
-</div>
-
-<div class="form-floating mb-2">
-  <input type="text" class="form-control" id="cargo_responsavel" name="cargo_responsavel"  >
-  <label for="cargo_responsavel">Cargo do Responsável</label>
-</div>
-
-<div class="form-floating mb-2">
-<input type="email" name="email" id="email_fake" class="hidden" autocomplete="off" style="display: none;">
-<input type="email" class="form-control" id="email_responsavel" name="email_responsavel"  >
-  <label for="email_responsavel">E-mail do Responsável</label>
-<div class="invalid-feedback">Por favor, insira um Email válido.</div>
-</div>
-
-<div class="form-floating mb-2">
-  <input type="text" class="form-control telefone-mask" id="telefone_responsavel" name="telefone_responsavel"  >
-  <label for="telefone_responsavel">Telefone do Responsável</label>
-</div>
-<div class="form-floating mb-2">
-<input type="text" class="form-control cpf-mask" id="nro_cpf" name="nro_cpf">
-<label for="nro_cpf">Número do CPF</label>
-<div class="invalid-feedback">Por favor, insira um CPF válido.</div>
-  </div>
-  <div class="form-floating mb-2">
-  <input type="password" name="password" id="password_fake" class="hidden" autocomplete="off" style="display: none;">
-  <input type="password" class="form-control" id="senha" name="senha" oninput="validarSenha()">
-  <label for="senha">Senha</label>
-  <div class="invalid-feedback" id="senha-feedback"></div>
-  </div>
-</div>
-<div class="  card-footer d-flex justify-content-between">
-<button type="button"  onclick="validateContainer2()" id="finalizar" class="btn order-2 btn-primary btn-md">Finalizar</button>
-<button onclick="hideContainer2()"    class="btn btn-secondary btn-md  order-1">Voltar</button>
-</div>
-</div>
-</div>
-</div>
-</form>
-
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("container1").addEventListener("keypress", function(event) {
+  function voltar_modal( ) {
+    document.getElementById("label_title").innerText = "Cadastro Empresa";
+    document.getElementById("container_responsavel").classList.add("d-none");
+    document.getElementById("container_empresa").classList.remove("d-none");
+    document.getElementById("btn_salvar").innerText = "Próximo";
+    document.getElementById("btn_voltar").classList.add("d-none");
+    
+    document.getElementById("btn_salvar").onclick = function() {
+      alter_modal(1);
+    };
+  }
+  function alter_modal(value) {
+    if (value === 1) {
+      if (validateContainer1()) {
+        document.getElementById("label_title").innerText = "Cadastro Responsavel";
+        document.getElementById("container_empresa").classList.add("d-none");
+        document.getElementById("btn_voltar").classList.remove("d-none");
+        document.getElementById("container_responsavel").classList.remove("d-none");
+        document.getElementById("btn_salvar").innerText = "Finalizar";
+        document.getElementById("btn_salvar").onclick = function() {
+          alter_modal(2);
+        };
+      }
+    } 
+    else if (value === 2) {
+        if(validateContainer2()) {
+          data =getDataFromForm();
+          status = insert(data);
+          if (status){
+              document.getElementById("container_responsavel").classList.add("d-none");
+              document.getElementById("container_conclusao").classList.remove("d-none");
+              document.getElementById("label_title").innerText = "Cadastro Concluído";
+              document.getElementById("btn_salvar").onclick = function() {
+                window.location.href =  "/vendas/"; 
+              };
+          }
+        }
+      }
+  }
+  function insert(data) {
+        manageLoading(true, "container_cadastro");
+        chamarFuncaoPython('api_cadastro_clientes', data, 'POST', function(response) {
+            if (response.success === true) {
+               return true
+            } else {
+                alertCustomer(response.message);
+            }
+            manageLoading(false, "container_cadastro");
+        });
+    }
+
+    window.onload = function() {
+    document.getElementById("container_cadastro").addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
             // Impedir o envio padrão do formulário
             event.preventDefault();
             // Encontrar e clicar no botão "Proximo" dentro do container1
-            document.getElementById("proximo").click();
+            document.getElementById("btn_salvar").click();
         }
     });
+};
 
-    document.getElementById("container2").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            // Impedir o envio padrão do formulário
-            event.preventDefault();
-            // Encontrar e clicar no botão "Finalizar" dentro do container2
-            document.getElementById("finalizar").click();
-        }
-    });
-});
+// Função para obter os dados do formulário
+function getDataFromForm() {
+  const data = {};
+
+  // Campos do formulário da empresa
+  data.nome_empresa = document.getElementById('nome_empresa').value;
+  data.nro_cnpj = document.getElementById('nro_cnpj').value;
+  data.razao_social_empresa = document.getElementById('razao_social_empresa').value;
+
+  // Campos do formulário do responsável
+  data.nome_responsavel = document.getElementById('nome_responsavel').value;
+  data.cargo_responsavel = document.getElementById('cargo_responsavel').value;
+  data.email_responsavel = document.getElementById('email_responsavel').value;
+  data.telefone_responsavel = document.getElementById('telefone_responsavel').value;
+  data.nro_cpf = document.getElementById('nro_cpf').value;
+  data.senha = document.getElementById('senha').value;
+
+  return data;
+}
+
+// Função para limpar o formulário
+function clearForm() {
+  // Limpar campos do formulário da empresa
+  document.getElementById('nome_empresa').value = '';
+  document.getElementById('nro_cnpj').value = '';
+  document.getElementById('razao_social_empresa').value = '';
+
+  // Limpar campos do formulário do responsável
+  document.getElementById('nome_responsavel').value = '';
+  document.getElementById('cargo_responsavel').value = '';
+  document.getElementById('email_responsavel').value = '';
+  document.getElementById('telefone_responsavel').value = '';
+  document.getElementById('nro_cpf').value = '';
+  document.getElementById('senha').value = '';
+
+  // Limpar feedbacks de validação, se houver
+  const invalidFeedback = document.querySelectorAll('.invalid-feedback');
+  invalidFeedback.forEach(feedback => {
+      feedback.textContent = '';
+  });
+}
 
   var cnpjInput = document.getElementById('nro_cnpj');
 
@@ -124,22 +206,7 @@
           cnpjInput.classList.remove('is-invalid');
 
       }
-  });
-  function hideContainer1() {
-    // Realiza a validação antes de prosseguir para o próximo container
-    if (validateContainer1()) {
-      document.getElementById('container1').classList.add('d-none');
-      document.getElementById('container2').classList.remove('d-none');
-      ValidateInputs();
-    }  
-  }
-  
-  function hideContainer2() {
-    // Apenas oculta o segundo container e exibe o primeiro
-    document.getElementById('container2').classList.add('d-none');
-    document.getElementById('container1').classList.remove('d-none');
-  }
-
+  }); 
   // Função para validar os campos do primeiro container
   function validateContainer1() {
     var razao_social_empresa = document.getElementById('razao_social_empresa').value.trim(); 
@@ -149,14 +216,14 @@
     
     // Verifica se os campos estão preenchidos
     if(cnpjInput.classList.contains("is-invalid")){
-      alertCustomer('Por favor, preencha corretamente o campo CNPJ para prosseguir');
+      alertCustomer('Por favor, preencha corretamente o campo CNPJ para prosseguir',2);
       return false;
     }else if (nome_empresa === '' || nro_cnpj === '' || razao_social_empresa === '') {
-      alertCustomer('Por favor, preencha todos os campos do primeiro container antes de prosseguir.');
+      alertCustomer('Por favor, preencha todos os campos do primeiro container antes de prosseguir.',2);
       return false;
     }
     
-
+    Utils.clean_alert();
     return true;
   }
   
@@ -169,26 +236,27 @@
     var senha = document.getElementById('senha');
 
     if(senha.classList.contains("is-invalid")) {
-      alertCustomer('campo senha está invalido.');
+      alertCustomer('campo senha está invalido.',2);
       return false;
     }
     if (senha.value == '' || senha.value == null){
-      alertCustomer('campo senha está vazio');
+      alertCustomer('campo senha está vazio',2);
       return false;
     }
    var cpfInput = document.getElementById('nro_cpf');
    var email_responsavel =   document.getElementById('email_responsavel');
     // Verifica se os campos estão preenchidos
     if(email_responsavel.classList.contains("is-invalid") || cpfInput.classList.contains("is-invalid")){
-      alertCustomer('Por favor, preencha corretamente os campos');
+      alertCustomer('Por favor, preencha corretamente os campos',2);
       return false;
     }
     else
     if (nome_responsavel === '' || cargo_responsavel === '' || email_responsavel === '' || telefone_responsavel === '') {
-      alertCustomer('Por favor, preencha todos os campos  antes de prosseguir.');
+      alertCustomer('Por favor, preencha todos os campos  antes de prosseguir.',2);
       return false;
     }else{
-      document.getElementById('form_cadastro').submit();
+     // document.getElementById('form_cadastro').submit();
+      Utils.clean_alert();
       return true;
   }
 }

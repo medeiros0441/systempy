@@ -167,6 +167,8 @@ static setLocalStorageItem(key, value) {
             return null;
         }
     }
-    
+    static clean_alert(){
+       document.getElementById("id_alert_container").innerHTML ="";
+    }
 }
     
