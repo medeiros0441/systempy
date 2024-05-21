@@ -4,7 +4,7 @@ from .views_autenticacao import views_autenticacao
 from ..gerencia_email.config_email import enviar_email
 from app.static import Alerta, UserInfo
 from .views_erro import views_erro
-import app.utils as Utils
+from app.utils import  Utils
 
 
 class views_default:

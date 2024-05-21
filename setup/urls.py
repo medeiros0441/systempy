@@ -7,9 +7,13 @@ from django.conf.urls.static import static
 from app.utils import Utils
 import app.view as view
 
+from django.conf.urls import handler404, handler500
+
+handler404 = view.views_erro.error_404_view
+handler500 = view.views_erro.error_500_view
 
 url_erros = [
-    path("erro/", view.views_erro, name="erro"),
+    path("erro/", view.views_erro.erro, name="erro"),
     path(
         "erro/404/",
         view.views_erro.erro,
@@ -36,7 +40,6 @@ url_erros = [
     ),
     # Adicione outras rotas de erro conforme necessário
 ]
-
 url_default = [
     path("", view.views_default.home, name=""),
     path("home", view.views_default.home, name="home"),
