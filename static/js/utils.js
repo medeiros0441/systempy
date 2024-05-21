@@ -91,7 +91,7 @@ static setLocalStorageItem(key, value) {
                 feedbackElement.innerText = message;
                 input.parentNode.appendChild(feedbackElement);
             }
-            feedbackElement.style.fontSize = '0.5rem'; // Defina o tamanho de fonte desejado
+            feedbackElement.style.fontSize = '0.9rem'; // Defina o tamanho de fonte desejado
             input.classList.add('is-invalid');
         }
     

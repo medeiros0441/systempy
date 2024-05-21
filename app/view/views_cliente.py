@@ -1,32 +1,31 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from ..utils import utils
+from app.utils import Utils
 from app import models
-from ..static import Alerta, UserInfo
+from app.static import Alerta, UserInfo
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from django.utils import timezone
-from uuid import UUID
 from django.db.models import F, DateTimeField
 from django.db.models.functions import Cast
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+import app.view as view
 
 
 class views_cliente:
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(codigo_model=8)
     def lista_clientes(request, Alerta=None):
-        if utils.get_status(request):
+        if Utils.get_status(request):
             return render(request, "cliente/lista_clientes.html")
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
     def criar_cliente(request):
-        if utils.get_status(request):
+        if Utils.get_status(request):
             if request.method == "POST":
                 nome_cliente = request.POST.get("nome_cliente")
                 telefone = request.POST.get("telefone")
@@ -46,12 +45,12 @@ class views_cliente:
             else:
                 return render(request, "cadastrar_cliente.html")
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
     def editar_cliente(request, cliente_id):
-        if utils.utis.get_status(request):
+        if Utils.get_status(request):
             cliente = get_object_or_404(models.Cliente, id_cliente=cliente_id)
             if request.method == "POST":
                 cliente.nome = request.POST.get("nome_cliente")
@@ -64,21 +63,21 @@ class views_cliente:
             else:
                 return render(request, "editar_cliente.html", {"cliente": cliente})
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
     def selecionar_cliente(request, cliente_id):
-        if utils.get_status(request):
+        if Utils.get_status(request):
             cliente = get_object_or_404(models.Cliente, id_cliente=cliente_id)
             return render(request, "selecionar_cliente.html", {"cliente": cliente})
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
     def excluir_cliente(request, cliente_id):
-        if utils.get_status(request):
+        if Utils.get_status(request):
             cliente = get_object_or_404(models.Cliente, id_cliente=cliente_id)
             if request.method == "POST":
                 # Lógica para excluir o cliente
@@ -86,7 +85,7 @@ class views_cliente:
             else:
                 return render(request, "excluir_cliente.html", {"cliente": cliente})
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
@@ -95,12 +94,12 @@ class views_cliente:
 
     @staticmethod
     @csrf_exempt
-    @utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(codigo_model=8)
     def api_create_update_cliente(request):
         try:
             if request.method == "POST":
                 data = json.loads(request.body)
-                cliente_id = data.get("id_cliente",None)
+                cliente_id = data.get("id_cliente", None)
 
                 # Verifica se todos os campos obrigatórios de endereço estão presentes
                 endereco_data = {
@@ -110,30 +109,40 @@ class views_cliente:
                     "cidade": data.get("cidade", ""),
                     "estado": data.get("estado", ""),
                     "codigo_postal": data.get("cep", ""),
-                    "descricao": data.get("descricao_endereco", "")
+                    "descricao": data.get("descricao_endereco", ""),
                 }
                 endereco = None
-                if endereco_data["rua"] and endereco_data["numero"] and endereco_data["bairro"]:
+                if (
+                    endereco_data["rua"]
+                    and endereco_data["numero"]
+                    and endereco_data["bairro"]
+                ):
                     endereco, created = models.Endereco.objects.update_or_create(
                         rua=endereco_data["rua"],
                         numero=endereco_data["numero"],
                         bairro=endereco_data["bairro"],
-                        defaults=endereco_data
+                        defaults=endereco_data,
                     )
 
                 if cliente_id:
                     # Atualiza o cliente existente
-                    cliente = models.Cliente.objects.filter(id_cliente=cliente_id).first()
+                    cliente = models.Cliente.objects.filter(
+                        id_cliente=cliente_id
+                    ).first()
                     if cliente:
                         cliente.nome = data.get("nome", cliente.nome)
                         cliente.telefone = data.get("telefone", cliente.telefone)
                         cliente.descricao = data.get("descricao", cliente.descricao)
-                        cliente.tipo_cliente = data.get("tipo_cliente", cliente.tipo_cliente)
+                        cliente.tipo_cliente = data.get(
+                            "tipo_cliente", cliente.tipo_cliente
+                        )
                         cliente.endereco = endereco
                         cliente.save()
                         message = "Cliente e Endereço atualizados com sucesso"
                     else:
-                        return JsonResponse({"error": "Cliente não encontrado"}, status=404)
+                        return JsonResponse(
+                            {"error": "Cliente não encontrado"}, status=404
+                        )
                 else:
                     # Cria um novo cliente
                     cliente = models.Cliente.objects.create(
@@ -142,7 +151,6 @@ class views_cliente:
                         descricao=data.get("descricao", None),
                         tipo_cliente=data.get("tipo_cliente", None),
                         endereco=endereco,
-                       
                         empresa_id=UserInfo.get_id_empresa(request),
                     )
                     message = "Cliente e Endereço inseridos com sucesso"
@@ -165,13 +173,17 @@ class views_cliente:
                     "empresa_id": cliente.empresa_id,
                 }
 
-                return JsonResponse({"data": response_data, "message": message}, status=200 if cliente_id else 201)
+                return JsonResponse(
+                    {"data": response_data, "message": message},
+                    status=200 if cliente_id else 201,
+                )
 
         except Exception as e:
             # Retorna uma resposta de erro em caso de exceção
             return JsonResponse({"error": str(e)}, status=400)
+
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(codigo_model=8)
     def api_get_cliente(request, cliente_id):
         cliente = get_object_or_404(models.Cliente, pk=cliente_id)
         cliente_data = {
@@ -186,7 +198,7 @@ class views_cliente:
         return JsonResponse(cliente_data)
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(codigo_model=8)
     @csrf_exempt
     def api_update_cliente(request, cliente_id):
         cliente = get_object_or_404(models.Cliente, pk=cliente_id)
@@ -212,14 +224,14 @@ class views_cliente:
         return JsonResponse({"error": "Método não permitido"}, status=405)
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(codigo_model=8)
     def api_delete_cliente(request, cliente_id):
         cliente = get_object_or_404(models.liente, pk=cliente_id)
         cliente.delete()
         return JsonResponse({"message": "Cliente deletado com sucesso"}, status=204)
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(codigo_model=8)
     def api_get_clientes_by_empresa(request):
         empresa_id = UserInfo.get_id_empresa(request)
 
@@ -313,7 +325,7 @@ class views_cliente:
             )
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(codigo_model=8)
     def api_get_cliente(request):
         empresa_id = UserInfo.get_id_empresa(
             request
@@ -345,7 +357,7 @@ class views_cliente:
         return JsonResponse({"data": clientes_data, "sucess": "true"})
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(codigo_model=8)
     def api_get_vendas_by_cliente(request, id_cliente):
         try:
             # Convertendo o campo 'insert' para um campo de data e ordenando pelos mais recentes

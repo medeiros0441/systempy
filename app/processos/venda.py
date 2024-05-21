@@ -2,7 +2,7 @@ from builtins import int
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from ..utils import utils
+from app.utils import Utils
 from ..static import Alerta, UserInfo
 from app import models
 from django.db.models import Q
@@ -93,7 +93,12 @@ class processos:
 
                 # Criar o item de compra
                 models.ItemCompra.objects.update_or_create(
-                    venda=venda, produto=produto, defaults={"quantidade": quantidade,"valor_unidade":produto.preco_venda}
+                    venda=venda,
+                    produto=produto,
+                    defaults={
+                        "quantidade": quantidade,
+                        "valor_unidade": produto.preco_venda,
+                    },
                 )
 
         except Exception as e:

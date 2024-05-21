@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
             ],
@@ -58,7 +58,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
             ],
@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 ("usuario", models.UUIDField(verbose_name=app.models.usuario.Usuario)),
@@ -119,7 +119,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -127,7 +127,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 (
@@ -171,7 +171,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -179,7 +179,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 (
@@ -210,7 +210,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -218,7 +218,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 (
@@ -247,7 +247,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -255,7 +255,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 (
@@ -295,7 +295,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -303,7 +303,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 (
@@ -341,7 +341,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=50,
                     ),
@@ -349,7 +349,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=50
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=50
                     ),
                 ),
                 (
@@ -396,7 +396,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -404,7 +404,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 (
@@ -428,7 +428,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -436,7 +436,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 ("nivel_usuario", models.IntegerField()),
@@ -464,7 +464,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -472,7 +472,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 ("cidade", models.CharField(blank=True, max_length=100, null=True)),
@@ -514,7 +514,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -522,7 +522,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 ("ip_usuario", models.CharField(blank=True, max_length=50, null=True)),
@@ -555,7 +555,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -563,7 +563,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 ("status_acesso", models.BooleanField(default=True)),
@@ -592,7 +592,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -600,7 +600,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 ("status_acesso", models.BooleanField(null=True)),
@@ -637,7 +637,7 @@ class Migration(migrations.Migration):
                 (
                     "data_venda",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -669,7 +669,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -677,7 +677,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 ("descricao", models.TextField(blank=True, null=True)),
@@ -734,7 +734,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -742,7 +742,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 (
@@ -779,7 +779,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -787,7 +787,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 ("descricao", models.TextField(null=True)),
@@ -837,7 +837,7 @@ class Migration(migrations.Migration):
                 (
                     "insert",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual,
+                        default=app.utils.Utils.obter_data_hora_atual,
                         editable=False,
                         max_length=100,
                     ),
@@ -845,7 +845,7 @@ class Migration(migrations.Migration):
                 (
                     "update",
                     models.CharField(
-                        default=app.utils.utils.obter_data_hora_atual, max_length=100
+                        default=app.utils.Utils.obter_data_hora_atual, max_length=100
                     ),
                 ),
                 ("descricao", models.TextField(blank=True, null=True)),

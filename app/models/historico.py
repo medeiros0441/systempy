@@ -3,7 +3,7 @@ from django.db import models
 from ..models.usuario import Usuario
 from django.utils import timezone
 
-from ..utils import utils
+from app.utils import Utils
 
 
 class Historico(models.Model):
@@ -12,9 +12,9 @@ class Historico(models.Model):
     )
     descricao = models.TextField(blank=True, null=True)
     insert = models.CharField(
-        default=utils.obter_data_hora_atual, editable=False, max_length=100
+        default=Utils.obter_data_hora_atual, editable=False, max_length=100
     )
-    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
+    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
     usuario = models.UUIDField(
         Usuario,
     )

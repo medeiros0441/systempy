@@ -2,7 +2,7 @@ from django.db import models
 from .loja import Loja
 from django.utils import timezone
 import uuid
-from ..utils import utils
+from app.utils import Utils
 
 
 def formatar_moeda(valor):
@@ -37,10 +37,10 @@ class Produto(models.Model):
     status = models.BooleanField(null=True, blank=True, default=True)
     data_validade = models.CharField(null=True, blank=True, max_length=50)
     insert = models.CharField(
-        default=utils.obter_data_hora_atual, editable=False, max_length=50
+        default=Utils.obter_data_hora_atual, editable=False, max_length=50
     )  # Valor padrão é o momento atual
     update = models.CharField(
-        default=utils.obter_data_hora_atual, max_length=50
+        default=Utils.obter_data_hora_atual, max_length=50
     )  # Atualiza automaticamente durante qualquer alteração
     preco_compra = models.DecimalField(
         max_digits=10,
@@ -59,9 +59,10 @@ class Produto(models.Model):
     loja = models.ForeignKey(
         Loja,
         on_delete=models.CASCADE,
-        )
+    )
+
     def save(self, *args, **kwargs):
-        self.update = utils.obter_data_hora_atual()
+        self.update = Utils.obter_data_hora_atual()
         if not self.codigo:
             ultimo_codigo = Produto.objects.order_by("-codigo").first()
             novo_codigo = ultimo_codigo.codigo + 1 if ultimo_codigo else 1

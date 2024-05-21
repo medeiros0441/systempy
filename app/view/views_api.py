@@ -4,18 +4,17 @@ from ..models import Endereco
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from ..utils import utils
-from ..models import Cliente, Configuracao, Usuario, Loja
-from ..static import Alerta, UserInfo
+from app.static import Alerta, UserInfo
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from ..models import Venda, Associado, Produto
+from ..models import Venda, Associado, Produto, Cliente, Configuracao, Usuario, Loja
 from django.db.models import Q
+from app.utils import Utils
 
 
 class views_api:
 
-    @utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(codigo_model=3)
     @csrf_exempt
     def buscar_lojas(request):
         id_usuario = UserInfo.get_id_usuario(request)
@@ -38,7 +37,7 @@ class views_api:
 
     @csrf_exempt
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(codigo_model=3)
     def create_endereco(request):
         if request.method == "POST":
             data = request.POST
@@ -60,7 +59,7 @@ class views_api:
 
     @csrf_exempt
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(codigo_model=3)
     def read_endereco(request, endereco_id):
         try:
             endereco = Endereco.objects.get(id=endereco_id)
@@ -80,7 +79,7 @@ class views_api:
 
     @csrf_exempt
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(codigo_model=3)
     def update_endereco(request, endereco_id):
         if request.method == "PUT":
             data = request.POST
@@ -102,7 +101,7 @@ class views_api:
 
     @csrf_exempt
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(codigo_model=3)
     def delete_endereco(request, endereco_id):
         if request.method == "DELETE":
             try:

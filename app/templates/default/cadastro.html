@@ -21,7 +21,7 @@
                     <label for="nome_empresa">Nome da Empresa</label>
                 </div>
                 <div class="form-floating mb-2">
-                  <input type="text" class="form-control cnpj-mask" id="nro_cnpj" name="nro_cnpj">
+                  <input type="text" class="form-control cnpj-mask" id="nro_cnpj" name="nro_cnpj" oninput="validarCnpj();">
                   <label for="nro_cnpj">Número do CNPJ</label>
                   <div class="invalid-feedback">Por favor, insira um CNPJ válido.</div>
               </div>
@@ -32,51 +32,51 @@
             </div>
 
 
-      <div class="modal-body d-none" id="container_responsavel">
-        <div class="form-floating mb-2">
-          <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel"  >
-          <label for="nome_responsavel">Nome do Responsável</label>
-        </div>
-        <div class="form-floating mb-2">
-            <input type="text" class="form-control" id="cargo_responsavel" name="cargo_responsavel"  >
-            <label for="cargo_responsavel">Cargo do Responsável</label>
-        </div>
-        <div class="form-floating mb-2">
-            <input type="email" class="form-control" id="email_responsavel" name="email_responsavel"  >
-              <label for="email_responsavel">E-mail do Responsável</label>
-            <div class="invalid-feedback">Por favor, insira um Email válido.</div>
-        </div>
-        <div class="form-floating mb-2">
-            <input type="text" class="form-control telefone-mask" id="telefone_responsavel" name="telefone_responsavel"  >
-            <label for="telefone_responsavel">Telefone do Responsável</label>
-        </div>
-        <div class="form-floating mb-2">
-            <input type="text" class="form-control cpf-mask" id="nro_cpf" name="nro_cpf">
-            <label for="nro_cpf">Número do CPF</label>
-            <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
-        </div>
-        <div class="form-floating mb-2">
-            <input type="password" class="form-control" id="senha" name="senha" oninput="validarSenha()">
-            <label for="senha">Senha</label>
-            <div class="invalid-feedback" id="senha-feedback"></div>
-          </div>
-      </div>
+                        <div class="modal-body d-none" id="container_responsavel">
+                          <div class="form-floating mb-2">
+                            <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel"  >
+                            <label for="nome_responsavel">Nome do Responsável</label>
+                          </div>
+                          <div class="form-floating mb-2">
+                              <input type="text" class="form-control" id="cargo_responsavel" name="cargo_responsavel"  >
+                              <label for="cargo_responsavel">Cargo do Responsável</label>
+                          </div>
+                          <div class="form-floating mb-2">
+                              <input type="email" class="form-control" id="email_responsavel" name="email_responsavel" oninput="ValidateInputs();" >
+                                <label for="email_responsavel">E-mail do Responsável</label>
+                              <div class="invalid-feedback">Por favor, insira um Email válido.</div>
+                          </div>
+                          <div class="form-floating mb-2">
+                              <input type="text" class="form-control telefone-mask" id="telefone_responsavel" name="telefone_responsavel"  >
+                              <label for="telefone_responsavel">Telefone do Responsável</label>
+                          </div>
+                          <div class="form-floating mb-2">
+                              <input type="text" class="form-control cpf-mask" id="nro_cpf" name="nro_cpf" oninput="ValidateInputs();">
+                              <label for="nro_cpf">Número do CPF</label>
+                              <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
+                          </div>
+                          <div class="form-floating mb-2">
+                              <input type="password" class="form-control" id="senha" name="senha" oninput="validarSenha();">
+                              <label for="senha">Senha</label>
+                              <div class="invalid-feedback" id="senha-feedback"></div>
+                            </div>
+                        </div>
     <div class="modal-body d-none" id="container_conclusao">
       <div class="text-center">
-        <p class="font-monospace  fw-bold">Não há produtos retonaveis nessa venda.</p>
+        <p class="font-monospace  fw-bold">cadastro concluído sucesso.</p>
     </div>
     <div class="text-center">
         <img src="/assents/img/undraw/undraw_welcome_cats_thqn.svg" class="img-fluid col-10" style="max-width: 300px; max-height: 300px;">
-        </div>
-        </div>
+      </div>
     </div>
 
     <div class="  modal-footer d-flex justify-content-center">
       <button onclick="voltar_modal();"  id="btn_voltar" type="button"  class="btn btn-secondary btn-md d-none me-auto">Voltar</button>
 
-      <button onclick="alter_modal(1);" id="btn_salvar"  type="button" class="btn btn-primary btn-md">Proximo</button>
+      <button onclick="alter_modal(1);" id="btn_salvar"  type="button" class="btn btn-primary btn-sm">Proximo</button>
     </div>
           </div>
+        </div>
         </div>
     </div>
 </div> 
@@ -110,23 +110,22 @@
     else if (value === 2) {
         if(validateContainer2()) {
           data =getDataFromForm();
-          status = insert(data);
-          if (status){
-              document.getElementById("container_responsavel").classList.add("d-none");
-              document.getElementById("container_conclusao").classList.remove("d-none");
-              document.getElementById("label_title").innerText = "Cadastro Concluído";
-              document.getElementById("btn_salvar").onclick = function() {
-                window.location.href =  "/vendas/"; 
-              };
+           insert(data);
+           
           }
         }
       }
-  }
+  
   function insert(data) {
         manageLoading(true, "container_cadastro");
-        chamarFuncaoPython('api_cadastro_clientes', data, 'POST', function(response) {
+        chamarFuncaoPython('/api_cadastro_clientes', data, 'POST', function(response) {
             if (response.success === true) {
-               return true
+              document.getElementById("btn_voltar").classList.add("d-none");
+              document.getElementById("container_responsavel").classList.add("d-none");
+              document.getElementById("container_conclusao").classList.remove("d-none");
+              document.getElementById("btn_salvar").onclick = function() {
+              window.location.href =  "/login";
+             }
             } else {
                 alertCustomer(response.message);
             }
@@ -234,6 +233,7 @@ function clearForm() {
     var cargo_responsavel = document.getElementById('cargo_responsavel').value.trim();
     var telefone_responsavel = document.getElementById('telefone_responsavel').value.trim();
     var senha = document.getElementById('senha');
+    Utils.validateInputs(["nome_responsavel","cargo_responsavel","telefone_responsavel","senha"]);
 
     if(senha.classList.contains("is-invalid")) {
       alertCustomer('campo senha está invalido.',2);

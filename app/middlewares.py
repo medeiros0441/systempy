@@ -1,14 +1,15 @@
 # middleware.py
 from django.shortcuts import redirect, get_object_or_404
-from .utils import utils
+from app.utils import Utils
 from django.utils.deprecation import MiddlewareMixin
 from django.utils import timezone
 from django.http import HttpRequest
 from app.models import Usuario, Log, Sessao
 from django.utils import timezone
 from django.conf import settings
-from .view import views_sessao
-from .static import UserInfo
+from app.view.views_sessao import views_sessao
+from app.view.views_erro import views_erro
+from app.static import UserInfo
 from django.core.exceptions import ObjectDoesNotExist
 import traceback
 
@@ -113,25 +114,25 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             # Constrói a mensagem de erro com a página e a linha específica
             error_message = f"Erro durante a autenticação: {str(e)}. Página: {request.path}. Linha: {traceback_info.splitlines()[-2]}"
             # Se ocorrer algum erro inesperado, execute a função de erro grave e registre o erro
-            return utils.erro(request,error_message)
+            return views_erro.erro(request, error_message)
 
     def process_response(self, request, response):
         try:
-            #id_usuario = request.session.get("id_usuario", 0)
-           # if id_usuario > 0:
-              #  usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
-             #   empresa = usuario.empresa
-             #   if empresa.id_empresa:
-             #       request.session["id_empresa"] = int(empresa.id_empresa)
-             #   ip = request.META.get("REMOTE_ADDR")
-                #sessao, created = Sessao.objects.get_or_create(ip_sessao=ip)
-                #sessao.usuario = usuario
-               # sessao.time_finalizou = timezone.now()
-               # sessao.save()
-               # request.session["isCliente"] = True
-                #request.session["id_usuario"] = id_usuario
+            # id_usuario = request.session.get("id_usuario", 0)
+            # if id_usuario > 0:
+            #  usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
+            #   empresa = usuario.empresa
+            #   if empresa.id_empresa:
+            #       request.session["id_empresa"] = int(empresa.id_empresa)
+            #   ip = request.META.get("REMOTE_ADDR")
+            # sessao, created = Sessao.objects.get_or_create(ip_sessao=ip)
+            # sessao.usuario = usuario
+            # sessao.time_finalizou = timezone.now()
+            # sessao.save()
+            # request.session["isCliente"] = True
+            # request.session["id_usuario"] = id_usuario
             return response
         except Exception as e:
             traceback_str = traceback.format_exc()
             error_message = f"Erro durante a autenticação: {str(e)}\n{traceback_str}"
-            return utils.erro(request, error_message)
+            return views_erro.erro(request, error_message)

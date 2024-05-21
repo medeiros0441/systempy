@@ -1,18 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from ..static import Alerta, UserInfo
+from app.static import Alerta, UserInfo
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
 from ..models import Usuario, Configuracao, Loja, Associado
 from .views_configuracao import views_configuracao
 from ..forms import UsuarioForm
-from ..utils import utils
+from app.utils import Utils
 
 
 class views_usuarios:
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(codigo_model=1)
     def listar_usuarios(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request)
 
@@ -22,12 +22,12 @@ class views_usuarios:
         context["usuarios"] = usuarios
         alerta_js = Alerta.get_mensagem()
         if alerta_js:
-            context["alerta_js"] = utils.criar_alerta_js(alerta_js)
+            context["alerta_js"] = Utils.criar_alerta_js(alerta_js)
 
         return render(request, "usuario/lista_usuario.html", context)
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(codigo_model=1)
     def detalhes_usuario(request, id_usuario):
         usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
         associados = Associado.objects.filter(usuario=usuario)
@@ -53,7 +53,7 @@ class views_usuarios:
         )
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(codigo_model=1)
     def editar_usuario(request, id_usuario):
         try:
             usuario = Usuario.objects.get(id_usuario=id_usuario)
@@ -137,7 +137,7 @@ class views_usuarios:
         )
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(codigo_model=1)
     def excluir_usuario(request, id_usuario):
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         if usuario:
@@ -154,7 +154,7 @@ class views_usuarios:
             )
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(codigo_model=1)
     def bloquear_usuario(request, id_usuario):
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         usuario.status_acesso = False
@@ -167,7 +167,7 @@ class views_usuarios:
         )
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(codigo_model=1)
     def ativar_usuario(request, id_usuario):
         usuario = Usuario.objects.get(id_usuario=id_usuario)
         usuario.status_acesso = True
@@ -179,7 +179,7 @@ class views_usuarios:
         )
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(codigo_model=1)
     def autenticar_usuario(email, senha):
         try:
             usuario = Usuario.objects.get(email__iexact=email)
@@ -190,7 +190,7 @@ class views_usuarios:
         return None
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(codigo_model=1)
     def cadastrar_usuario(request):
         id_empresa = UserInfo.get_id_empresa(request)
         form_usuario = UsuarioForm()
@@ -201,7 +201,7 @@ class views_usuarios:
             if form.is_valid():
                 email_responsavel = form.cleaned_data["email"]
                 email_responsavel.lower().strip()
-                if utils.email_existe(email_responsavel):
+                if Utils.email_existe(email_responsavel):
                     Alerta.set_mensagem(
                         "O email já está cadastrado em nossa base de dados, escolha outro."
                     )
@@ -217,8 +217,8 @@ class views_usuarios:
                 nome_usuario = (
                     form.cleaned_data["nome_completo"].replace(" ", "").lower()
                 )
-                while utils.usuario_existe(nome_usuario):
-                    nome_usuario = nome_usuario + utils.gerar_numero_aleatorio()
+                while Utils.usuario_existe(nome_usuario):
+                    nome_usuario = nome_usuario + Utils.gerar_numero_aleatorio()
 
                 id_empresa = UserInfo.get_id_empresa(request)
                 usuario = form.save(commit=False)
@@ -274,7 +274,7 @@ class views_usuarios:
                 )
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(codigo_model=1)
     def configuracao_usuario(request, id_usuario):
         if request.method == "POST":
             for key, value in request.POST.items():

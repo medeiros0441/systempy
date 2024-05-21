@@ -1,34 +1,38 @@
 from django.shortcuts import render, redirect
-from ..utils import utils
+from app.utils import Utils
 from django.http import HttpResponse
-from ..static import Alerta, UserInfo
+from app.static import Alerta, UserInfo
 from ..models import Loja, Produto
 from ..forms.form_produto import ProdutoForm as Form
 import datetime
 from decimal import Decimal
 from django.utils import timezone
 
+from .views_erro import views_erro
+
 
 class views_produto:
     @staticmethod
-    @utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6)
     def lista_produtos(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request, True)
         if context is None:
             context = {}
         alerta = Alerta.get_mensagem()
         if alerta:
-            context["alerta_js"] = utils.criar_alerta_js(alerta)
+            context["alerta_js"] = Utils.criar_alerta_js(alerta)
 
         try:
-            produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa,status=True)
+            produtos = Produto.objects.filter(
+                loja__empresa__id_empresa=id_empresa, status=True
+            )
             context["produtos"] = produtos
         except Produto.DoesNotExist:
             pass
         return render(request, "produto/lista_produtos.html", context)
 
     @staticmethod
-    @utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6)
     def form_produto(request, id_produto=None):
         try:
             produto = None
@@ -40,15 +44,21 @@ class views_produto:
                 status, mensagem, data = views_produto.validate_form(request.POST)
                 if status:
                     if id_produto is None:
-                        produto = Produto()  # Criar um novo produto apenas se id_produto for None
+                        produto = (
+                            Produto()
+                        )  # Criar um novo produto apenas se id_produto for None
                     else:
-                        produto = Produto.objects.get(id_produto=id_produto)  # Buscar o produto existente
+                        produto = Produto.objects.get(
+                            id_produto=id_produto
+                        )  # Buscar o produto existente
 
                     # Atribuir os valores aos campos do produto
                     produto.loja_id = int(data["loja"])
                     produto.nome = data["nome"]
                     produto.quantidade_atual_estoque = data["quantidade_atual_estoque"]
-                    produto.quantidade_minima_estoque = data["quantidade_minima_estoque"]
+                    produto.quantidade_minima_estoque = data[
+                        "quantidade_minima_estoque"
+                    ]
                     produto.is_retornavel = bool(int(data["is_retornavel"]))
                     produto.data_validade = data["data_validade"]
                     produto.preco_compra = data["preco_compra"]
@@ -78,9 +88,7 @@ class views_produto:
                 )
         except Exception as e:
             mensagem_erro = str(e)
-            return utils.erro(request, mensagem_erro)
-
-
+            return views_erro.erro(request, mensagem_erro)
 
     def validate_form(form_data):
         data = {
@@ -148,16 +156,20 @@ class views_produto:
         return True, None, data
 
     @staticmethod
-    @utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6)
     def acrescentar_produto(request):
         try:
 
             id_empresa = UserInfo.get_id_empresa(request, True)
-            produtos = Produto.objects.filter(loja__empresa__id_empresa=id_empresa,status=True)
+            produtos = Produto.objects.filter(
+                loja__empresa__id_empresa=id_empresa, status=True
+            )
             for produto in produtos:
                 if produto.loja.empresa.id_empresa != id_empresa:
-                    return utils.erro(
-                        request, "Você não tem permissão para acessar este produto"
+                    return views_erro.erro(
+                        request,
+                        request,
+                        "Você não tem permissão para acessar este produto",
                     )
 
             if request.method == "POST":
@@ -183,8 +195,10 @@ class views_produto:
 
                 produto = Produto.objects.get(id_produto=id_produto)
                 if produto.loja.empresa.id_empresa != id_empresa:
-                    return utils.erro(
-                        request, "Você não tem permissão para acessar este produto"
+                    return views_erro.erro(
+                        request,
+                        request,
+                        "Você não tem permissão para acessar este produto",
                     )
                 produto.quantidade_atual_estoque += quantidade_acrescentar
                 produto.save()
@@ -203,10 +217,10 @@ class views_produto:
             return redirect("lista_produtos")
         except Exception as e:
             mensagem_erro = str(e)
-            return utils.erro(request, mensagem_erro)
+            return views_erro.erro(request, mensagem_erro)
 
     @staticmethod
-    @utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6)
     def selecionar_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)
@@ -220,15 +234,15 @@ class views_produto:
             return redirect("lista_produtos")
         except Exception as e:
             mensagem_erro = str(e)
-            return utils.erro(request, mensagem_erro)
+            return views_erro.erro(request, mensagem_erro)
 
     @staticmethod
-    @utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6)
     def excluir_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)
             if produto:
-                produto.status=False
+                produto.status = False
                 produto.save()
                 Alerta.set_mensagem("Produto excluído com sucesso.")
                 return redirect("lista_produtos")
@@ -237,4 +251,4 @@ class views_produto:
             return redirect("lista_produtos")
         except Exception as e:
             mensagem_erro = str(e)
-            return utils.erro(request, mensagem_erro)
+            return views_erro.erro(request, mensagem_erro)

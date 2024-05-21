@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
 from ..models import Empresa, Usuario
-from ..utils import utils
+from app.utils import Utils
 import json
 from django.contrib.auth.hashers import make_password
-from ..static import Alerta, UserInfo
+from app.static import Alerta, UserInfo
 from .views_configuracao import views_configuracao
 from .views_autenticacao import views_autenticacao
 
@@ -22,13 +22,13 @@ class views_cadastro:
 
         for campo, valor in campos.items():
             if campo == "E-mail":
-                verificar_existencia(campo, valor, utils.email_existe)
+                verificar_existencia(campo, valor, Utils.email_existe)
             elif campo == "Telefone":
-                verificar_existencia(campo, valor, utils.telefone_existe)
+                verificar_existencia(campo, valor, Utils.telefone_existe)
             elif campo == "CPF":
-                verificar_existencia(campo, valor, utils.cpf_existe)
+                verificar_existencia(campo, valor, Utils.cpf_existe)
             elif campo == "CNPJ":
-                verificar_existencia(campo, valor, utils.cnpj_existe)
+                verificar_existencia(campo, valor, Utils.cnpj_existe)
 
         texto_alerta = "\n".join(mensagens_alerta)
         return texto_alerta.replace("\n", "\\n")  # Substituir quebras de linha por '\n'
@@ -63,13 +63,13 @@ class views_cadastro:
                 mensagens_alerta = views_cadastro.validacao(campos)
                 if mensagens_alerta:
                     return JsonResponse(
-                        {"success": False, "messages": mensagens_alerta}, status=400
+                        {"success": False, "message": mensagens_alerta}, status=400
                     )
 
                 senha = data.get("senha")
                 if not senha:
                     return JsonResponse(
-                        {"success": False, "messages": ["Campo senha está vazio"]},
+                        {"success": False, "message": ["Campo senha está vazio"]},
                         status=400,
                     )
 
@@ -78,27 +78,22 @@ class views_cadastro:
                 if empresa:
                     string_value = views_cadastro.criar_user(empresa, senha_hash)
                     if string_value is True:
-                        if views_autenticacao.autenticar_usuario(request, email_responsavel, senha):
-                            return JsonResponse(
-                                {"success": True, "redirect": "dashbord"}
-                            )
-                        else:
-                            return JsonResponse({"success": True, "redirect": "login"})
+                        return JsonResponse({"success": True, "redirect": "login"})
                     else:
                         return JsonResponse(
-                            {"success": False, "messages": [string_value]}, status=400
+                            {"success": False, "message": [string_value]}, status=400
                         )
                 else:
                     return JsonResponse(
-                        {"success": False, "messages": ["Erro ao criar empresa"]},
+                        {"success": False, "message": ["Erro ao criar empresa"]},
                         status=400,
                     )
             else:
                 return JsonResponse(
-                    {"success": False, "messages": ["Método não permitido"]}, status=405
+                    {"success": False, "message": ["Método não permitido"]}, status=405
                 )
         except Exception as e:
-            return JsonResponse({"success": False, "messages": [str(e)]}, status=500)
+            return JsonResponse({"success": False, "message": [str(e)]}, status=500)
 
     def criar_empresa(dados_empresa):
         try:
@@ -113,7 +108,7 @@ class views_cadastro:
         # Criação do novo usuário associado à empresa
         # Retorna True se o usuário foi criado com sucesso, False caso contrário
         try:
-            numero_aleatorio = utils.gerar_numero_aleatorio()
+            numero_aleatorio = Utils.gerar_numero_aleatorio()
             novo_nome_usuario = empresa.nome_responsavel + numero_aleatorio
 
             # Criando o novo usuário associado à empresa

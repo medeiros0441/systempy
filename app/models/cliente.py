@@ -3,7 +3,7 @@ from .endereco import Endereco
 from .empresa import Empresa
 from django.utils import timezone
 import uuid
-from app.utils import utils
+from app.utils import Utils
 
 
 class Cliente(models.Model):
@@ -16,9 +16,9 @@ class Cliente(models.Model):
     telefone = models.CharField(max_length=20, null=True)
     ultima_compra = models.DateField(null=True, blank=True)
     insert = models.CharField(
-        default=utils.obter_data_hora_atual, editable=False, max_length=100
+        default=Utils.obter_data_hora_atual, editable=False, max_length=100
     )
-    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
+    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
     tipo_cliente = models.CharField(max_length=50, null=True, blank=True)
     descricao = models.CharField(max_length=300, null=True, blank=True)
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True)

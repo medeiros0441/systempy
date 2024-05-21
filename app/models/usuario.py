@@ -1,8 +1,8 @@
 from django.db import models
-from .empresa import Empresa
 from django.utils import timezone
 import uuid
-from ..utils import utils
+from app.utils import Utils
+from .empresa import Empresa
 
 
 class Usuario(models.Model):
@@ -20,9 +20,9 @@ class Usuario(models.Model):
         max_length=200,
     )
     insert = models.CharField(
-        default=utils.obter_data_hora_atual, editable=False, max_length=100
+        default=Utils.obter_data_hora_atual, editable=False, max_length=100
     )
-    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
+    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
     nivel_usuario = models.IntegerField()
     status_acesso = models.BooleanField(
         default=False,

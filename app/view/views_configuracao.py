@@ -7,7 +7,7 @@ from django.views.generic import (
 )
 from ..models import Configuracao
 from django.urls import reverse_lazy
-from ..utils import utils
+from app.utils import Utils
 
 
 class views_configuracao:
@@ -24,7 +24,7 @@ class views_configuracao:
 
     def list_configuracoes_padrao(usuario=None, status=True):
 
-        classes = utils.lista_de_configuracao()
+        classes = Utils.lista_de_configuracao()
 
         list_configuracao = []
 

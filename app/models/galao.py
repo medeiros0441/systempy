@@ -3,7 +3,7 @@ from .cliente import Cliente
 from .venda import Venda
 from .loja import Loja
 from django.utils import timezone
-from ..utils import utils
+from app.utils import Utils
 
 
 class Galao(models.Model):
@@ -14,9 +14,9 @@ class Galao(models.Model):
     quantidade = models.IntegerField(default=0)  # Quantidade de galões
     titulo = models.CharField(max_length=100, null=True)  # Título do galão
     insert = models.CharField(
-        default=utils.obter_data_hora_atual, editable=False, max_length=100
+        default=Utils.obter_data_hora_atual, editable=False, max_length=100
     )
-    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
+    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
     loja = models.ForeignKey(Loja, on_delete=models.CASCADE, null=True)
 
 
@@ -38,7 +38,7 @@ class GestaoGalao(models.Model):
     )
     venda = models.ForeignKey(Venda, on_delete=models.CASCADE, null=True)
     insert = models.CharField(
-        default=utils.obter_data_hora_atual, editable=False, max_length=100
+        default=Utils.obter_data_hora_atual, editable=False, max_length=100
     )
-    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
+    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
     descricao = models.TextField(null=True)

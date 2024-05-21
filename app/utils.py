@@ -1,38 +1,38 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
-
-from app import models
 from .gerencia_email.config_email import enviar_email
 from random import choices
 from django.core.exceptions import ObjectDoesNotExist
-import random
-import string
 from django.http import JsonResponse
- 
 from functools import wraps
-from .static import UserInfo, Alerta
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from pytz import timezone
-class utils: 
-    @staticmethod                                                                                                           
+import random
+import string
+
+from app.static import UserInfo, Alerta
+
+
+class Utils:
+    @staticmethod
     def obter_data_hora_atual(brasil_date_only=False):
         # Obtém a data e hora atual no fuso horário do Brasil
-        brasil_tz = timezone('America/Sao_Paulo')
+        brasil_tz = timezone("America/Sao_Paulo")
         dt_brasil = datetime.now(brasil_tz)
 
         # Formata a data e hora de acordo com o parâmetro especificado
         if brasil_date_only:
             # Retorna apenas a data no formato dia/mes/ano
-            return dt_brasil.strftime('%d/%m/%Y')
+            return dt_brasil.strftime("%d/%m/%Y")
         else:
             # Retorna data e hora no formato dia/mes/ano hora:minutos
-            return dt_brasil.strftime('%d/%m/%Y %H:%M')
+            return dt_brasil.strftime("%d/%m/%Y %H:%M")
 
     def criar_alerta_js(texto):
         # Modelo do script JavaScript que será retornado
-        script = utils.script_js(f"""  alertCustomer('{texto}');""")
+        script = Utils.script_js(f"""  alertCustomer('{texto}');""")
         return script
 
     def script_js(function):
@@ -59,25 +59,36 @@ class utils:
         return "".join(random.choices(string.digits, k=tamanho))
 
     def email_existe(email):
-       return models.Usuario.objects.filter(email__iexact=email).exists()
+        from app.models import Usuario
+
+        return Usuario.objects.filter(email__iexact=email).exists()
 
     def usuario_existe(usuario):
-        return models.Usuario.objects.filter(nome_usuario__iexact=usuario).exists()
+        from app.models import Usuario
+
+        return Usuario.objects.filter(nome_usuario__iexact=usuario).exists()
 
     def telefone_existe(telefone):
-        return models.Empresa.objects.filter(telefone__iexact=telefone).exists()
+        from app.models import Empresa
+        from app.models import Configuracao
+
+        return Empresa.objects.filter(telefone__iexact=telefone).exists()
 
     def cpf_existe(cpf):
-        models.Empresa.objects.filter(nro_cpf__iexact=cpf).exists()
+        from app.models import Empresa
+
+        Empresa.objects.filter(nro_cpf__iexact=cpf).exists()
         return
 
     def cnpj_existe(cnpj):
-        return models.Empresa.objects.filter(nro_cnpj__iexact=cnpj).exists()
+        from app.models import Empresa
+
+        return Empresa.objects.filter(nro_cnpj__iexact=cnpj).exists()
 
     @csrf_exempt
     def enviar_codigo(request, email):
         # Verificar o email e enviar o código
-        enviado_com_sucesso, erro = utils.verificar_email_e_enviar_codigo(
+        enviado_com_sucesso, erro = Utils.verificar_email_e_enviar_codigo(
             request, email.lower()
         )
 
@@ -110,7 +121,7 @@ class utils:
 
     @csrf_exempt
     def atualizar_senha(request, nova_senha):
-        status = utils.RecuperacaoSenha(request, nova_senha)
+        status = Utils.RecuperacaoSenha(request, nova_senha)
         if status:
             return JsonResponse(
                 {"success": "true", "mensagem": "Senha atualizada com sucesso!"}
@@ -120,10 +131,11 @@ class utils:
 
     @csrf_exempt
     def verificar_email_e_enviar_codigo(request, email):
+        from app.models import Usuario
 
         try:
             # Verificar se o usuário com o e-mail fornecido existe no banco de dados
-            usuario = models.Usuario.objects.get(email=email)
+            usuario = Usuario.objects.get(email=email)
 
             # Gerar um número com 6 dígitos
             codigo = (
@@ -160,20 +172,22 @@ class utils:
     @csrf_exempt
     def RecuperacaoSenha(request, senha_nova):
         id = request.session["id_usuario"]
-        usuario = models.Usuario.objects.filter(id_usuario=id).first()
+        from app.models import Usuario
+
+        usuario = Usuario.objects.filter(id_usuario=id).first()
         if usuario:
             if senha_nova is None or senha_nova == "":
                 return render(
                     request,
                     "default/login.html",
                     {
-                        "alerta_js": utils.criar_alerta_js("campo senha está vazio"),
+                        "alerta_js": Utils.criar_alerta_js("campo senha está vazio"),
                     },
                 )
 
             else:
                 senha_hash = make_password(senha_nova)
-                usuario = models.Usuario.objects.get(id_usuario=id)
+                usuario = Usuario.objects.get(id_usuario=id)
                 usuario.senha = senha_hash
                 usuario.save()
                 request.session["senha_hash"] = senha_hash
@@ -191,7 +205,7 @@ class utils:
                     request,
                     "default/login.html",
                     {
-                        "alerta_js": utils.criar_alerta_js(
+                        "alerta_js": Utils.criar_alerta_js(
                             "operação concluida com sucesso."
                         ),
                     },
@@ -200,13 +214,15 @@ class utils:
             request,
             "default/login.html",
             {
-                "alerta_js": utils.criar_alerta_js("operação concluida com sucesso."),
+                "alerta_js": Utils.criar_alerta_js("operação concluida com sucesso."),
             },
         )
 
     def get_status(request):
+        from app.models import Usuario
+
         id_usuario = request.session.get("id_usuario")
-        usuario = models.Usuario.objects.get(id_usuario=id_usuario)
+        usuario = Usuario.objects.get(id_usuario=id_usuario)
         return True
 
     def obter_dados_localizacao_ipinfo(ip, requests):
@@ -219,12 +235,13 @@ class utils:
         try:
             # Fazendo uma solicitação GET para a API ipinfo.io
             response = requests.get(url)
+            from app.models import Sessao
 
             # Verifica se a solicitação foi bem-sucedida (código de status HTTP 200)
             if response.status_code == 200:
                 # Parseia os dados JSON da resposta
                 data = response.json()
-                sessao = models.Sessao.objects.create(
+                sessao = Sessao.objects.create(
                     ip_sessao=ip,
                     cidade=data.get("city"),
                     regiao=data.get("region"),
@@ -243,23 +260,26 @@ class utils:
             print(f"Erro ao obter dados de localização: {e}")
 
     def configuracao_usuario(request, id_usuario, codigo):
+        from app.view.views_erro import views_erro
+        from app.models import Configuracao
+
         try:
-            configuracao = models.Configuracao.objects.get(
+            configuracao = Configuracao.objects.get(
                 usuario_id=id_usuario, codigo=codigo
             )
             if not configuracao.status_acesso:
                 mensagem = (
                     "Acesso negado: você não tem permissão para executar o método."
                 )
-                return False, utils.erro(request, mensagem)
+                return False, views_erro.erro(request, mensagem)
             else:
                 return True, None
         except ObjectDoesNotExist:
             mensagem = "Configuração não encontrada."
-            return False, utils.erro(request, mensagem)
+            return False, views_erro.erro(request, mensagem)
         except MultipleObjectsReturned:
             mensagem = "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte."
-            return False, utils.erro(request, mensagem)
+            return False, views_erro.erro(request, mensagem)
 
     def verificar_permissoes(codigo_model):
         """
@@ -282,7 +302,7 @@ class utils:
                         return type
 
                 # Verifica as permissões do usuário com base no código
-                status, render = utils.configuracao_usuario(
+                status, render = Utils.configuracao_usuario(
                     request, id_usuario, codigo_model
                 )
                 if status:
@@ -311,13 +331,13 @@ class utils:
         ]
 
     def buscar_codigo_por_nome(nome_classe):
-        for configuracao in utils.lista_de_configuracao():
+        for configuracao in Utils.lista_de_configuracao():
             if configuracao["nome"] == nome_classe:
                 return configuracao["codigo"]
         return None
 
     def buscar_nome_por_codigo(codigo_classe):
-        for configuracao in utils.lista_de_configuracao():
+        for configuracao in Utils.lista_de_configuracao():
             if configuracao["codigo"] == codigo_classe:
                 return configuracao["nome"]
         return None

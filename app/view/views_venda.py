@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from ..utils import utils
-from ..static import Alerta, UserInfo
+from app.utils import Utils
+from app.static import Alerta, UserInfo
 from django.db.models import Q
 from ..processos.venda import processos
 from django.http import JsonResponse
@@ -11,47 +11,49 @@ from django.forms.models import model_to_dict
 import json
 from app import models
 
+from .views_erro import views_erro
+
 
 class views_venda:
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(codigo_model=7)
     def lista_vendas(request, context={}, id_loja=None, **kwargs):
 
         alerta = Alerta.get_mensagem()
         if alerta:
-            context["alerta_js"] = utils.criar_alerta_js(alerta)
+            context["alerta_js"] = Utils.criar_alerta_js(alerta)
 
         return render(request, "venda/lista_vendas.html", context)
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(codigo_model=7)
     def editar_venda(request, id_venda):
         try:
             context = {}
             alerta = Alerta.get_mensagem()
             if alerta:
-                context["alerta_js"] = utils.criar_alerta_js(alerta)
+                context["alerta_js"] = Utils.criar_alerta_js(alerta)
             context["type"] = 2
             context["id_venda"] = id_venda
 
             return render(request, "venda/formulario_venda.html", context)
         except Exception as e:
             mensagem_erro = str(e)
-            return utils.erro(request, mensagem_erro)
+            return views_erro.erro(request, mensagem_erro)
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(codigo_model=7)
     def criar_venda(request, context={}):
         try:
             alerta = Alerta.get_mensagem()
             if alerta:
-                context["alerta_js"] = utils.criar_alerta_js(alerta)
+                context["alerta_js"] = Utils.criar_alerta_js(alerta)
             context["type"] = 1
             return render(request, "venda/formulario_venda.html", context)
         except Exception as e:
             mensagem_erro = str(e)
-            return utils.erro(request, mensagem_erro)
+            return views_erro.erro(request, mensagem_erro)
 
     @csrf_exempt
     def obter_dados(request):
@@ -66,7 +68,9 @@ class views_venda:
                 ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
 
                 produtos = models.Produto.objects.filter(
-                    Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa,status=True
+                    Q(loja_id__in=ids_lojas_associadas),
+                    loja__empresa_id=id_empresa,
+                    status=True,
                 )
                 lojas = models.Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
 
@@ -99,7 +103,7 @@ class views_venda:
         )
 
     @csrf_exempt
-    @utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(codigo_model=7)
     def insert_venda_ajax(request):
         try:
             if request.method == "POST":
@@ -115,7 +119,9 @@ class views_venda:
                     if venda.metodo_entrega == "entrega no local":
                         id_motoboy = dados.get("motoboy", "").strip()
                         if id_motoboy != "0":
-                            processos.processo_entrega(venda=venda, id_motoboy=id_motoboy)
+                            processos.processo_entrega(
+                                venda=venda, id_motoboy=id_motoboy
+                            )
                     if venda.forma_pagamento == "dinheiro":
                         processos.processar_caixa(venda)
 
@@ -125,7 +131,7 @@ class views_venda:
                     # Processa os dados dos galões
                     galoes_troca = dados.get("galoes_troca")
                     processos._processar_dados_galoes(galoes_troca, venda)
-                    return JsonResponse({"success": True, "message":menssagem})
+                    return JsonResponse({"success": True, "message": menssagem})
                 elif mensagem_erro:
                     return JsonResponse({"error": mensagem_erro})
 
@@ -210,7 +216,7 @@ class views_venda:
             return None, f"Erro ao validar dados do formulário: {e}"
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(codigo_model=7)
     def _open_venda(request):
         try:
             context = {}
@@ -225,7 +231,9 @@ class views_venda:
 
             # Filtra os produtos com base nas lojas associadas
             produtos = models.Produto.objects.filter(
-                Q(loja_id__in=ids_lojas_associadas), loja__empresa_id=id_empresa,status=True
+                Q(loja_id__in=ids_lojas_associadas),
+                loja__empresa_id=id_empresa,
+                status=True,
             )
             context = {
                 "list_produtos": produtos,
@@ -246,10 +254,10 @@ class views_venda:
             return views_venda.lista_vendas(request, context)
         except Exception as e:
             mensagem_erro = str(e)
-            return utils.erro(request, mensagem_erro)
+            return views_erro.erro(request, mensagem_erro)
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(codigo_model=7)
     def selecionar_venda(request, venda_id):
 
         return views_venda.lista_vendas(request)
@@ -385,7 +393,7 @@ class views_venda:
             return JsonResponse({"message": mensagem_erro}, status=500)
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(codigo_model=7)
     def excluir_venda(request, venda_id):
         if (
             request.session.get("id_empresa", 0) != 0
@@ -395,6 +403,6 @@ class views_venda:
             # Lógica para excluir a venda com id=venda_id
             return HttpResponse(f"Excluindo a venda {venda_id}")
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )

@@ -1,14 +1,16 @@
-from ..utils import utils
+from app.utils import Utils
 from django.shortcuts import render
 from django.http import HttpResponse
 from ..models import Galao, Configuracao
-from ..static import Alerta, UserInfo
+from app.static import Alerta, UserInfo
+
+from .views_erro import views_erro
 
 
 class views_galao:
 
     @staticmethod
-    @utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(codigo_model=3)
     def lista_galao(request):
         if (
             request.session.get("id_empresa", 0) != 0
@@ -18,7 +20,7 @@ class views_galao:
             # Lógica para listar os galões
             return HttpResponse("Lista de galões")
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
@@ -31,7 +33,7 @@ class views_galao:
             # Lógica para editar o galão com id=galao_id
             return HttpResponse(f"Editando o galão {galao_id}")
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
@@ -44,7 +46,7 @@ class views_galao:
             # Lógica para selecionar o galão com id=galao_id
             return HttpResponse(f"Selecionando o galão {galao_id}")
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
@@ -57,6 +59,6 @@ class views_galao:
             # Lógica para excluir o galão com id=galao_id
             return HttpResponse(f"Excluindo o galão {galao_id}")
         else:
-            return utils.erro(
+            return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )

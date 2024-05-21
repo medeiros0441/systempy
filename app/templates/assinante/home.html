@@ -25,7 +25,7 @@
   // Executa automaticamente ao inicializar a página
     window.onload = function() {
         get_data(); // Busca os dados de vendas
-        atualizarFaturamento(); // Atualiza o DOM com o faturamento total
+          // Atualiza o DOM com o faturamento total
         checkStockLevels();
     };
 
@@ -97,6 +97,7 @@ function get_data(){
                 Utils.setLocalStorageItem('data_lojas', response.lojas);
                 Utils.setLocalStorageItem('data_vendas', response.vendas);
                 Utils.setLocalStorageItem('data_produtos', response.produtos);
+                atualizarFaturamento();
             } else {
                 alertCustomer(response.error);
             }

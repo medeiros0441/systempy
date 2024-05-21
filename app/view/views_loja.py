@@ -1,12 +1,14 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from ..forms import LojaForm, EnderecoForm
-from ..utils import utils
-from ..static import Alerta, UserInfo
+from app.utils import Utils
+from app.static import Alerta, UserInfo
 from ..models import Empresa, Loja, Associado, Usuario
+
+from .views_erro import views_erro
 
 
 class views_loja:
-    @utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5)
     def lista_lojas(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request, True)
 
@@ -22,10 +24,10 @@ class views_loja:
             pass
         alerta = Alerta.get_mensagem()
         if alerta:
-            context["alerta_js"] = utils.criar_alerta_js(alerta)
+            context["alerta_js"] = Utils.criar_alerta_js(alerta)
         return render(request, "loja/lista_lojas.html", context)
-   
-    @utils.verificar_permissoes(5)
+
+    @Utils.verificar_permissoes(5)
     def criar_loja(request):
         try:
             if request.method == "POST":
@@ -46,12 +48,20 @@ class views_loja:
                     Alerta.set_mensagem("Cadastrado com Sucesso.")
 
                     id_usuario = UserInfo.get_id_usuario(request)
-                    usuario_adm = Usuario.objects.get(empresa_id=loja.empresa_id, nivel_usuario=1)
-                    
-                    Associado.objects.bulk_create([
-                        Associado(usuario_id=id_usuario, loja=loja, status_acesso=True),
-                        Associado(usuario=usuario_adm, loja=loja, status_acesso=True)
-                    ])
+                    usuario_adm = Usuario.objects.get(
+                        empresa_id=loja.empresa_id, nivel_usuario=1
+                    )
+
+                    Associado.objects.bulk_create(
+                        [
+                            Associado(
+                                usuario_id=id_usuario, loja=loja, status_acesso=True
+                            ),
+                            Associado(
+                                usuario=usuario_adm, loja=loja, status_acesso=True
+                            ),
+                        ]
+                    )
                     Alerta.set_mensagem(f"Loja {loja.nome_loja} criada com sucesso")
                     return redirect("lista_lojas")
                 else:
@@ -77,9 +87,9 @@ class views_loja:
                 )
         except Exception as e:
             mensagem_erro = str(e)
-            return utils.erro(request, mensagem_erro)
+            return views_erro.erro(request,mensagem_erro)
 
-    @utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5)
     def selecionar_loja(request, id_loja):
 
         try:
@@ -95,17 +105,17 @@ class views_loja:
                     },
                 )
             else:
-                return utils.erro(request, "vôce não está associado a empresa..")
+                return views_erro.erro(request, "vôce não está associado a empresa..")
         except Exception as e:
             mensagem_erro = str(e)
-            return utils.erro(request, mensagem_erro)
+            return views_erro.erro(request,mensagem_erro)
 
-    @utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5)
     def editar_loja(request, id_loja):
         loja = get_object_or_404(Loja, pk=id_loja)
         id = UserInfo.get_id_empresa(request)
         if loja.empresa.id_empresa != id:
-            return utils.erro(request, "vôce não está associado a empresa..")
+            return views_erro.erro(request,"vôce não está associado a empresa..")
         if request.method == "POST":
             form_loja = LojaForm(request.POST, instance=loja)
             form_endereco = EnderecoForm(request.POST, instance=loja.endereco)
@@ -139,7 +149,7 @@ class views_loja:
                 {"open_modal": True, "form_endereco": form, "form_loja": formloja},
             )
 
-    @utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5)
     def excluir_loja(request, id_loja):
         loja = get_object_or_404(Loja, id_loja=id_loja)
         loja.delete()

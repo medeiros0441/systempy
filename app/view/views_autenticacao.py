@@ -2,11 +2,11 @@ from django.contrib.auth import authenticate, login
 from django.core.exceptions import SuspiciousOperation
 from django.utils import timezone
 from datetime import timedelta
-from ..models.usuario import Usuario
-from ..utils import utils
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
-from ..static import Alerta, UserInfo
+from app.static import Alerta, UserInfo
+import app.view as view
+from app import models
 
 
 class views_autenticacao:
@@ -14,7 +14,7 @@ class views_autenticacao:
     def autenticar_usuario(request, email, senha_digitada):
         try:
             # Verifica se o usuário existe
-            usuario = Usuario.objects.filter(email=email).first()
+            usuario = models.Usuario.objects.filter(email=email).first()
             if usuario:
                 # Verifica se a senha fornecida corresponde ao hash armazenado
                 senha_correta = check_password(senha_digitada, usuario.senha)
@@ -39,4 +39,4 @@ class views_autenticacao:
                 return False
         except Exception as e:
             error_message = f"Erro durante a autenticação: {str(e)}."
-            return utils.erro(request, error_message)
+            return views_erro.erro(request, error_message)

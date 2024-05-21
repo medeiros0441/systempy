@@ -2,7 +2,7 @@ import uuid
 from django.db import models
 from ..models.usuario import Usuario
 from django.utils import timezone
-from ..utils import utils
+from app.utils import Utils
 
 
 class Log(models.Model):
@@ -15,9 +15,9 @@ class Log(models.Model):
     )  # Origem do log (nome do módulo, função, etc.)
     descricao = models.TextField()  # Descrição do log
     insert = models.CharField(
-        default=utils.obter_data_hora_atual, editable=False, max_length=100
+        default=Utils.obter_data_hora_atual, editable=False, max_length=100
     )
-    update = models.CharField(default=utils.obter_data_hora_atual, max_length=100)
+    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
     usuario = models.ForeignKey(
         Usuario,
         on_delete=models.SET_NULL,
