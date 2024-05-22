@@ -1,6 +1,8 @@
-def corpo_email(nome_cliente, TextoIntrodutivo, TextContainer2, TextContainer3, btn_ver_mais):
-    link = "https://employeehubpj.azurewebsites.net/"
-    
+def corpo_email(
+    nome_cliente, TextoIntrodutivo, TextContainer2, TextContainer3, btn_ver_mais
+):
+    link = "https://comercioprime.azurewebsites.net/"
+
     # Montar o corpo do email em HTML com base nas variáveis
     html_body = f"""
     <head>
@@ -16,7 +18,7 @@ def corpo_email(nome_cliente, TextoIntrodutivo, TextContainer2, TextContainer3, 
 
     <!--header padrão -->
     <div style="text-align: center;">
-        <img alt="Logo da Empresa" style="width: 100%;" src="https://employeehubpj.azurewebsites.net/Imagens/objetos-empresa/name-empresa.png">
+        <img alt="Logo da Empresa" style="width: 100%;" src="https://comercioprime.azurewebsites.net/assents/img/biblioteca/name-empresa.png">
         <br>
     </div>
 
@@ -38,7 +40,7 @@ def corpo_email(nome_cliente, TextoIntrodutivo, TextContainer2, TextContainer3, 
      '</div>' if TextContainer2 else ''}
 
     <!--texto secundário caso a var TextContainer3 for diferente de null, colocamos o container como visível -->
-    {'<div style="text-align: center;background: #000000;border: none;border-radius: 20px;padding: 10px 30px;margin: 15px 0 15px 0;">'
+    {'<div style="text-align: center;background: #0d1b2a;border: none;border-radius: 20px;padding: 10px 30px;margin: 15px 0 15px 0;">'
      '<p style="font-size: 20px;font-family: Arial, sans-serif;color: #fff;">'
      f'{TextContainer3}'  
      '</p>'
@@ -47,7 +49,7 @@ def corpo_email(nome_cliente, TextoIntrodutivo, TextContainer2, TextContainer3, 
     <!--precisamos de um if caso o valor bool for True, coloco o botão como visível -->
     {'<div style="text-align: center;">'
      '<a href="{link}" style="text-decoration: none;">'
-     '<button style="background-color: #DF6316; color: dark; border: none; border-radius: 20px; padding: 10px 30px; font-weight: bold; cursor: pointer;">'
+     '<button style="background-color: #00bf63; color: dark; border: none; border-radius: 20px; padding: 10px 30px; font-weight: bold; cursor: pointer;">'
      'Saiba mais'
      '</button>'
      '</a>'
@@ -57,7 +59,7 @@ def corpo_email(nome_cliente, TextoIntrodutivo, TextContainer2, TextContainer3, 
     
     <div style="text-align:center;background: #000000;border: none; ;font-size: 10px;color: white;margin:10px 0 0 0">
       
-        <img alt="Logo da Empresa" style="width: 100%" src="https://employeehubpj.azurewebsites.net/Imagens/objetos-empresa/banner-frase.png">
+        <img alt="Logo da Empresa" style="width: 100%" src="https://comercioprime.azurewebsites.net/assents/img/biblioteca/banner-frase.png">
         <br>
         Atenciosamente, Samuel Medeiros
         <br>
@@ -68,5 +70,5 @@ def corpo_email(nome_cliente, TextoIntrodutivo, TextContainer2, TextContainer3, 
  
     </body>
     """
-    
+
     return html_body

@@ -1,4 +1,0 @@
-"use strict";(self.odspNextWebpackJsonp=self.odspNextWebpackJsonp||[]).push([["initial.resx"],{176:e=>{e.exports=JSON.parse('{"a":"Meus arquivos"}')}
-,171:e=>{e.exports=JSON.parse('{"m":"Abrir no Word","h":"Abrir no Project","b":"Abrir no Excel","g":"Abrir no PowerPoint","e":"Abrir no OneNote","k":"Abrir no Visio","i":"Abrir no Publisher","c":"Abrir no InfoPath","l":"Abrir no Word Online","f":"Abrir no PowerPoint Online","a":"Abrir no Excel Online","d":"Abrir no OneNote Online","j":"Abrir no Visio Online"}')}
-,195:e=>{e.exports=JSON.parse('{"c":"Ainda aqui?","a":"Para sua segurança, seu Cofre Pessoal será bloqueado automaticamente em um minuto.","b":"Manter desbloqueado","f":"O Cofre Pessoal não foi bloqueado","d":"Houve um problema ao bloquear seu Cofre Pessoal. Se isso acontecer novamente, você poderá sair do OneDrive bloquear seu Cofre Pessoal","e":"Tentar novamente"}')}
-}]),define("initial.resx",[],{});

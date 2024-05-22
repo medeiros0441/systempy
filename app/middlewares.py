@@ -1,5 +1,3 @@
-from venv import logger
-from django.conf import settings
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.deprecation import MiddlewareMixin
 from django.utils import timezone
@@ -10,6 +8,59 @@ from app.view.views_erro import views_erro
 from app.static import UserInfo
 from django.core.exceptions import ObjectDoesNotExist
 import traceback
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist, PermissionError
+from django.shortcuts import redirect
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ErrorHandlerMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        return response
+
+    def process_exception(self, request, exception):
+        error_message = str(exception)
+        if request.headers.get("Accept") == "application/json":
+            return JsonResponse({"error_message": error_message}, status=500)
+        else:
+            return render(request, "erro.html", {"error_message": error_message})
+
+class ErrorLoggingMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        return response
+
+    def process_exception(self, request, exception):
+        logger.error(f"Exception caught in middleware: {exception}", exc_info=True)
+
+        if not settings.DEBUG:
+            Log.objects.create(
+                tipo="Erro",
+                origem=request.path,
+                descricao=str(exception),
+                usuario=request.user if request.user.is_authenticated else None,
+                ip_usuario=request.META.get("REMOTE_ADDR"),
+            )
+
+        if isinstance(exception, ObjectDoesNotExist):
+            return redirect("erro_404")
+        elif isinstance(exception, PermissionError):
+            return redirect("erro_403")
+        elif isinstance(exception, AttributeError):
+            return redirect("erro_500")
+        else:
+            return redirect("erro_500")
 
 
 # AtualizarDadosClienteMiddleware
@@ -84,40 +135,4 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             error_message = f"Erro durante a autenticação: {str(e)}\n{traceback_str}"
             return views_erro.erro(request, error_message)
 
-
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-# ErrorLoggingMiddleware
-class ErrorLoggingMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-        return response
-
-    def process_exception(self, request, exception):
-        logger.error(f"Exception caught in middleware: {exception}", exc_info=True)
-
-        if not settings.DEBUG:
-            Log.objects.create(
-                tipo="Erro",
-                origem=request.path,
-                descricao=str(exception),
-                usuario=request.user if request.user.is_authenticated else None,
-                ip_usuario=request.META.get("REMOTE_ADDR"),
-            )
-
-        if isinstance(exception, ObjectDoesNotExist):
-            return redirect("erro_404")
-        elif isinstance(exception, PermissionError):
-            return redirect("erro_403")
-        elif isinstance(exception, AttributeError):
-            return redirect("erro_500")
-        else:
-            return redirect("erro_500")
-
-        return None
+ 
