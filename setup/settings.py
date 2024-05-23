@@ -28,16 +28,16 @@ else:
         "https://comercioprime.azurewebsites.net",
         "http://comercioprime.azurewebsites.net",
     ]
-DATABASES = {
-    "default": {
-        "ENGINE": config("DB_ENGINE"),
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": config("DB_PORT", cast=int),
+    DATABASES = {
+        "default": {
+            "ENGINE": config("DB_ENGINE"),
+            "NAME": config("DB_NAME"),
+            "USER": config("DB_USER"),
+            "PASSWORD": config("DB_PASSWORD"),
+            "HOST": config("DB_HOST"),
+            "PORT": config("DB_PORT", cast=int),
+        }
     }
-}
 ALLOWED_HOSTS = [
     "*",
     "https://comercioprime.azurewebsites.net",
