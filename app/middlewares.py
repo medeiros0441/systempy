@@ -8,15 +8,16 @@ from app.view.views_erro import views_erro
 from app.static import UserInfo
 from django.core.exceptions import ObjectDoesNotExist
 import traceback
-from django.http import JsonResponse
 from django.shortcuts import render
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist, PermissionError
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.http import JsonResponse, HttpResponseServerError
 from django.shortcuts import redirect
 
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class ErrorHandlerMiddleware:
     def __init__(self, get_response):
@@ -55,14 +56,22 @@ class ErrorLoggingMiddleware:
 
         if isinstance(exception, ObjectDoesNotExist):
             return redirect("erro_404")
-        elif isinstance(exception, PermissionError):
+        elif isinstance(exception, PermissionDenied):
             return redirect("erro_403")
         elif isinstance(exception, AttributeError):
             return redirect("erro_500")
         else:
-            return redirect("erro_500")
+            return HttpResponseServerError("Erro interno do servidor")
 
+class NotFoundMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
 
+    def __call__(self, request):
+        response = self.get_response(request)
+        if response.status_code == 404:
+            return redirect("erro_404")
+        return response
 # AtualizarDadosClienteMiddleware
 class AtualizarDadosClienteMiddleware(MiddlewareMixin):
     def process_request(self, request: HttpRequest):
@@ -134,5 +143,3 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             traceback_str = traceback.format_exc()
             error_message = f"Erro durante a autenticação: {str(e)}\n{traceback_str}"
             return views_erro.erro(request, error_message)
-
- 

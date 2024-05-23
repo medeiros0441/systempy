@@ -6,11 +6,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
 from app.static import Alerta, UserInfo
 import app.view as view
-from app import models
+from app import models 
+from django.core.exceptions import PermissionDenied
 
 
 class views_autenticacao:
-
     def autenticar_usuario(request, email, senha_digitada):
         try:
             # Verifica se o usuário existe
@@ -20,23 +20,29 @@ class views_autenticacao:
                 senha_correta = check_password(senha_digitada, usuario.senha)
 
                 if senha_correta:
+                    if not usuario.status_acesso:
+                        return (
+                            False,
+                            "Usuário desativado. Entre em contato com o suporte.",
+                        )
+
                     # Atualiza o último login do usuário
                     usuario.ultimo_login = timezone.now()
+                    view.views_configuracao.configuracao_set_session(request, usuario.id_usuario)
                     usuario.save()
+
                     # Armazena os dados do usuário na sessão
                     request.session["id_usuario"] = usuario.id_usuario
                     request.session["id_empresa"] = usuario.empresa.id_empresa
                     request.session["nivel_usuario"] = usuario.nivel_usuario
                     request.session["status_acesso"] = usuario.status_acesso
 
-                    # Reseta o contador de tentativas inválidas
-                    request.session["tentativas_invalidas"] = 0
-                    request.session["tempo_bloqueio_expirado"] = None
-                    return True
+                    return True, None
                 else:
-                    return False
+                    return False, "Credenciais inválidas. Tente novamente."
             else:
-                return False
+                return False, "o email não está cadastrado."
+
         except Exception as e:
-            error_message = f"Erro durante a autenticação: {str(e)}."
-            return views_erro.erro(request, error_message)
+            error_message = f"Erro interno durante a autenticação: {str(e)}."
+            return view.views_erro.erro(request, error_message)

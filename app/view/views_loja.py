@@ -46,22 +46,18 @@ class views_loja:
                     form_loja.instance.endereco = endereco  # Associa o endereço à loja
                     loja = form_loja.save()  # Cria um novo registro de Loja
                     Alerta.set_mensagem("Cadastrado com Sucesso.")
-
                     id_usuario = UserInfo.get_id_usuario(request)
-                    usuario_adm = Usuario.objects.get(
-                        empresa_id=loja.empresa_id, nivel_usuario=1
-                    )
+                    usuario_adm = Usuario.objects.get(empresa_id=loja.empresa_id, nivel_usuario=1)
 
-                    Associado.objects.bulk_create(
-                        [
-                            Associado(
-                                usuario_id=id_usuario, loja=loja, status_acesso=True
-                            ),
-                            Associado(
-                                usuario=usuario_adm, loja=loja, status_acesso=True
-                            ),
-                        ]
-                    )
+                    associados = [
+                        Associado(usuario_id=id_usuario, loja=loja, status_acesso=True)
+                    ]
+
+                    if usuario_adm.id_usuario != id_usuario:
+                        associados.append(Associado(usuario=usuario_adm, loja=loja, status_acesso=True))
+
+                    Associado.objects.bulk_create(associados)
+
                     Alerta.set_mensagem(f"Loja {loja.nome_loja} criada com sucesso")
                     return redirect("lista_lojas")
                 else:

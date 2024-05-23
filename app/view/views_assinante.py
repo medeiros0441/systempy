@@ -12,7 +12,7 @@ class views_assinante:
 
     @staticmethod
     @Utils.verificar_permissoes(codigo_model=1)
-    def dashbord(request):
+    def dashboard(request):
         return render(request, "assinante/home.html")
 
     @staticmethod

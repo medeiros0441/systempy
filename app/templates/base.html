@@ -39,7 +39,7 @@
                 </div>
                 <div class="col-12  d-sm-block  " id="navbarNav">
                      
-                        {% if request.session.isCliente is not True %}
+                    {% if request.session.isCliente is not True %}
                         <ul class=" text-center text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center text-sm-end  justify-content-center align-items-center " >
 
                         <li class="  text-sm-end text-center d-inline-flex col-auto ">
@@ -59,65 +59,67 @@
                     </ul>
 
 
-                            {% elif request.session.nivel_usuario <= 2 %}
-                        <ul class=" text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center   justify-content-center align-items-center  "  >
-
-                        <div class="container">
-                            <div class=" row  justify-content-evenly">
-                            <li class="  d-inline-flex col-auto">
-                            <a class="nav-link" href="{% url 'dashbord' %}">
-                                <i class="bi bi-speedometer2"></i> Início</a>
-                        </li>
-                        
-                        <li class="  d-inline-flex col-auto">
-                            <a class="nav-link nav-link-icon" href="{% url 'listar_usuarios' %}">
-                                <i class="bi bi-people"></i> Usuários
-                            </a>
-                        </li>
-                        <li class="  d-inline-flex col-auto">
-                            <a class="nav-link nav-link-icon" href="{% url 'lista_lojas' %}">
-                                <i class="bi bi-shop"></i> Lojas
-                            </a>
-                        </li>
-                    </div>
-
-                        <div class="row  justify-content-evenly ">
-
-                        <li class="  d-inline-flex col-auto ">
-                            <a class="nav-link nav-link-icon" href="{% url 'lista_enderecos' %}">
-                                <i class="bi bi-geo-alt"></i> Endereços
-                            </a>
-                        </li>
-                         
-                        <li class="  d-inline-flex col-auto">
-                            <a class="nav-link nav-link-icon" href="{% url 'lista_produtos' %}">
-                                <i class="bi bi-cart4"></i> Produtos
-                            </a>
-                        </li>
-                    </div>
-
-                        <div class=" row  justify-content-evenly">
-
-                        <li class="  d-inline-flex col-auto">
-                            <a class="nav-link nav-link-icon" href="{% url 'lista_vendas' %}">
-                                <i class="bi bi-cash"></i> Venda
-                            </a>
-                        </li>
-                        <li class="  d-inline-flex col-auto">
-                            <a class="nav-link nav-link-icon" href="{% url 'lista_clientes' %}">
-                                <i class="bi bi-person-check"></i> Clientes
-                            </a>
-                        </li>
-                      
-                        <li class="  d-inline-flex col-auto">
+                    {% elif request.session.isCliente %}
+                    <ul class="text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center justify-content-center align-items-center">
+                        {% if request.session.configs_ativos.12 %}
+                            <li class="d-inline-flex col-auto">
+                                <a class="nav-link" href="{% url 'dashboard' %}">
+                                    <i class="bi bi-speedometer2"></i> Início
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if request.session.configs_ativos.1 %}
+                            <li class="d-inline-flex col-auto">
+                                <a class="nav-link nav-link-icon" href="{% url 'listar_usuarios' %}">
+                                    <i class="bi bi-people"></i> Usuários
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if request.session.configs_ativos.5 %}
+                            <li class="d-inline-flex col-auto">
+                                <a class="nav-link nav-link-icon" href="{% url 'lista_lojas' %}">
+                                    <i class="bi bi-shop"></i> Lojas
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if request.session.configs_ativos.3 %}
+                            <li class="d-inline-flex col-auto">
+                                <a class="nav-link nav-link-icon" href="{% url 'lista_enderecos' %}">
+                                    <i class="bi bi-geo-alt"></i> Endereços
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if request.session.configs_ativos.6 %}
+                            <li class="d-inline-flex col-auto">
+                                <a class="nav-link nav-link-icon" href="{% url 'lista_produtos' %}">
+                                    <i class="bi bi-cart4"></i> Produtos
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if request.session.configs_ativos.7 %}
+                            <li class="d-inline-flex col-auto">
+                                <a class="nav-link nav-link-icon" href="{% url 'lista_vendas' %}">
+                                    <i class="bi bi-cash"></i> Venda
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if request.session.configs_ativos.8 %}
+                            <li class="d-inline-flex col-auto">
+                                <a class="nav-link nav-link-icon" href="{% url 'lista_clientes' %}">
+                                    <i class="bi bi-person-check"></i> Clientes
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="d-inline-flex col-auto">
                             <a class="nav-link nav-link-icon" href="{% url 'desconect' %}">
                                 <i class="bi bi-box-arrow-right"></i> Desconectar
                             </a>
                         </li>
-                    </div>
-                </div>
-                        {% endif %}
                     </ul>
+                {% endif %}
+                
+                
+                
                 </div>
             </div>
         </nav>

@@ -5,12 +5,39 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
-from ..models import Configuracao
+from ..models import Configuracao, Usuario
 from django.urls import reverse_lazy
 from app.utils import Utils
 
 
 class views_configuracao:
+    def get_configuracoes_usuario(id_usuario):
+        try:
+
+            configuracoes_usuario = Configuracao.objects.filter(usuario_id=id_usuario)
+            return configuracoes_usuario
+        except Usuario.DoesNotExist:
+            return None
+        except Configuracao.DoesNotExist:
+            return None
+
+    def configuracao_set_session(request, id_usuario):
+        try:
+            configuracoes_usuario = Configuracao.objects.filter(usuario_id=id_usuario)
+            if configuracoes_usuario:
+                configuracoes_serializadas = {
+                    config["codigo"]: config["status_acesso"]
+                    for config in configuracoes_usuario.values()
+                    if config["status_acesso"]
+                }
+                request.session["configs_ativos"] = configuracoes_serializadas
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(f"Erro ao definir configurações na sessão: {str(e)}")
+            return False
+
     def criar_configuracoes_padrao(listModel):
         for model in listModel:
             Configuracao.objects.create(

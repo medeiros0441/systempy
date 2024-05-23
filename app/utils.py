@@ -285,7 +285,7 @@ class Utils:
         """
         Decorador para verificar as permissões do usuário antes de executar a função.
         """
-        from .view.views_default import views_default as default
+        from .view.views_autenticacao import views_autenticacao
 
         def decorator(func):
             @wraps(func)
@@ -294,12 +294,7 @@ class Utils:
                 id_empresa = UserInfo.get_id_empresa(request)
                 id_usuario = UserInfo.get_id_usuario(request)
                 if id_usuario == 0 or id_empresa == 0:
-                    type = default.login(request, {"set_autenticacao": True})
-                    if type != True:
-                        Alerta.set_mensagem(
-                            "Se você deseja continuar, é necessário estar logado"
-                        )
-                        return type
+                    return redirect("login")
 
                 # Verifica as permissões do usuário com base no código
                 status, render = Utils.configuracao_usuario(

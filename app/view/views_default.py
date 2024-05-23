@@ -4,7 +4,11 @@ from .views_autenticacao import views_autenticacao
 from ..gerencia_email.config_email import enviar_email
 from app.static import Alerta, UserInfo
 from .views_erro import views_erro
-from app.utils import  Utils
+from app.utils import Utils
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import PermissionDenied
 
 
 class views_default:
@@ -68,17 +72,15 @@ class views_default:
             mensagem_erro = str(e)
             return views_erro.erro(request, mensagem_erro)
 
-    def login(request, context={}):
+    @csrf_exempt
+    def api_login(request):
         try:
-            alerta = Alerta.get_mensagem()
-            if alerta:
-                context["alerta_js"] = Utils.criar_alerta_js(alerta)
-
+            response_data = {}
             if request.method == "POST":
-                # Se a requisição for POST, tenta obter os dados de email, senha e checkbox
-                email = request.POST.get("email").lower().strip()
-                senha = request.POST.get("senha")
-                valor_checkbox = request.POST.get("flexCheckDefault")
+                data = json.loads(request.body)
+                email = data.get("email", "").lower().strip()
+                senha = data.get("senha", "")
+                valor_checkbox = data.get("flexCheckDefault")
 
                 if valor_checkbox == "on":
                     request.session["email_saved"] = email
@@ -88,29 +90,55 @@ class views_default:
                     request.session["email_saved"] = None
                     request.session["senha_saved"] = None
                     request.session["checkbox_login"] = None
-
-                # Chama a função para autenticar o usuário com os dados fornecidos
-                if views_autenticacao.autenticar_usuario(request, email, senha):
-                    return redirect("dashbord")
+                status, mensagem = views_autenticacao.autenticar_usuario(
+                    request, email, senha
+                )
+                if status:
+                    response_data["success"] = True
+                    response_data["redirect_url"] = "/dashboard/"
                 else:
-                    context["alerta_js"] = Utils.criar_alerta_js(
-                        "Credenciais inválidas. Tente novamente."
-                    )
-                    return render(request, "default/login.html", context)
+                    response_data["success"] = False
+                    response_data["message"] = mensagem
+
             elif request.session.get("checkbox_login") == "on":
-                # Se a requisição não for POST, verifica se existem dados de login armazenados na sessão
                 email_saved = request.session.get("email_saved")
                 senha_saved = request.session.get("senha_saved")
                 if email_saved and senha_saved:
-                    status = views_autenticacao.autenticar_usuario(
+                    if views_autenticacao.autenticar_usuario(
                         request, email_saved, senha_saved
-                    )
-                    if "set_autenticacao" in context:
-                        return status
-                    if status:
-                        return redirect("dashbord")
+                    ):
+                        response_data["success"] = True
+                        response_data["redirect_url"] = "/dashboard/"
 
-            return render(request, "default/login.html", context)
+            return JsonResponse(response_data)
+ 
         except Exception as e:
-            # Se ocorrer algum erro inesperado, registre o erro e retorne False
-            return views_erro.erro(request, f"Erro durante o login:" + {str(e)})
+            # Se ocorrer um erro inesperado, retorne uma resposta de erro JSON
+            return JsonResponse(
+                {"message": f"Erro durante o login: {str(e)}"}, status=500
+            )
+
+    def login(request, context={}):
+        try:
+            # Verifica se há alerta e adiciona ao contexto, se houver
+            alerta = Alerta.get_mensagem()
+            if alerta:
+                context["alerta_js"] = Utils.criar_alerta_js(alerta)
+
+            email_saved = request.session.get("email_saved")
+            senha_saved = request.session.get("senha_saved")
+            checkbox_login = request.session.get("checkbox_login")
+
+            if email_saved is not None:
+                context["email_saved"] = email_saved
+            if senha_saved is not None:
+                context["senha_saved"] = senha_saved
+            if checkbox_login is not None:
+                context["checkbox_login"] = checkbox_login
+
+            # Renderiza a página de login com o contexto atualizado
+            return render(request, "default/login.html", context)
+
+        except Exception as e:
+            # Se ocorrer um erro inesperado, redireciona para a página de erro
+            return views_erro.erro(request, f"Erro durante o login: {str(e)}")

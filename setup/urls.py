@@ -12,6 +12,30 @@ from django.conf.urls import handler404, handler500
 
 url_erros = [
     path("erro/", view.views_erro.erro, name="erro"),
+    path(
+        "erro/404/",
+        view.views_erro.erro,
+        {"error_message": "Página não encontrada"},
+        name="erro_404",
+    ),
+    path(
+        "erro/500/",
+        view.views_erro.erro,
+        {"error_message": "Erro interno do servidor"},
+        name="erro_500",
+    ),
+    path(
+        "erro/403/",
+        view.views_erro.erro,
+        {"error_message": "Acesso negado"},
+        name="erro_403",
+    ),
+    path(
+        "erro/400/",
+        view.views_erro.erro,
+        {"error_message": "Requisição inválida"},
+        name="erro_400",
+    ),
     # Adicione outras rotas de erro conforme necessário
 ]
 url_default = [
@@ -24,7 +48,7 @@ url_default = [
 
 
 url_assinante = [
-    path("dashbord/", view.views_assinante.dashbord, name="dashbord"),
+    path("dashboard/", view.views_assinante.dashboard, name="dashboard"),
     path("desconect/", view.views_assinante.desconect, name="desconect"),
 ]
 
@@ -308,6 +332,11 @@ url_funcJs = [  # funçoes js
         "api_cadastro_clientes",
         view.views_cadastro.cadastro_empresa,
         name="api_cadastro_clientes",
+    ),
+    path(
+        "api_login",
+        view.views_default.api_login,
+        name="api_login",
     ),
     # Adicione outras URLs conforme necessário
 ]

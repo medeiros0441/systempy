@@ -51,32 +51,24 @@
       toggleContainerAnimation(id_container, false);
   }  
 } 
-  
+  // Definir uma variável global para rastrear se uma animação está em andamento
+var animationInProgress = false;
 function toggleContainerAnimation(containerId, isOpen) {
-  const container = document.getElementById(containerId);
+    const container = document.getElementById(containerId);
+    
+    if (!container) {
+        console.error('Container não encontrado.');
+        return;
+    }
+        if (!isOpen) {
+            container.classList.remove('d-none'); // Adicionar a classe d-none para ocultar o container após a animação terminar
+          
+        } else {
+             container.classList.add('d-none'); // Adicionar a classe d-none para ocultar o container após a animação terminar
+        }
+    } 
   
-  if (!isOpen) {
-      anime({
-          targets: container,
-          opacity: [0, 1],
-          duration: 500,
-          easing: 'linear',
-          begin: function() {
-              container.classList.remove('d-none');
-          }
-      });
-  } else {
-      anime({
-          targets: container,
-          opacity: [1, 0],
-          duration: 500,
-          easing: 'linear',
-          complete: function() {
-              container.classList.add('d-none');
-          }
-      });
-  }
-}
+  
 function chamarFuncaoPython(url, data,type, callback)  {
   // Configuração do objeto de requisição
   const requestOptions = {
