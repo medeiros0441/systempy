@@ -9,18 +9,8 @@ from dotenv import load_dotenv
 # Carregar variáveis de ambiente do arquivo correspondente ao ambiente atual
 ENVIRONMENT = os.getenv("DJANGO_ENV", "")
 if ENVIRONMENT == "development":
-    load_dotenv(".env.dev")
+    load_dotenv(".env_dev")
     DEBUG = True
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": "database/database.db",
-            "USER": "",
-            "PASSWORD": "",
-            "HOST": "",
-            "PORT": "",
-        }
-    }
 else:
     DEBUG = False
     load_dotenv(".env")
@@ -28,16 +18,6 @@ else:
         "https://comercioprime.azurewebsites.net",
         "http://comercioprime.azurewebsites.net",
     ]
-    DATABASES = {
-        "default": {
-            "ENGINE": config("DB_ENGINE"),
-            "NAME": config("DB_NAME"),
-            "USER": config("DB_USER"),
-            "PASSWORD": config("DB_PASSWORD"),
-            "HOST": config("DB_HOST"),
-            "PORT": config("DB_PORT", cast=int),
-        }
-    }
 ALLOWED_HOSTS = [
     "*",
     "https://comercioprime.azurewebsites.net",
@@ -67,8 +47,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "app.middlewares.AtualizarDadosClienteMiddleware",
     "app.middlewares.ErrorLoggingMiddleware",
-    "app.middlewares.NotFoundMiddleware",
-    "app.middlewares.ErrorHandlerMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
 ]
@@ -99,6 +77,16 @@ WSGI_APPLICATION = "setup.wsgi.application"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 SESSION_COOKIE_AGE = 8 * 60 * 60
 
+DATABASES = {
+    "default": {
+        "ENGINE": config("DB_ENGINE"),
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),
+        "PORT": config("DB_PORT", cast=int),
+    }
+}
 
 # Senhas de validação
 AUTH_PASSWORD_VALIDATORS = [
