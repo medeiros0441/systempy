@@ -25,8 +25,27 @@
                             <div class="card-body">
                             <p class="fw-bold">  <i class="bi bi-calendar"></i> Inserção: <small class="fw-bold">{{ text_usuario.insert }}</small></p>
                             <p class="fw-bold">  <i class="bi bi-calendar"></i> Atualização: <small class="fw-bold">{{ text_usuario.update }}</small></p>
-                              <p class="fw-bold"> <i class="bi bi-graph-up"></i> Nível do Usuário: <small class="fw-bold">{{ text_usuario.nivel_usuario }}</small></p>
-                              <p class="fw-bold"><i class="bi bi-toggle-on"></i> Status: <small class="fw-bold">{% if text_usuario.status_acesso %}Autorizado{% else %}Não Permitido{% endif %}</small></p>
+                              <p class="fw-bold"> 
+                                <i class="bi bi-graph-up"></i> 
+                                Nível do Usuário: 
+                                <small class="fw-bold">
+                                    {% if text_usuario.nivel_usuario == 1 %}
+                                        Administrador
+                                    {% elif text_usuario.nivel_usuario == 2 %}
+                                        Gerente
+                                    {% elif text_usuario.nivel_usuario == 3 %}
+                                        Colaborador
+                                    {% else %}
+                                        Papel Desconhecido
+                                    {% endif %}
+                                </small>
+                            </p>
+                            <p class="fw-bold">
+                                <i class=" bi-circle-fill  {% if text_usuario.status_acesso %}text-success{% else %}text-danger{% endif %}"></i> 
+                                Status: <small class="fw-bold">{% if text_usuario.status_acesso %}Autorizado{% else %}Não Permitido{% endif %}</small>
+                            </p>
+                            
+ 
                             <p class="fw-bold"> <i class="bi bi-clock"></i> Último Login: <small class="fw-bold">{{ text_usuario.ultimo_login }} </small></p>
                         </div>
                     </div>
@@ -35,8 +54,12 @@
                         <div class="card mt-3">
                             <div class="card-body">
                                 <p class="fw-bold"><i class="bi bi-shop"></i> {{ associado_info.nome }}</small></p>
-                                <p class="fw-bold"> <i class="{% if associado_info.status %}text-success{% else %}text-danger{% endif %} bi bi-circle-fill"></i> Status: <small class="fw-bold">{{ associado_info.status }}</small></p>
-                                    <p class="fw-bold"><i class="bi bi-clock"></i> Atualizado: <small class="fw-bold">{{ associado_info.atualizado }}</small></p> 
+                                <p class="fw-bold"> 
+                                    <i class="{% if associado_info.status == 'Autorizado' %}text-success{% else %}text-danger{% endif %}  bi-circle-fill"></i> 
+                                    Status: <small class="fw-bold">{{ associado_info.status }}</small>
+                                </p>
+                                 
+                                    <p class="fw-bold"><i class="bi bi-clock"></i> Atualizado em: <small class="fw-bold">{{ associado_info.atualizado }}</small></p> 
                             </div>
                         </div>
                         {% endfor %}
@@ -94,7 +117,7 @@
 
                     {% for loja in list_lojas %}
                     <label class="list-group-item d-flex gap-2">
-                        <input type="checkbox" name="status_acesso_{{ loja.id_loja }}" class="form-check-input my-auto"   {% if loja.status_acesso == True    %}checked{% endif %}>
+                        <input type="checkbox" name="status_acesso_{{ loja.id_loja }}" class="form-check-input -auto"   {% if loja.status_acesso == True    %}checked{% endif %}>
                         <span>
                             <p style="font-size: 0.8rem;" class="font-monospace p-0 m-0 fw-bold" >{{ loja.nome_loja }}</p>
                             <small style="font-size: 0.6rem;" class="d-block text-body-secondary">permitir o usuario ter acesso a essa loja, isso inclui, realizar vendas,acresentar produtos, entre outros</small>

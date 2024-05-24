@@ -61,76 +61,80 @@ class views_usuarios:
             list_lojas = Loja.objects.filter(empresa_id=id_empresa)
 
             if request.method == "POST":
-                usuario.nome_completo = request.POST["nome_completo"]
-                if usuario.nivel_usuario > 1:
-                    usuario.nivel_usuario = request.POST["nivel_usuario"]
-                    usuario.status_acesso = request.POST["status_acesso"]
-                if usuario.nome_completo:
-
-                    usuario.update = timezone.now()
-                    usuario.save()
-                    for loja in list_lojas:
-                        campo_checkbox = f"status_acesso_{loja.id_loja}"
-                        if usuario.nivel_usuario != "1":
-                            associacao, created = Associado.objects.get(
-                                usuario_id=id_usuario,
-                                loja_id=loja.id_loja,
-                            )
-                            associacao.status_acesso = campo_checkbox in request.POST
-                            associacao.update = timezone.now()
-                            associacao.save()
-                            Alerta.set_mensagem("Usuário editado com sucesso!")
-                        else:
-                            if campo_checkbox not in request.POST:
-                                Alerta.set_mensagem(
-                                    "Usuário editado com sucesso!, O Usuário administrador precisar estar associado a todas as lojas."
-                                )
-                            else:
-                                Alerta.set_mensagem("Usuário editado com sucesso!")
-                    return redirect("listar_usuarios")
-                else:
-                    Alerta.set_mensagem(
-                        "Formulário inválido. Por favor, corrija os erros."
-                    )
-            else:
-                form_usuario = UsuarioForm(instance=usuario)
-
-                list_objs = []
-
-                associado = Associado.objects.filter(usuario=usuario)
-
-                for loja in list_lojas:
-                    loja_info = {
-                        "id_loja": loja.id_loja,  # ID da loja
-                        "nome_loja": loja.nome_loja,  # Nome da loja (suponha que o campo no modelo seja 'nome')
-                        "status_acesso": False,  # Status de acesso padrão, inicialmente definido como False
-                    }
-                    associado_loja = associado.filter(
-                        loja_id=loja.id_loja, usuario=usuario
-                    ).first()
-                    if associado_loja:
-                        loja_info["status_acesso"] = associado_loja.status_acesso
-
-                    list_objs.append(loja_info)
-                return views_usuarios.listar_usuarios(
-                    request,
-                    {
-                        "form_usuario": form_usuario,
-                        "list_lojas": list_objs,
-                        "open_modal": True,
-                        "isEditar": True,
-                    },
+                usuario = views_usuarios._editar_usuario_post(
+                    request, usuario, list_lojas
                 )
-        except Associado.DoesNotExist:
+                return redirect("listar_usuarios")
+            else:
+                return views_usuarios._editar_usuario_get(request, usuario, list_lojas)
+
+        except (Associado.DoesNotExist, Loja.DoesNotExist):
             pass
-        except Loja.DoesNotExist:
-            pass
-        Alerta.set_mensagem("Para associar um usuario a loja, precisa criar uma!")
+        Alerta.set_mensagem("Para associar um usuário à loja, precisa criar uma!")
         form_usuario = UsuarioForm(instance=usuario)
         return views_usuarios.listar_usuarios(
             request,
             {
                 "form_usuario": form_usuario,
+                "open_modal": True,
+                "isEditar": True,
+            },
+        )
+
+    def _editar_usuario_post(request, usuario, list_lojas):
+        usuario.nome_completo = request.POST.get("nome_completo", usuario.nome_completo)
+        if usuario.nivel_usuario > 1:
+            usuario.nivel_usuario = request.POST.get(
+                "nivel_usuario", usuario.nivel_usuario
+            )
+            usuario.status_acesso = request.POST.get(
+                "status_acesso", usuario.status_acesso
+            )
+
+        if usuario.nome_completo:
+            usuario.update = Utils.obter_data_hora_atual()
+            usuario.save()
+            views_usuarios._atualizar_associados(request, usuario, list_lojas)
+            Alerta.set_mensagem("Usuário editado com sucesso!")
+        else:
+            Alerta.set_mensagem("Formulário inválido. Por favor, corrija os erros.")
+
+    def _atualizar_associados(request, usuario, list_lojas):
+        for loja in list_lojas:
+            campo_checkbox = f"status_acesso_{loja.id_loja}"
+            associacao, created = Associado.objects.get_or_create(
+                usuario_id=usuario.id_usuario,
+                loja_id=loja.id_loja,
+            )
+            associacao.status_acesso = campo_checkbox in request.POST
+            associacao.update = Utils.obter_data_hora_atual()
+            associacao.save()
+
+    def _editar_usuario_get(request, usuario, list_lojas):
+        form_usuario = UsuarioForm(instance=usuario)
+        list_objs = []
+
+        associado = Associado.objects.filter(usuario=usuario)
+
+        for loja in list_lojas:
+            loja_info = {
+                "id_loja": loja.id_loja,
+                "nome_loja": loja.nome_loja,
+                "status_acesso": False,
+            }
+            associado_loja = associado.filter(
+                loja_id=loja.id_loja, usuario=usuario
+            ).first()
+            if associado_loja:
+                loja_info["status_acesso"] = associado_loja.status_acesso
+
+            list_objs.append(loja_info)
+
+        return views_usuarios.listar_usuarios(
+            request,
+            {
+                "form_usuario": form_usuario,
+                "list_lojas": list_objs,
                 "open_modal": True,
                 "isEditar": True,
             },
