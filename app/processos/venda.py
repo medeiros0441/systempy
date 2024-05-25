@@ -208,7 +208,7 @@ class processos:
     @staticmethod
     def get_caixa_atual(loja_id):
 
-        hoje = utils.obter_data_hora_atual(True)
+        hoje = Utils.obter_data_hora_atual(True)
         try:
             return models.Caixa.objects.get(loja_id=loja_id, dia=hoje)
         except ObjectDoesNotExist:

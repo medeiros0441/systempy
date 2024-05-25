@@ -4,48 +4,46 @@
 {% block title %} Gestão Vendas{% endblock %}
 {% block content %}
 
-<div class=" container   p-1">
-    <div class=" card  mx-auto my-3 form-venda  font-monospace">
-    <div class="card-header bg-dark text-white">
-        <span   class=" font-monospace fw-bord my-auto" style="font-size: 1.5rem;">
-            Formulario de vendas
-         </span>
-   </div>
-    <form   id="form_cadastro" class=" card-body needs-validation" autocomplete="off" novalidate>
-        {% csrf_token %}
+<div class="container-fluid bg-dark p-3 mt-0 d-flex justify-content-between align-items-center">
+    <span class="text-light font-monospace fw-bold" style="font-size: 1.0rem;">
+        <i class="bi bi-file-earmark-text mr-2"></i> Formulario de vendas
+    </span>
+    
+    <div class="col-auto">
+        <button type="button" onclick="clean_form();" class="btn btn-secondary btn-sm">Limpar</button>
+        <button type="button" id="btnSubmit" class="btn btn-primary btn-md btn-loading">Salvar</button>
+    </div>
+</div>
+
+
+        
+    <form   id="form_cadastro" class="container-fluid needs-validation  my-2  row mx-auto " autocomplete="off" novalidate>
    
-            <div class="mx-auto container mb-2 mb-2 ">
-                <div class="   form-floating mb-2 ">
-                    <select name="loja" class="form-select select_lojas"  id="id_loja">
-                        <option value="0">Selecione</option>
-                    </select>
-                    <label for="id_loja" class="fw-bold">Loja:</label>
-                 </div>
-                 <div class=" ">
-                    <label  class="fw-bold ms-2">pesquisar produto:</label>
-                    <div class=" input-group ">
-                    <input type="text" class="form-control produtoInput"  id="produtoInput" name="produtoInput"  list="produtosList" autocomplete="off" />
-                    <button class="btn btn-outline-secondary bi-plus" type="button" onclick="Ouvinte();" id="adicionarProdutoBtn" ></button>
-                 </div>
-            </div>
-                    <datalist id="produtosList" class="dropdown-menu" >
-                        
-                    </datalist>
+            <div class="  col-md-6 order-1 p-1">
+                <div class="  form-floating mb-2  ">
+                    <select name="loja" class="form-select select_lojas"  id="select_loja">
+                         <option value="0">Selecione</option>
+                     </select>
+                    <label for="select_loja" class="fw-bold">Loja:</label>
+                </div>
+                <label class="fw-bold ms-2">Pesquisar produto:</label>
+                <div class="input-group">
+                    <select class="form-select" id="select_produto" autocomplete="off"></select>
+                    <button class="btn btn-outline-secondary bi-plus" type="button" onclick="Ouvinte();" id="adicionarProdutoBtn"></button>
+                </div>
                    
+                   <!-- lista de produtos -->
                     <div class="card-body rounded bg-dark p-1 my-2">
                         <h5 class="text-white fw-bold px-2 py-1 m-0">
                             <i class="bi bi-cart-fill"></i> Carrinho
                         </h5>
                         <ul class="list-group row mx-auto p-1" id="listaProdutos"></ul>
-                    </div>
-                    
-                    
 
-            <div class=" mb-1 px-1 mx-1 row font-monospace mt-2" style="font-size: 0.8;" >
-                <label  id="valor_total" class="fw-bold col">Valor total de produtos:</label>
-                <label class="ms-auto float-end text-success col-auto fw-bold" id="id_valor_total">00,00</label>
+                        <div class=" mb-1 px-1 mx-1 text-white fw-bold row font-monospace mt-2" style="font-size: 0.8;" >
+                            <label  id="valor_total" class="fw-bold col">Valor total de produtos:</label>
+                            <label class="ms-auto float-end   col-auto fw-bold" id="id_valor_total">00,00</label>
+                        </div>
             </div>
-            <hr class="mt-1 mb-3 fw-bold ">
 
         <div class="card mb-2 ">
             <div class=" card-header bg-dark text-white ">
@@ -108,7 +106,14 @@
                     <label for="descricao">Descrição:</label> </div>
                     
                 </div> 
-            </div>
+        </div>
+       
+        </div>
+                    
+                    
+            <div class="col-md-6 order-2 p-1 ">
+  
+ 
                        <!--card cliente-->
                        <div class="card my-2 "  >
                         <div class="card-header bg-dark text-white">
@@ -142,7 +147,8 @@
                         </div>
                         </div>
         
-        <div id="info_cliente" class="d-none font-monospace row d-flex card">
+    
+                        <div id="info_cliente" class="d-none font-monospace row d-flex card">
             <div class="card-header bg-dark text-white">
                 <div class="d-flex align-items-center font-monospace">
                     <span class="me-auto d-inline-flex fs-6 text-white text-center">Cliente Selecionado</span>
@@ -295,9 +301,9 @@
                 <textarea name="descricao_endereco" cols="40" rows="10"  maxlength="100" class=" form-control form-control-validate input" required="False" id="id_descricao"></textarea>
                 <label for="id_descricao">Descrição</label>
             </div> 
-            
-                <button type="button" class="btn btn-primary  " id="btnCriarCliente" onclick="insertCliente()">Cadastrar Cliente</button>
-            </div>
+            <button class="btn btn-primary" type="submit" onclick="submitCadastroCliente();">Cadastrar</button>
+            <button class="btn btn-secondary" type="reset" onclick="resetCadastroCliente();">Cancelar</button>
+        </div>
     </div>  
     </div>  
             <div class="card mb-2">
@@ -359,21 +365,19 @@
                         </div>
                 
             </div>
-        </div>
       
-
-            <input type="hidden" id="id_venda" value="{{ id_venda }}">
-            <input  name="troco" id="troco" type="hidden" value="0" > 
-            <input  name="total_apagar" id="total_apagar" type="hidden" value="0" > 
-            <input id="id_cliente" name="id_cliente" type="hidden" value="0" > 
-            <div class="modal-footer ">
-                    <button type="button" onclick="clean_form();"  class="btn btn-secondary float-start me-auto btn-sm">Limpar</a>
-                    <button type="button" id="btnSubmit" class="btn btn-primary float-end btn-md btn-loading" >Salvar</button>
-            </div>  
+  
     </form>
 </div> 
 </div> 
 
+
+
+
+<input type="hidden" id="id_venda" value="{{ id_venda }}">
+<input  name="troco" id="troco" type="hidden" value="0" > 
+<input  name="total_apagar" id="total_apagar" type="hidden" value="0" > 
+<input id="id_cliente" name="id_cliente" type="hidden" value="0" > 
 <script type="text/javascript" src="{% static '/js/pages/FunctionsModalVendas.js' %}" ></script>
 <script  type="text/javascript" > 
     function get_data(){
@@ -405,11 +409,11 @@ function clean_form() {
     document.getElementById("listaProdutos").innerHTML = "";
     document.getElementById("id_motoboy").value= "0";
     document.getElementById('id_forma_pagamento').selectedIndex= 0;
-    document.getElementById("id_loja").selectedIndex = 0
+    document.getElementById("select_loja").selectedIndex = 0
     document.getElementById('id_estado_transacao').selectedIndex= 0;
     document.getElementById('id_metodo_entrega').selectedIndex = 0;
     document.getElementById('id_motoboy').selectedIndex = 0;
-    document.getElementById("id_loja").dispatchEvent(new Event('change'));
+    document.getElementById("select_loja").dispatchEvent(new Event('change'));
     document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
     document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
     document.getElementById('id_cliente').value = "0";
