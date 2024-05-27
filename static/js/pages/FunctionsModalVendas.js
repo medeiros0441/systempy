@@ -1,66 +1,52 @@
+function toggleCliente(selecionado = false) {
+    const titleHeader = document.getElementById('title_header_cliente');
+    const iconBtnToggle = document.getElementById('icon_btn_toggle');
+    const containerBuscarCliente = document.getElementById('container_buscar_cliente');
+    const containerSelecionarCliente = document.getElementById('container_selecionar_cliente');
+    const containerCriarCliente = document.getElementById('container_cria_cliente');
 
-
-
-// Função para alternar a visibilidade do container de gestão de clientes
-function toggleGestaoCliente() {
-    const gestaoClienteContainer = document.getElementById("container_gestao_cliente");
-    gestaoClienteContainer.classList.toggle("d-none");
-    // Atualiza ícone de exibição
-    const btnGestaoCliente = document.getElementById("btn_gestao_cliente");
-    const iconeGestaoCliente = btnGestaoCliente.querySelector("i");
-    iconeGestaoCliente.classList.toggle("bi-eye");
-    iconeGestaoCliente.classList.toggle("bi-eye-slash");
-}
-
-// Função para alternar a visibilidade do container de resultado da pesquisa
-function toggleResultadoPesquisa() {
-    const resultadoPesquisaContainer = document.getElementById("result-pesquisa");
-    resultadoPesquisaContainer.classList.toggle("d-none");
-    // Atualiza ícones de visibilidade
-    const iconePesquisaOpen = document.getElementById("icone_pesquisa_open");
-    const iconePesquisaClose = document.getElementById("icone_pesquisa_close");
-    iconePesquisaOpen.classList.toggle("d-none");
-    iconePesquisaClose.classList.toggle("d-none");
-}
-
-// Função para exibir o formulário de cadastro de cliente
-function gerencia_container_cliente(acao) {
-    const cadastroContainer = document.getElementById("cadastrar_cliente");
-    const selectClienteContainer = document.getElementById("select_cliente");
-    const infoClienteContainer = document.getElementById("info_cliente");
-    if (acao === 2) { // Cadastrar
-        cadastroContainer.classList.remove("d-none");
-        selectClienteContainer.classList.add("d-none");
-        infoClienteContainer.classList.add("d-none");
-    } else { // Outra ação, por exemplo, voltar para seleção
-        cadastroContainer.classList.add("d-none");
-        selectClienteContainer.classList.remove("d-none");
-        infoClienteContainer.classList.add("d-none");
+    if (selecionado) {
+        titleHeader.textContent = 'Cliente Selecionado';
+        iconBtnToggle.className = 'bi bi-x-circle';
+        containerBuscarCliente.classList.add('d-none');
+        containerSelecionarCliente.classList.remove('d-none');
+        containerCriarCliente.classList.add('d-none');
+        document.getElementById('btn_toggle').setAttribute('onclick', 'toggleCliente(false);limparInfoCliente(); ');
+    } else {
+        switch (titleHeader.textContent.trim()) {
+            case 'Cliente Selecionado':
+                titleHeader.textContent = 'Buscar Cliente';
+                iconBtnToggle.className = 'bi bi-person-plus';
+                containerBuscarCliente.classList.remove('d-none');
+                containerSelecionarCliente.classList.add('d-none');
+                containerCriarCliente.classList.add('d-none');
+                document.getElementById('btn_toggle').setAttribute('onclick', 'toggleCliente()');
+                break;
+            case 'Buscar Cliente':
+                titleHeader.textContent = 'Cadastrar Cliente';
+                iconBtnToggle.className = 'bi bi-search';
+                containerBuscarCliente.classList.add('d-none');
+                containerSelecionarCliente.classList.add('d-none');
+                containerCriarCliente.classList.remove('d-none');
+                break;
+            case 'Cadastrar Cliente':
+                titleHeader.textContent = 'Buscar Cliente';
+                iconBtnToggle.className = 'bi bi-person-plus';
+                containerBuscarCliente.classList.remove('d-none');
+                containerSelecionarCliente.classList.add('d-none');
+                containerCriarCliente.classList.add('d-none');
+                break;
+        }
     }
 }
-
-// Função para fechar o container de informações do cliente
-function close_cliente() {
-    const infoClienteContainer = document.getElementById("info_cliente");
-    const selectClienteContainer = document.getElementById("select_cliente");
-    infoClienteContainer.classList.add("d-none");
-    selectClienteContainer.classList.remove("d-none");
-}
-
-// Função para resetar o formulário de cadastro de cliente
-function resetCadastroCliente() {
-    const formElements = document.getElementById("cadastrar_cliente").querySelectorAll("input, textarea, select");
-    formElements.forEach(element => element.value = '');
-}
- 
 // Função para verificar e atualizar a lista de produtos
 function verificarListaProdutos() {
-    var listaProdutos = document.getElementById("listaProdutos").innerHTML.trim();
+    var ul_produtos = document.getElementById("ul_produtos").innerHTML.trim();
 
     // Verifica se a lista de produtos está vazia
-    if (listaProdutos === "") {
+    if (ul_produtos === "") {
         // Adiciona automaticamente o item padrão
-        document.getElementById("listaProdutos").innerHTML = `
+        document.getElementById("ul_produtos").innerHTML = `
             <li id="info_carrinho" class=" bg-dark text-white fw-bold d-flex justify-content-center align-items-center">
                 Nada adicionado
             </li>`;
@@ -71,7 +57,6 @@ function verificarListaProdutos() {
         }
     }
 }
-
 // Adiciona um ouvinte de evento para verificar a lista de produtos sempre que houver uma mudança
 
 function forma_pagamento() {
@@ -217,20 +202,19 @@ function submitCadastroCliente() {
     chamarFuncaoPython('/api/cliente/create/', formInputs, 'POST', function(response) {
         if (response.data) {
             alertCustomer("Cliente criado com sucesso!");
-            gerencia_container_cliente(1)
-            montarInfoCliente(response.data,"info_cliente");
+             
+            montarInfoCliente(response.data);
+            toggleCliente(true);
 
         } else {
             alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error);
         }
-        resetCadastroCliente();
-
     } );
      
 }
 var clientesCache = null;
 function manipularPesquisaClientes(clientes) {
-    const inputPesquisa = document.getElementById('pesquisa_cliente');
+    const inputPesquisa = document.getElementById('input_pesquisa_cliente');
     const resultPesquisa = document.getElementById('result-pesquisa');
     const clienteIdInput = document.getElementById('id_cliente');
     exibirResultados(clientes);
@@ -282,8 +266,9 @@ function manipularPesquisaClientes(clientes) {
             btnSelecionar.classList.add('btn', 'btn-primary', 'btn-sm', 'mx-auto');
             btnSelecionar.setAttribute("type", "button");
             btnSelecionar.addEventListener('click', function() {
+                toggleCliente(true);
                 clienteIdInput.value = cliente.id_cliente;
-                montarInfoCliente(cliente,"info_cliente"); 
+                montarInfoCliente(cliente); 
             });
 
             divResultado.appendChild(btnSelecionar);
@@ -296,9 +281,7 @@ function manipularPesquisaClientes(clientes) {
 }
 // Função para alternar a visibilidade do container
 function toggleResultadoPesquisa(status=null) {
-    const container = document.getElementById('result-pesquisa');
-    const iconeClose = document.getElementById('icone_pesquisa_close');
-    const iconeOpen = document.getElementById('icone_pesquisa_open');
+    const container = document.getElementById('result-pesquisa'); 
 
    
     if (status !== null) {
@@ -324,8 +307,8 @@ function toggleResultadoPesquisa(status=null) {
         }
     }
 }// Função para montar o container de informações
-function limparInfoCliente(id_container) {
-    var container = document.getElementById(id_container);
+function limparInfoCliente() {
+    var container = document.getElementById("container_selecionar_cliente");
     // Limpar os textos dos campos no container
     container.querySelector("#info_nome_cliente").textContent = "";
     container.querySelector("#info_telefone_cliente").textContent = "";
@@ -344,11 +327,13 @@ function limparInfoCliente(id_container) {
     container.querySelector("#info_ultima_venda_valor_total").textContent = "";
     container.querySelector("#info_ultima_venda_produtos").textContent = "";
     // Exibir o container vazio
-    container.classList.add("d-none");
+
+    document.getElementById('id_cliente').value = "0"; 
+    alertCustomer(`Cliente Retirado de Selecão`)
 }
 
-function montarInfoCliente(data, id_container) {
-    var container = document.getElementById(id_container);
+function montarInfoCliente(data) {
+    var container = document.getElementById("container_selecionar_cliente");
     // Atualizar os valores dos campos com os dados fornecidos
     container.querySelector("#info_nome_cliente").textContent = data.nome;
     container.querySelector("#info_telefone_cliente").textContent = data.telefone;
@@ -376,18 +361,9 @@ function montarInfoCliente(data, id_container) {
         container.querySelector("#info_ultima_venda_valor_total").textContent = "";
         container.querySelector("#info_ultima_venda_produtos").textContent = "";
     } 
-    
-    toggleResultadoPesquisa(false);
-    alertCustomer(`Cliente selecionado: ${data.nome}`);
-    // Exibir o container de informações
-    container.classList.remove("d-none");
-}
- function close_cliente(){
-    document.getElementById('id_cliente').value = "0";
-    document.getElementById('info_cliente').classList.add("d-none")
-    toggleResultadoPesquisa(true);
-    alertCustomer(`Cliente Retirado de Selecão`);
- }
+     
+    alertCustomer(`Cliente selecionado: ${data.nome}`); 
+} 
 
 // Função para atualizar o dropdown com as lojas
 function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
@@ -686,18 +662,25 @@ function enviarDadosVenda() {
                 clean_form();
                 alertCustomer(response.error);
             }
+            btnSubmit.disabled = false;
     }); 
      
 
-} 
-document.getElementById("btnSubmit").addEventListener("click", function(event) {
+} document.getElementById("btnSubmit").addEventListener("click", function(event) {
+    var btnSubmit = document.getElementById("btnSubmit");
+    
+    // Desabilita o botão para evitar cliques repetidos
+    btnSubmit.disabled = true;
+
     // Chama a função de verificação antes de permitir o envio do formulário
     if (!verificarAntesDoSubmit()) {
         event.preventDefault(); // Impede o envio do formulário se a verificação falhar
+        btnSubmit.disabled = false; // Reabilita o botão se a verificação falhar
     } else {
         enviarDadosVenda();
-    }
+    } 
 });
+
 function atualizarCamposCarrinho() {
     var itensLista = document.querySelectorAll('.item-list-carrinho');
 
@@ -727,8 +710,9 @@ function atualizarCamposCarrinho() {
 
 
     function calcularValorTotal() {
+        var ul_produtos = document.getElementById("ul_produtos");
 
-        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+        var itensLista = ul_produtos.querySelectorAll(".list-group-item");
         var valorTotal = 0;
         // Itera sobre os itens da lista e calcula o valor total
             itensLista.forEach(function (item) {
@@ -829,72 +813,71 @@ function diminuirQuantidade(elemento) {
     calcularValorTotal();
     verificarListaProdutos();
 
-}
-
-function toggleGestaoRetornavel(status) {
+}function toggleGestaoRetornavel(status) {
     var container = document.getElementById("body_gestaoRetornavel");
-    var iconeOpen = document.getElementById("icone_produto_open");
-    var iconeClose = document.getElementById("icone_produto_close");
-    var iconeBloqueado = document.getElementById("iconeBloqueado");
-    var iconeDesbloqueado = document.getElementById("iconeDesbloqueado");
-    botao = document.getElementById("btn_gestao_retornaveis");
+    var icone = document.getElementById("icone_produto");
+    var botao = document.getElementById("btn_gestao_retornaveis");
 
-        if (status ) {
-            botao.setAttribute("onclick", "toggleGestaoRetornavel(false);");
-            container.classList.remove("d-none");
-            iconeOpen.classList.remove("d-none");
-            iconeClose.classList.add("d-none");
-            iconeBloqueado.classList.add("d-none");
-            iconeDesbloqueado.classList.remove("d-none");
-        } else {
-            botao.setAttribute("onclick", "toggleGestaoRetornavel(true);");
-            container.classList.add("d-none");
-            iconeOpen.classList.add("d-none");
-            iconeClose.classList.remove("d-none");
-
-            iconeBloqueado.classList.remove("d-none");
-            iconeDesbloqueado.classList.add("d-none");
-        }
+    if (status) {
+        botao.setAttribute("onclick", "toggleGestaoRetornavel(false);");
+        container.classList.remove("d-none");
+        icone.classList.remove("bi-eye-slash");
+        icone.classList.add("bi-eye");
+    } else {
+        botao.setAttribute("onclick", "toggleGestaoRetornavel(true);");
+        container.classList.add("d-none");
+        icone.classList.remove("bi-eye");
+        icone.classList.add("bi-eye-slash");
+    }
 }
+
   
- 
-    // Adiciona um evento de mudança ao select de lojas
-    function select_loja(){
-        // Obtém o ID da loja selecionada convertendo para um número inteiro
-        var selectedLoja = parseInt(this.value);
-        // Obtém a lista de produtos e limpa os produtos existentes
-        var produtosList = document.getElementById('produtosList');
-        produtosList.innerHTML = '';
 
-        // Adiciona produtos relevantes ao datalist
-        produtos_data = Utils.getLocalStorageItem('data_produtos');
+function select_loja() {
+    // Obtém o ID da loja selecionada convertendo para um número inteiro
+    const selectedLoja = parseInt(this.value);
 
-        // Verifica se há produtos na lista atual
-        if (document.getElementById("listaProdutos").innerHTML !== "") {
-            var itensLista = listaProdutos.querySelectorAll(".list-group-item");
-            var mensagemExibida = false; // Variável de controle para verificar se a mensagem já foi exibida
+    const produtosUl = document.getElementById("ul_produtos");
+
+    // Verifica se há produtos na lista atual
+    if (produtosUl.innerHTML !== "") {
+        const itensLista = produtosUl.querySelectorAll(".list-group-item");
+
+        // Verifica se há itens na lista
+        if (itensLista.length > 0) {
+            let mensagemExibida = false; // Variável de controle para verificar se a mensagem já foi exibida
+
+            const produtosData = Utils.getLocalStorageItem('data_produtos');
+
+            // Obtém o loja_id do primeiro produto no carrinho
+            const idExistente = itensLista[0].getAttribute("data-id-produto");
+            const primeiroProduto = produtosData.find(prod => prod.id_produto === idExistente);
+            const lojaIdCarrinho = primeiroProduto ? primeiroProduto.loja_id : null;
 
             // Itera sobre os itens da lista para verificar se o produto já está na lista
-            itensLista.forEach(function (item) {
-                var idExistente = item.getAttribute("data-id-produto");
-                var produto = produtos_data.find(item => item.id_produto == idExistente);
+            itensLista.forEach(item => {
+                const idExistente = item.getAttribute("data-id-produto");
+                const produto = produtosData.find(prod => prod.id_produto === idExistente);
 
-                // Remove o item da lista se ele não pertencer à loja selecionada
-                if (produto.loja_id !== selectedLoja) {
-                    item.parentNode.removeChild(item);
-                    // Verifica se a mensagem já foi exibida
+                // Verifica se o produto existe e se ele não pertence à loja selecionada
+                if (produto && produto.loja_id !== selectedLoja) {
+                    // Exibe a mensagem apenas uma vez
                     if (!mensagemExibida) {
-                        alertCustomer("Não é possível vender produtos de diferentes lojas. Por isso, removemos os produtos da loja selecionada anteriormente.");
+                        alertCustomer("Não é possível vender produtos de diferentes lojas. Limpe o carrinho caso queira alterar a loja.", 4);
                         mensagemExibida = true; // Marca que a mensagem foi exibida
+                        // Restaura o valor do select para o loja_id do carrinho
+                        this.value = lojaIdCarrinho;
                     }
                 }
             });
             calcularValorTotal();
         }
-        preencherListaDeProdutos();
-        
-    } 
-    
+    }
+    preencherListaDeProdutos();
+}
+
+         
+         
     window.onload = function() {
         inicializarPagina();
     };
@@ -965,9 +948,9 @@ function configurarObservadorDeMutacao() {
         }
     };
 
-    const listaProdutos = document.getElementById("listaProdutos");
+    const ul_produtos = document.getElementById("ul_produtos");
     const observer = new MutationObserver(observerCallback);
-    observer.observe(listaProdutos, observerOptions);
+    observer.observe(ul_produtos, observerOptions);
 }
 
 function configurarMascarasEValidacoes() {
@@ -1030,7 +1013,8 @@ function Ouvinte(produtoId) {
     });
 
     if (produtoSelecionado != null) {
-        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+        var ul_produtos = document.getElementById("ul_produtos")
+        var itensLista = ul_produtos.querySelectorAll(".list-group-item");
         var produtoExistente = false;
 
         itensLista.forEach(function (item) {
@@ -1057,7 +1041,7 @@ function Ouvinte(produtoId) {
                 <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produtoSelecionado.id_produto}" onclick="aumentarQuantidade(this)"></span>
                 <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
             `;
-            listaProdutos.appendChild(novoItemLista);
+            ul_produtos.appendChild(novoItemLista);
         }
 
         calcularValorTotal();
@@ -1067,7 +1051,8 @@ function Ouvinte(produtoId) {
 }
     // Função para verificar os produtos retornáveis
     function verificarRetornaveis() {
-        var itensLista = listaProdutos.querySelectorAll(".list-group-item");
+        
+        var itensLista = document.getElementById("ul_produtos").querySelectorAll(".list-group-item");
         var numeroGaloes = 0;
         // Verifica se há algum item retornado na lista e conta o número de galões saindo
         for (var item of itensLista) {
@@ -1231,7 +1216,7 @@ function editarVenda(id_venda) {
         if (response.success === true) {
             // Obtém a lista de produtos da resposta
             var produtos = response.list_produtos;
-            var ul_produtos = document.getElementById("listaProdutos");
+            var ul_produtos = document.getElementById("ul_produtos");
             ul_produtos.innerHTML = ""
             // Itera sobre os produtos e os exibe
             produtos.forEach(function(produto) {
@@ -1247,7 +1232,7 @@ function editarVenda(id_venda) {
                         <span class="btn btn-sm btn-outline-primary bi-plus ms-auto" data-id-produto="${produto.id_produto}" onclick="aumentarQuantidade(this)"></span>
                         <span class="btn btn-sm btn-outline-danger bi-dash ms-1" onclick="diminuirQuantidade(this)"></span>
                     `;
-                listaProdutos.appendChild(novoItemLista);
+                    ul_produtos.appendChild(novoItemLista);
             });
             calcularValorTotal();
         }
@@ -1257,8 +1242,8 @@ function editarVenda(id_venda) {
     });
     chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
         if (response.success === true) {
-            montarInfoCliente(response.cliente,"info_cliente");
-             
+            montarInfoCliente(response.cliente);
+            toggleCliente(true);
         }  
     });
  
