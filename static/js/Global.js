@@ -114,7 +114,7 @@ function chamarFuncaoPython(url, data,type, callback)  {
 
     // Create the alert div
     const alertDiv = document.createElement("div");
-    alertDiv.classList.add("alert", alertClass, "alert-dismissible", "fade", "show");
+    alertDiv.classList.add("alert", alertClass, "alert-dismissible", "fade", "show","my-2");
     alertDiv.setAttribute("role", "alert");
 
     // Create and add the close button
