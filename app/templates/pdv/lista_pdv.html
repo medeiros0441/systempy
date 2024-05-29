@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestão Caixa{% endblock %}
+
+{% block content %}
+
+
+
+<div class="container p-3   mx-auto bg-dark rounded" id="container-table">
+    <table class="table table-hover table-responsive table-sm table-dark">
+        <thead>
+            <tr>
+                <th scope="col" style="font-size:0.9rem" class="me-auto text-start">Loja</th>
+                <th scope="col" style="font-size:0.9rem" class="mx-auto text-center">Nome</th>
+                <th scope="col" class="mx-auto text-center d-none d-sm-table-cell order-1">Responsavel</th>
+                <th scope="col" class="ms-auto text-end">Ações</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider" id="tabela-caixa">
+            
+        </tbody>
+    </table>
+</div>
+</div>
+<script >
+    
+    window.onload = function() {
+        loadTable();
+    };
+    function loadTable() {
+        manageLoading(true, "container-table");
+        chamarFuncaoPython('/api/cliente/by_empresa/', null, 'GET', function(response) {
+            if (response.success === true) {
+                Utils.setLocalStorageItem('data', response.data);
+                montarTabela(response.data);
+            } else {
+                alertCustomer(response.message);
+            }
+            manageLoading(false, "container-table");
+        });
+    }   
+    
+    function montarTabela(data) {
+        const tabela = document.getElementById("tabela-caixa");
+        tabela.innerHTML = ''; // Limpar a tabela antes de popular
+
+        data.forEach(cliente => {
+            const row = document.createElement("tr");
+
+            // Coluna Loja
+            const lojaCell = document.createElement("td");
+            lojaCell.className = "text-start";
+            lojaCell.innerText = cliente.loja;
+            row.appendChild(lojaCell);
+
+            // Coluna Nome
+            const nomeCell = document.createElement("td");
+            nomeCell.className = "text-center";
+            nomeCell.innerText = cliente.nome;
+            row.appendChild(nomeCell);
+
+            // Coluna Responsável
+            const responsavelCell = document.createElement("td");
+            responsavelCell.className = "text-center d-none d-sm-table-cell order-1";
+            responsavelCell.innerText = cliente.responsavel;
+            row.appendChild(responsavelCell);
+
+            // Coluna Ações
+            const acoesCell = document.createElement("td");
+            acoesCell.className = "text-end";
+            
+            // Exemplo de ações - botão de editar
+            const editarBtn = document.createElement("button");
+            editarBtn.className = "btn btn-sm btn-primary";
+            editarBtn.innerText = "Editar";
+            editarBtn.onclick = function() {
+                // Chame sua função de edição aqui
+                editarCliente(cliente.id);
+            };
+            acoesCell.appendChild(editarBtn);
+
+            // Exemplo de ações - botão de excluir
+            const excluirBtn = document.createElement("button");
+            excluirBtn.className = "btn btn-sm btn-danger ms-2";
+            excluirBtn.innerText = "Excluir";
+            excluirBtn.onclick = function() {
+                // Chame sua função de exclusão aqui
+                excluirCliente(cliente.id);
+            };
+            acoesCell.appendChild(excluirBtn);
+
+            row.appendChild(acoesCell);
+
+            tabela.appendChild(row);
+        });
+    } 
+<script>
+{% endblock%}

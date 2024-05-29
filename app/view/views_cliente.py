@@ -17,12 +17,8 @@ class views_cliente:
     @staticmethod
     @Utils.verificar_permissoes(codigo_model=8)
     def lista_clientes(request, Alerta=None):
-        if Utils.get_status(request):
-            return render(request, "cliente/lista_clientes.html")
-        else:
-            return view.views_erro.erro(
-                request, "Você não está autorizado a fazer esta requisição."
-            )
+        return render(request, "cliente/lista_clientes.html")
+        
 
     def criar_cliente(request):
         if Utils.get_status(request):

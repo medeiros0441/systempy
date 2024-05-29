@@ -36,21 +36,23 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "app",
     "corsheaders",
+    "django_extensions",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "app.middlewares.AtualizarDadosClienteMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "app.middlewares.AtualizarDadosClienteMiddleware",
     "app.middlewares.ErrorLoggingMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
+    "app.middlewares.ErrorHandlerMiddleware",
+    "app.middlewares.NotFoundMiddleware",
 ]
-
 
 ROOT_URLCONF = "setup.urls"
 # Templates

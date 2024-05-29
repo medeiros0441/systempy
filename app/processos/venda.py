@@ -210,9 +210,9 @@ class processos:
 
         hoje = Utils.obter_data_hora_atual(True)
         try:
-            return models.Caixa.objects.get(loja_id=loja_id, dia=hoje)
+            return models.PDV.objects.get(loja_id=loja_id, dia=hoje)
         except ObjectDoesNotExist:
-            caixa_atual = models.Caixa.objects.create(
+            caixa_atual = models.PDV.objects.create(
                 loja_id=loja_id, dia=hoje, saldo_inicial=100
             )
             return caixa_atual
@@ -224,7 +224,7 @@ class processos:
 
         Parameters:
             valor_entrada (Decimal): O valor de entrada no caixa.
-            valor_saida (Decimal): O valor de saída do caixa.
+            valor_saida (Decimal): O valor de saída do PDV.
         """
         caixa_atual.saldo_final = (
             caixa_atual.saldo_inicial + valor_entrada - valor_saida
@@ -266,13 +266,13 @@ class processos:
         descricao_saida = "Troco de venda"
 
         # Adicionar transações ao caixa
-        models.Transacao.objects.create(
+        models.Transacao_PDV.objects.create(
             caixa=caixa_atual,
             venda=venda,
             valor=valor_entrada,
             descricao=descricao_entrada,
         )
-        models.Transacao.objects.create(
+        models.Transacao_PDV.objects.create(
             caixa=caixa_atual, venda=venda, valor=valor_saida, descricao=descricao_saida
         )
 

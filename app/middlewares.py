@@ -34,6 +34,7 @@ class ErrorHandlerMiddleware:
         else:
             return render(request, "erro.html", {"error_message": error_message})
 
+
 class ErrorLoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -63,15 +64,29 @@ class ErrorLoggingMiddleware:
         else:
             return HttpResponseServerError("Erro interno do servidor")
 
+
+from django.http import HttpResponsePermanentRedirect
+
+
 class NotFoundMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         response = self.get_response(request)
+
+        # Verificar se o caminho da URL tem uma barra no final
+        if request.path != "/" and request.path.endswith("/"):
+            # Remover a barra no final
+            new_path = request.path.rstrip("/")
+            # Verificar se a nova URL corresponde a uma view
+            if new_path and new_path != request.path:
+                return HttpResponsePermanentRedirect(new_path)
         if response.status_code == 404:
             return redirect("erro_404")
         return response
+
+
 # AtualizarDadosClienteMiddleware
 class AtualizarDadosClienteMiddleware(MiddlewareMixin):
     def process_request(self, request: HttpRequest):

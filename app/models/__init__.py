@@ -6,7 +6,15 @@ from .galao import Galao, GestaoGalao
 from .loja import Loja, Associado
 from .produto import Produto
 from .sessao import Sessao
-from .venda import Venda, ItemCompra, Motoboy, Caixa, Transacao, Entrega
+from .venda import (
+    Venda,
+    ItemCompra,
+    Motoboy,
+    PDV,
+    Transacao_PDV,
+    Entrega,
+    Associado_PDV,
+)
 from .historico import Historico
 from .log import Log
 from .configuracao import Configuracao
@@ -25,8 +33,9 @@ __all__ = [
     "Venda",
     "ItemCompra",
     "Motoboy",
-    "Caixa",
-    "Transacao",
+    "PDV",
+    "Associado_PDV",
+    "Transacao_PDV",
     "Entrega",
     "Historico",
     "Log",

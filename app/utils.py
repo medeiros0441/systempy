@@ -218,12 +218,11 @@ class Utils:
             },
         )
 
-    def get_status(request):
+    def get_status_acesso(id):
         from app.models import Usuario
 
-        id_usuario = request.session.get("id_usuario")
-        usuario = Usuario.objects.get(id_usuario=id_usuario)
-        return True
+        usuario = Usuario.objects.get(id_usuario=id)
+        return usuario.status_acesso
 
     def obter_dados_localizacao_ipinfo(ip, requests):
         # Chave de API do ipinfo.io
@@ -296,9 +295,22 @@ class Utils:
                 if id_usuario == 0 or id_empresa == 0:
                     return redirect("login")
 
+                if not Utils.get_status_acesso(id_usuario):
+                    return redirect("login", "seu usuario consta bloqueado.")
+
+                codigo_model_convertido = codigo_model
+                if isinstance(codigo_model, str):
+                    lista = Utils.lista_de_configuracao()
+                    # Comparar a string (em minúsculas) com a lista e atribuir o código
+                    codigo_model_lower = codigo_model.lower()
+                    for item in lista:
+                        if item["nome"].lower() == codigo_model_lower:
+                            codigo_model_convertido = item["codigo"]
+                            break
+
                 # Verifica as permissões do usuário com base no código
                 status, render = Utils.configuracao_usuario(
-                    request, id_usuario, codigo_model
+                    request, id_usuario, codigo_model_convertido
                 )
                 if status:
                     return func(request, *args, **kwargs)
@@ -320,8 +332,8 @@ class Utils:
             {"nome": "Venda", "codigo": 7},
             {"nome": "Cliente", "codigo": 8},
             {"nome": "Motoboy", "codigo": 9},
-            {"nome": "Caixa", "codigo": 10},
-            {"nome": "Transacao", "codigo": 11},
+            {"nome": "Pdv", "codigo": 10},
+            {"nome": "Transacao_PDV", "codigo": 11},
             {"nome": "Faturamento", "codigo": 12},
         ]
 
