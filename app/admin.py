@@ -12,8 +12,9 @@ from .models import (
     Venda,
     ItemCompra,
     Motoboy,
-    Caixa,
-    Transacao,
+    PDV,
+    TransacaoPDV,
+    AssociadoPDV,
     Entrega,
     Historico,
     Log,
@@ -296,16 +297,16 @@ class EntregaAdmin(admin.ModelAdmin):
     readonly_fields = ("insert", "update")
 
 
-class CaixaAdmin(admin.ModelAdmin):
+class PDV_Admin(admin.ModelAdmin):
     list_display = ("loja", "dia", "insert", "update", "saldo_inicial", "saldo_final")
     list_filter = ("loja",)
     search_fields = ["dia"]
     readonly_fields = ("insert", "update")
 
 
-class TransacaoAdmin(admin.ModelAdmin):
-    list_display = ("caixa", "venda", "valor", "descricao", "insert", "update")
-    list_filter = ("caixa", "venda")
+class TransacaoPDV_Admin(admin.ModelAdmin):
+    list_display = ("PDV", "venda", "valor", "descricao", "insert", "update")
+    list_filter = ("PDV", "venda")
     search_fields = ["descricao"]
     readonly_fields = ("insert", "update")
 
@@ -316,8 +317,8 @@ admin.site.register(Venda, VendaAdmin)
 admin.site.register(ItemCompra, ItemCompraAdmin)
 admin.site.register(Motoboy, MotoboyAdmin)
 admin.site.register(Entrega, EntregaAdmin)
-admin.site.register(Caixa, CaixaAdmin)
-admin.site.register(Transacao, TransacaoAdmin)
+admin.site.register(PDV, PDV_Admin)
+admin.site.register(TransacaoPDV, TransacaoPDV_Admin)
 admin.site.register(Historico, HistoricoAdmin)
 admin.site.register(Log, LogAdmin)
 admin.site.register(Loja, LojaAdmin)

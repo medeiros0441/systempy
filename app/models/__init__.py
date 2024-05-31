@@ -6,15 +6,8 @@ from .galao import Galao, GestaoGalao
 from .loja import Loja, Associado
 from .produto import Produto
 from .sessao import Sessao
-from .venda import (
-    Venda,
-    ItemCompra,
-    Motoboy,
-    PDV,
-    Transacao_PDV,
-    Entrega,
-    Associado_PDV,
-)
+from .venda import Venda,    ItemCompra,    Motoboy,    Entrega
+from .pdv import PDV,TransacaoPDV,AssociadoPDV,RegistroDiarioPDV,HistoricoAlteracoes
 from .historico import Historico
 from .log import Log
 from .configuracao import Configuracao
@@ -34,8 +27,10 @@ __all__ = [
     "ItemCompra",
     "Motoboy",
     "PDV",
-    "Associado_PDV",
-    "Transacao_PDV",
+    "HistoricoAlteracoes",
+    "RegistroDiarioPDV",
+    "AssociadoPDV",
+    "TransacaoPDV",
     "Entrega",
     "Historico",
     "Log",

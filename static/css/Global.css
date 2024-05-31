@@ -11,7 +11,30 @@
     --font-family: 'Gliker', sans-serif;
 }
     
+/* Aplicação da fonte Montserrat apenas para elementos com a classe .font-montserrat */
+.font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.6;
+    color: #333; /* Cor do texto padrão */
+}
 
+/* Exemplo de estilo adicional para elementos específicos */
+.font-montserrat h1, .font-montserrat h2, .font-montserrat h3, 
+.font-montserrat h4, .font-montserrat h5, .font-montserrat h6 {
+    font-weight: 700; /* Negrito para cabeçalhos */
+}
+
+.font-montserrat p {
+    margin-bottom: 1.5em;
+}
+
+.font-montserrat a {
+    text-decoration: none;
+}
+
+.font-montserrat a:hover {
+    text-decoration: underline;
+}
 
 @font-face {
     font-family: 'Gliker';

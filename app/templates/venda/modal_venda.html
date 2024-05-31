@@ -298,7 +298,7 @@ function detalhes_modal_cliente(id_venda) {
 
 
     function select_motoboy(id_venda) {
-        chamarFuncaoPython('/get_motoboy_by_venda/'+id_venda+"/", null, 'GET', function(response) {
+        chamarFuncaoPython('/get_motoboy_by_venda/'+id_venda, null, 'GET', function(response) {
             if (response.motoboy) {
                     document.getElementById('info_motoboy').classList.remove("d-none");
                     document.getElementById('nome_motoboy').innerText = response.motoboy.nome;

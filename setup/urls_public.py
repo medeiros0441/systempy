@@ -67,11 +67,12 @@ url_empresa = [  # empresa
     ),
 ]
 
-url_caixa = [
-    path("caixa", view.views_caixa.caixa, name="caixa"),
-    path("lista_caixa", view.views_caixa.get_lista, name="caixa-list"),
-    path("caixas/<uuid:id>", view.views_caixa, name="caixa-detail"),
-    path("transacoes", view.views_transacao.lista_transacao, name="transacao-list"),
+url_pdv = [
+    path("pdv", view.views_pdv.pdv, name="pdv"),
+    path("lista_pdv", view.views_pdv.get_lista, name="pdv-list"),
+    path("lista_pdv/<uuid:id>", view.views_pdv.get_lista, name="pdv-list"),
+    path("pdv/<uuid:id>", view.views_pdv, name="pdv-detail"),
+    path("transacoes", view.views_transacao_pdv.lista_transacao, name="transacao-list"),
 ]
 
 url_usuario = [
@@ -379,5 +380,5 @@ urlpatterns = (
     + url_galao
     + url_motoboy
     + url_erros
-    + url_caixa
+    + url_pdv
 )
