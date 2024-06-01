@@ -3,12 +3,13 @@
 {% block title %}Gestão PDV{% endblock %}
 
 {% block content %}
-
-    
+{% include 'pdv/modal_pdv.html' %}  
+ 
+  
 <div class="container  bg-light mx-auto">
     <div class="d-flex  mt-3 mb-2 justify-content-between">
         <span   class=" font-montserrat fw-border my-auto" style="font-size: 1.0rem;">Pontos de Vendas</span>
-        <button type="button" onclick="open_modal();" id="btnCriar" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-plus me-1"></i>Cadastrar Ponto</a>
+        <button type="button" onclick="typeModal(1);" id="btnCriar" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-plus me-1"></i>Cadastrar Ponto</a>
     </div>
 </div> 
 
@@ -27,15 +28,60 @@
         </tbody>
     </table>
 </div>
-</div>
+</div> 
 <script >
+    let myModal;
+
+    function openModal() {
+        if (!myModal) {
+            myModal = new bootstrap.Modal(document.getElementById('ModalPvd'));
+
+        }
+        myModal.show();
+    }
     
-    window.onload = function() {
-        loadTable();
-    };
-    function loadTable() {
+    function closeModal() {
+        if (myModal) {
+            myModal.hide();
+            clearModalFields();
+
+        } else {
+            console.error('myModal não está definido.');
+        }
+    }
+    
+    function typeModal(value) {
+        const modal = document.getElementById('ModalPvd');
+        const modalLabel = modal.querySelector("#ModalLabel");
+        const detalhes = modal.querySelector("#container-detalhes");
+        const form = modal.querySelector("#container-form");
+        iniciar_modal();
+        switch (value) {
+            case 1:
+                modalLabel.innerText = "Criar PDV";
+                detalhes.classList.add("d-none");
+                form.classList.remove("d-none");
+                openModal();
+                break;
+            case 2:
+                modalLabel.innerText = "Detalhes do PDV";
+                detalhes.classList.remove("d-none");
+                form.classList.add("d-none");
+                openModal();
+                break;
+            default:
+                modalLabel.innerText = "Editar PDV";
+                detalhes.classList.add("d-none");
+                form.classList.remove("d-none");
+                openModal();
+                preencherModal(value);
+                break;
+        }
+    }
+
+    function preencherModal(value) {
         manageLoading(true, "container-table");
-        chamarFuncaoPython('/lista_pdv', null, 'GET', function(response) {
+        chamarFuncaoPython("pdv/lista", null, 'GET', function(response) {
             if (response.success === true) {
                 Utils.setLocalStorageItem('data', response.data);
                 montarTabela(response.data);
@@ -43,6 +89,88 @@
                 alertCustomer(response.message);
             }
             manageLoading(false, "container-table");
+        });
+    }   
+     
+
+    function clearModalFields() {
+        // Limpar os campos de texto no container-detalhes
+        document.getElementById("detalhes-nome").innerText = '';
+        document.getElementById("detalhes-loja").innerText = '';
+        document.getElementById("detalhes-insert").innerText = '';
+        document.getElementById("detalhes-update").innerText = '';
+        document.getElementById("detalhes-saldo_inicial").innerText = '';
+        document.getElementById("detalhes-status_operacao").innerText = '';
+    
+        // Limpar os inputs no container-form
+        document.getElementById("nome").value = '';
+        document.getElementById("select_loja").value = '0';  // Assume que '0' é o valor padrão para "Selecione"
+        document.getElementById("saldo_inicial").value = '';
+        document.getElementById("status_operacao").value = '';  // Assume que '' é o valor padrão
+    
+        // Selecione todos os elementos de label e limpe seus textos
+        let labels = document.querySelectorAll('#container-detalhes .form-label, #container-form .form-label');
+        labels.forEach(label => {
+            label.innerText = label.innerText.replace(/:.*$/, ':'); // Mantém o texto do label até o primeiro ':' (do ícone e o texto do label)
+        });
+    }
+    function fillModalFields(tipo,data) {
+        if(tipo==1){
+        // Preencher os campos de texto no container-detalhes
+        document.getElementById("detalhes-nome").innerText = data.nome || '';
+        document.getElementById("detalhes-loja").innerText = data.loja || '';
+        document.getElementById("detalhes-insert").innerText = data.insert || '';
+        document.getElementById("detalhes-update").innerText = data.update || '';
+        document.getElementById("detalhes-saldo_inicial").innerText = data.saldo_inicial || '';
+        document.getElementById("detalhes-status_operacao").innerText = data.status_operacao || '';
+        }else{
+        // Preencher os inputs no container-form
+        document.getElementById("nome").value = data.nome || '';
+        document.getElementById("select_loja").value = data.loja || '0'; // Assume que '0' é o valor padrão para "Selecione"
+        document.getElementById("saldo_inicial").value = data.saldo_inicial || '';
+        document.getElementById("status_operacao").value = data.status_operacao || ''; // Assume que '' é o valor padrão
+        }
+        // Atualizar os textos dos labels com os dados do PDV
+        let labels = document.querySelectorAll('#container-detalhes .form-label, #container-form .form-label');
+        labels.forEach(label => {
+            let labelText = label.innerText.replace(/:.*$/, ':');
+            let fieldName = labelText.replace(/:$/, '').trim().toLowerCase(); // Remove ':' do final e converte para minúsculas
+            if (fieldName in data) {
+                label.innerText = labelText + ' ' + data[fieldName];
+            }
+        });
+    }
+    // Exemplo de chamada da função clearModalFields
+    window.onload = function() {
+        load_data();
+
+    };
+
+    function load_data() {
+        manageLoading(true, "container-table");
+        chamarFuncaoPython('pdv/lista', null, 'GET', function(response) {
+            if (response.success === true) {
+                Utils.setLocalStorageItem('data_pdvs', response.data);
+                montarTabela(response.data);
+            } else {
+                alertCustomer(response.message);
+            }
+            manageLoading(false, "container-table");
+        });
+        chamarFuncaoPython("api_lojas", null, 'GET', function(response) {
+            if (response.success === true) {
+                Utils.setLocalStorageItem('data_lojas', response.lojas);
+            } else {
+                alertCustomer(response.message);
+            }
+        });
+
+        chamarFuncaoPython("api_usuarios", null, 'GET', function(response) {
+            if (response.success === true) {
+                Utils.setLocalStorageItem('data_usuarios', response.usuarios);
+            } else {
+                alertCustomer(response.message);
+            }
         });
     }   
     

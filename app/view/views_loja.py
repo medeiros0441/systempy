@@ -3,8 +3,11 @@ from ..forms import LojaForm, EnderecoForm
 from app.utils import Utils
 from app.static import Alerta, UserInfo
 from ..models import Empresa, Loja, Associado, Usuario
-
 from .views_erro import views_erro
+import json
+from django.http import JsonResponse
+from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 class views_loja:
@@ -28,6 +31,26 @@ class views_loja:
         return render(request, "loja/lista_lojas.html", context)
 
     @Utils.verificar_permissoes(5)
+    def api_lista_lojas(request):
+        try:
+            id_empresa = UserInfo.get_id_empresa(request)
+            lojas = Loja.objects.filter(empresa_id=id_empresa)
+            lojas_serialized = json.loads(serialize("json", lojas))
+            lojas_json = [loja['fields'] for loja in lojas_serialized]
+            return JsonResponse(
+                {
+                    "lojas": lojas_json,
+                    "success": True,
+                }
+            )
+        except Loja.DoesNotExist:
+            # Caso a loja não exista, retornamos um JSON com uma lista vazia
+            return JsonResponse({"lojas": [], "success": True})
+        except Exception as e:
+            # Tratamento profissional de exceções
+            return JsonResponse({"error": str(e)}, status=500)
+
+    @Utils.verificar_permissoes(5)
     def criar_loja(request):
         try:
             if request.method == "POST":
@@ -47,14 +70,20 @@ class views_loja:
                     loja = form_loja.save()  # Cria um novo registro de Loja
                     Alerta.set_mensagem("Cadastrado com Sucesso.")
                     id_usuario = UserInfo.get_id_usuario(request)
-                    usuario_adm = Usuario.objects.get(empresa_id=loja.empresa_id, nivel_usuario=1)
+                    usuario_adm = Usuario.objects.get(
+                        empresa_id=loja.empresa_id, nivel_usuario=1
+                    )
 
                     associados = [
                         Associado(usuario_id=id_usuario, loja=loja, status_acesso=True)
                     ]
 
                     if usuario_adm.id_usuario != id_usuario:
-                        associados.append(Associado(usuario=usuario_adm, loja=loja, status_acesso=True))
+                        associados.append(
+                            Associado(
+                                usuario=usuario_adm, loja=loja, status_acesso=True
+                            )
+                        )
 
                     Associado.objects.bulk_create(associados)
 
@@ -83,7 +112,7 @@ class views_loja:
                 )
         except Exception as e:
             mensagem_erro = str(e)
-            return views_erro.erro(request,mensagem_erro)
+            return views_erro.erro(request, mensagem_erro)
 
     @Utils.verificar_permissoes(5)
     def selecionar_loja(request, id_loja):
@@ -104,14 +133,14 @@ class views_loja:
                 return views_erro.erro(request, "vôce não está associado a empresa..")
         except Exception as e:
             mensagem_erro = str(e)
-            return views_erro.erro(request,mensagem_erro)
+            return views_erro.erro(request, mensagem_erro)
 
     @Utils.verificar_permissoes(5)
     def editar_loja(request, id_loja):
         loja = get_object_or_404(Loja, pk=id_loja)
         id = UserInfo.get_id_empresa(request)
         if loja.empresa.id_empresa != id:
-            return views_erro.erro(request,"vôce não está associado a empresa..")
+            return views_erro.erro(request, "vôce não está associado a empresa..")
         if request.method == "POST":
             form_loja = LojaForm(request.POST, instance=loja)
             form_endereco = EnderecoForm(request.POST, instance=loja.endereco)

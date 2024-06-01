@@ -1,0 +1,96 @@
+{% load static%}
+
+{% block content %}
+    <div class="modal fade" id="ModalPvd" data-bs-backdrop="static"   data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog  modal-md modal-fullscreen-md-down modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold font-montserrat" id="ModalLabel" ></h5>
+                </div>
+                <div class="modal-body d-none " id="container-detalhes">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-person me-2"></i>Nome do PDV:</label>
+                            <p id="detalhes-nome" class="form-control-plaintext"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-shop-window me-2"></i>Loja:</label>
+                            <p id="detalhes-loja" class="form-control-plaintext"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-calendar-plus me-2"></i>Data de Inserção:</label>
+                            <p id="detalhes-insert" class="form-control-plaintext"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-calendar-check me-2"></i>Data de Atualização:</label>
+                            <p id="detalhes-update" class="form-control-plaintext"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-currency-dollar me-2"></i>Saldo Inicial:</label>
+                            <p id="detalhes-saldo_inicial" class="form-control-plaintext"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-toggle-on me-2"></i>Status de Operação:</label>
+                            <p id="detalhes-status_operacao" class="form-control-plaintext"></p>
+                        </div>
+                    </div>
+
+                <div class="modal-body d-none " id="container-form">
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control" id="nome" name="nome" placeholder>
+                        <label for="nome">Nome do PDV</label>
+                    </div>
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control autocomplete"   id="select_loja"  data-storage="data_lojas" data-onselect="handleSelect"  data-property="nome_loja">
+                        <label for="select_loja">Loja:</label>
+                    </div>
+
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control autocomplete"  id="autocomplete_usuario" data-storage="data_usuarios" data-property="nome_completo">
+                        <label for="autocomplete_usuario">Usuario Associado</label>
+                    </div>
+                      
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control money-mask" id="saldo_inicial" name="saldo_inicial" >
+                        <label for="saldo_inicial">Saldo Inicial</label>
+                    </div>
+                    <div class="form-floating mb-2">
+                        <select class="form-control" id="status_operacao" name="status_operacao">
+                            <option value="0" disabled selected>Status de operação</option>
+                            <option value="true">Aberto</option>
+                            <option value="false">Fechado</option>
+                        </select>
+                        <label for="status_operacao">Status de Operação</label>
+                    </div>
+  
+                </div>  
+
+
+                <div class="modal-footer ">
+                        <button type="button" onclick="closeModal();"  class="btn btn-secondary float-start ms-auto btn-sm">Fechar</a>
+                </div>  
+        </form>
+    </div> 
+ 
+    </div>
+    </div>
+    </div>
+   
+<script>
+function iniciar_modal(){
+    applyAutocomplete(); 
+}
+
+    // Aplicar o autocomplete automaticamente ao carregar a página
+
+
+// Função para lidar com a seleção do usuário
+function handleSelect(selectedValue, idMap) {
+    var selectedId = idMap[selectedValue];
+    $("#usuario_id").val(selectedId);
+    console.log("Usuário selecionado:", selectedValue);
+    console.log("ID do usuário:", selectedId);
+    // Adicione aqui o código que deseja executar ao selecionar um usuário
+}
+ 
+</script>
+{% endblock %}

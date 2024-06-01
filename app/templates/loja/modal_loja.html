@@ -208,7 +208,7 @@
 {% if form_loja %}   
     <script>
    
-            function applyValidationClasses(form) {
+    function applyValidationClasses(form) {
         const inputs = form.querySelectorAll('.form-control-validate');
         inputs.forEach(input => {
             if (input.value.trim() === '') {
@@ -265,14 +265,8 @@
         function validateForm(form) {
             const nomeLoja = form.querySelector('#id_nome_loja').value.trim();
             const numeroTelefone = form.querySelector('#id_numero_telefone').value.trim();
-
-            const rua = form.querySelector('#id_rua').value.trim();
-            const numero = form.querySelector('#id_numero').value.trim();
-            const bairro = form.querySelector('#id_bairro').value.trim();
-            const cidade = form.querySelector('#id_cidade').value.trim();
-            const estado = form.querySelector('#id_estado').value.trim();
             // Ajuste na validação para ignorar o campo descricao
-            if (nomeLoja === '' || numeroTelefone === '' ||  rua === '' || numero === '' || bairro === '' || cidade === '' || estado === ''  ) {
+            if (nomeLoja === '' || numeroTelefone === ''   ) {
                 return false;
             }else{
                 return true;

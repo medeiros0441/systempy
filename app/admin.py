@@ -297,28 +297,12 @@ class EntregaAdmin(admin.ModelAdmin):
     readonly_fields = ("insert", "update")
 
 
-class PDV_Admin(admin.ModelAdmin):
-    list_display = ("loja", "dia", "insert", "update", "saldo_inicial", "saldo_final")
-    list_filter = ("loja",)
-    search_fields = ["dia"]
-    readonly_fields = ("insert", "update")
-
-
-class TransacaoPDV_Admin(admin.ModelAdmin):
-    list_display = ("PDV", "venda", "valor", "descricao", "insert", "update")
-    list_filter = ("PDV", "venda")
-    search_fields = ["descricao"]
-    readonly_fields = ("insert", "update")
-
-
 admin.site.register(Produto, ProdutoAdmin)
 admin.site.register(Sessao, SessaoAdmin)
 admin.site.register(Venda, VendaAdmin)
 admin.site.register(ItemCompra, ItemCompraAdmin)
 admin.site.register(Motoboy, MotoboyAdmin)
 admin.site.register(Entrega, EntregaAdmin)
-admin.site.register(PDV, PDV_Admin)
-admin.site.register(TransacaoPDV, TransacaoPDV_Admin)
 admin.site.register(Historico, HistoricoAdmin)
 admin.site.register(Log, LogAdmin)
 admin.site.register(Loja, LojaAdmin)

@@ -16,4 +16,9 @@ from .views_empresa import views_empresa
 from .views_autenticacao import views_autenticacao
 from .views_erro import views_erro
 from .views_assinante import views_assinante
-from .views_pdv import views_pdv,views_transacao_pdv
+from .views_pdv import (
+    views_pdv,
+    views_transacao_pdv,
+    views_associado_pdv,
+    views_registro_diario_pdv,
+)

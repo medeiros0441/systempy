@@ -69,15 +69,48 @@ url_empresa = [  # empresa
 
 url_pdv = [
     path("pdv", view.views_pdv.pdv, name="pdv"),
-    path("lista_pdv", view.views_pdv.get_lista, name="pdv-list"),
-    path("lista_pdv/<uuid:id>", view.views_pdv.get_lista, name="pdv-list"),
-    path("pdv/<uuid:id>", view.views_pdv, name="pdv-detail"),
-    path("transacoes", view.views_transacao_pdv.lista_transacao, name="transacao-list"),
+    # URLs para views_pdv
+    path("pdv/lista", view.views_pdv.list_pdv, name="list_pdv"),
+    path("pdv/<uuid:id_loja>/", view.views_pdv.list_pdv, name="list_pdv"),
+    path("pdv/create/", view.views_pdv.create_pdv, name="create_pdv"),
+    path("pdv/update/", view.views_pdv.update_pdv, name="update_pdv"),
+    # URLs para views_registro_diario_pdv
+    path(
+        "registro_diario_pdv/<uuid:id_pdv>/",
+        view.views_registro_diario_pdv.list_registro_diario_pdv,
+        name="list_registro_diario_pdv",
+    ),
+    path(
+        "registro_diario_pdv/update/<uuid:id_registro_diario>/",
+        view.views_registro_diario_pdv.update_registro_diario_pdv,
+        name="update_registro_diario_pdv",
+    ),
+    # URLs para views_associado_pdv
+    path(
+        "associado_pdv/",
+        view.views_associado_pdv.list_associado_pdv,
+        name="list_associado_pdv",
+    ),
+    path(
+        "associado_pdv/create/",
+        view.views_associado_pdv.create_associado_pdv,
+        name="create_associado_pdv",
+    ),
+    path(
+        "associado_pdv/update/",
+        view.views_associado_pdv.update_associado_pdv,
+        name="update_associado_pdv",
+    ),
 ]
 
 url_usuario = [
     # URLs de usuários
     path("usuarios", view.views_usuarios.listar_usuarios, name="listar_usuarios"),
+    path(
+        "api_usuarios",
+        view.views_usuarios.api_listar_usuarios,
+        name="api_listar_usuarios",
+    ),
     path(
         "usuarios/criar",
         view.views_usuarios.cadastrar_usuario,
@@ -118,6 +151,7 @@ url_usuario = [
 url_loja = [
     # lojas
     path("lojas", view.views_loja.lista_lojas, name="lista_lojas"),
+    path("api_lojas", view.views_loja.api_lista_lojas, name="api_lista_lojas"),
     path("lojas/criar", view.views_loja.criar_loja, name="criar_loja"),
     path("lojas/editar/<int:id_loja>", view.views_loja.editar_loja, name="editar_loja"),
     path(
@@ -310,8 +344,15 @@ url_endereco = [
         name="delete_endereco",
     ),
 ]
-
-url_funcJs = [  # funçoes js
+url_api = [
+    path("api/status_on", view.views_sessao.status_on, name="status_on"),
+    path("api/status_off", view.views_sessao.status_off, name="status_off"),
+    path(
+        "api_cadastro_clientes",
+        view.views_cadastro.cadastro_empresa,
+        name="api_cadastro_clientes",
+    ),
+    path("api_login", view.views_default.api_login, name="api_login"),  # funçoes js
     path("enviar-codigo/<str:email>", Utils.enviar_codigo, name="enviar_codigo"),
     path(
         "confirmar-codigo/<str:codigo>",
@@ -323,20 +364,8 @@ url_funcJs = [  # funçoes js
         Utils.atualizar_senha,
         name="atualizar_senha",
     ),
-    path("api/status_on", view.views_sessao.status_on, name="status_on"),
-    path("api/status_off", view.views_sessao.status_off, name="status_off"),
     path("buscar_lojas", view.views_api.buscar_lojas, name="buscar_lojas"),
     path("endereco/create", view.views_api.create_endereco, name="create_endereco"),
-    path(
-        "api_cadastro_clientes",
-        view.views_cadastro.cadastro_empresa,
-        name="api_cadastro_clientes",
-    ),
-    path(
-        "api_login",
-        view.views_default.api_login,
-        name="api_login",
-    ),
     # Adicione outras URLs conforme necessário
 ]
 
@@ -368,7 +397,7 @@ url_motoboy = [
 
 urlpatterns = (
     url_default
-    + url_funcJs
+    + url_api
     + url_assinante
     + url_empresa
     + url_usuario

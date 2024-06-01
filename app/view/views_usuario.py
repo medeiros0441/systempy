@@ -7,6 +7,10 @@ from ..models import Usuario, Configuracao, Loja, Associado
 from .views_configuracao import views_configuracao
 from ..forms import UsuarioForm
 from app.utils import Utils
+import json
+from django.http import JsonResponse
+from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 class views_usuarios:
@@ -25,7 +29,21 @@ class views_usuarios:
             context["alerta_js"] = Utils.criar_alerta_js(alerta_js)
 
         return render(request, "usuario/lista_usuario.html", context)
-
+   
+    @Utils.verificar_permissoes(codigo_model=1)
+    def api_listar_usuarios(request):
+        try:
+            id_empresa = UserInfo.get_id_empresa(request)
+            usuarios = Usuario.objects.filter(empresa_id=id_empresa)
+            usuarios_serialized = json.loads(serialize('json', usuarios))
+        
+            usuarios_json = [usuario['fields'] for usuario in usuarios_serialized]
+            # Retorna os usuários em JSON
+            return JsonResponse({'usuarios':usuarios_json,"success": True})
+        except Exception as e:
+            # Tratamento profissional de exceções
+            return JsonResponse({'error': str(e)}, status=500)
+        
     @staticmethod
     @Utils.verificar_permissoes(codigo_model=1)
     def detalhes_usuario(request, id_usuario):

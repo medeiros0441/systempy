@@ -227,3 +227,76 @@ if (document.getElementById("id_codigo_postal")) {
 }
 
  
+function applyAutocomplete() {
+    $(".autocomplete[data-storage][data-property]").each(function() {
+        var $input = $(this);
+        var storageKey = $input.data("storage");
+        var propertyKeys = $input.data("property").split(",");
+
+        // Tentando obter dados do localStorage
+        var rawData = localStorage.getItem(storageKey);
+        if (!rawData) {
+            console.error(`Nenhum dado encontrado no localStorage para a chave: ${storageKey}`);
+            return;
+        }
+
+        // Tentando fazer o parse dos dados
+        var data;
+        try {
+            data = JSON.parse(rawData);
+        } catch (e) {
+            console.error(`Erro ao fazer o parse dos dados do localStorage para a chave: ${storageKey}`, e);
+            return;
+        }
+        // Log para verificação da estrutura dos dados dos usuários
+
+        var availableTags = [];
+        var idMap = {}; // Mapeamento de ID para o item correspondente
+
+        // Verifica se é necessário usar todas as propriedades
+        if (propertyKeys.includes("*")) {
+            // Extraindo valores de todas as propriedades
+            data.forEach(function(item) {
+                for (var key in item) {
+                    if (typeof item[key] === 'string') {
+                        availableTags.push(item[key]);
+                        idMap[item[key]] = item.id; // Armazenando o ID correspondente
+                    }
+                }
+            });
+        } else {
+            // Extraindo valores das propriedades especificadas
+            data.forEach(function(item) {
+                propertyKeys.forEach(function(key) {
+                    if (item[key] && typeof item[key] === 'string') {
+                        availableTags.push(item[key]);
+                        idMap[item[key]] = item.id; // Armazenando o ID correspondente
+                    }
+                });
+            });
+        }
+
+        // Log para verificação
+
+        $input.autocomplete({
+            source: availableTags,
+            select: function(event, ui) {
+                var onSelectFunction = $input.data("onselect"); // Obter o nome da função a ser executada
+                if (typeof window[onSelectFunction] === "function") {
+                    window[onSelectFunction](ui.item.value, idMap); // Chamar a função dinamicamente
+                }
+            }
+        });
+    });
+}
+
+// Função para lidar com a seleção do usuário
+function handleSelect(selectedValue, idMap) {
+    var selectedId = idMap[selectedValue];
+    $("#usuario_id").val(selectedId);
+    console.log("Usuário selecionado:", selectedValue);
+    console.log("ID do usuário:", selectedId);
+    // Adicione aqui o código que deseja executar ao selecionar um usuário
+}
+
+// Aplicar o autocomplete automaticamente ao carregar a página
