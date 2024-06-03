@@ -50,15 +50,21 @@ class views_pdv:
 
     @Utils.verificar_permissoes(codigo_model="pdv")
     @csrf_exempt
-    def create_pdv(request, data):
+    def create_pdv(request):
         if request.method == "POST":
             try:
-
+                data = json.loads(request.body)
                 nome = data.get("nome", "PDV Padrão")
-                loja_id = data.get("loja_id")
+                loja_id = data.get("id_loja",None)
                 saldo_inicial = data.get("saldo_inicial", 100)
+                saldo_inicial = Utils.converter_para_decimal(saldo_inicial)
                 status_operacao = data.get("status_operacao", True)
-
+                usuario_associado = data.get("id_usuario", None)
+                if not usuario_associado:
+                    return JsonResponse(
+                        {"success": False, "message": "usuario associado ID é obrigatório"},
+                        status=400,
+                    )
                 if not loja_id:
                     return JsonResponse(
                         {"success": False, "message": "Loja ID é obrigatório"},
@@ -79,10 +85,16 @@ class views_pdv:
                     status_operacao=status_operacao,
                 )
                 id_empresa = UserInfo.get_id_empresa(request)
-                usuario = Usuario.objects.get(id_empresa=id_empresa, nivel_usuario=1)
+                usuario = Usuario.objects.get(empresa_id=id_empresa,id=usuario_associado)
                 data["usuario"] = usuario.id_usuario
                 data["pdv"] = pdv.id_pdv
-                views_associado_pdv.create_associado_pdv(data)
+                views_associado_pdv.create_associado_pdv(request,data)
+
+                #associando admin
+                usuario = Usuario.objects.get(empresa_id=id_empresa, nivel_usuario=1)
+                data["usuario"] = usuario.id_usuario
+                data["pdv"] = pdv.id_pdv
+                views_associado_pdv.create_associado_pdv(request,data)
                 return JsonResponse(
                     {
                         "success": True,
@@ -113,9 +125,11 @@ class views_pdv:
 
     @Utils.verificar_permissoes(codigo_model="pdv")
     @csrf_exempt
-    def update_pdv(request, data):
+    def update_pdv(request):
         if request.method == "PUT":
             try:
+                data = json.loads(request.body)
+
                 pdv_id = data.get("id_pdv")
                 nome = data.get("nome")
                 loja_id = data.get("loja_id")

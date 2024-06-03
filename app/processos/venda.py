@@ -105,22 +105,7 @@ class processos:
             # Trate possíveis erros
             print(f"Erro ao processar carrinho: {e}")
             raise
-
-    def converter_para_decimal(valor):
-        try:
-            if valor is None or valor == "":
-                return Decimal(0)
-            elif valor == "NaN":
-                return Decimal(0)
-            elif "," in valor:
-                # Se houver vírgula no valor, substituímos por ponto e convertemos para Decimal
-                valor = valor.replace(",", ".")
-                return Decimal(valor)
-            else:
-                return Decimal(valor)
-        except (ValueError, TypeError):
-            return Decimal(0)
-
+ 
     def criar_ou_atualizar_venda(dados):
         try:
             id_venda = dados.get("id_venda")

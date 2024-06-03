@@ -71,33 +71,33 @@ url_pdv = [
     path("pdv", view.views_pdv.pdv, name="pdv"),
     # URLs para views_pdv
     path("pdv/lista", view.views_pdv.list_pdv, name="list_pdv"),
-    path("pdv/<uuid:id_loja>/", view.views_pdv.list_pdv, name="list_pdv"),
-    path("pdv/create/", view.views_pdv.create_pdv, name="create_pdv"),
-    path("pdv/update/", view.views_pdv.update_pdv, name="update_pdv"),
+    path("pdv/<uuid:id_loja>", view.views_pdv.list_pdv, name="list_pdv"),
+    path("pdv/create", view.views_pdv.create_pdv, name="create_pdv"),
+    path("pdv/update", view.views_pdv.update_pdv, name="update_pdv"),
     # URLs para views_registro_diario_pdv
     path(
-        "registro_diario_pdv/<uuid:id_pdv>/",
+        "registro_diario_pdv/<uuid:id_pdv>",
         view.views_registro_diario_pdv.list_registro_diario_pdv,
         name="list_registro_diario_pdv",
     ),
     path(
-        "registro_diario_pdv/update/<uuid:id_registro_diario>/",
+        "registro_diario_pdv/update/<uuid:id_registro_diario>",
         view.views_registro_diario_pdv.update_registro_diario_pdv,
         name="update_registro_diario_pdv",
     ),
     # URLs para views_associado_pdv
     path(
-        "associado_pdv/",
+        "associado_pdv",
         view.views_associado_pdv.list_associado_pdv,
         name="list_associado_pdv",
     ),
     path(
-        "associado_pdv/create/",
+        "associado_pdv/create",
         view.views_associado_pdv.create_associado_pdv,
         name="create_associado_pdv",
     ),
     path(
-        "associado_pdv/update/",
+        "associado_pdv/update",
         view.views_associado_pdv.update_associado_pdv,
         name="update_associado_pdv",
     ),

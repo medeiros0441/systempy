@@ -35,14 +35,25 @@ class views_usuarios:
         try:
             id_empresa = UserInfo.get_id_empresa(request)
             usuarios = Usuario.objects.filter(empresa_id=id_empresa)
-            usuarios_serialized = json.loads(serialize('json', usuarios))
-        
-            usuarios_json = [usuario['fields'] for usuario in usuarios_serialized]
-            # Retorna os usuários em JSON
-            return JsonResponse({'usuarios':usuarios_json,"success": True})
+            usuarios_json = [
+                {
+                    "id": usuario.id,
+                    "id_usuario": usuario.id_usuario,
+                    "nome_completo": usuario.nome_completo,
+                    "nome_usuario": usuario.nome_usuario,
+                    "email": usuario.email,
+                    "ultimo_login": usuario.ultimo_login.strftime('%Y-%m-%d %H:%M:%S') if usuario.ultimo_login else None,
+                    "nivel_usuario": usuario.nivel_usuario,
+                    "status_acesso": usuario.status_acesso,
+                    "insert": usuario.insert,
+                    "update": usuario.update,
+                    "empresa": usuario.empresa.id
+                }
+                for usuario in usuarios
+            ]
+            return JsonResponse({"usuarios": usuarios_json, "success": True})
         except Exception as e:
-            # Tratamento profissional de exceções
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({"error": str(e)}, status=500)
         
     @staticmethod
     @Utils.verificar_permissoes(codigo_model=1)

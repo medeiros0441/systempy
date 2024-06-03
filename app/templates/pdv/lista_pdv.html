@@ -5,33 +5,36 @@
 {% block content %}
 {% include 'pdv/modal_pdv.html' %}  
  
+<div id="container_table">
   
-<div class="container  bg-light mx-auto">
+<div class="container-xl bg-light mx-auto">
     <div class="d-flex  mt-3 mb-2 justify-content-between">
         <span   class=" font-montserrat fw-border my-auto" style="font-size: 1.0rem;">Pontos de Vendas</span>
         <button type="button" onclick="typeModal(1);" id="btnCriar" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i style="font-size: 0.8rem;" class="bi bi-plus me-1"></i>Cadastrar Ponto</a>
     </div>
 </div> 
 
-<div class="container p-3 my-3   mx-auto bg-dark rounded" id="container-table">
-    <table class="table table-hover table-responsive table-sm table-dark">
-        <thead>
-            <tr>
-                <th scope="col" style="font-size:0.9rem" class="me-auto text-start">Loja</th>
-                <th scope="col" style="font-size:0.9rem" class="mx-auto text-center">Nome</th>
-                <th scope="col" class="mx-auto text-center d-none d-sm-table-cell order-1">Responsavel</th>
-                <th scope="col" class="ms-auto text-end">Ações</th>
-            </tr>
-        </thead>
-        <tbody class="table-group-divider" id="tabela-caixa">
-            
-        </tbody>
-    </table>
-</div>
+    <div class="container-xl p-3 my-3   mx-auto bg-dark rounded"  >
+        <table class="table table-hover table-responsive table-sm table-dark">
+            <thead>
+                <tr>
+                    <th scope="col" style="font-size:0.9rem" class="me-auto text-start">Loja</th>
+                    <th scope="col" style="font-size:0.9rem" class="mx-auto text-center">Nome</th>
+                    <th scope="col" class="mx-auto text-center d-none d-sm-table-cell order-1">Responsavel</th>
+                    <th scope="col" class="ms-auto text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider" id="tabela-caixa">
+                
+            </tbody>
+        </table>
+    </div>
 </div> 
 <script >
     let myModal;
-
+    window.onload = function() {
+        load_data();
+    };
     function openModal() {
         if (!myModal) {
             myModal = new bootstrap.Modal(document.getElementById('ModalPvd'));
@@ -74,159 +77,154 @@
                 detalhes.classList.add("d-none");
                 form.classList.remove("d-none");
                 openModal();
-                preencherModal(value);
                 break;
         }
     }
-
-    function preencherModal(value) {
-        manageLoading(true, "container-table");
-        chamarFuncaoPython("pdv/lista", null, 'GET', function(response) {
-            if (response.success === true) {
-                Utils.setLocalStorageItem('data', response.data);
-                montarTabela(response.data);
-            } else {
-                alertCustomer(response.message);
-            }
-            manageLoading(false, "container-table");
-        });
-    }   
+ 
      
-
-    function clearModalFields() {
-        // Limpar os campos de texto no container-detalhes
-        document.getElementById("detalhes-nome").innerText = '';
-        document.getElementById("detalhes-loja").innerText = '';
-        document.getElementById("detalhes-insert").innerText = '';
-        document.getElementById("detalhes-update").innerText = '';
-        document.getElementById("detalhes-saldo_inicial").innerText = '';
-        document.getElementById("detalhes-status_operacao").innerText = '';
-    
-        // Limpar os inputs no container-form
-        document.getElementById("nome").value = '';
-        document.getElementById("select_loja").value = '0';  // Assume que '0' é o valor padrão para "Selecione"
-        document.getElementById("saldo_inicial").value = '';
-        document.getElementById("status_operacao").value = '';  // Assume que '' é o valor padrão
-    
-        // Selecione todos os elementos de label e limpe seus textos
-        let labels = document.querySelectorAll('#container-detalhes .form-label, #container-form .form-label');
-        labels.forEach(label => {
-            label.innerText = label.innerText.replace(/:.*$/, ':'); // Mantém o texto do label até o primeiro ':' (do ícone e o texto do label)
-        });
-    }
-    function fillModalFields(tipo,data) {
-        if(tipo==1){
-        // Preencher os campos de texto no container-detalhes
-        document.getElementById("detalhes-nome").innerText = data.nome || '';
-        document.getElementById("detalhes-loja").innerText = data.loja || '';
-        document.getElementById("detalhes-insert").innerText = data.insert || '';
-        document.getElementById("detalhes-update").innerText = data.update || '';
-        document.getElementById("detalhes-saldo_inicial").innerText = data.saldo_inicial || '';
-        document.getElementById("detalhes-status_operacao").innerText = data.status_operacao || '';
-        }else{
-        // Preencher os inputs no container-form
-        document.getElementById("nome").value = data.nome || '';
-        document.getElementById("select_loja").value = data.loja || '0'; // Assume que '0' é o valor padrão para "Selecione"
-        document.getElementById("saldo_inicial").value = data.saldo_inicial || '';
-        document.getElementById("status_operacao").value = data.status_operacao || ''; // Assume que '' é o valor padrão
-        }
-        // Atualizar os textos dos labels com os dados do PDV
-        let labels = document.querySelectorAll('#container-detalhes .form-label, #container-form .form-label');
-        labels.forEach(label => {
-            let labelText = label.innerText.replace(/:.*$/, ':');
-            let fieldName = labelText.replace(/:$/, '').trim().toLowerCase(); // Remove ':' do final e converte para minúsculas
-            if (fieldName in data) {
-                label.innerText = labelText + ' ' + data[fieldName];
-            }
-        });
-    }
-    // Exemplo de chamada da função clearModalFields
-    window.onload = function() {
-        load_data();
-
-    };
+ 
 
     function load_data() {
-        manageLoading(true, "container-table");
-        chamarFuncaoPython('pdv/lista', null, 'GET', function(response) {
-            if (response.success === true) {
-                Utils.setLocalStorageItem('data_pdvs', response.data);
-                montarTabela(response.data);
-            } else {
-                alertCustomer(response.message);
-            }
-            manageLoading(false, "container-table");
-        });
-        chamarFuncaoPython("api_lojas", null, 'GET', function(response) {
-            if (response.success === true) {
-                Utils.setLocalStorageItem('data_lojas', response.lojas);
-            } else {
-                alertCustomer(response.message);
-            }
-        });
-
-        chamarFuncaoPython("api_usuarios", null, 'GET', function(response) {
-            if (response.success === true) {
-                Utils.setLocalStorageItem('data_usuarios', response.usuarios);
-            } else {
-                alertCustomer(response.message);
-            }
-        });
-    }   
+        manageLoading(true, "container_table");
     
-    function montarTabela(data) {
+        // Array para armazenar as Promises das chamadas assíncronas
+        const requests = [];
+    
+        // Chamar as funções assíncronas e armazenar as Promises
+        requests.push(new Promise((resolve, reject) => {
+            chamarFuncaoPython("pdv/lista", null, 'GET', function(response) {
+                if (response.success === true) {
+                    Utils.setLocalStorageItem('data_pdvs', response.data);
+                    resolve();
+                } else {
+                    alertCustomer(response.message);
+                    reject();
+                }
+            });
+        })); 
+        requests.push(new Promise((resolve, reject) => {
+            chamarFuncaoPython("api_lojas", null, 'GET', function(response) {
+                if (response.success === true) {
+                    Utils.setLocalStorageItem('data_lojas', response.lojas);
+                    resolve();
+                } else {
+                    alertCustomer(response.message);
+                    reject();
+                }
+            });
+        }));
+    
+        requests.push(new Promise((resolve, reject) => {
+            chamarFuncaoPython("api_usuarios", null, 'GET', function(response) {
+                if (response.success === true) {
+                    Utils.setLocalStorageItem('data_usuarios', response.usuarios);
+                    resolve();
+                } else {
+                    alertCustomer(response.message);
+                    reject();
+                }
+            });
+        }));
+    
+        requests.push(new Promise((resolve, reject) => {
+            chamarFuncaoPython("associado_pdv", null, 'GET', function(response) {
+                if (response.success === true) {
+                    Utils.setLocalStorageItem('data_associados_pdv', response.data);
+                    resolve();
+                } else {
+                    alertCustomer(response.message);
+                    reject();
+                }
+            });
+        }));
+    
+        // Aguardar até que todas as Promises sejam resolvidas ou rejeitadas
+        Promise.all(requests)
+            .then(() => {
+                // Todas as chamadas assíncronas foram concluídas com sucesso
+                    montarTabela();
+                    manageLoading(false, "container_table");
+            })
+            .catch(() => {
+                // Pelo menos uma chamada assíncrona falhou
+                manageLoading(false, "container_table");
+            });
+    }
+
+    function montarTabela() {
         const tabela = document.getElementById("tabela-caixa");
         tabela.innerHTML = ''; // Limpar a tabela antes de popular
-
-        data.forEach(cliente => {
+    
+        const data_pdvs = Utils.getLocalStorageItem('data_pdvs');
+        const data_lojas = Utils.getLocalStorageItem('data_lojas');
+        const data_associados = Utils.getLocalStorageItem('data_associados_pdv');
+        const data_usuario = Utils.getLocalStorageItem('data_usuarios');
+    
+        data_pdvs.forEach(item => {
             const row = document.createElement("tr");
-
+    
             // Coluna Loja
             const lojaCell = document.createElement("td");
             lojaCell.className = "text-start";
-            lojaCell.innerText = cliente.loja;
+    
+            // Encontrar o nome da loja usando o ID da loja
+            const loja = data_lojas.find(loja => loja.id_loja === item.loja);
+            lojaCell.innerText = loja ? loja.nome_loja : "Loja não encontrada";
             row.appendChild(lojaCell);
-
+    
             // Coluna Nome
             const nomeCell = document.createElement("td");
             nomeCell.className = "text-center";
-            nomeCell.innerText = cliente.nome;
+            nomeCell.innerText = item.nome;
             row.appendChild(nomeCell);
-
+    
             // Coluna Responsável
             const responsavelCell = document.createElement("td");
             responsavelCell.className = "text-center d-none d-sm-table-cell order-1";
-            responsavelCell.innerText = cliente.responsavel;
+    
+            const associado = data_associados.find(associado => associado.pdv === item.id_pdv);
+            const usuario = data_usuario.find(usuario => usuario.id_usuario === associado.usuario && usuario.nivel_usuario > 2);
+            const responsavelNome = associado && usuario ? usuario.nome_completo : "Usuário não encontrado";
+            responsavelCell.innerText = responsavelNome;
             row.appendChild(responsavelCell);
-
             // Coluna Ações
             const acoesCell = document.createElement("td");
             acoesCell.className = "text-end";
-            
+            // Exemplo de ações - botão de visualizar
+            const visualizarBtn = document.createElement("button");
+            visualizarBtn.className = "btn btn-sm btn-primary";
+            visualizarBtn.innerHTML = '<i class="bi bi-eye"></i>  ';
+            visualizarBtn.onclick = function() {
+                // Chame sua função de visualização aqui
+                visualizarCliente(item.id);
+            };
             // Exemplo de ações - botão de editar
             const editarBtn = document.createElement("button");
-            editarBtn.className = "btn btn-sm btn-primary";
-            editarBtn.innerText = "Editar";
+            editarBtn.className = "btn btn-sm btn-primary me-2";
+            editarBtn.innerHTML = '<i class="bi bi-pencil"></i>  ';
             editarBtn.onclick = function() {
                 // Chame sua função de edição aqui
-                editarCliente(cliente.id);
+                editarCliente(item.id);
             };
             acoesCell.appendChild(editarBtn);
-
+    
             // Exemplo de ações - botão de excluir
             const excluirBtn = document.createElement("button");
-            excluirBtn.className = "btn btn-sm btn-danger ms-2";
-            excluirBtn.innerText = "Excluir";
+            excluirBtn.className = "btn btn-sm btn-danger me-2";
+            excluirBtn.innerHTML = '<i class="bi bi-trash"></i>  ';
             excluirBtn.onclick = function() {
                 // Chame sua função de exclusão aqui
                 excluirCliente(cliente.id);
             };
             acoesCell.appendChild(excluirBtn);
-
+    
+           
+            acoesCell.appendChild(visualizarBtn);
+    
             row.appendChild(acoesCell);
-
+    
             tabela.appendChild(row);
         });
-    } 
+    }
 </script>
 {% endblock%}

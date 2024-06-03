@@ -11,11 +11,30 @@ from datetime import datetime
 from pytz import timezone
 import random
 import string
+from decimal import Decimal
 
 from app.static import UserInfo, Alerta
 
 
 class Utils:
+
+
+    def converter_para_decimal(valor):
+        try:
+            if valor is None or valor == "":
+                return Decimal(0)
+            elif valor == "NaN":
+                return Decimal(0)
+            elif "," in valor:
+                # Se houver vírgula no valor, substituímos por ponto e convertemos para Decimal
+                valor = valor.replace(",", ".")
+                return Decimal(valor)
+            else:
+                return Decimal(valor)
+        except (ValueError, TypeError):
+            return Decimal(0)
+
+
     @staticmethod
     def obter_data_hora_atual(brasil_date_only=False):
         # Obtém a data e hora atual no fuso horário do Brasil

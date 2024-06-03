@@ -35,19 +35,47 @@ class views_loja:
         try:
             id_empresa = UserInfo.get_id_empresa(request)
             lojas = Loja.objects.filter(empresa_id=id_empresa)
-            lojas_serialized = json.loads(serialize("json", lojas))
-            lojas_json = [loja['fields'] for loja in lojas_serialized]
-            return JsonResponse(
-                {
-                    "lojas": lojas_json,
-                    "success": True,
+            lojas_json = []
+            for loja in lojas:
+                loja_data = {
+                    "id_loja": loja.id_loja,
+                    "nome_loja": loja.nome_loja,
+                    "numero_telefone": loja.numero_telefone,
+                    "horario_operacao_inicio": loja.horario_operacao_inicio.strftime('%H:%M:%S') if loja.horario_operacao_inicio else None,
+                    "horario_operacao_fim": loja.horario_operacao_fim.strftime('%H:%M:%S') if loja.horario_operacao_fim else None,
+                    "segunda": loja.segunda,
+                    "terca": loja.terca,
+                    "quarta": loja.quarta,
+                    "quinta": loja.quinta,
+                    "sexta": loja.sexta,
+                    "sabado": loja.sabado,
+                    "domingo": loja.domingo,
+                    "insert": loja.insert,
+                    "update": loja.update,
+                    "empresa": loja.empresa.id,
+                    "endereco": loja.endereco.id if loja.endereco else None
                 }
-            )
+                associados = Associado.objects.filter(loja=loja)
+                loja_data["associados"] = [
+                    {
+                        "id_associado": associado.id_associado,
+                        "insert": associado.insert,
+                        "update": associado.update,
+                        "status_acesso": associado.status_acesso,
+                        "usuario": {
+                            "id_usuario": associado.usuario.id,
+                            "nome_completo": associado.usuario.nome_completo
+                        },
+                        "loja": associado.loja.id_loja
+                    }
+                    for associado in associados
+                ]
+                lojas_json.append(loja_data)
+
+            return JsonResponse({"lojas": lojas_json, "success": True})
         except Loja.DoesNotExist:
-            # Caso a loja não exista, retornamos um JSON com uma lista vazia
             return JsonResponse({"lojas": [], "success": True})
         except Exception as e:
-            # Tratamento profissional de exceções
             return JsonResponse({"error": str(e)}, status=500)
 
     @Utils.verificar_permissoes(5)

@@ -226,14 +226,15 @@ if (document.getElementById("id_codigo_postal")) {
   document.getElementById("id_codigo_postal").addEventListener("blur", buscarEnderecoPorCEP);
 }
 
- 
 function applyAutocomplete() {
-    $(".autocomplete[data-storage][data-property]").each(function() {
+    // Selecionando todos os elementos com a classe 'autocomplete_input'
+    $(".autocomplete_input").each(function() {
         var $input = $(this);
-        var storageKey = $input.data("storage");
-        var propertyKeys = $input.data("property").split(",");
+        var storageKey = $input.data("storage"); // Chave para acessar os dados no localStorage
+        var propertyKeys = $input.data("key"); // Propriedade a ser usada como valor
+        var propertyLabels = $input.data("label").split(","); // Propriedades a serem exibidas
 
-        // Tentando obter dados do localStorage
+        // Tentando obter os dados do localStorage
         var rawData = localStorage.getItem(storageKey);
         if (!rawData) {
             console.error(`Nenhum dado encontrado no localStorage para a chave: ${storageKey}`);
@@ -248,55 +249,53 @@ function applyAutocomplete() {
             console.error(`Erro ao fazer o parse dos dados do localStorage para a chave: ${storageKey}`, e);
             return;
         }
-        // Log para verificação da estrutura dos dados dos usuários
 
-        var availableTags = [];
-        var idMap = {}; // Mapeamento de ID para o item correspondente
+        var values = []; // Array de valores para o autocomplete
 
-        // Verifica se é necessário usar todas as propriedades
-        if (propertyKeys.includes("*")) {
-            // Extraindo valores de todas as propriedades
-            data.forEach(function(item) {
-                for (var key in item) {
-                    if (typeof item[key] === 'string') {
-                        availableTags.push(item[key]);
-                        idMap[item[key]] = item.id; // Armazenando o ID correspondente
-                    }
-                }
-            });
-        } else {
-            // Extraindo valores das propriedades especificadas
-            data.forEach(function(item) {
-                propertyKeys.forEach(function(key) {
-                    if (item[key] && typeof item[key] === 'string') {
-                        availableTags.push(item[key]);
-                        idMap[item[key]] = item.id; // Armazenando o ID correspondente
-                    }
-                });
-            });
+        // Função auxiliar para obter valores de propriedades de um objeto
+        function getPropertyValues(item, keys) {
+            if (keys === '*') {
+                return JSON.stringify(item); // Retorna todo o objeto como uma string se todas as propriedades forem necessárias
+            } else if (typeof keys === 'string') {
+                return item[keys]; // Retorna o valor da propriedade especificada
+            } else if (Array.isArray(keys)) {
+                return keys.map(key => item[key]).join(', '); // Retorna os valores das propriedades especificadas como uma string
+            }
         }
 
-        // Log para verificação
+        // Iterando sobre os dados e construindo a lista de valores disponíveis
+        data.forEach(function(item) {
+            var id = getPropertyValues(item, propertyKeys);
+            var label = getPropertyValues(item, propertyLabels);
 
+            if (id && typeof label === 'string') {
+                values.push({ label: label, id: id });
+            }
+        });
+
+        // Inicializando o autocompletar no campo de entrada atual
         $input.autocomplete({
-            source: availableTags,
+            source: values,
             select: function(event, ui) {
-                var onSelectFunction = $input.data("onselect"); // Obter o nome da função a ser executada
-                if (typeof window[onSelectFunction] === "function") {
-                    window[onSelectFunction](ui.item.value, idMap); // Chamar a função dinamicamente
+                var selectedId = ui.item.id;
+                var selectedLabel = ui.item.label;
+
+                // Mudar o valor do input para o label do item selecionado
+                $input.val(selectedLabel);
+                // Armazenar o id do item selecionado no atributo data-value
+                $input.attr("data-value", selectedId);
+
+                var onSelectConfig = $input.data("onselect"); // Configuração de seleção
+                if (onSelectConfig) {
+                    var onSelectParams = onSelectConfig.split(","); // Dividindo a configuração
+                    var onSelectFunction = window[onSelectParams[0]]; // Função de seleção
+                    if (typeof onSelectFunction === "function") {
+                        onSelectFunction(selectedId); // Chamando a função de seleção com o valor relevante
+                    }
                 }
+
+                return false; // Evitar que o valor padrão do label seja inserido no input
             }
         });
     });
 }
-
-// Função para lidar com a seleção do usuário
-function handleSelect(selectedValue, idMap) {
-    var selectedId = idMap[selectedValue];
-    $("#usuario_id").val(selectedId);
-    console.log("Usuário selecionado:", selectedValue);
-    console.log("ID do usuário:", selectedId);
-    // Adicione aqui o código que deseja executar ao selecionar um usuário
-}
-
-// Aplicar o autocomplete automaticamente ao carregar a página

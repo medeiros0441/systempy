@@ -2,7 +2,7 @@
 
 {% block content %}
     <div class="modal fade" id="ModalPvd" data-bs-backdrop="static"   data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog  modal-md modal-fullscreen-md-down modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog  modal-md modal-fullscreen-sm-down modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold font-montserrat" id="ModalLabel" ></h5>
@@ -36,37 +36,40 @@
 
                 <div class="modal-body d-none " id="container-form">
                     <div class="form-floating mb-2">
-                        <input type="text" class="form-control" id="nome" name="nome" placeholder>
+                        <input type="text" class="form-control" id="nome" name="nome"  >
                         <label for="nome">Nome do PDV</label>
                     </div>
                     <div class="form-floating mb-2">
-                        <input type="text" class="form-control autocomplete"   id="select_loja"  data-storage="data_lojas" data-onselect="handleSelect"  data-property="nome_loja">
+                    <input type="text" class="form-control autocomplete_input"   id="select_loja" 
+                    data-storage="data_lojas" data-key="id_loja" data-label="nome_loja" data-onselect="handleSelectLoja"  >
                         <label for="select_loja">Loja:</label>
                     </div>
 
                     <div class="form-floating mb-2">
-                        <input type="text" class="form-control autocomplete"  id="autocomplete_usuario" data-storage="data_usuarios" data-property="nome_completo">
+                        <input type="text" class="form-control autocomplete_input"  id="select_usuario" 
+                        data-storage="data_usuarios" data-label="nome_completo" data-key="id_usuario"  >
                         <label for="autocomplete_usuario">Usuario Associado</label>
                     </div>
                       
                     <div class="form-floating mb-2">
-                        <input type="text" class="form-control money-mask" id="saldo_inicial" name="saldo_inicial" >
+                        <input type="text" class="form-control money-mask" id="saldo_inicial" value="100,00" name="saldo_inicial" >
                         <label for="saldo_inicial">Saldo Inicial</label>
                     </div>
                     <div class="form-floating mb-2">
-                        <select class="form-control" id="status_operacao" name="status_operacao">
-                            <option value="0" disabled selected>Status de operação</option>
+                        <select class="form-select" id="status_operacao" name="status_operacao">
                             <option value="true">Aberto</option>
-                            <option value="false">Fechado</option>
+                            <option value="false" selected>Fechado</option>
                         </select>
-                        <label for="status_operacao">Status de Operação</label>
+                        <label for="status_operacao">Status atual de Operação</label>
                     </div>
   
                 </div>  
 
 
                 <div class="modal-footer ">
-                        <button type="button" onclick="closeModal();"  class="btn btn-secondary float-start ms-auto btn-sm">Fechar</a>
+                            <button type="button" onclick="closeModal();"  class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
+                        <button type="button" onclick="salvarPDV();"   class="btn btn-primary  float-start ms-auto btn-sm">salvar</a>
+
                 </div>  
         </form>
     </div> 
@@ -79,18 +82,159 @@
 function iniciar_modal(){
     applyAutocomplete(); 
 }
+// Função para coletar os valores dos campos e criar o objeto de dados
+function criarDadosParaPDV() {
+    var nomePDV = $("#nome").val();
+    var idLoja = $("#select_loja").attr("data-value");
+    var idUsuario = $("#select_usuario").attr("data-value");
+    var saldoInicial = $("#saldo_inicial").val();
+    var statusOperacao = $("#status_operacao").val();
 
-    // Aplicar o autocomplete automaticamente ao carregar a página
+    // Verificar se todos os campos necessários estão preenchidos
+    if (!nomePDV || !idLoja || !idUsuario || !saldoInicial  ) {
+        alertCustomer("Por favor, preencha todos os campos.");
+        return null;
+    }
 
+    // Criar o objeto de dados
+    var data = {
+        nome: nomePDV,
+        id_loja: idLoja,
+        id_usuario: idUsuario,
+        saldo_inicial: saldoInicial,
+        status_operacao: statusOperacao === "true" ? true : false
+    };
 
-// Função para lidar com a seleção do usuário
-function handleSelect(selectedValue, idMap) {
-    var selectedId = idMap[selectedValue];
-    $("#usuario_id").val(selectedId);
-    console.log("Usuário selecionado:", selectedValue);
-    console.log("ID do usuário:", selectedId);
-    // Adicione aqui o código que deseja executar ao selecionar um usuário
+    return data;
 }
- 
+
+// Função para lidar com o clique no botão de salvar
+function salvarPDV() {
+    // Criar o objeto de dados
+    var data = criarDadosParaPDV();
+
+    // Verificar se o objeto de dados foi criado com sucesso
+    if (data) {
+        manageLoading(true,"container-form");
+        // Chamar a função para enviar os dados
+        chamarFuncaoPython('pdv/create', data, 'POST', function(response) {
+            if (response.success === true) {
+                // PDV criado com sucesso
+                alertCustomer("PDV criado com sucesso!",1);
+            } else {
+                // Erro ao criar o PDV
+                alertCustomer("Erro ao criar o PDV.",2);
+            }
+        manageLoading(false,"container-form");
+
+            closeModal();
+        });
+    }
+}
+
+function clearModalFields() {
+    // Limpar os campos de texto no container-detalhes
+    document.getElementById("detalhes-nome").innerText = '';
+    document.getElementById("detalhes-loja").innerText = '';
+    document.getElementById("detalhes-insert").innerText = '';
+    document.getElementById("detalhes-update").innerText = '';
+    document.getElementById("detalhes-saldo_inicial").innerText = '';
+    document.getElementById("detalhes-status_operacao").innerText = '';
+
+    // Limpar os inputs no container-form
+    document.getElementById("nome").value = '';
+    document.getElementById("select_loja").value = '';   
+    document.getElementById("select_usuario").value = '';  
+    document.getElementById("saldo_inicial").innerText = '100,00';
+    document.getElementById("status_operacao").selectedLabel = 'false';   
+
+    // Selecione todos os elementos de label e limpe seus textos
+    let labels = document.querySelectorAll('#container-detalhes .form-label, #container-form .form-label');
+    labels.forEach(label => {
+        label.innerText = label.innerText.replace(/:.*$/, ':'); // Mantém o texto do label até o primeiro ':' (do ícone e o texto do label)
+    });
+}
+function fillModalFields(tipo,data) {
+    if(tipo==1){
+    // Preencher os campos de texto no container-detalhes
+    document.getElementById("detalhes-nome").innerText = data.nome || '';
+    document.getElementById("detalhes-loja").innerText = data.loja || '';
+    document.getElementById("detalhes-insert").innerText = data.insert || '';
+    document.getElementById("detalhes-update").innerText = data.update || '';
+    document.getElementById("detalhes-saldo_inicial").innerText = data.saldo_inicial || '';
+    document.getElementById("detalhes-status_operacao").innerText = data.status_operacao || '';
+    }else{
+    // Preencher os inputs no container-form
+    document.getElementById("nome").value = data.nome || '';
+    document.getElementById("select_loja").value = data.loja || '0'; // Assume que '0' é o valor padrão para "Selecione"
+    document.getElementById("saldo_inicial").value = data.saldo_inicial || '';
+    document.getElementById("status_operacao").value = data.status_operacao || ''; // Assume que '' é o valor padrão
+    }
+    // Atualizar os textos dos labels com os dados do PDV
+    let labels = document.querySelectorAll('#container-detalhes .form-label, #container-form .form-label');
+    labels.forEach(label => {
+        let labelText = label.innerText.replace(/:.*$/, ':');
+        let fieldName = labelText.replace(/:$/, '').trim().toLowerCase(); // Remove ':' do final e converte para minúsculas
+        if (fieldName in data) {
+            label.innerText = labelText + ' ' + data[fieldName];
+        }
+    });
+}
+
+// Aplicar o autocomplete automaticamente ao carregar a página
+function handleSelectLoja(selectedId) {
+    var data_lojas = localStorage.getItem("data_lojas");
+    var data_usuarios = localStorage.getItem("data_usuarios");
+    var sugestoes = [];
+
+    // Parse dos dados de lojas e usuários
+    var lojas = JSON.parse(data_lojas);
+    var usuarios = JSON.parse(data_usuarios);
+
+    // Iterar sobre as lojas
+    lojas.forEach(function(loja) {
+        // Verificar se a loja selecionada corresponde ao id da loja atual
+        if (loja.id_loja == selectedId) {
+            // Iterar sobre os associados da loja
+            loja.associados.forEach(function(associado) {
+                // Verificar se o associado possui status_acesso: true
+                if (associado.status_acesso) {
+                    // Encontrar o objeto de usuário correspondente
+                    var usuario = usuarios.find(function(usuario) {
+                        return usuario.id == associado.usuario.id_usuario;
+                    });
+                    // Adicionar o usuário à lista de sugestões
+                    if (usuario) {
+                        sugestoes.push({ label: usuario.nome_completo, id: usuario.id });
+                    }
+                }
+            });
+        }
+    });
+   // Atualizar o autocomplete do campo select_usuario com as novas sugestões
+   $("#select_usuario").autocomplete({
+    source: sugestoes,
+    select: function(event, ui) {
+        var selectedId = ui.item.id;
+        var selectedLabel = ui.item.label;
+
+        // Mudar o valor do input para o label do item selecionado
+        $("#select_usuario").val(selectedLabel);
+        // Armazenar o id do item selecionado no atributo data-value
+        $("#select_usuario").attr("data-value", selectedId);
+
+        var onSelectConfig = $("#select_usuario").data("onselect"); // Configuração de seleção
+        if (onSelectConfig) {
+            var onSelectParams = onSelectConfig.split(","); // Dividindo a configuração
+            var onSelectFunction = window[onSelectParams[0]]; // Função de seleção
+            if (typeof onSelectFunction === "function") {
+                onSelectFunction(selectedId); // Chamando a função de seleção com o valor relevante
+            }
+        }
+
+        return false; // Evitar que o valor padrão do label seja inserido no input
+    }
+});
+} 
 </script>
 {% endblock %}
