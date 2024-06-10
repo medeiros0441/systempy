@@ -76,15 +76,18 @@ class NotFoundMiddleware:
         response = self.get_response(request)
 
         # Verificar se o caminho da URL tem uma barra no final
-        if request.path != "/" and request.path.endswith("/"):
+        if request.path != "" and request.path.endswith(""):
             # Remover a barra no final
-            new_path = request.path.rstrip("/")
+            new_path = request.path.rstrip("")
             # Verificar se a nova URL corresponde a uma view
             if new_path and new_path != request.path:
                 return HttpResponsePermanentRedirect(new_path)
         if response.status_code == 404:
             return redirect("erro_404")
         return response
+
+
+import uuid
 
 
 # AtualizarDadosClienteMiddleware
@@ -97,9 +100,18 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             request.session["navegador_cliente"] = navegador_cliente
 
             id_usuario = request.session.get("id_usuario")
-            if id_usuario is None:
-                id_usuario = 0
-                request.session["id_usuario"] = 0
+
+            def is_valid_uuid(val):
+                try:
+                    if val is None:
+                        return False
+                    if val is str:
+                        uuid.UUID(str(val))
+                    else:
+                        uuid.UUID(val)
+                    return True
+                except ValueError:
+                    return False
 
             sessao = Sessao.objects.filter(ip_sessao=ip_cliente).first()
             if not sessao:
@@ -110,11 +122,11 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
                     sessao.pagina_atual = request.path
                     sessao.time_finalizou = timezone.now()
                     sessao.save()
-                if id_usuario > 0:
+                if is_valid_uuid(id_usuario):
                     sessao.id_usuario = id_usuario
                     sessao.save()
 
-            if id_usuario > 0:
+            if is_valid_uuid(id_usuario):
                 request.session["isCliente"] = True
                 request.session["id_usuario"] = id_usuario
             else:
@@ -122,20 +134,20 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
 
             urls_sem_verificacao = [
                 "",
-                "/login/",
+                "/login",
                 "/home",
-                "/cadastro/",
-                "/login/",
-                "/sobre/",
-                "/Erro/",
+                "/cadastro",
+                "/login",
+                "/sobre",
+                "/Erro",
             ]
 
             url_funcJs = [
-                "enviar-codigo/<str:email>/",
-                "confirmar-codigo/<str:codigo>/",
-                "atualizar-senha/<str:nova_senha>/",
-                "api/status_on/",
-                "api/status_off/",
+                "enviar-codigo/<str:email>",
+                "confirmar-codigo/<str:codigo>",
+                "atualizar-senha/<str:nova_senha>",
+                "api/status_on",
+                "api/status_off",
             ]
 
             for url_pattern in url_funcJs:

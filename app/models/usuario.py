@@ -6,10 +6,7 @@ from .empresa import Empresa
 
 
 class Usuario(models.Model):
-    id = models.UUIDField(default=uuid.uuid4, editable=False)
-    id_usuario = models.AutoField(
-        primary_key=True,
-    )
+    id_usuario = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     nome_completo = models.CharField(
         max_length=255,
     )
@@ -37,10 +34,24 @@ class Usuario(models.Model):
         on_delete=models.CASCADE,
     )
 
-    @property
-    def primeiro_nome(self):
-        # Separar o nome completo em partes usando espaços como delimitadores
-        partes_nome = self.nome_completo.split()
+    def save(self, *args, **kwargs):
+        self.update = Utils.obter_data_hora_atual()
+        super().save(*args, **kwargs)
 
-        # Retorna apenas o primeiro nome, se houver, caso contrário, retorna uma string vazia
-        return partes_nome[0] if partes_nome else ""
+
+class Personalizacao(models.Model):
+    id = models.UUIDField(default=uuid.uuid4,primary_key=True, editable=False)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    chave = models.CharField(max_length=255)
+    valor = models.CharField(max_length=255)
+    descricao = models.CharField(max_length=255)
+    descricao_interna = models.CharField(max_length=255)
+    codigo = models.CharField(max_length=255)
+    insert = models.CharField(
+        default=Utils.obter_data_hora_atual, editable=False, max_length=100
+    )
+    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
+
+    def save(self, *args, **kwargs):
+        self.update = Utils.obter_data_hora_atual()
+        super().save(*args, **kwargs)

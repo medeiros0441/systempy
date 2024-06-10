@@ -7,34 +7,61 @@
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold font-montserrat" id="ModalLabel" ></h5>
                 </div>
-                <div class="modal-body d-none " id="container-detalhes">
-                        <div class="mb-3">
-                            <label class="form-label"><i class="bi bi-person me-2"></i>Nome do PDV:</label>
+                <div class="modal-body d-none py-2" id="container-detalhes">
+                    <div class="mb-1 row">
+                        <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi-info-circle me-2 bi"></i>Nome do PDV:</label>
+                        <div class="col ps-0">
                             <p id="detalhes-nome" class="form-control-plaintext"></p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label"><i class="bi bi-shop-window me-2"></i>Loja:</label>
+                    </div>
+                    <div class="mb-1 row">
+                        <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi bi-shop-window me-2"></i>Loja:</label>
+                        <div class="col ps-0">
                             <p id="detalhes-loja" class="form-control-plaintext"></p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label"><i class="bi bi-calendar-plus me-2"></i>Data de Inserção:</label>
+                    </div>
+                    <div class="mb-1 row">
+                        <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi bi-person me-2"></i>Usuário Associado:</label>
+                        <div class="col ps-0">
+                            <p id="detalhes-responsavel" class="form-control-plaintext"></p>
+                        </div>
+                    </div>
+                    <div class="mb-1 row">
+                        <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi bi-calendar-plus me-2"></i>Data de Inserção:</label>
+                        <div class="col ps-0">
                             <p id="detalhes-insert" class="form-control-plaintext"></p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label"><i class="bi bi-calendar-check me-2"></i>Data de Atualização:</label>
+                    </div>
+                    <div class="mb-1 row">
+                        <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi bi-calendar-check me-2"></i>Data de Atualização:</label>
+                        <div class="col ps-0">
                             <p id="detalhes-update" class="form-control-plaintext"></p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label"><i class="bi bi-currency-dollar me-2"></i>Saldo Inicial:</label>
+                    </div>
+                    <div class="mb-1 row">
+                        <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi bi-currency-dollar me-2"></i>Saldo Inicial:</label>
+                        <div class="col ps-0">
                             <p id="detalhes-saldo_inicial" class="form-control-plaintext"></p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label"><i class="bi bi-toggle-on me-2"></i>Status de Operação:</label>
+                    </div>
+                    <div class="mb-1 row">
+                        <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi bi-toggle-on me-2"></i>Status de Operação:</label>
+                        <div class="col ps-0">
                             <p id="detalhes-status_operacao" class="form-control-plaintext"></p>
                         </div>
                     </div>
+                </div>
+                
+                
 
                 <div class="modal-body d-none " id="container-form">
+                    <div class="alert alert-success" role="alert">
+                        <h4 class="alert-heading" style="font-size:1.0rem;"><i class="bi me-2 bi-check-circle-fill"></i>Informações</h4>
+                        <p class="text-dark" style="font-size:0.8rem;">Uma loja pode ter vários pontos de venda, conforme sua assinatura. Usuários colaboradores podem estar associados a apenas um ponto de venda, enquanto administradores têm acesso total aos recursos.</p>
+                        <hr>
+                        <p class="mb-0 text-dark"  style="font-size:0.8rem;">Para remover um colaborador de um ponto de venda, apague o nome do usuário. Para adicionar, selecione uma das opções exibidas. Um colaborador associado a uma loja não pode ser associado a um PDV de outra loja. Portanto, para associar um colaborador a um PDV, ele deve estar associado à mesma loja.</p>
+                    </div>
+                    
                     <div class="form-floating mb-2">
                         <input type="text" class="form-control" id="nome" name="nome"  >
                         <label for="nome">Nome do PDV</label>
@@ -46,7 +73,7 @@
                     </div>
 
                     <div class="form-floating mb-2">
-                        <input type="text" class="form-control autocomplete_input"  id="select_usuario" 
+                        <input type="text" class="form-control  "  id="select_usuario" 
                         data-storage="data_usuarios" data-label="nome_completo" data-key="id_usuario"  >
                         <label for="autocomplete_usuario">Usuario Associado</label>
                     </div>
@@ -62,13 +89,14 @@
                         </select>
                         <label for="status_operacao">Status atual de Operação</label>
                     </div>
+                    <input type="hidden"   id="id_pdv" value="0"> 
   
                 </div>  
 
 
                 <div class="modal-footer ">
                             <button type="button" onclick="closeModal();"  class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
-                        <button type="button" onclick="salvarPDV();"   class="btn btn-primary  float-start ms-auto btn-sm">salvar</a>
+                        <button type="button" onclick="salvarPDV();" id="btn_salvar"   class="btn btn-primary  float-start ms-auto btn-sm btn_confirmacao d-none">salvar</a>
 
                 </div>  
         </form>
@@ -79,9 +107,60 @@
     </div>
    
 <script>
-function iniciar_modal(){
-    applyAutocomplete(); 
+    
+    document.getElementById('select_usuario').addEventListener('change', function() {
+        if (this.value === "") {
+            this.setAttribute("data-value", "");
+        }
+    });
+    
+    function iniciar_modal(action,id) {
+    const modal = document.getElementById('ModalPvd');
+    const modalLabel = modal.querySelector("#ModalLabel");
+    const detalhes = modal.querySelector("#container-detalhes");
+    const form = modal.querySelector("#container-form");
+    const btn_salvar = modal.querySelector("#btn_salvar");
+
+    // Desestruturar os valores passados como argumento
+    
+
+    switch (action) {
+        case 1:
+            modalLabel.innerText = "Criar PDV";
+            detalhes.classList.add("d-none");
+            form.classList.remove("d-none");
+            btn_salvar.classList.remove("d-none");
+            applyAutocomplete();
+            document.getElementById("id_pdv").value="0";
+            openModal();
+            break;
+
+        case 2:
+            modalLabel.innerText = "Detalhes do PDV";
+            detalhes.classList.remove("d-none");
+            form.classList.add("d-none");
+            btn_salvar.classList.add("d-none");
+            fillModalFields(1,id);
+            openModal();
+            break;
+
+        case 3:
+            modalLabel.innerText = "Editar PDV";
+            detalhes.classList.add("d-none");
+            form.classList.remove("d-none");
+            btn_salvar.classList.remove("d-none");
+            applyAutocomplete();
+            document.getElementById("id_pdv").value=id;
+
+            fillModalFields(2,id);
+            openModal();
+            break;
+
+        default:
+            console.error("Ação inválida fornecida a iniciar_modal.");
+    }
 }
+
 // Função para coletar os valores dos campos e criar o objeto de dados
 function criarDadosParaPDV() {
     var nomePDV = $("#nome").val();
@@ -91,10 +170,11 @@ function criarDadosParaPDV() {
     var statusOperacao = $("#status_operacao").val();
 
     // Verificar se todos os campos necessários estão preenchidos
-    if (!nomePDV || !idLoja || !idUsuario || !saldoInicial  ) {
+    if (!nomePDV || !idLoja || !saldoInicial  ) {
         alertCustomer("Por favor, preencha todos os campos.");
         return null;
     }
+    var id_pdv = $("#id_pdv").val();
 
     // Criar o objeto de dados
     var data = {
@@ -102,7 +182,8 @@ function criarDadosParaPDV() {
         id_loja: idLoja,
         id_usuario: idUsuario,
         saldo_inicial: saldoInicial,
-        status_operacao: statusOperacao === "true" ? true : false
+        status_operacao: statusOperacao === "true" ? true : false,
+        id_pdv: id_pdv,
     };
 
     return data;
@@ -112,23 +193,40 @@ function criarDadosParaPDV() {
 function salvarPDV() {
     // Criar o objeto de dados
     var data = criarDadosParaPDV();
-
     // Verificar se o objeto de dados foi criado com sucesso
     if (data) {
         manageLoading(true,"container-form");
         // Chamar a função para enviar os dados
-        chamarFuncaoPython('pdv/create', data, 'POST', function(response) {
-            if (response.success === true) {
-                // PDV criado com sucesso
-                alertCustomer("PDV criado com sucesso!",1);
-            } else {
-                // Erro ao criar o PDV
-                alertCustomer("Erro ao criar o PDV.",2);
-            }
-        manageLoading(false,"container-form");
-
+        if(data.id_pdv == 0){
+            chamarFuncaoPython('pdv/create', data, 'POST', function(response) {
+                if (response.success === true) {
+                    // PDV criado com sucesso
+                    alertCustomer("PDV criado com sucesso!",1);
+                } else {
+                    // Erro ao criar o PDV
+                    alertCustomer("Erro ao criar o PDV.",2);
+                }
+            load_data();
+            manageLoading(false,"container-form");
             closeModal();
         });
+
+        }else{
+            chamarFuncaoPython('pdv/update', data, 'PUT', function(response) {
+                if (response.success === true) {
+                    // PDV criado com sucesso
+                    alertCustomer("PDV Editado com sucesso!",1);
+                    
+                } else {
+                    // Erro ao criar o PDV
+                    alertCustomer("Erro ao criar o PDV.",2);
+                }
+            load_data();
+            manageLoading(false,"container-form");
+            closeModal();
+        });
+        }
+
     }
 }
 
@@ -153,32 +251,77 @@ function clearModalFields() {
     labels.forEach(label => {
         label.innerText = label.innerText.replace(/:.*$/, ':'); // Mantém o texto do label até o primeiro ':' (do ícone e o texto do label)
     });
-}
-function fillModalFields(tipo,data) {
-    if(tipo==1){
-    // Preencher os campos de texto no container-detalhes
-    document.getElementById("detalhes-nome").innerText = data.nome || '';
-    document.getElementById("detalhes-loja").innerText = data.loja || '';
-    document.getElementById("detalhes-insert").innerText = data.insert || '';
-    document.getElementById("detalhes-update").innerText = data.update || '';
-    document.getElementById("detalhes-saldo_inicial").innerText = data.saldo_inicial || '';
-    document.getElementById("detalhes-status_operacao").innerText = data.status_operacao || '';
-    }else{
-    // Preencher os inputs no container-form
-    document.getElementById("nome").value = data.nome || '';
-    document.getElementById("select_loja").value = data.loja || '0'; // Assume que '0' é o valor padrão para "Selecione"
-    document.getElementById("saldo_inicial").value = data.saldo_inicial || '';
-    document.getElementById("status_operacao").value = data.status_operacao || ''; // Assume que '' é o valor padrão
+}function fillModalFields(tipo, id_pdv) {
+    // Função para recuperar dados do localStorage
+    function getData(key) {
+        return JSON.parse(localStorage.getItem(key));
     }
-    // Atualizar os textos dos labels com os dados do PDV
-    let labels = document.querySelectorAll('#container-detalhes .form-label, #container-form .form-label');
-    labels.forEach(label => {
-        let labelText = label.innerText.replace(/:.*$/, ':');
-        let fieldName = labelText.replace(/:$/, '').trim().toLowerCase(); // Remove ':' do final e converte para minúsculas
-        if (fieldName in data) {
-            label.innerText = labelText + ' ' + data[fieldName];
-        }
-    });
+
+    // Recuperar dados do localStorage
+    const data_pdvs = getData("data_pdvs");
+    const data_associados_pdv = getData("data_associados_pdv");
+    const data_lojas = getData("data_lojas");
+    const data_usuarios = getData("data_usuarios");
+
+    // Encontrar o PDV correspondente pelo id_pdv
+    const pdv = data_pdvs.find(item => item.id_pdv === id_pdv);
+    if (!pdv) {
+        console.error("PDV não encontrado");
+        return;
+    }
+
+    // Encontrar a loja correspondente ao PDV
+    const loja = data_lojas.find(item => item.id_loja === pdv.loja);
+    if (!loja) {
+        console.error("Loja não encontrada");
+        return;
+    }
+
+    // Encontrar os associados correspondentes ao PDV
+    const associados = data_associados_pdv.filter(item => item.pdv === id_pdv);
+    if (associados.length === 0) {
+        console.error("Nenhum associado encontrado para este PDV");
+        return;
+    }
+
+    // Filtrar os usuários correspondentes aos associados encontrados, com nível de usuário > 2
+    const usuarios = associados.map(associado =>
+        data_usuarios.find(usuario =>
+            usuario.id_usuario === associado.usuario && usuario.nivel_usuario > 2
+        )
+    ).filter(usuario => usuario !== undefined);
+
+    // Função para preencher campos de texto
+    function setTextField(id, text) {
+        document.getElementById(id).innerText = text || '';
+    }
+
+    // Função para preencher campos de input
+    function setInputField(id, value) {
+        document.getElementById(id).value = value || '';
+    }
+
+    // Preencher os campos de acordo com o tipo
+    if (tipo == 1) {
+        // Preencher os campos de texto no container-detalhes
+        setTextField("detalhes-nome", pdv.nome);
+        setTextField("detalhes-loja", loja.nome_loja);
+        setTextField("detalhes-insert", pdv.insert);
+        setTextField("detalhes-update", pdv.update);
+        setTextField("detalhes-saldo_inicial", pdv.saldo_inicial);
+        setTextField("detalhes-status_operacao", pdv.status_operacao ? 'Ativo' : 'Inativo');
+        setTextField("detalhes-responsavel", usuarios[0]?.nome_completo || 'Usuário não encontrado');
+    } else {
+        // Preencher os inputs no container-form
+        setInputField("nome", pdv.nome);
+        setInputField("select_loja", loja.nome_loja);
+        $("#select_loja").attr("data-value", loja.id_loja);
+        setInputField("select_usuario", usuarios[0]?.nome_completo || '');
+        $("#select_usuario").attr("data-value", usuarios[0]?.id);
+        setInputField("saldo_inicial", pdv.saldo_inicial || '100,00');
+        document.getElementById("status_operacao").selectedLabel = pdv.status_operacao ? 'Aberto' : 'Fechado';
+        handleSelectLoja(loja.id_loja);
+    }
 }
 
 // Aplicar o autocomplete automaticamente ao carregar a página
@@ -201,11 +344,11 @@ function handleSelectLoja(selectedId) {
                 if (associado.status_acesso) {
                     // Encontrar o objeto de usuário correspondente
                     var usuario = usuarios.find(function(usuario) {
-                        return usuario.id == associado.usuario.id_usuario;
+                        return usuario.id_usuario == associado.usuario.id_usuario  && usuario.nivel_usuario > 2;
                     });
                     // Adicionar o usuário à lista de sugestões
                     if (usuario) {
-                        sugestoes.push({ label: usuario.nome_completo, id: usuario.id });
+                        sugestoes.push({ label: usuario.nome_completo, id: usuario.id_usuario });
                     }
                 }
             });

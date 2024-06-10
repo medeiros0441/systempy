@@ -37,7 +37,6 @@ class views_usuarios:
             usuarios = Usuario.objects.filter(empresa_id=id_empresa)
             usuarios_json = [
                 {
-                    "id": usuario.id,
                     "id_usuario": usuario.id_usuario,
                     "nome_completo": usuario.nome_completo,
                     "nome_usuario": usuario.nome_usuario,
@@ -47,7 +46,7 @@ class views_usuarios:
                     "status_acesso": usuario.status_acesso,
                     "insert": usuario.insert,
                     "update": usuario.update,
-                    "empresa": usuario.empresa.id
+                    "empresa": usuario.empresa.id_empresa
                 }
                 for usuario in usuarios
             ]

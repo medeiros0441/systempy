@@ -95,7 +95,7 @@ class views_default:
                 )
                 if status:
                     response_data["success"] = True
-                    response_data["redirect_url"] = "/dashboard/"
+                    response_data["redirect_url"] = "/dashboard"
                 else:
                     response_data["success"] = False
                     response_data["message"] = mensagem
@@ -108,10 +108,10 @@ class views_default:
                         request, email_saved, senha_saved
                     ):
                         response_data["success"] = True
-                        response_data["redirect_url"] = "/dashboard/"
+                        response_data["redirect_url"] = "/dashboard"
 
             return JsonResponse(response_data)
- 
+
         except Exception as e:
             # Se ocorrer um erro inesperado, retorne uma resposta de erro JSON
             return JsonResponse(

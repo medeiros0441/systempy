@@ -4,6 +4,7 @@ from app.utils import Utils
 from app.static import Alerta, UserInfo
 from django.db.models import Q
 from ..processos.venda import processos
+from ..processos.pdv import processos_pdv
 from django.http import JsonResponse
 
 from django.views.decorators.csrf import csrf_exempt
@@ -123,7 +124,7 @@ class views_venda:
                                 venda=venda, id_motoboy=id_motoboy
                             )
                     if venda.forma_pagamento == "dinheiro":
-                        processos.processar_caixa(venda)
+                        processos_pdv.processar_transacao(venda)
 
                     # Processa o carrinho
                     carrinho = dados.get("carrinho")

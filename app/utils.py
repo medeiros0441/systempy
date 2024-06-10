@@ -14,10 +14,12 @@ import string
 from decimal import Decimal
 
 from app.static import UserInfo, Alerta
+import json
+from django.forms.models import model_to_dict
+import uuid
 
 
 class Utils:
-
 
     def converter_para_decimal(valor):
         try:
@@ -34,17 +36,18 @@ class Utils:
         except (ValueError, TypeError):
             return Decimal(0)
 
-
     @staticmethod
-    def obter_data_hora_atual(brasil_date_only=False):
+    def obter_data_hora_atual(value=None):
         # Obtém a data e hora atual no fuso horário do Brasil
         brasil_tz = timezone("America/Sao_Paulo")
         dt_brasil = datetime.now(brasil_tz)
 
         # Formata a data e hora de acordo com o parâmetro especificado
-        if brasil_date_only:
+        if value == True:
             # Retorna apenas a data no formato dia/mes/ano
             return dt_brasil.strftime("%d/%m/%Y")
+        elif value == False:
+            return dt_brasil.strftime("%H:%M")
         else:
             # Retorna data e hora no formato dia/mes/ano hora:minutos
             return dt_brasil.strftime("%d/%m/%Y %H:%M")
@@ -299,7 +302,7 @@ class Utils:
             mensagem = "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte."
             return False, views_erro.erro(request, mensagem)
 
-    def verificar_permissoes(codigo_model):
+    def verificar_permissoes(codigo_model=None):
         """
         Decorador para verificar as permissões do usuário antes de executar a função.
         """
@@ -317,20 +320,22 @@ class Utils:
                 if not Utils.get_status_acesso(id_usuario):
                     return redirect("login", "seu usuario consta bloqueado.")
 
-                codigo_model_convertido = codigo_model
-                if isinstance(codigo_model, str):
-                    lista = Utils.lista_de_configuracao()
-                    # Comparar a string (em minúsculas) com a lista e atribuir o código
-                    codigo_model_lower = codigo_model.lower()
-                    for item in lista:
-                        if item["nome"].lower() == codigo_model_lower:
-                            codigo_model_convertido = item["codigo"]
-                            break
+                if codigo_model:
+                    codigo_model_convertido = codigo_model
+                    if isinstance(codigo_model, str):
+                        lista = Utils.lista_de_configuracao()
+                        # Comparar a string (em minúsculas) com a lista e atribuir o código
+                        codigo_model_lower = codigo_model.lower()
+                        for item in lista:
+                            if item["nome"].lower() == codigo_model_lower:
+                                codigo_model_convertido = item["codigo"]
+                                break
 
-                # Verifica as permissões do usuário com base no código
-                status, render = Utils.configuracao_usuario(
-                    request, id_usuario, codigo_model_convertido
-                )
+                    status, render = Utils.configuracao_usuario(
+                        request, id_usuario, codigo_model_convertido
+                    )
+                else:
+                    status = True
                 if status:
                     return func(request, *args, **kwargs)
                 else:
@@ -352,8 +357,9 @@ class Utils:
             {"nome": "Cliente", "codigo": 8},
             {"nome": "Motoboy", "codigo": 9},
             {"nome": "Pdv", "codigo": 10},
-            {"nome": "Transacao_PDV", "codigo": 11},
-            {"nome": "Faturamento", "codigo": 12},
+            {"nome": "TransacaoPDV", "codigo": 11},
+            {"nome": "RegistroDiarioPDV", "codigo": 12},
+            {"nome": "Faturamento", "codigo": 13},
         ]
 
     def buscar_codigo_por_nome(nome_classe):
@@ -367,3 +373,30 @@ class Utils:
             if configuracao["codigo"] == codigo_classe:
                 return configuracao["nome"]
         return None
+
+    def modelo_para_json(instance):
+        """
+        Converte uma instância de um modelo Django para um dicionário JSON.
+        """
+        if instance is None:
+            return json.dumps({"error": "Instance is None"})
+
+        try:
+            data = model_to_dict(instance)
+            # Converting UUIDs and ForeignKeys to their string representations
+            for key, value in data.items():
+                if isinstance(value, uuid.UUID):
+                    data[key] = str(value)
+                elif hasattr(value, "id"):  # Check if the field is a ForeignKey
+                    data[key] = value.id
+            return json.dumps(data, default=str)
+        except Exception as e:
+            return json.dumps({"error": str(e)})
+
+    def modelos_para_lista_json(instances):
+        """
+        Converte uma lista de instâncias de um modelo Django para uma lista de dicionários JSON.
+        """
+        return json.dumps(
+            [json.loads(Utils.modelo_para_json(instance)) for instance in instances]
+        )

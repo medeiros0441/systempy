@@ -21,3 +21,8 @@ class views_assinante:
         UserInfo.clear_user_info(request)
         Alerta.set_mensagem("Desconectado.")
         return redirect("home")
+
+    @staticmethod
+    @Utils.verificar_permissoes()
+    def configuracao(request):
+        return render(request, "assinante/configuracao.html")

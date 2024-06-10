@@ -6,8 +6,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
 from app.static import Alerta, UserInfo
 import app.view as view
-from app import models 
+from app import models
 from django.core.exceptions import PermissionDenied
+import logging
+import uuid
+
+logger = logging.getLogger(__name__)
 
 
 class views_autenticacao:
@@ -28,14 +32,29 @@ class views_autenticacao:
 
                     # Atualiza o último login do usuário
                     usuario.ultimo_login = timezone.now()
-                    view.views_configuracao.configuracao_set_session(request, usuario.id_usuario)
+                    view.views_configuracao.configuracao_set_session(
+                        request, usuario.id_usuario
+                    )
                     usuario.save()
+                    try:
+                        if isinstance(usuario.id_usuario, uuid.UUID):
+                            request.session["id_usuario"] = str(usuario.id_usuario)
+                        else:
+                            request.session["id_usuario"] = usuario.id_usuario
 
-                    # Armazena os dados do usuário na sessão
-                    request.session["id_usuario"] = usuario.id_usuario
-                    request.session["id_empresa"] = usuario.empresa.id_empresa
-                    request.session["nivel_usuario"] = usuario.nivel_usuario
-                    request.session["status_acesso"] = usuario.status_acesso
+                        if isinstance(usuario.empresa.id_empresa, uuid.UUID):
+                            request.session["id_empresa"] = str(
+                                usuario.empresa.id_empresa
+                            )
+                        else:
+                            request.session["id_empresa"] = usuario.empresa.id_empresa
+
+                        request.session["nivel_usuario"] = usuario.nivel_usuario
+                        request.session["status_acesso"] = usuario.status_acesso
+
+                    except TypeError as e:
+                        logger.error(f"Erro ao armazenar dados na sessão: {e}")
+                        raise
 
                     return True, None
                 else:

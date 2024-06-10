@@ -1,6 +1,7 @@
 from .views_default import views_default
 from .views_empresa import views_empresa
 from .views_usuario import views_usuarios
+from.views_personalizacao import views_personalizacao
 from .views_loja import views_loja
 from .views_produto import views_produto
 from .views_venda import views_venda

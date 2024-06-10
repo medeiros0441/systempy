@@ -41,8 +41,16 @@ class views_loja:
                     "id_loja": loja.id_loja,
                     "nome_loja": loja.nome_loja,
                     "numero_telefone": loja.numero_telefone,
-                    "horario_operacao_inicio": loja.horario_operacao_inicio.strftime('%H:%M:%S') if loja.horario_operacao_inicio else None,
-                    "horario_operacao_fim": loja.horario_operacao_fim.strftime('%H:%M:%S') if loja.horario_operacao_fim else None,
+                    "horario_operacao_inicio": (
+                        loja.horario_operacao_inicio.strftime("%H:%M:%S")
+                        if loja.horario_operacao_inicio
+                        else None
+                    ),
+                    "horario_operacao_fim": (
+                        loja.horario_operacao_fim.strftime("%H:%M:%S")
+                        if loja.horario_operacao_fim
+                        else None
+                    ),
                     "segunda": loja.segunda,
                     "terca": loja.terca,
                     "quarta": loja.quarta,
@@ -52,8 +60,8 @@ class views_loja:
                     "domingo": loja.domingo,
                     "insert": loja.insert,
                     "update": loja.update,
-                    "empresa": loja.empresa.id,
-                    "endereco": loja.endereco.id if loja.endereco else None
+                    "empresa": loja.empresa.id_empresa,
+                    "endereco": loja.endereco.id if loja.endereco else None,
                 }
                 associados = Associado.objects.filter(loja=loja)
                 loja_data["associados"] = [
@@ -63,10 +71,10 @@ class views_loja:
                         "update": associado.update,
                         "status_acesso": associado.status_acesso,
                         "usuario": {
-                            "id_usuario": associado.usuario.id,
-                            "nome_completo": associado.usuario.nome_completo
+                            "id_usuario": associado.usuario.id_usuario,
+                            "nome_completo": associado.usuario.nome_completo,
                         },
-                        "loja": associado.loja.id_loja
+                        "loja": associado.loja.id_loja,
                     }
                     for associado in associados
                 ]

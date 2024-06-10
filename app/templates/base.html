@@ -84,8 +84,8 @@
                         {% endif %}
                         {% if request.session.configs_ativos.3 %}
                             <li class="d-inline-flex col-auto">
-                                <a class="nav-link nav-link-icon" href="{% url 'lista_enderecos' %}">
-                                    <i class="bi bi-geo-alt"></i> Endereços
+                                <a class="nav-link nav-link-icon" href="{% url 'pdv' %}">
+                                    <i class="bi bi-geo-alt"></i> Ponto De Vendas
                                 </a>
                             </li>
                         {% endif %}
@@ -110,11 +110,13 @@
                                 </a>
                             </li>
                         {% endif %}
+                       
                         <li class="d-inline-flex col-auto">
-                            <a class="nav-link nav-link-icon" href="{% url 'desconect' %}">
-                                <i class="bi bi-box-arrow-right"></i> Desconectar
+                            <a class="nav-link nav-link-icon" href="{% url 'configuracao' %}">
+                                <i class="bi bi-gear"></i> Configurações
                             </a>
                         </li>
+
                     </ul>
                 {% endif %}
                 

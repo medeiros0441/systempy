@@ -7,10 +7,7 @@ from app.utils import Utils
 
 class Empresa(models.Model):
 
-    id = models.UUIDField(default=uuid.uuid4, editable=False)
-    id_empresa = models.AutoField(
-        primary_key=True,
-    )
+    id_empresa = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     nome_empresa = models.TextField()
     nro_cnpj = models.TextField()
     razao_social = models.TextField(blank=True, null=True)

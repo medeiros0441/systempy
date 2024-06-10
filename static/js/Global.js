@@ -299,3 +299,24 @@ function applyAutocomplete() {
         });
     });
 }
+
+$(function () {
+    // Selecionar todos os botões com a classe btn_confirmacao
+    const buttons = document.querySelectorAll('.btn_confirmacao');
+    
+    // Adicionar um evento de clique a cada botão
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Desativar o botão clicado
+            button.disabled = true;
+            // Adicionar a classe de desativação do Bootstrap
+            button.classList.add('disabled');
+
+            // Reativar o botão após um tempo (por exemplo, 5 segundos)
+            setTimeout(() => {
+                button.disabled = false;
+                button.classList.remove('disabled');
+            }, 5000);
+        });
+    });
+});

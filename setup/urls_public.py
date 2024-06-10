@@ -44,6 +44,7 @@ url_default = [
 url_assinante = [
     path("dashboard", view.views_assinante.dashboard, name="dashboard"),
     path("desconect", view.views_assinante.desconect, name="desconect"),
+    path("configuracao", view.views_assinante.configuracao, name="configuracao"),
 ]
 
 
@@ -51,17 +52,17 @@ url_empresa = [  # empresa
     path("empresas", view.views_empresa.listar_empresas, name="listar_empresas"),
     path("empresas/criar", view.views_empresa.criar_empresa, name="criar_empresa"),
     path(
-        "empresas/<int:pk>",
+        "empresas/<uuid:pk>",
         view.views_empresa.detalhes_empresa,
         name="detalhes_empresa",
     ),
     path(
-        "empresas/<int:pk>/editar",
+        "empresas/<uuid:pk>/editar",
         view.views_empresa.editar_empresa,
         name="editar_empresa",
     ),
     path(
-        "empresas/<int:pk>/excluir",
+        "empresas/<uuid:pk>/excluir",
         view.views_empresa.excluir_empresa,
         name="excluir_empresa",
     ),
@@ -81,7 +82,12 @@ url_pdv = [
         name="list_registro_diario_pdv",
     ),
     path(
-        "registro_diario_pdv/update/<uuid:id_registro_diario>",
+        "registro_diario_pdv/create/<uuid:id>",
+        view.views_registro_diario_pdv.create_registro_diario_pdv,
+        name="update_registro_diario_pdv",
+    ),
+    path(
+        "registro_diario_pdv/update",
         view.views_registro_diario_pdv.update_registro_diario_pdv,
         name="update_registro_diario_pdv",
     ),
@@ -117,37 +123,64 @@ url_usuario = [
         name="cadastrar_usuario",
     ),
     path(
-        "usuarios/<int:id_usuario>",
+        "usuarios/<uuid:id_usuario>",
         view.views_usuarios.detalhes_usuario,
         name="detalhes_usuario",
     ),
     path(
-        "usuarios/<int:id_usuario>/editar",
+        "usuarios/<uuid:id_usuario>/editar",
         view.views_usuarios.editar_usuario,
         name="editar_usuario",
     ),
     path(
-        "usuarios/excluir/<int:id_usuario>",
+        "usuarios/excluir/<uuid:id_usuario>",
         view.views_usuarios.excluir_usuario,
         name="excluir_usuario",
     ),
     path(
-        "usuarios/bloquear/<int:id_usuario>",
+        "usuarios/bloquear/<uuid:id_usuario>",
         view.views_usuarios.bloquear_usuario,
         name="bloquear_usuario",
     ),
     path(
-        "usuarios/configuracao/<int:id_usuario>",
+        "usuarios/configuracao/<uuid:id_usuario>",
         view.views_usuarios.configuracao_usuario,
         name="configuracao_usuario",
     ),
     path(
-        "usuarios/ativar/<int:id_usuario>",
+        "usuarios/ativar/<uuid:id_usuario>",
         view.views_usuarios.ativar_usuario,
         name="ativar_usuario",
     ),
 ]
 
+ur_personalizacao = [
+    path(
+        "personalizacao/create/",
+        view.views_personalizacao.create_personalizacao,
+        name="create_personalizacao",
+    ),
+    path(
+        "personalizacao/<uuid:id>/",
+        view.views_personalizacao.get_personalizacao,
+        name="get_personalizacao",
+    ),
+    path(
+        "personalizacao/update/<uuid:id>/",
+        view.views_personalizacao.update_personalizacao,
+        name="update_personalizacao",
+    ),
+    path(
+        "personalizacao/delete/<uuid:id>/",
+        view.views_personalizacao.delete_personalizacao,
+        name="delete_personalizacao",
+    ),
+    path(
+        "personalizacao/list/",
+        view.views_personalizacao.list_personalizacao,
+        name="list_personalizacao",
+    ),
+]
 url_loja = [
     # lojas
     path("lojas", view.views_loja.lista_lojas, name="lista_lojas"),
@@ -410,4 +443,5 @@ urlpatterns = (
     + url_motoboy
     + url_erros
     + url_pdv
+    + ur_personalizacao
 )
