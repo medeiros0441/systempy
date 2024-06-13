@@ -310,7 +310,7 @@ class Utils:
 
     def verificar_permissoes(codigo_model=None, auth_required=False):
         """
-        Decorador para verificar as permissões do usuário antes de executar a função.
+        Decorador para verifiar as permissões do usuário antes de executar a função.
         """
 
         def decorator(func):
