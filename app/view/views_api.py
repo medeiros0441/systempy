@@ -14,7 +14,7 @@ from app.utils import Utils
 
 class views_api:
 
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     @csrf_exempt
     def buscar_lojas(request):
         id_usuario = UserInfo.get_id_usuario(request)
@@ -37,7 +37,7 @@ class views_api:
 
     @csrf_exempt
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def create_endereco(request):
         if request.method == "POST":
             data = request.POST
@@ -59,7 +59,7 @@ class views_api:
 
     @csrf_exempt
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def read_endereco(request, endereco_id):
         try:
             endereco = Endereco.objects.get(id=endereco_id)
@@ -79,7 +79,7 @@ class views_api:
 
     @csrf_exempt
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def update_endereco(request, endereco_id):
         if request.method == "PUT":
             data = request.POST
@@ -101,7 +101,7 @@ class views_api:
 
     @csrf_exempt
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def delete_endereco(request, endereco_id):
         if request.method == "DELETE":
             try:

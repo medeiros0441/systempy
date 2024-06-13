@@ -302,11 +302,16 @@ class Utils:
             mensagem = "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte."
             return False, views_erro.erro(request, mensagem)
 
-    def verificar_permissoes(codigo_model=None):
+    def verificar_permissoes(codigo_model=None, auth_required=False):
         """
         Decorador para verificar as permissões do usuário antes de executar a função.
         """
         from .view.views_autenticacao import views_autenticacao
+
+    def verificar_permissoes(codigo_model=None, auth_required=False):
+        """
+        Decorador para verificar as permissões do usuário antes de executar a função.
+        """
 
         def decorator(func):
             @wraps(func)
@@ -314,17 +319,20 @@ class Utils:
                 # Obtém o ID do usuário da requisição
                 id_empresa = UserInfo.get_id_empresa(request)
                 id_usuario = UserInfo.get_id_usuario(request)
-                if id_usuario == 0 or id_empresa == 0:
+
+                # Verifica se autenticação é necessária e se o usuário está autenticado
+                if auth_required and (id_usuario == None or id_empresa == None):
                     return redirect("login")
 
+                # Verifica se o usuário está com acesso permitido
                 if not Utils.get_status_acesso(id_usuario):
-                    return redirect("login", "seu usuario consta bloqueado.")
+                    return redirect("login")
 
+                # Configurações de modelo, se aplicável
                 if codigo_model:
                     codigo_model_convertido = codigo_model
                     if isinstance(codigo_model, str):
                         lista = Utils.lista_de_configuracao()
-                        # Comparar a string (em minúsculas) com a lista e atribuir o código
                         codigo_model_lower = codigo_model.lower()
                         for item in lista:
                             if item["nome"].lower() == codigo_model_lower:
@@ -336,6 +344,7 @@ class Utils:
                     )
                 else:
                     status = True
+
                 if status:
                     return func(request, *args, **kwargs)
                 else:

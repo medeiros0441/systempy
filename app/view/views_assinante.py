@@ -11,12 +11,12 @@ from app.static import Alerta, UserInfo
 class views_assinante:
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(1, True)
     def dashboard(request):
         return render(request, "assinante/home.html")
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=1)
+    @Utils.verificar_permissoes(1, True)
     def desconect(request):
         UserInfo.clear_user_info(request)
         Alerta.set_mensagem("Desconectado.")

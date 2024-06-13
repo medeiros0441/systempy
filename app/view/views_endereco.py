@@ -9,7 +9,7 @@ from django.db import IntegrityError
 class views_endereco:
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def lista_enderecos(request, context=None):
         if context is None:
             context = {}
@@ -23,7 +23,7 @@ class views_endereco:
         return render(request, "endereco/lista_enderecos.html", context)
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def criar_endereco(request):
         if request.method == "POST":
             form = EnderecoForm(request.POST)
@@ -43,7 +43,7 @@ class views_endereco:
             )
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def selecionar_endereco(request, pk):
         endereco = get_object_or_404(Endereco, pk=pk)
         return views_endereco.lista_enderecos(
@@ -51,7 +51,7 @@ class views_endereco:
         )
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def editar_endereco(request, pk):
         endereco = get_object_or_404(Endereco, pk=pk)
         if request.method == "POST":
@@ -68,7 +68,7 @@ class views_endereco:
             )
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def delete_endereco(request, pk):
         try:
             endereco = get_object_or_404(Endereco, pk=pk)

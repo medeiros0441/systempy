@@ -10,7 +10,7 @@ from .views_erro import views_erro
 class views_galao:
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=3)
+    @Utils.verificar_permissoes(3, True)
     def lista_galao(request):
         if (
             request.session.get("id_empresa", 0) != 0
@@ -24,6 +24,7 @@ class views_galao:
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
+    @Utils.verificar_permissoes(3, True)
     def editar_galao(request, galao_id):
         if (
             request.session.get("id_empresa", 0) != 0
@@ -37,6 +38,7 @@ class views_galao:
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
+    @Utils.verificar_permissoes(3, True)
     def selecionar_galao(request, galao_id):
         if (
             request.session.get("id_empresa", 0) != 0
@@ -50,6 +52,7 @@ class views_galao:
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
+    @Utils.verificar_permissoes(3, True)
     def excluir_galao(request, galao_id):
         if (
             request.session.get("id_empresa", 0) != 0

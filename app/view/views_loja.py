@@ -11,7 +11,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 
 class views_loja:
-    @Utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5, True)
     def lista_lojas(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request, True)
 
@@ -30,7 +30,7 @@ class views_loja:
             context["alerta_js"] = Utils.criar_alerta_js(alerta)
         return render(request, "loja/lista_lojas.html", context)
 
-    @Utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5, True)
     def api_lista_lojas(request):
         try:
             id_empresa = UserInfo.get_id_empresa(request)
@@ -86,7 +86,7 @@ class views_loja:
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-    @Utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5, True)
     def criar_loja(request):
         try:
             if request.method == "POST":
@@ -150,7 +150,7 @@ class views_loja:
             mensagem_erro = str(e)
             return views_erro.erro(request, mensagem_erro)
 
-    @Utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5, True)
     def selecionar_loja(request, id_loja):
 
         try:
@@ -171,7 +171,7 @@ class views_loja:
             mensagem_erro = str(e)
             return views_erro.erro(request, mensagem_erro)
 
-    @Utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5, True)
     def editar_loja(request, id_loja):
         loja = get_object_or_404(Loja, pk=id_loja)
         id = UserInfo.get_id_empresa(request)
@@ -210,7 +210,7 @@ class views_loja:
                 {"open_modal": True, "form_endereco": form, "form_loja": formloja},
             )
 
-    @Utils.verificar_permissoes(5)
+    @Utils.verificar_permissoes(5, True)
     def excluir_loja(request, id_loja):
         loja = get_object_or_404(Loja, id_loja=id_loja)
         loja.delete()

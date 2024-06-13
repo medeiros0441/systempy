@@ -22,11 +22,11 @@ from app.utils import Utils
 
 class views_pdv:
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model="pdv")
+    @Utils.verificar_permissoes("pdv", True)
     def pdv(request):
         return render(request, "pdv/lista_pdv.html")
 
-    @Utils.verificar_permissoes(codigo_model="pdv")
+    @Utils.verificar_permissoes("pdv", True)
     def list_pdv(request, id_loja=None):
         if request.method == "GET":
             try:
@@ -56,7 +56,7 @@ class views_pdv:
             {"success": False, "message": "Método não permitido"}, status=405
         )
 
-    @Utils.verificar_permissoes(codigo_model="pdv")
+    @Utils.verificar_permissoes("pdv", True)
     @csrf_exempt
     def create_pdv(request):
         if request.method != "POST":
@@ -110,7 +110,10 @@ class views_pdv:
 
             data["pdv"] = pdv.id_pdv
 
-            if usuario.id_usuario != usuario_adm.id_usuario or usuario.nivel_usuario < 3:
+            if (
+                usuario.id_usuario != usuario_adm.id_usuario
+                or usuario.nivel_usuario < 3
+            ):
                 data["usuario"] = usuario.id_usuario
                 views_associado_pdv.create_associado_pdv(request, data)
             elif AssociadoPDV.objects.filter(usuario_id=usuario.id_usuario).exists():
@@ -146,7 +149,7 @@ class views_pdv:
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
 
-    @Utils.verificar_permissoes(codigo_model="pdv")
+    @Utils.verificar_permissoes("pdv", True)
     @csrf_exempt
     def update_pdv(request):
         """
@@ -216,7 +219,10 @@ class views_pdv:
 
                 if associado_atual:
                     # Atualizar associação do usuário ao PDV
-                    if associado_atual.usuario.id_usuario != usuario_associado.id_usuario:
+                    if (
+                        associado_atual.usuario.id_usuario
+                        != usuario_associado.id_usuario
+                    ):
                         if AssociadoPDV.objects.filter(
                             usuario_id=usuario_associado_id
                         ).exists():
@@ -271,7 +277,7 @@ class views_pdv:
 
 class views_registro_diario_pdv:
 
-    @Utils.verificar_permissoes(codigo_model="RegistroDiarioPDV")
+    @Utils.verificar_permissoes("RegistroDiarioPDV", True)
     @csrf_exempt
     def list_registro_diario_pdv(request, id_pdv):
         if request.method == "GET":
@@ -291,7 +297,7 @@ class views_registro_diario_pdv:
             {"success": False, "message": "Método não permitido"}, status=405
         )
 
-    @Utils.verificar_permissoes(codigo_model="RegistroDiarioPDV")
+    @Utils.verificar_permissoes("RegistroDiarioPDV", True)
     @csrf_exempt
     def create_registro_diario_pdv(request, id=None):
         if request.method != "POST":
@@ -352,7 +358,7 @@ class views_registro_diario_pdv:
                 {"success": False, "message": f"Erro: {str(e)}"}, status=500
             )
 
-    @Utils.verificar_permissoes(codigo_model="RegistroDiarioPDV")
+    @Utils.verificar_permissoes("RegistroDiarioPDV", True)
     @csrf_exempt
     def update_status_registro_diario_pdv(request, id=None):
         if request.method != "PUT":
@@ -406,7 +412,7 @@ class views_registro_diario_pdv:
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
 
-    @Utils.verificar_permissoes(codigo_model="RegistroDiarioPDV")
+    @Utils.verificar_permissoes("RegistroDiarioPDV", True)
     @csrf_exempt
     def update_registro_diario_pdv(request):
         if request.method == "PUT":
@@ -471,7 +477,7 @@ class views_registro_diario_pdv:
 class views_transacao_pdv:
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model="transacao")
+    @Utils.verificar_permissoes("transacao", True)
     def lista_transacao(request):
         return render(request, "caixa/transacao/lista_transacao.html")
 
@@ -508,6 +514,7 @@ class views_associado_pdv:
         )
 
     @csrf_exempt
+    @Utils.verificar_permissoes("associadopdv", True)
     def create_associado_pdv(request, data):
         if request.method == "POST":
             try:

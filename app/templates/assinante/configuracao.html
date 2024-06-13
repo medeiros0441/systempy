@@ -6,22 +6,22 @@
 
 <div class="container mx-auto mt-5">
     <!-- Menu List -->
-    <div class="card mx-auto aling-item-center bg-dark text-light shadow" id="menu_list" style="width: 28rem;">
-        <div class="card-header">
-            <span class="text-light font-montserrat fw-bord my-auto" style="font-size: 1.2rem;">Configurações</span>
+    <div class="card mx-auto aling-item-center bg-dark text-light shadow" id="menu_list" style="width-max: 28rem;">
+        <div class="card-header border-bottom border-white">
+            <h1 class="text-light font-montserrat fw-bord my-auto" style="font-size: 1.4rem;">Configurações</h1>
         </div>
-        <ul class="list-group list-group-flush text-light">
-            <li class="list-group-item list-group-item-action" id="list-personalizacao-list" data-toggle="tab" href="#list-personalizacao-content" role="tab">Personalização</li>
-            <!-- Adicione outros itens da lista conforme necessário -->
-            <li class="list-group-item list-group-item-action" href="{% url 'desconect' %}">
-                <i class="bi bi-person-x"></i> Desconectar
-            </li>
-        </ul>
+        <div class="list-group ">
+            <a class="list-group-item list-group-item-actio border-bottom  border-0 bg-dark text-white" id="list-personalizacao-list" data-toggle="tab" href="#list-personalizacao-content" role="tab">Personalização</a>
+            <a class="list-group-item list-group-item-action  border-0 bg-dark text-white" id="list-empresa-list" data-toggle="tab" href="#list-empresa-content" role="tab">Empresa</a>
+        </div>
+        <a class="card-footer border-top border-white text-danger  align-items-center d-flex  text-decoration-none  justify-content-between" href="{% url 'desconect' %}" >
+           <span class="fw-bold ">  Desconectar </span>   <i class="bi bi-person-x  " style="font-size: 1.4rem;" ></i>  
+        </a>
     </div>
 
     <!-- Tab Content -->
-    <div class="container d-none tab-content card mx-auto aling-item-center bg-dark text-light shadow py-2" id="nav-tabContent"  style="width: 38rem;">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="container d-none tab-content card mx-auto aling-item-center bg-dark text-light shadow py-2" id="nav-tabContent"  style="width-max: 38rem;">
+        <div class="d-flex justify-content-between align-items-center border-bottom  border-white mb-3">
             <span class="text-light font-montserrat fw-bord my-auto " id="valor_container" style="font-size: 1.5rem;"> </span>
 
             <div class="ms-auto   text-light " id="back_to_menu">
@@ -34,8 +34,6 @@
         <div class="alert alert-success text-dark" role="alert">
             <h4 class="alert-heading" style="font-size:1.0rem"><i class="bi me-2 bi-check-circle-fill"></i> Informações</h4>
             <p class="text-dark" style="font-size:0.8rem">Esse campo melhora no desenpenho, na recuperacao de informações, definindo um loja padrão, voce nao precisará recuperar o valor quando for realizar uma venda, ou abrir um ponto de venda.</p>
-            <hr class="my-2">
-            <p class="mb-0 text-dark small"></p>
         </div> 
         <div class="  form-floating mb-2  ">
             <select name="loja" class="form-select select_lojas"  id="select_loja">
@@ -51,57 +49,56 @@
             <label for="select_pdv" class="fw-bold">ponto de Venda:</label>
         </div> 
 
+        <div class="card-footer row ">
+            <button type="button" class="btn btn-primary ms-auto"  id="btn_salvar" onclick="salvarPersonalizacao();">Salvar</button>
+        </div>
+
         </div>
         <!-- Adicione outras divs de conteúdo de abas conforme necessário -->
     </div>
 </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const menuList = document.getElementById('menu_list');
-            const containerPai = document.getElementById('nav-tabContent');
-            const tabContents = containerPai.children;
-            const backToMenuButton = document.getElementById('back_to_menu');
-            const tabTitle = document.getElementById('valor_container');
-    
-            document.querySelectorAll('[data-toggle="tab"]').forEach(tabToggle => {
-                tabToggle.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    const targetId = this.getAttribute('href').substring(1);
-                    Array.from(tabContents).forEach(tabContent => {
-                        if (tabContent.id === targetId) {
-                            containerPai.classList.remove('d-none');
-                            tabContent.classList.add('show', 'active');
-                            menuList.classList.add('d-none');
-                            tabTitle.textContent = this.textContent.trim();  // Atualiza o título com o texto do item de lista
-                        } else {
-                            tabContent.classList.remove('show', 'active');
-                        }
-                    });
-                });
-            });
-    
-            backToMenuButton.addEventListener('click', function () {
-                Array.from(tabContents).forEach(tabContent => {
+<script>
+document.addEventListener('DOMContentLoaded', (event) => {
+    const menuList = document.getElementById('menu_list');
+    const containerPai = document.getElementById('nav-tabContent');
+    const tabContents = containerPai.children;
+    const backToMenuButton = document.getElementById('back_to_menu');
+    const tabTitle = document.getElementById('valor_container');
+
+    document.querySelectorAll('[data-toggle="tab"]').forEach(tabToggle => {
+        tabToggle.addEventListener('click', function (event) {
+            event.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            Array.from(tabContents).forEach(tabContent => {
+                if (tabContent.id === targetId) {
+                    containerPai.classList.remove('d-none');
+                    tabContent.classList.add('show', 'active');
+                    menuList.classList.add('d-none');
+                    tabTitle.textContent = this.textContent.trim();  // Atualiza o título com o texto do item de lista
+                } else {
                     tabContent.classList.remove('show', 'active');
-                });
-                containerPai.classList.add('d-none');
-                menuList.classList.remove('d-none');
-                tabTitle.textContent = 'Personalização';  // Restaura o título padrão ao voltar para o menu
+                }
             });
         });
+    });
 
-
-
+    backToMenuButton.addEventListener('click', function () {
+        Array.from(tabContents).forEach(tabContent => {
+            tabContent.classList.remove('show', 'active');
+        });
+        containerPai.classList.add('d-none');
+        menuList.classList.remove('d-none');
+        tabTitle.textContent = 'Personalização';  // Restaura o título padrão ao voltar para o menu
+    });
+});
 
 window.onload = function() {
     load_data();
 };
 function load_data() {
-   
     // Array para armazenar as Promises das chamadas assíncronas
     const requests = [];
-
     // Chamar as funções assíncronas e armazenar as Promises
     requests.push(new Promise((resolve, reject) => {
         chamarFuncaoPython("pdv/lista", null, 'GET', function(response) {
@@ -109,7 +106,6 @@ function load_data() {
                 Utils.setLocalStorageItem('data_pdvs', response.data);
                 resolve();
             } else {
-                alertCustomer(response.message);
                 reject();
             }
         });
@@ -118,26 +114,13 @@ function load_data() {
         chamarFuncaoPython("api_lojas", null, 'GET', function(response) {
             if (response.success === true) {
                 Utils.setLocalStorageItem('data_lojas', response.lojas);
-                atualizarDropdownLojas(response.lojas)
                   resolve();
             } else {
-                alertCustomer(response.message);
                 reject();
             }
         });
     }));
-
-    requests.push(new Promise((resolve, reject) => {
-        chamarFuncaoPython("api_usuarios", null, 'GET', function(response) {
-            if (response.success === true) {
-                Utils.setLocalStorageItem('data_usuarios', response.usuarios);
-                resolve();
-            } else {
-                alertCustomer(response.message);
-                reject();
-            }
-        });
-    }));
+ 
 
     requests.push(new Promise((resolve, reject) => {
         chamarFuncaoPython("associado_pdv", null, 'GET', function(response) {
@@ -145,20 +128,49 @@ function load_data() {
                 Utils.setLocalStorageItem('data_associados_pdv', response.data);
                 resolve();
             } else {
-                alertCustomer(response.message);
                 reject();
             }
         });
     }));
-
     // Aguardar até que todas as Promises sejam resolvidas ou rejeitadas
     Promise.all(requests)
         .then(() => {
             // Todas as chamadas assíncronas foram concluídas com sucesso
+                data_pdvs = Utils.getLocalStorageItem('data_pdvs');
+                data_lojas= Utils.getLocalStorageItem('data_lojas');
+                atualizarDropdownPDV(data_pdvs);
+                atualizarDropdownLojas(data_lojas);
                 
         })
         .catch(() => {
-            // Pelo menos uma chamada assíncrona falhou
+                alertCustomer("Erro, ao buscar algumas informações," +response.message);
+                // Pelo menos uma chamada assíncrona falhou
+    });
+}
+function  salvarPersonalizacao(){
+    
+}
+function atualizarDropdownPDV(list_pdv){
+    const selects = document.querySelectorAll('.select_pdv');
+    selects.forEach(function(select) {
+        // Limpa as opções existentes
+        select.innerHTML = '';
+
+        // Adiciona a opção padrão, se houver mais de uma loja na lista
+        if (list_pdv.length > 1) {
+            const optionDefault = document.createElement('option');
+            optionDefault.value = '0';
+            optionDefault.textContent = 'Selecione';
+            select.appendChild(optionDefault);
+        }
+
+        // Adiciona as opções de lojas
+        list_pdv.forEach(function(item) {
+            const option = document.createElement('option');
+            option.value = item.id_pdv;
+            option.textContent = item.nome;
+            select.appendChild(option);
+        });
     });
 }
 // Função para atualizar o dropdown com as lojas

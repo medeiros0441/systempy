@@ -11,7 +11,7 @@ class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(codigo_model=9)
+    @Utils.verificar_permissoes(9, True)
     def listar_motoboys_por_empresa(request):
         if request.method == "GET":
             id_empresa = UserInfo.get_id_empresa(request, True)
@@ -35,7 +35,7 @@ class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(codigo_model=9)
+    @Utils.verificar_permissoes(9, True)
     def create_motoboy(request):
         if request.method == "POST":
             dados = json.loads(request.body)
@@ -62,7 +62,7 @@ class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(codigo_model=9)
+    @Utils.verificar_permissoes(9, True)
     def update_motoboy(request, id_motoboy):
         if request.method == "POST":
             data = request.POST
@@ -95,7 +95,7 @@ class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(codigo_model=9)
+    @Utils.verificar_permissoes(9, True)
     def delete_motoboy(request, id_motoboy):
         if request.method == "DELETE":
             id_empresa = UserInfo.get_id_empresa(request, True)
@@ -120,7 +120,7 @@ class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(codigo_model=9)
+    @Utils.verificar_permissoes(9, True)
     def get_motoboy_by_venda(request, id_venda):
         if request.method == "GET":
             if id_venda:

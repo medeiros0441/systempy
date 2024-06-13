@@ -18,7 +18,7 @@ from .views_erro import views_erro
 class views_venda:
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(7, True)
     def lista_vendas(request, context={}, id_loja=None, **kwargs):
 
         alerta = Alerta.get_mensagem()
@@ -28,7 +28,7 @@ class views_venda:
         return render(request, "venda/lista_vendas.html", context)
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(7, True)
     def editar_venda(request, id_venda):
         try:
             context = {}
@@ -44,7 +44,7 @@ class views_venda:
             return views_erro.erro(request, mensagem_erro)
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(7, True)
     def criar_venda(request, context={}):
         try:
             alerta = Alerta.get_mensagem()
@@ -104,7 +104,7 @@ class views_venda:
         )
 
     @csrf_exempt
-    @Utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(7, True)
     def insert_venda_ajax(request):
         try:
             if request.method == "POST":
@@ -217,7 +217,7 @@ class views_venda:
             return None, f"Erro ao validar dados do formulário: {e}"
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(7, True)
     def _open_venda(request):
         try:
             context = {}
@@ -258,7 +258,7 @@ class views_venda:
             return views_erro.erro(request, mensagem_erro)
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(7, True)
     def selecionar_venda(request, venda_id):
 
         return views_venda.lista_vendas(request)
@@ -394,7 +394,7 @@ class views_venda:
             return JsonResponse({"message": mensagem_erro}, status=500)
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=7)
+    @Utils.verificar_permissoes(7, True)
     def excluir_venda(request, venda_id):
         if (
             request.session.get("id_empresa", 0) != 0

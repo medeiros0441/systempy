@@ -1,24 +1,26 @@
-from django.shortcuts import redirect, get_object_or_404
-from django.utils.deprecation import MiddlewareMixin
-from django.utils import timezone
-from django.http import HttpRequest
 from app.models import Usuario, Log, Sessao
 from app.view.views_sessao import views_sessao
 from app.view.views_erro import views_erro
 from app.static import UserInfo
-from django.core.exceptions import ObjectDoesNotExist
+import uuid
 import traceback
-from django.shortcuts import render
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.http import JsonResponse, HttpResponseServerError
-from django.shortcuts import redirect
-
+from django.http import (
+    HttpResponseServerError,
+    JsonResponse,
+    HttpResponsePermanentRedirect,
+)
+from django.shortcuts import redirect, render
+from django.utils.deprecation import MiddlewareMixin
+from django.utils import timezone
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
 
+# ErrorHandlerMiddleware
 class ErrorHandlerMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -31,10 +33,10 @@ class ErrorHandlerMiddleware:
         error_message = str(exception)
         if request.headers.get("Accept") == "application/json":
             return JsonResponse({"error_message": error_message}, status=500)
-        else:
-            return render(request, "erro.html", {"error_message": error_message})
+        return render(request, "erro.html", {"error_message": error_message})
 
 
+# ErrorLoggingMiddleware
 class ErrorLoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -61,25 +63,18 @@ class ErrorLoggingMiddleware:
             return redirect("erro_403")
         elif isinstance(exception, AttributeError):
             return redirect("erro_500")
-        else:
-            return HttpResponseServerError("Erro interno do servidor")
+        return HttpResponseServerError("Erro interno do servidor")
 
 
-from django.http import HttpResponsePermanentRedirect
-
-
+# NotFoundMiddleware
 class NotFoundMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         response = self.get_response(request)
-
-        # Verificar se o caminho da URL tem uma barra no final
-        if request.path != "" and request.path.endswith(""):
-            # Remover a barra no final
-            new_path = request.path.rstrip("")
-            # Verificar se a nova URL corresponde a uma view
+        if request.path and request.path.endswith("/"):
+            new_path = request.path.rstrip("/")
             if new_path and new_path != request.path:
                 return HttpResponsePermanentRedirect(new_path)
         if response.status_code == 404:
@@ -87,76 +82,32 @@ class NotFoundMiddleware:
         return response
 
 
-import uuid
-
-
 # AtualizarDadosClienteMiddleware
 class AtualizarDadosClienteMiddleware(MiddlewareMixin):
-    def process_request(self, request: HttpRequest):
+    def process_request(self, request):
         try:
             ip_cliente = request.META.get("REMOTE_ADDR")
-            navegador_cliente = request.META.get("HTTP_USER_AGENT")
             request.session["ip_cliente"] = ip_cliente
-            request.session["navegador_cliente"] = navegador_cliente
+            request.session["navegador_cliente"] = request.META.get("HTTP_USER_AGENT")
 
             id_usuario = request.session.get("id_usuario")
-
-            def is_valid_uuid(val):
-                try:
-                    if val is None:
-                        return False
-                    if val is str:
-                        uuid.UUID(str(val))
-                    else:
-                        uuid.UUID(val)
-                    return True
-                except ValueError:
-                    return False
-
             sessao = Sessao.objects.filter(ip_sessao=ip_cliente).first()
+
             if not sessao:
                 views_sessao.criar_sessao(request)
 
-            if sessao is not None:
-                if sessao.pagina_atual != request.path:
-                    sessao.pagina_atual = request.path
-                    sessao.time_finalizou = timezone.now()
-                    sessao.save()
-                if is_valid_uuid(id_usuario):
-                    sessao.id_usuario = id_usuario
-                    sessao.save()
+            if sessao and sessao.pagina_atual != request.path:
+                sessao.pagina_atual = request.path
+                sessao.time_finalizou = timezone.now()
+                sessao.save()
 
-            if is_valid_uuid(id_usuario):
+            if self.is_valid_uuid(id_usuario):
+                sessao.id_usuario = id_usuario
+                sessao.save()
                 request.session["isCliente"] = True
                 request.session["id_usuario"] = id_usuario
             else:
                 request.session["isCliente"] = False
-
-            urls_sem_verificacao = [
-                "",
-                "/login",
-                "/home",
-                "/cadastro",
-                "/login",
-                "/sobre",
-                "/Erro",
-            ]
-
-            url_funcJs = [
-                "enviar-codigo/<str:email>",
-                "confirmar-codigo/<str:codigo>",
-                "atualizar-senha/<str:nova_senha>",
-                "api/status_on",
-                "api/status_off",
-            ]
-
-            for url_pattern in url_funcJs:
-                urls_sem_verificacao.append(url_pattern.split("<")[0])
-
-            if not any(request.path.startswith(url) for url in urls_sem_verificacao):
-                id_empresa = UserInfo.get_id_empresa(request, True)
-                if id_empresa is None:
-                    return redirect("login")
 
         except Exception as e:
             traceback_info = traceback.format_exc()
@@ -170,3 +121,37 @@ class AtualizarDadosClienteMiddleware(MiddlewareMixin):
             traceback_str = traceback.format_exc()
             error_message = f"Erro durante a autenticação: {str(e)}\n{traceback_str}"
             return views_erro.erro(request, error_message)
+
+    def is_valid_uuid(self, val):
+        try:
+            if val is None:
+                return False
+            uuid.UUID(str(val))
+            return True
+        except ValueError:
+            return False
+
+    def is_exempted_url(self, path):
+        urls_sem_verificacao = [
+            r"^/$",
+            r"^/login$",
+            r"^/home$",
+            r"^/cadastro$",
+            r"^/sobre$",
+            r"^/Erro$",
+            r"^/enviar-codigo",
+            r"^/confirmar-codigo",
+            r"^/atualizar-senha",
+            r"^/api/status_on",
+            r"^/api/status_off",
+            r"^/api_login",
+        ]
+
+        # Verificação usando expressões regulares
+        is_exempt = any(re.match(pattern, path) for pattern in urls_sem_verificacao)
+
+        # Print para depuração
+        print(f"Verificando URL: {path}")
+        print(f"URL '{path}' is exempt: {is_exempt}")
+
+        return is_exempt

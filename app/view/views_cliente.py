@@ -15,10 +15,9 @@ import app.view as view
 class views_cliente:
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(8, True)
     def lista_clientes(request, Alerta=None):
         return render(request, "cliente/lista_clientes.html")
-        
 
     def criar_cliente(request):
         if Utils.get_status(request):
@@ -88,10 +87,9 @@ class views_cliente:
     def home_cliente(request):
         return render(request, "cliente/default/home.html")
 
-    
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(8, True)
     def api_create_update_cliente(request):
         try:
             if request.method == "POST":
@@ -101,9 +99,13 @@ class views_cliente:
                 endereco = views_cliente._get_or_create_endereco(data)
 
                 if cliente_id:
-                    cliente = models.Cliente.objects.filter(id_cliente=cliente_id).first()
+                    cliente = models.Cliente.objects.filter(
+                        id_cliente=cliente_id
+                    ).first()
                     if not cliente:
-                        return JsonResponse({"error": "Cliente não encontrado"}, status=404)
+                        return JsonResponse(
+                            {"error": "Cliente não encontrado"}, status=404
+                        )
                     views_cliente._atualizar_cliente(cliente, data, endereco)
                     message = "Cliente e Endereço atualizados com sucesso"
                 else:
@@ -112,7 +114,8 @@ class views_cliente:
 
                 response_data = views_cliente._get_response_data(cliente, endereco)
                 return JsonResponse(
-                    {"data": response_data, "message": message}, status=200 if cliente_id else 201
+                    {"data": response_data, "message": message},
+                    status=200 if cliente_id else 201,
                 )
 
         except Exception as e:
@@ -176,7 +179,7 @@ class views_cliente:
         return response_data
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(8, True)
     def api_get_cliente(request, cliente_id):
         cliente = get_object_or_404(models.Cliente, pk=cliente_id)
         cliente_data = {
@@ -191,7 +194,7 @@ class views_cliente:
         return JsonResponse(cliente_data)
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(8, True)
     @csrf_exempt
     def api_update_cliente(request, cliente_id):
         cliente = get_object_or_404(models.Cliente, pk=cliente_id)
@@ -217,14 +220,14 @@ class views_cliente:
         return JsonResponse({"error": "Método não permitido"}, status=405)
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(8, True)
     def api_delete_cliente(request, cliente_id):
         cliente = get_object_or_404(models.liente, pk=cliente_id)
         cliente.delete()
         return JsonResponse({"message": "Cliente deletado com sucesso"}, status=204)
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(8, True)
     def api_get_clientes_by_empresa(request):
         empresa_id = UserInfo.get_id_empresa(request)
 
@@ -318,7 +321,7 @@ class views_cliente:
             )
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(8, True)
     def api_get_cliente(request):
         empresa_id = UserInfo.get_id_empresa(
             request
@@ -350,7 +353,7 @@ class views_cliente:
         return JsonResponse({"data": clientes_data, "sucess": "true"})
 
     @staticmethod
-    @Utils.verificar_permissoes(codigo_model=8)
+    @Utils.verificar_permissoes(8, True)
     def api_get_vendas_by_cliente(request, id_cliente):
         try:
             # Convertendo o campo 'insert' para um campo de data e ordenando pelos mais recentes
