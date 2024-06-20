@@ -66,6 +66,30 @@ url_empresa = [  # empresa
         view.views_empresa.excluir_empresa,
         name="excluir_empresa",
     ),
+    path(
+        "api_list_empresas", view.views_empresa.list_empresas, name="api_list_empresas"
+    ),
+    path(
+        "api_create_empresa",
+        view.views_empresa.create_empresa,
+        name="api_create_empresa",
+    ),
+    path("api_get_empresa", view.views_empresa.get_empresa, name="api_get_empresa"),
+    path(
+        "api_get_empresa/<uuid:id>",
+        view.views_empresa.get_empresa,
+        name="api_get_empresa",
+    ),
+    path(
+        "api_update_empresa/<uuid:id>",
+        view.views_empresa.update_empresa,
+        name="api_update_empresa",
+    ),
+    path(
+        "api_delete_empresa/<uuid:id>",
+        view.views_empresa.delete_empresa,
+        name="api_delete_empresa",
+    ),
 ]
 
 url_pdv = [
@@ -156,27 +180,27 @@ url_usuario = [
 
 ur_personalizacao = [
     path(
-        "personalizacao/create/",
+        "personalizacao/create",
         view.views_personalizacao.create_personalizacao,
         name="create_personalizacao",
     ),
     path(
-        "personalizacao/<uuid:id>/",
+        "personalizacao/<uuid:id>",
         view.views_personalizacao.get_personalizacao,
         name="get_personalizacao",
     ),
     path(
-        "personalizacao/update/<uuid:id>/",
+        "personalizacao/update/<uuid:id>",
         view.views_personalizacao.update_personalizacao,
         name="update_personalizacao",
     ),
     path(
-        "personalizacao/delete/<uuid:id>/",
+        "personalizacao/delete/<uuid:id>",
         view.views_personalizacao.delete_personalizacao,
         name="delete_personalizacao",
     ),
     path(
-        "personalizacao/list/",
+        "personalizacao/list",
         view.views_personalizacao.list_personalizacao,
         name="list_personalizacao",
     ),

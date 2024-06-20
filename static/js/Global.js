@@ -79,7 +79,7 @@ function chamarFuncaoPython(url, data,type, callback)  {
       },
       
   };
-  if (type === 'POST' || type === 'PUT') {
+  if (data != null) {
     requestOptions.body = JSON.stringify(data);
   }
 

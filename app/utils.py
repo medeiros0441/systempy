@@ -13,6 +13,7 @@ import random
 import string
 from decimal import Decimal
 
+from django.db.models import Model
 from app.static import UserInfo, Alerta
 import json
 from django.forms.models import model_to_dict
@@ -388,24 +389,32 @@ class Utils:
         Converte uma instância de um modelo Django para um dicionário JSON.
         """
         if instance is None:
-            return json.dumps({"error": "Instance is None"})
+            return {"error": "Instance is None"}
 
         try:
-            data = model_to_dict(instance)
-            # Converting UUIDs and ForeignKeys to their string representations
+            # Converte a instância para um dicionário, incluindo todos os campos
+            data = model_to_dict(
+                instance, fields=[field.name for field in instance._meta.fields]
+            )
+
+            # Adiciona a chave primária manualmente, caso não tenha sido incluída
+            pk_name = instance._meta.pk.name
+            if pk_name not in data:
+                data[pk_name] = getattr(instance, pk_name)
+
+            # Converte UUIDs e ForeignKeys para suas representações em string
             for key, value in data.items():
                 if isinstance(value, uuid.UUID):
                     data[key] = str(value)
-                elif hasattr(value, "id"):  # Check if the field is a ForeignKey
-                    data[key] = value.id
-            return json.dumps(data, default=str)
+                elif isinstance(value, Model):  # Verifica se o campo é uma ForeignKey
+                    data[key] = value.pk
+
+            return data
         except Exception as e:
-            return json.dumps({"error": str(e)})
+            return {"error": str(e)}
 
     def modelos_para_lista_json(instances):
         """
         Converte uma lista de instâncias de um modelo Django para uma lista de dicionários JSON.
         """
-        return json.dumps(
-            [json.loads(Utils.modelo_para_json(instance)) for instance in instances]
-        )
+        return [Utils.modelo_para_json(instance) for instance in instances]

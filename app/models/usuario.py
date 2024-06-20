@@ -40,7 +40,9 @@ class Usuario(models.Model):
 
 
 class Personalizacao(models.Model):
-    id = models.UUIDField(default=uuid.uuid4,primary_key=True, editable=False)
+    id_personalizacao = models.UUIDField(
+        default=uuid.uuid4, primary_key=True, editable=False
+    )
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     chave = models.CharField(max_length=255)
     valor = models.CharField(max_length=255)

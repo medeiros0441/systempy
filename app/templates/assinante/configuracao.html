@@ -11,11 +11,16 @@
             <h1 class="text-light font-montserrat fw-bord my-auto" style="font-size: 1.4rem;">Configurações</h1>
         </div>
         <div class="list-group ">
-            <a class="list-group-item list-group-item-actio border-bottom  border-0 bg-dark text-white" id="list-personalizacao-list" data-toggle="tab" href="#list-personalizacao-content" role="tab">Personalização</a>
-            <a class="list-group-item list-group-item-action  border-0 bg-dark text-white" id="list-empresa-list" data-toggle="tab" href="#list-empresa-content" role="tab">Empresa</a>
+            <a class="list-group-item list-group-item-actio border-bottom align-items-center justify-content-between d-flex  border-0 bg-dark text-white" id="btn-personalizacao" data-toggle="tab" href="#personalizacao-content" role="tab">
+            <i class="bi bi-person-gear me-2 " style="font-size: 1.4rem;" ></i>   <span class="me-auto col">  Personalização </span>   <i class="bi bi-chevron-right  ms-auto " style="font-size: 1.4rem;" ></i>    </a>
+            
+            <a class="list-group-item list-group-item-actio border-0   align-items-center justify-content-between d-flex  border-0 bg-dark text-white" id="btn-empresa" data-toggle="tab" href="#empresa-content" role="tab">
+            <i class="bi bi-building-exclamation me-2 " style="font-size: 1.4rem;" ></i>   <span class="me-auto col">  Empresa </span>   <i class="bi bi-chevron-right  ms-auto " style="font-size: 1.4rem;" ></i>    </a>
+            
+           
         </div>
         <a class="card-footer border-top border-white text-danger  align-items-center d-flex  text-decoration-none  justify-content-between" href="{% url 'desconect' %}" >
-           <span class="fw-bold ">  Desconectar </span>   <i class="bi bi-person-x  " style="font-size: 1.4rem;" ></i>  
+            <span class="fw-bold ">  Desconectar </span>   <i class="bi bi-person-x  " style="font-size: 1.4rem;" ></i>  
         </a>
     </div>
 
@@ -28,37 +33,110 @@
                 <i class="bi bi-arrow-left-circle" style="font-size: 1.5rem;"></i>
             </div>
         </div>
-        <div class="tab-pane fade" id="list-personalizacao-content" role="tabpanel" aria-labelledby="list-personalizacao-list">
-            
-            
-        <div class="alert alert-success text-dark" role="alert">
-            <h4 class="alert-heading" style="font-size:1.0rem"><i class="bi me-2 bi-check-circle-fill"></i> Informações</h4>
-            <p class="text-dark" style="font-size:0.8rem">Esse campo melhora no desenpenho, na recuperacao de informações, definindo um loja padrão, voce nao precisará recuperar o valor quando for realizar uma venda, ou abrir um ponto de venda.</p>
-        </div> 
-        <div class="  form-floating mb-2  ">
-            <select name="loja" class="form-select select_lojas"  id="select_loja">
-                 <option value="0">Selecione</option>
-             </select>
-            <label for="select_loja" class="fw-bold">Loja:</label>
+        <div class="tab-pane fade" id="personalizacao-content" role="tabpanel" aria-labelledby="btn-personalizacao">
+            <div class="alert alert-success text-dark" role="alert">
+                <h4 class="alert-heading" style="font-size:1.0rem"><i class="bi me-2 bi-check-circle-fill"></i> Informações</h4>
+                <p class="text-dark" style="font-size:0.9rem">Esses campos facilitam a recuperação de informações. Definindo uma loja padrão e um PDV padrão, você não precisará recuperar o valor ao realizar operações.</p>
+            </div> 
+            <div class="  form-floating mb-2  ">
+                <select name="loja" class="form-select select_lojas"  id="select_loja">
+                    <option value="0">Selecione</option>
+                </select>
+                <label for="select_loja" class="fw-bold">Loja:</label>
+            </div>
+            <div class="  form-floating mb-2  ">
+                <select name="loja" class="form-select select_pdv"  id="select_pdv">
+                    <option value="0">Selecione</option>
+                </select>
+                <label for="select_pdv" class="fw-bold">ponto de Venda:</label>
+            </div> 
+            <div class="card-footer row ">
+                <button type="button" class="btn btn-primary ms-auto" id="btn_salvar_personalizacao" disabled  onclick="salvarPersonalizacao();">Salvar</button>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="empresa-content" role="tabpanel" aria-labelledby="btn-empresa">
+                             
+            <div class="card-body p-1 ">
+                <div class="  d-flex align-items-center">
+                    <label for="nome_empresa" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-briefcase"></i> Nome da Empresa:
+                    </label>
+                    <p class="form-text text-light my-0" id="nome_empresa" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="nro_cnpj" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-file-text"></i> CNPJ:
+                    </label>
+                    <p class="form-text text-light my-0" id="nro_cnpj" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="razao_social" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-card-text"></i> Razão Social:
+                    </label>
+                    <p class="form-text text-light my-0" id="razao_social" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="descricao" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-file-earmark-text"></i> Descrição:
+                    </label>
+                    <p class="form-text text-light my-0" id="descricao" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="nome_responsavel" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-person"></i> Nome do Responsável:
+                    </label>
+                    <p class="form-text text-light my-0" id="nome_responsavel" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="cargo" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-briefcase"></i> Cargo:
+                    </label>
+                    <p class="form-text text-light my-0" id="cargo" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="email" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-envelope"></i> Email:
+                    </label>
+                    <p class="form-text text-light my-0" id="email" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="nro_cpf" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-person-badge"></i> CPF:
+                    </label>
+                    <p class="form-text text-light my-0" id="nro_cpf" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="telefone" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-telephone"></i> Telefone:
+                    </label>
+                    <p class="form-text text-light my-0" id="telefone" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="insert" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-clock"></i> Data de Inserção:
+                    </label>
+                    <p class="form-text text-light my-0" id="insert" style="flex: 1;"></p>
+                </div>
+                <div class="  d-flex align-items-center">
+                    <label for="update" class="form-label me-2 my-0 fw-bold">
+                        <i class="bi bi-clock-history"></i> Última Atualização:
+                    </label>
+                    <p class="form-text text-light my-0" id="update" style="flex: 1;"></p>
+                </div>
+            </div>
+           
         </div>
 
-        <div class="  form-floating mb-2  ">
-            <select name="loja" class="form-select select_pdv"  id="select_pdv">
-                 <option value="0">Selecione</option>
-             </select>
-            <label for="select_pdv" class="fw-bold">ponto de Venda:</label>
-        </div> 
-
-        <div class="card-footer row ">
-            <button type="button" class="btn btn-primary ms-auto"  id="btn_salvar" onclick="salvarPersonalizacao();">Salvar</button>
-        </div>
-
-        </div>
         <!-- Adicione outras divs de conteúdo de abas conforme necessário -->
     </div>
 </div>
 
 <script>
+
+window.onload = function() {
+    loadDataPersonalizacao();
+    loadDataEmpresa();
+};
 document.addEventListener('DOMContentLoaded', (event) => {
     const menuList = document.getElementById('menu_list');
     const containerPai = document.getElementById('nav-tabContent');
@@ -75,7 +153,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     containerPai.classList.remove('d-none');
                     tabContent.classList.add('show', 'active');
                     menuList.classList.add('d-none');
-                    tabTitle.textContent = this.textContent.trim();  // Atualiza o título com o texto do item de lista
+                    // Atualiza o título com o ícone do item de lista
+                    const iconElement = this.querySelector('i');  // Seleciona o ícone dentro do item de lista
+                    tabTitle.innerHTML = iconElement.outerHTML + ' ' + this.textContent.trim(); // Adiciona ícone e texto ao título
                 } else {
                     tabContent.classList.remove('show', 'active');
                 }
@@ -83,123 +163,217 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     });
 
+
     backToMenuButton.addEventListener('click', function () {
         Array.from(tabContents).forEach(tabContent => {
             tabContent.classList.remove('show', 'active');
         });
         containerPai.classList.add('d-none');
         menuList.classList.remove('d-none');
-        tabTitle.textContent = 'Personalização';  // Restaura o título padrão ao voltar para o menu
+        tabTitle.textContent = '';  // Restaura o título padrão ao voltar para o menu
     });
-});
+}); 
+// Função para verificar alterações e habilitar o botão de salvar
+function verificarAlteracoes() {
+    const idLoja = document.getElementById("select_loja").value;
+    const idPdv = document.getElementById("select_pdv").value;
+    const btnSalvar = document.getElementById("btn_salvar_personalizacao");
 
-window.onload = function() {
-    load_data();
-};
-function load_data() {
-    // Array para armazenar as Promises das chamadas assíncronas
-    const requests = [];
-    // Chamar as funções assíncronas e armazenar as Promises
-    requests.push(new Promise((resolve, reject) => {
-        chamarFuncaoPython("pdv/lista", null, 'GET', function(response) {
-            if (response.success === true) {
-                Utils.setLocalStorageItem('data_pdvs', response.data);
-                resolve();
-            } else {
-                reject();
-            }
-        });
-    })); 
-    requests.push(new Promise((resolve, reject) => {
-        chamarFuncaoPython("api_lojas", null, 'GET', function(response) {
-            if (response.success === true) {
-                Utils.setLocalStorageItem('data_lojas', response.lojas);
-                  resolve();
-            } else {
-                reject();
-            }
-        });
-    }));
+    const dataPersonalizacao = Utils.getLocalStorageItem('data_personalizacao') || [];
+
+    const lojaAtual = findByCodigo(dataPersonalizacao, "1");
+    const pdvAtual = findByCodigo(dataPersonalizacao, "2");
+
+    btnSalvar.disabled = (idLoja === lojaAtual.valor && idPdv === pdvAtual.valor && idLoja != "0" && idPdv != "0");
+}
  
-
-    requests.push(new Promise((resolve, reject) => {
-        chamarFuncaoPython("associado_pdv", null, 'GET', function(response) {
-            if (response.success === true) {
-                Utils.setLocalStorageItem('data_associados_pdv', response.data);
-                resolve();
+async function loadDataEmpresa() {
+    try {
+        chamarFuncaoPython("api_get_empresa", null, "GET", function(response) {
+            if (response.success) {
+                atualizarDetalhesEmpresa(response.data);
             } else {
-                reject();
+                alertCustomer("Ocorreu um erro interno.", 2);
             }
         });
-    }));
-    // Aguardar até que todas as Promises sejam resolvidas ou rejeitadas
-    Promise.all(requests)
-        .then(() => {
-            // Todas as chamadas assíncronas foram concluídas com sucesso
-                data_pdvs = Utils.getLocalStorageItem('data_pdvs');
-                data_lojas= Utils.getLocalStorageItem('data_lojas');
-                atualizarDropdownPDV(data_pdvs);
-                atualizarDropdownLojas(data_lojas);
-                
-        })
-        .catch(() => {
-                alertCustomer("Erro, ao buscar algumas informações," +response.message);
-                // Pelo menos uma chamada assíncrona falhou
-    });
+    } catch (error) {
+        alertCustomer(`Erro ao buscar algumas informações: ${error.message}`);
+    }
+}function atualizarDetalhesEmpresa(data) {
+    // Função para atualizar um campo específico pelo ID
+    function atualizarCampo(id, valor) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = valor !== undefined ? valor : "";
+        }
+    }
+
+    // Atualizar cada campo individualmente
+    atualizarCampo('nome_empresa', data.nome_empresa);
+    atualizarCampo('nro_cnpj', data.nro_cnpj);
+    atualizarCampo('razao_social', data.razao_social);
+    atualizarCampo('descricao', data.descricao);
+    atualizarCampo('nome_responsavel', data.nome_responsavel);
+    atualizarCampo('cargo', data.cargo);
+    atualizarCampo('email', data.email);
+    atualizarCampo('nro_cpf', data.nro_cpf);
+    atualizarCampo('telefone', data.telefone);
+    atualizarCampo('insert', data.insert);
+    atualizarCampo('update', data.update);
 }
-function  salvarPersonalizacao(){
+
+async function loadDataPersonalizacao() {
+    try {
+        const [pdvs, lojas, associados, personalizacao] = await fetchAllData([
+            "pdv/lista",
+            "api_lojas",
+            "associado_pdv",
+            "personalizacao/list"
+        ]);
+
+        saveDataToLocalStorage({ pdvs, lojas, associados, personalizacao });
+        const { idLoja, idPdv } = getIdsFromPersonalizacao(personalizacao);
+        atualizarDropdownLojas(lojas, idLoja);
+        const dataPdvs = Utils.getLocalStorageItem('data_pdvs');
+        const filteredPdvs = dataPdvs.filter(pdv => pdv.loja ===parseInt(idLoja));
+        atualizarDropdownPDV(filteredPdvs, idPdv);
+
+        setupEventListeners();
+
+        // Verificar alterações inicialmente
+       verificarAlteracoes();
+    } catch (error) {
+        alertCustomer(`Erro ao buscar algumas informações: ${error.message}`);
+    }
+}
+
+function setupEventListeners() {
+    document.getElementById('select_loja').addEventListener('change', () => {
+        const selectedLojaId = parseInt(document.getElementById('select_loja').value);
+        const dataPdvs = Utils.getLocalStorageItem('data_pdvs');
+        const filteredPdvs = dataPdvs.filter(pdv => pdv.loja === selectedLojaId);
+        atualizarDropdownPDV(filteredPdvs);
+        verificarAlteracoes(selectedLojaId, document.getElementById('select_pdv').value);
+    });
     
+
+    document.getElementById('select_pdv').addEventListener('change', () => {
+       verificarAlteracoes();
+    });
 }
-function atualizarDropdownPDV(list_pdv){
+
+// Função de salvar personalização
+function salvarPersonalizacao() {
+    const idLoja = document.getElementById("select_loja").value;
+    const idPdv = document.getElementById("select_pdv").value;
+    const dataPersonalizacao = Utils.getLocalStorageItem('data_personalizacao') || [];
+
+    const lojaAtual = findByCodigo(dataPersonalizacao, "1");
+    const pdvAtual = findByCodigo(dataPersonalizacao, "2");
+
+    // Não mostra o alerta, apenas retorna se não houve modificação
+    if (idLoja === lojaAtual?.valor && idPdv === pdvAtual?.valor && idLojaAtual == "0" && idPdvAtual == "0") {
+        return;
+    }
+
+    const dataLoja = createDataObject("Loja Padrão", 1, idLoja, `ID da loja: ${idLoja}`);
+    const dataPdv = createDataObject("PDV Padrão", 2, idPdv, `ID do PDV: ${idPdv}`);
+
+    chamarApiPersonalizacao(lojaAtual, dataLoja);
+    chamarApiPersonalizacao(pdvAtual, dataPdv);
+    verificarAlteracoes();
+}
+ 
+async function fetchAllData(urls) {
+    const fetchData = async (url) => {
+        return new Promise((resolve, reject) => {
+            chamarFuncaoPython(url, null, 'GET', (response) => {
+                if (response.success) {
+                    resolve(response.data || response.lojas);
+                } else {
+                    reject(new Error(`Failed to fetch from ${url}`));
+                }
+            });
+        });
+    };
+
+    return Promise.all(urls.map(url => fetchData(url)));
+}
+
+function saveDataToLocalStorage(data) {
+    Utils.setLocalStorageItem('data_pdvs', data.pdvs);
+    Utils.setLocalStorageItem('data_lojas', data.lojas);
+    Utils.setLocalStorageItem('data_associados_pdv', data.associados);
+    Utils.setLocalStorageItem('data_personalizacao', data.personalizacao);
+}
+
+function getIdsFromPersonalizacao(personalizacao) {
+    const dataPersonalizacao = personalizacao || [];
+    const idLoja = dataPersonalizacao.find(item => Number(item.codigo) === 1)?.valor || false;
+    const idPdv = dataPersonalizacao.find(item => Number(item.codigo) === 2)?.valor || false;
+    return { idLoja, idPdv };
+}
+
+function findByCodigo(data, codigo) {
+    return data.find(item => item.codigo === codigo);
+}
+
+function createDataObject(chave, codigo, valor, descricaoInterna) {
+    return {
+        chave,
+        codigo,
+        valor,
+        descricao: `Configuração padrão para o ${chave.toLowerCase()} selecionado`,
+        descricao_interna: descricaoInterna
+    };
+}
+
+function chamarApiPersonalizacao(atual, data, tipoOperacao = 'create') {
+    const url = atual ? `personalizacao/update/${atual.id_personalizacao}` : "personalizacao/create";
+    const method = atual ? "PUT" : "POST";
+
+    chamarFuncaoPython(url, data, method, (response) => {
+        if (response.success) {
+            loadDataPersonalizacao();
+            alertCustomer("Atualizado com sucesso", 1);
+        } else {
+            alertCustomer("Ocorreu um erro interno.", 2);
+        }
+    });
+}
+
+function atualizarDropdownPDV(listPdv, id = false) {
     const selects = document.querySelectorAll('.select_pdv');
-    selects.forEach(function(select) {
-        // Limpa as opções existentes
+    selects.forEach(select => {
         select.innerHTML = '';
-
-        // Adiciona a opção padrão, se houver mais de uma loja na lista
-        if (list_pdv.length > 1) {
-            const optionDefault = document.createElement('option');
-            optionDefault.value = '0';
-            optionDefault.textContent = 'Selecione';
-            select.appendChild(optionDefault);
+        if (listPdv.length > 1) {
+            select.appendChild(new Option('Selecione', '0'));
         }
-
-        // Adiciona as opções de lojas
-        list_pdv.forEach(function(item) {
-            const option = document.createElement('option');
-            option.value = item.id_pdv;
-            option.textContent = item.nome;
-            select.appendChild(option);
+        listPdv.forEach(item => {
+            select.appendChild(new Option(item.nome, item.id_pdv));
         });
+        if (id !== false) {
+            select.value = id;
+        }
     });
 }
-// Função para atualizar o dropdown com as lojas
-function atualizarDropdownLojas(list_lojas) {
-    // Seleciona todos os elementos select com a classe especificada
+
+function atualizarDropdownLojas(listLojas, id = false) {
     const selects = document.querySelectorAll('.select_lojas');
-
-    // Itera sobre cada select encontrado
-    selects.forEach(function(select) {
-        // Limpa as opções existentes
+    selects.forEach(select => {
         select.innerHTML = '';
-
-        // Adiciona a opção padrão, se houver mais de uma loja na lista
-        if (list_lojas.length > 1) {
-            const optionDefault = document.createElement('option');
-            optionDefault.value = '0';
-            optionDefault.textContent = 'Selecione';
-            select.appendChild(optionDefault);
+        if (listLojas.length > 1) {
+            select.appendChild(new Option('Selecione', '0'));
         }
-
-        // Adiciona as opções de lojas
-        list_lojas.forEach(function(loja) {
-            const option = document.createElement('option');
-            option.value = loja.id_loja;
-            option.textContent = loja.nome_loja;
-            select.appendChild(option);
+        listLojas.forEach(loja => {
+            select.appendChild(new Option(loja.nome_loja, loja.id_loja));
         });
+        if (id !== false) {
+            select.value = id;
+        }
     });
-} 
+}
+
 </script>
  
 {% endblock %}
