@@ -3,23 +3,25 @@
 {% block title %}Gestão PDV{% endblock %}
 
 {% block content %}
-{% include 'pdv/modal_pdv.html' %}  
- 
-<div id="container_table">
-<div class="container  text-light mt-2 mx-auto">
-   
-    <div class="alert alert-success text-dark" role="alert">
-        <h4 class="alert-heading" style="font-size:1.0rem"><i class="bi me-2 bi-check-circle-fill"></i> Informações</h4>
-        <p class="text-dark" style="font-size:0.8rem">Um PDV ou ponto de venda refere-se a um caixa ou checkout, com ele você conseguirá ver detalhes de cada transação, como troco e informações finais de cada dia, incluindo quando iniciou e quando finalizou. Além disso, você também terá acesso às formas de pagamento.</p>
-        <hr class="my-2">
-        <p class="mb-0 text-dark small">Na coluna "Ações", você encontrará os seguintes botões: abrir ou fechar PDV, ver transações, ver informações sobre o PDV e editar o PDV.</p>
-    </div> 
-</div> 
-    <div class="container p-3 my-3 mx-auto bg-dark rounded" id="table_pdv">
+{% include 'pdv/modal_pdv.html' %}   
+    <div id="container_table">
+    <div class="container  text-light mt-2 mx-auto pt-2">
+            <div id="alert1" class="alert alert-warning text-dark d-none" role="alert" data-info-codigo="info-list-pdv">
+                <div class="d-flex    mb-2 justify-content-between align-items-center border-bottom border-dark">
+                    <h4 class="alert-heading col-auto" style="font-size:1.0rem"><i  style="font-size:1.0rem"  class="bi me-2 bi-info-circle-fill"></i> Informações</h4>
+                    <div type="button" class="close ms-auto" aria-label="Close" onclick="closeAlert('info-list-pdv')">
+                        <i style="font-size:1.0rem" class="bi me-2 bi-x-circle"></i>                </div>
+                </div>
+                <p class="text-dark" style="font-size:0.8rem">Um PDV ou ponto de venda refere-se a um caixa ou checkout, com ele você conseguirá ver detalhes de cada transação, como troco e informações finais de cada dia, incluindo quando iniciou e quando finalizou. Além disso, você também terá acesso às formas de pagamento.</p>
+                <hr class="my-2">
+                <p class="mb-0 text-dark small">Na coluna "Ações", você encontrará os seguintes botões: abrir ou fechar PDV, ver transações, ver informações sobre o PDV e editar o PDV.</p>
+            </div>
+        </div>
+    <div class="container px-2 py-3 my-3 mx-auto bg-dark rounded shadow " id="table_pdv">
 
-<div class="container  text-light mx-auto">
+<div class="container  text-light mx-auto px-1">
     <div class="d-flex   mb-2 justify-content-between">
-        <span   class="    text-light font-montserrat fw-border my-auto" style="font-size: 1.2rem;">Pontos de Vendas</span>
+        <span   class="    text-light font-montserrat fw-border my-auto" style="font-size: 1.0rem;">Pontos de Vendas</span>
         <button type="button" onclick="iniciar_modal(1);" id="btnCriar" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i style="font-size: 1.rem;" class="bi bi-plus me-1"></i>Cadastrar Ponto</button>
     </div>
 </div>
@@ -37,7 +39,7 @@
             <tbody class="table-group-divider" id="tdbody_pdv"></tbody>
         </table>
     </div>
-    <div class="container  d-none p-3 my-3 mx-auto bg-dark rounded" id="table_pdv_diario">
+    <div class="container px-2 py-3 my-3 mx-auto bg-dark rounded shadow  d-none" id="table_pdv_diario">
     
         <div class="d-flex   justify-content-between align-items-center mb-1"  >
             <span class="font-montserrat fw-bold text-white" style="font-size: 1.0rem;">Histórico PDV: <label id="name_pdv_nome"></label></span>
@@ -59,7 +61,7 @@
             <tbody class="table-group-divider" id="tdbody_pdv_diario"></tbody>
         </table>
     </div>
-    <div class="container  d-none p-3 my-3 mx-auto bg-dark rounded" id="table_pdv_tansacoes">
+    <div class="container px-2 py-3 my-3 mx-auto bg-dark rounded shadow d-none " id="table_pdv_tansacoes">
         <div class="d-flex   justify-content-between align-items-center mb-1"  >
             <span class="font-montserrat fw-bold text-white" style="font-size: 1.0rem;">PDV Histórico do dia: <span id="name_pdv_trancoes"></span> </span>
             <button type="button" onclick="alterando_tabela('table_pdv_diario');" id="btnCriar" class="btn text-light p-0" style="font-size: 1.8rem;">
@@ -170,22 +172,29 @@ function load_data() {
             manageLoading(false, "container_table");
     });
 }
-function PDV_status(id, status, obj) {
+function PDV_status(id, status) {
     // Desabilitar o botão
-    obj.disabled = true;
+    if (status === false){
 
-    chamarFuncaoPython("registro_diario_pdv/create/" + id, null, "POST", function(response) {
-        if (response.status) {
-            alertCustomer(response.message, 1);
-        } else {
-            alertCustomer(response.message, 2);
-        }
-        
-        // Reativar o botão
-        obj.disabled = false;
-    });
 
-    load_data();
+
+        alertCustomer("btn é false", 1);
+        return;
+    }else{
+    manageLoading(true, "table_pdv");
+
+        chamarFuncaoPython("registro_diario_pdv/create/" + id, null, "POST", function(response) {
+            if (response.status) {
+                alertCustomer(response.message, 1);
+            load_data();
+                manageLoading(false, "table_pdv");
+
+            } else {
+                alertCustomer(response.message, 2);
+            }
+        });
+    }
+
 }
 
 function alterando_tabela(table,value=null) {
@@ -243,16 +252,21 @@ function montarTabela() {
 
     // Coluna Nome
     const nomeCell = document.createElement("td");
-    nomeCell.className = "text-start text-truncate";
-    nomeCell.textContent = item.nome;
+    const SmallnomeCell = document.createElement("small");
+    SmallnomeCell.className = "text-start text-truncate";
+    SmallnomeCell.textContent = item.nome;
+    nomeCell.appendChild(SmallnomeCell);
     row.appendChild(nomeCell);
 
     // Coluna Loja
-    const lojaCell = document.createElement("td");
-    lojaCell.className = "text-start  d-none d-sm-table-cell text-truncate";
+    const TdlojaCell = document.createElement("td");
+    TdlojaCell.className = "text-start  d-none d-sm-table-cell  ";
+    const smalllojaCell = document.createElement("small");
+    smalllojaCell.className = "text-start  d-none d-sm-table-cell text-truncate";
     const loja = data_lojas.find(loja => loja.id_loja === item.loja);
-    lojaCell.textContent = loja ? loja.nome_loja : "Loja não encontrada";
-    row.appendChild(lojaCell);
+    smalllojaCell.textContent = loja ? loja.nome_loja : "Loja não encontrada";
+    TdlojaCell.appendChild(smalllojaCell);
+    row.appendChild(TdlojaCell);
 
     // Coluna Status
     const statusCell = document.createElement("td");
@@ -266,10 +280,6 @@ function montarTabela() {
     const responsavelCell = document.createElement("td");
     responsavelCell.className = "text-center d-none d-sm-table-cell order-1";
     const associados = data_associados.filter(obj => obj.pdv === item.id_pdv);
-    if (!associados.length) {
-        console.error("Nenhum associado encontrado para este PDV");
-        return;
-    }
     const usuarios = associados
         .map(associado => data_usuario.find(usuario => usuario.id_usuario === associado.usuario && usuario.nivel_usuario > 2))
         .filter(Boolean);
@@ -287,7 +297,7 @@ function montarTabela() {
     AlterStatusBtn.className = item.status_operacao? "btn btn-sm btn-danger" : "btn btn-sm btn-success";
     AlterStatusBtn.innerHTML = item.status_operacao? '<i class="bi bi-x-circle"></i>' : '<i class="bi bi-check2-circle"></i>';
     AlterStatusBtn.onclick = function() {
-        PDV_status(item.id_pdv,!item.status_operacao,this);
+        PDV_status(item.id_pdv,!item.status_operacao);
     };
     btnGroup.appendChild(AlterStatusBtn);
     // Botão de visualizar transação

@@ -40,15 +40,13 @@
             </div> 
             <div class="  form-floating mb-2  ">
                 <select name="loja" class="form-select select_lojas"  id="select_loja">
-                    <option value="0">Selecione</option>
                 </select>
                 <label for="select_loja" class="fw-bold">Loja:</label>
             </div>
             <div class="  form-floating mb-2  ">
                 <select name="loja" class="form-select select_pdv"  id="select_pdv">
-                    <option value="0">Selecione</option>
                 </select>
-                <label for="select_pdv" class="fw-bold">ponto de Venda:</label>
+                <label for="select_pdv" class="fw-bold">Ponto de Venda:</label>
             </div> 
             <div class="card-footer row ">
                 <button type="button" class="btn btn-primary ms-auto" id="btn_salvar_personalizacao" disabled  onclick="salvarPersonalizacao();">Salvar</button>
@@ -184,7 +182,7 @@ function verificarAlteracoes() {
     const lojaAtual = findByCodigo(dataPersonalizacao, "1");
     const pdvAtual = findByCodigo(dataPersonalizacao, "2");
 
-    btnSalvar.disabled = (idLoja === lojaAtual.valor && idPdv === pdvAtual.valor && idLoja != "0" && idPdv != "0");
+    btnSalvar.disabled = (idLoja === lojaAtual?.valor && idPdv === pdvAtual?.valor && idLoja != "0" && idPdv != "0");
 }
  
 async function loadDataEmpresa() {
@@ -272,7 +270,12 @@ function salvarPersonalizacao() {
     const pdvAtual = findByCodigo(dataPersonalizacao, "2");
 
     // Não mostra o alerta, apenas retorna se não houve modificação
-    if (idLoja === lojaAtual?.valor && idPdv === pdvAtual?.valor && idLojaAtual == "0" && idPdvAtual == "0") {
+    if (idLoja === "0" || idPdv === "0"){
+        alertCustomer("Selecione as opções.")
+        return;
+    }
+    if (idLoja === lojaAtual?.valor && idPdv === pdvAtual?.valor) {
+        alertCustomer("Selecione as opções.")
         return;
     }
 
@@ -346,8 +349,8 @@ function atualizarDropdownPDV(listPdv, id = false) {
     const selects = document.querySelectorAll('.select_pdv');
     selects.forEach(select => {
         select.innerHTML = '';
-        if (listPdv.length > 1) {
-            select.appendChild(new Option('Selecione', '0'));
+        if (listPdv.length == 0) {
+            select.appendChild(new Option('Não há uma loja cadastrada.', '0'));
         }
         listPdv.forEach(item => {
             select.appendChild(new Option(item.nome, item.id_pdv));
@@ -362,8 +365,10 @@ function atualizarDropdownLojas(listLojas, id = false) {
     const selects = document.querySelectorAll('.select_lojas');
     selects.forEach(select => {
         select.innerHTML = '';
-        if (listLojas.length > 1) {
-            select.appendChild(new Option('Selecione', '0'));
+        select.appendChild(new Option('Selecione', '0'));
+
+        if (listLojas.length == 0) {
+            select.appendChild(new Option('Nao há PDV Cadastrado', '0'));
         }
         listLojas.forEach(loja => {
             select.appendChild(new Option(loja.nome_loja, loja.id_loja));

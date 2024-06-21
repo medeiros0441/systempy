@@ -15,6 +15,7 @@ from ..models import (
     AssociadoPDV,
     TransacaoPDV,
     Associado,
+    Personalizacao,
 )
 from app.static import Alerta, UserInfo
 from app.utils import Utils
@@ -59,6 +60,7 @@ class views_pdv:
     @Utils.verificar_permissoes("pdv", True)
     @csrf_exempt
     def create_pdv(request):
+        # Verifica se o método da requisição é POST
         if request.method != "POST":
             return JsonResponse(
                 {"success": False, "message": "Método não permitido"}, status=405
@@ -66,88 +68,113 @@ class views_pdv:
 
         try:
             data = json.loads(request.body)
-            nome = data.get("nome", "PDV Padrão")
-            loja_id = data.get("id_loja")
-            saldo_inicial = data.get("saldo_inicial", 100)
-            saldo_inicial = Utils.converter_para_decimal(saldo_inicial)
-            status_operacao = data.get("status_operacao", True)
-            id_usuario = data.get("id_usuario")
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"success": False, "message": "JSON inválido"}, status=400
+            )
 
-            if not loja_id:
-                return JsonResponse(
-                    {"success": False, "message": "Loja ID é obrigatório"}, status=400
-                )
+        nome = data.get("nome", "PDV Padrão")
+        loja_id = data.get("id_loja")
+        saldo_inicial = data.get("saldo_inicial", 100)
+        status_operacao = data.get("status_operacao", True)
+        colaborador_selecionado = data.get("id_usuario")
 
+        # Verifica se o ID da loja foi fornecido
+        if not loja_id:
+            return JsonResponse(
+                {"success": False, "message": "Loja ID é obrigatório"}, status=400
+            )
+
+        try:
             loja = Loja.objects.get(id_loja=loja_id)
-            loja_associados = Associado.objects.filter(loja_id=loja.id_loja)
+        except Loja.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": "Loja não encontrada"}, status=404
+            )
 
+        try:
+            saldo_inicial = Utils.converter_para_decimal(saldo_inicial)
+        except ValueError:
+            return JsonResponse(
+                {"success": False, "message": "Saldo inicial inválido"}, status=400
+            )
+
+        try:
             pdv = PDV.objects.create(
                 nome=nome,
                 loja=loja,
                 saldo_inicial=saldo_inicial,
                 status_operacao=status_operacao,
             )
-
-            id_empresa = UserInfo.get_id_empresa(request)
-            usuario = Usuario.objects.get(empresa_id=id_empresa, id=id_usuario)
-            usuario_adm = Usuario.objects.get(empresa_id=id_empresa, nivel_usuario=1)
-            usuario_gerente = Usuario.objects.filter(
-                empresa_id=id_empresa, nivel_usuario=2, loja_id=loja_id
+        except Exception as e:
+            return JsonResponse(
+                {"success": False, "message": f"Erro ao criar PDV: {str(e)}"},
+                status=500,
             )
 
-            if not any(
-                associado.usuario_id
-                in [
-                    usuario.id_usuario,
-                    *usuario_gerente.values_list("id_usuario", flat=True),
-                ]
-                for associado in loja_associados
-            ):
-                return JsonResponse(
-                    {"success": False, "message": "Usuário não está associado à loja"},
-                    status=400,
-                )
+        try:
+            id_empresa = UserInfo.get_id_empresa(request)
+            list_usuario = Usuario.objects.filter(empresa_id=id_empresa)
 
             data["pdv"] = pdv.id_pdv
 
-            if (
-                usuario.id_usuario != usuario_adm.id_usuario
-                or usuario.nivel_usuario < 3
-            ):
-                data["usuario"] = usuario.id_usuario
-                views_associado_pdv.create_associado_pdv(request, data)
-            elif AssociadoPDV.objects.filter(usuario_id=usuario.id_usuario).exists():
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": "Usuário não pode estar associado a dois pontos de venda, remova o usuário do ponto atual, para inserir associar ao novo.",
-                    },
-                    status=400,
-                )
-            else:
-                data["usuario"] = usuario.id_usuario
-                views_associado_pdv.create_associado_pdv(request, data)
-
-            # Verifica se o gerente está associado à loja
-            if usuario_gerente.exists():
-                data["usuario"] = usuario_gerente.first().id_usuario
-                views_associado_pdv.create_associado_pdv(request, data)
-            else:
-                return JsonResponse(
-                    {"success": False, "message": "Gerente não está associado à loja"},
-                    status=400,
-                )
+            for usuario in list_usuario:
+                try:
+                    views_pdv.associar_usuario_pdv(
+                        usuario, loja_id, colaborador_selecionado, data, request
+                    )
+                except Exception as e:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": f"Erro ao associar usuário {usuario.id_usuario} ao PDV: {str(e)}",
+                        },
+                        status=500,
+                    )
 
             return JsonResponse(
                 {"success": True, "message": "PDV criado com sucesso"}, status=201
             )
-
-        except json.JSONDecodeError:
-            return JsonResponse(
-                {"success": False, "message": "JSON inválido"}, status=400
-            )
         except Exception as e:
-            return JsonResponse({"success": False, "message": str(e)}, status=500)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": f"Erro ao associar usuários ao PDV: {str(e)}",
+                },
+                status=500,
+            )
+
+    def associar_usuario_pdv(usuario, loja_id, colaborador_selecionado, data, request):
+        if usuario.nivel_usuario == 1:
+            # Associa administradores ao PDV
+            data["usuario"] = usuario.id_usuario
+            views_associado_pdv.create_associado_pdv(request, data)
+
+        elif usuario.nivel_usuario == 2:
+            # Associa gerentes ao PDV se estiverem associados à loja
+            gerente_associado = Associado.objects.filter(
+                loja_id=loja_id, usuario_id=usuario.id_usuario
+            ).first()
+            if gerente_associado and gerente_associado.status_acesso:
+                data["usuario"] = gerente_associado.usuario_id
+                views_associado_pdv.create_associado_pdv(request, data)
+
+        elif usuario.nivel_usuario == 3:
+            # Associa colaboradores ao PDV se estiverem associados à loja
+            colaborador_associado = Associado.objects.filter(
+                loja_id=loja_id, usuario_id=usuario.id_usuario
+            ).first()
+            data["usuario"] = usuario.id_usuario
+            if (
+                colaborador_associado
+                and colaborador_associado.status_acesso
+                and colaborador_associado.usuario_id == colaborador_selecionado
+            ):
+                data["usuario"] = colaborador_associado.usuario_id
+                views_associado_pdv.create_associado_pdv(request, data)
+            else:
+                data["status_acesso"] = False
+                views_associado_pdv.create_associado_pdv(request, data)
 
     @Utils.verificar_permissoes("pdv", True)
     @csrf_exempt
@@ -514,7 +541,7 @@ class views_associado_pdv:
         )
 
     @csrf_exempt
-    @Utils.verificar_permissoes("associadopdv", True)
+    @Utils.verificar_permissoes(0, True)
     def create_associado_pdv(request, data):
         if request.method == "POST":
             try:

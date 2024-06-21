@@ -7,6 +7,8 @@
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold font-montserrat" id="ModalLabel" ></h5>
                 </div>
+    <!-- body  responsalvel por pvisualizar detalhes de um pdv-->
+
                 <div class="modal-body d-none py-2" id="container-detalhes">
                     <div class="mb-1 row">
                         <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi-info-circle me-2 bi"></i>Nome do PDV:</label>
@@ -51,14 +53,17 @@
                         </div>
                     </div>
                 </div>
-                
-                
+    <!-- body  com o formulario de um pdv, é possivel  editar ou criar-->
 
                 <div class="modal-body d-none " id="container-form">
-                    <div class="alert alert-success" role="alert">
-                        <h4 class="alert-heading" style="font-size:1.0rem;"><i class="bi me-2 bi-check-circle-fill"></i>Informações</h4>
+                    <div class="alert alert-warning  d-none" role="alert" data-info-codigo="info-list-pdv-2">
+                        <div class="d-flex    mb-2 justify-content-between align-items-center border-bottom border-dark">
+                            <h4 class="alert-heading col-auto" style="font-size:1.0rem"><i  style="font-size:1.0rem"  class="bi me-2 bi-info-circle-fill"></i> Informações</h4>
+                            <div type="button" class="close ms-auto" aria-label="Close" onclick="closeAlert('info-list-pdv-2')">
+                                <i style="font-size:1.0rem" class="bi me-2 bi-x-circle"></i>
+                            </div>
+                        </div>
                         <p class="text-dark" style="font-size:0.8rem;">Uma loja pode ter vários pontos de venda, conforme sua assinatura. Usuários colaboradores podem estar associados a apenas um ponto de venda, enquanto administradores têm acesso total aos recursos.</p>
-                        <hr>
                         <p class="mb-0 text-dark"  style="font-size:0.8rem;">Para remover um colaborador de um ponto de venda, apague o nome do usuário. Para adicionar, selecione uma das opções exibidas. Um colaborador associado a uma loja não pode ser associado a um PDV de outra loja. Portanto, para associar um colaborador a um PDV, ele deve estar associado à mesma loja.</p>
                     </div>
                     
@@ -93,11 +98,14 @@
   
                 </div>  
 
+    <!-- body  responsalvel por processar um fechamento de um pdv-->
+    <div class="modal-body d-none " id="container-form-close-pdv">
+    
+    </div>  
 
                 <div class="modal-footer ">
                             <button type="button" onclick="closeModal();"  class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
                         <button type="button" onclick="salvarPDV();" id="btn_salvar"   class="btn btn-primary  float-start ms-auto btn-sm btn_confirmacao d-none">salvar</a>
-
                 </div>  
         </form>
     </div> 
@@ -114,20 +122,21 @@
         }
     });
     
-    function iniciar_modal(action,id) {
+function iniciar_modal(action,id) {
     const modal = document.getElementById('ModalPvd');
     const modalLabel = modal.querySelector("#ModalLabel");
     const detalhes = modal.querySelector("#container-detalhes");
     const form = modal.querySelector("#container-form");
+    const container_fechar_pdv = modal.querySelector("#container-form-close-pdv");
     const btn_salvar = modal.querySelector("#btn_salvar");
-
+    detalhes.classList.add("d-none");
+    form.classList.add("d-none");
+    container_fechar_pdv.classList.add("d-none");
+    btn_salvar.classList.add("d-none");
     // Desestruturar os valores passados como argumento
-    
-
     switch (action) {
         case 1:
             modalLabel.innerText = "Criar PDV";
-            detalhes.classList.add("d-none");
             form.classList.remove("d-none");
             btn_salvar.classList.remove("d-none");
             applyAutocomplete();
@@ -138,15 +147,12 @@
         case 2:
             modalLabel.innerText = "Detalhes do PDV";
             detalhes.classList.remove("d-none");
-            form.classList.add("d-none");
-            btn_salvar.classList.add("d-none");
             fillModalFields(1,id);
             openModal();
             break;
 
         case 3:
             modalLabel.innerText = "Editar PDV";
-            detalhes.classList.add("d-none");
             form.classList.remove("d-none");
             btn_salvar.classList.remove("d-none");
             applyAutocomplete();
@@ -155,7 +161,10 @@
             fillModalFields(2,id);
             openModal();
             break;
-
+        case 4:
+            modalLabel.innerText = "Fechar PDV";
+            container_fechar_pdv.classList.remove("d-none");
+             
         default:
             console.error("Ação inválida fornecida a iniciar_modal.");
     }
@@ -279,10 +288,7 @@ function clearModalFields() {
 
     // Encontrar os associados correspondentes ao PDV
     const associados = data_associados_pdv.filter(item => item.pdv === id_pdv);
-    if (associados.length === 0) {
-        console.error("Nenhum associado encontrado para este PDV");
-        return;
-    }
+    
 
     // Filtrar os usuários correspondentes aos associados encontrados, com nível de usuário > 2
     const usuarios = associados.map(associado =>
