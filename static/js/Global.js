@@ -322,14 +322,67 @@ $(function () {
 });
 document.addEventListener("DOMContentLoaded", function() {
     // Verifica todos os alertas com data-info-codigo
-    document.querySelectorAll('[data-info-codigo]').forEach(function(alert) {
-        var codigo = alert.getAttribute('data-info-codigo');
-        if (getCookie(codigo) !== 'true') {
-            alert.classList.remove('d-none');
-        }
-    }); 
-});
+    document.querySelectorAll('.container-alert-personalizado').forEach(function(alert) {
+        var infoCodigo = alert.getAttribute('data-codigo');
+        var data_label_a = alert.getAttribute('data-labela');
+        var data_label_b = alert.getAttribute('data-labelb') || "";
 
+        // Cria a nova estrutura de alerta
+        var newContainer = document.createElement('div');
+        newContainer.className = 'container text-light mt-2 mx-auto pt-2';
+
+        var alertDiv = document.createElement('div');
+        alertDiv.id = 'alert1';
+        alertDiv.className = 'alert alert-warning text-dark d-none';
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.setAttribute('data-info-codigo', infoCodigo);
+
+        var alertHeader = document.createElement('div');
+        alertHeader.className = 'd-flex mb-2 justify-content-between align-items-center border-bottom border-dark';
+
+        var alertHeading = document.createElement('h4');
+        alertHeading.className = 'alert-heading col-auto';
+        alertHeading.style.fontSize = '1.0rem';
+        alertHeading.innerHTML = '<i style="font-size:1.0rem" class="bi me-2 bi-info-circle-fill"></i> Informações';
+
+        var closeButton = document.createElement('div');
+        closeButton.className = 'close ms-auto';
+        closeButton.setAttribute('type', 'button');
+        closeButton.setAttribute('aria-label', 'Close');
+        closeButton.onclick = function() { closeAlert(infoCodigo); };
+        closeButton.innerHTML = '<i style="font-size:1.0rem" class="bi me-2 bi-x-circle"></i>';
+
+        alertHeader.appendChild(alertHeading);
+        alertHeader.appendChild(closeButton);
+
+        var alertContent = document.createElement('p');
+        alertContent.className = 'text-dark';
+        alertContent.style.fontSize = '0.9rem';
+        alertContent.textContent = data_label_a; // Valor do primeiro data-label0000000000000000
+      
+        alertDiv.appendChild(alertHeader);
+        alertDiv.appendChild(alertContent);
+          if (data_label_b != ""){
+            var alertHr = document.createElement('hr');
+            alertHr.className = 'my-2';
+            var alertFooter = document.createElement('p');
+            alertFooter.className = 'mb-0 text-dark small';
+            alertFooter.textContent = data_label_b; // Valor do segundo data-label
+            alertDiv.appendChild(alertHr);
+            alertDiv.appendChild(alertFooter);
+        }    
+
+        newContainer.appendChild(alertDiv);
+
+        // Substitui o container original com o novo
+        alert.replaceWith(newContainer);
+
+        // Verifica o cookie para exibir o alerta
+        if (getCookie(infoCodigo) !== 'true') {
+            alertDiv.classList.remove('d-none');
+        }
+    });
+});
 
 function closeAlert(codigo) {
     var alert = document.querySelector('[data-info-codigo="' + codigo + '"]');

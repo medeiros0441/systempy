@@ -5,18 +5,11 @@
 {% block content %}
 {% include 'pdv/modal_pdv.html' %}   
     <div id="container_table">
-    <div class="container  text-light mt-2 mx-auto pt-2">
-            <div id="alert1" class="alert alert-warning text-dark d-none" role="alert" data-info-codigo="info-list-pdv">
-                <div class="d-flex    mb-2 justify-content-between align-items-center border-bottom border-dark">
-                    <h4 class="alert-heading col-auto" style="font-size:1.0rem"><i  style="font-size:1.0rem"  class="bi me-2 bi-info-circle-fill"></i> Informações</h4>
-                    <div type="button" class="close ms-auto" aria-label="Close" onclick="closeAlert('info-list-pdv')">
-                        <i style="font-size:1.0rem" class="bi me-2 bi-x-circle"></i>                </div>
-                </div>
-                <p class="text-dark" style="font-size:0.8rem">Um PDV ou ponto de venda refere-se a um caixa ou checkout, com ele você conseguirá ver detalhes de cada transação, como troco e informações finais de cada dia, incluindo quando iniciou e quando finalizou. Além disso, você também terá acesso às formas de pagamento.</p>
-                <hr class="my-2">
-                <p class="mb-0 text-dark small">Na coluna "Ações", você encontrará os seguintes botões: abrir ou fechar PDV, ver transações, ver informações sobre o PDV e editar o PDV.</p>
-            </div>
-        </div>
+
+        <div class="container-alert-personalizado"    data-codigo="alerta_informativo_pdv1" 
+        data-labela="Um PDV ou ponto de venda refere-se a um caixa ou checkout, com ele você conseguirá ver detalhes de cada transação, como troco e informações finais de cada dia, incluindo quando iniciou e quando finalizou. Além disso, você também terá acesso às formas de pagamento." 
+         data-labelb="Na coluna 'Ações', você encontrará os seguintes botões: abrir ou fechar PDV, ver transações, ver informações sobre o PDV e editar o PDV.">  </div>
+    
     <div class="container px-2 py-3 my-3 mx-auto bg-dark rounded shadow " id="table_pdv">
 
 <div class="container  text-light mx-auto px-1">

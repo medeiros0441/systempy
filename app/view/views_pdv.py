@@ -76,7 +76,7 @@ class views_pdv:
         nome = data.get("nome", "PDV Padrão")
         loja_id = data.get("id_loja")
         saldo_inicial = data.get("saldo_inicial", 100)
-        status_operacao = data.get("status_operacao", True)
+        status_operacao = data.get("status_operacao", 2)
         colaborador_selecionado = data.get("id_usuario")
 
         # Verifica se o ID da loja foi fornecido
@@ -310,10 +310,10 @@ class views_registro_diario_pdv:
         if request.method == "GET":
             try:
                 id_empresa = UserInfo.get_id_empresa(request)
-                registros = RegistroDiarioPDV.objects.select_related("pdv").filter(
-                    pdv__id_pdv=id_pdv, pdv__loja__empresa_id=id_empresa
+                registros = RegistroDiarioPDV.objects.filter(
+                    pdv_id=id_pdv, pdv__loja__empresa_id=id_empresa
                 )
-                registro_list = RegistroDiarioPDV.modelos_para_lista_json(registros)
+                registro_list = Utils.modelos_para_lista_json(registros)
                 return JsonResponse(
                     {"success": True, "data": registro_list}, status=200
                 )

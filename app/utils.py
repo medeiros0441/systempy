@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
 from .gerencia_email.config_email import enviar_email
 from random import choices
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from functools import wraps
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -12,12 +11,14 @@ from pytz import timezone
 import random
 import string
 from decimal import Decimal
-
-from django.db.models import Model
 from app.static import UserInfo, Alerta
 import json
 from django.forms.models import model_to_dict
+from django.db.models import Model, ForeignKey
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Utils:
@@ -384,6 +385,7 @@ class Utils:
                 return configuracao["nome"]
         return None
 
+    
     def modelo_para_json(instance):
         """
         Converte uma instância de um modelo Django para um dicionário JSON.
@@ -393,14 +395,12 @@ class Utils:
 
         try:
             # Converte a instância para um dicionário, incluindo todos os campos
-            data = model_to_dict(
-                instance, fields=[field.name for field in instance._meta.fields]
-            )
+            data = model_to_dict(instance, fields=[field.name for field in instance._meta.fields])
 
             # Adiciona a chave primária manualmente, caso não tenha sido incluída
             pk_name = instance._meta.pk.name
             if pk_name not in data:
-                data[pk_name] = getattr(instance, pk_name)
+                data[pk_name] = str(getattr(instance, pk_name))  # Certifique-se de converter UUIDs para string
 
             # Converte UUIDs e ForeignKeys para suas representações em string
             for key, value in data.items():
@@ -408,6 +408,16 @@ class Utils:
                     data[key] = str(value)
                 elif isinstance(value, Model):  # Verifica se o campo é uma ForeignKey
                     data[key] = value.pk
+
+            # Adiciona campos não incluídos no model_to_dict, como ForeignKeys representadas por _id
+            for field in instance._meta.fields:
+                value = getattr(instance, field.name)
+                if isinstance(value, uuid.UUID):
+                    data[field.name] = str(value)
+                elif isinstance(field, ForeignKey):
+                    data[field.name + '_id'] = str(value.pk) if value else None
+                else:
+                    data[field.name] = value
 
             return data
         except Exception as e:

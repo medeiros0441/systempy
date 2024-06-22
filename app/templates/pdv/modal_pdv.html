@@ -56,17 +56,11 @@
     <!-- body  com o formulario de um pdv, é possivel  editar ou criar-->
 
                 <div class="modal-body d-none " id="container-form">
-                    <div class="alert alert-warning  d-none" role="alert" data-info-codigo="info-list-pdv-2">
-                        <div class="d-flex    mb-2 justify-content-between align-items-center border-bottom border-dark">
-                            <h4 class="alert-heading col-auto" style="font-size:1.0rem"><i  style="font-size:1.0rem"  class="bi me-2 bi-info-circle-fill"></i> Informações</h4>
-                            <div type="button" class="close ms-auto" aria-label="Close" onclick="closeAlert('info-list-pdv-2')">
-                                <i style="font-size:1.0rem" class="bi me-2 bi-x-circle"></i>
-                            </div>
-                        </div>
-                        <p class="text-dark" style="font-size:0.8rem;">Uma loja pode ter vários pontos de venda, conforme sua assinatura. Usuários colaboradores podem estar associados a apenas um ponto de venda, enquanto administradores têm acesso total aos recursos.</p>
-                        <p class="mb-0 text-dark"  style="font-size:0.8rem;">Para remover um colaborador de um ponto de venda, apague o nome do usuário. Para adicionar, selecione uma das opções exibidas. Um colaborador associado a uma loja não pode ser associado a um PDV de outra loja. Portanto, para associar um colaborador a um PDV, ele deve estar associado à mesma loja.</p>
-                    </div>
                     
+                    <div class="container-alert-personalizado"    data-codigo="alerta_informativo_pdv_modal" 
+        data-labela="Uma loja pode ter vários pontos de venda, conforme sua assinatura. Usuários colaboradores podem estar associados a apenas um ponto de venda, enquanto administradores têm acesso total aos recursos" 
+         data-labelb="Para remover um colaborador de um ponto de venda, apague o nome do usuário. Para adicionar, selecione uma das opções exibidas. Um colaborador associado a uma loja não pode ser associado a um PDV de outra loja. Portanto, para associar um colaborador a um PDV, ele deve estar associado à mesma loja">  </div>
+    
                     <div class="form-floating mb-2">
                         <input type="text" class="form-control" id="nome" name="nome"  >
                         <label for="nome">Nome do PDV</label>
@@ -89,8 +83,9 @@
                     </div>
                     <div class="form-floating mb-2">
                         <select class="form-select" id="status_operacao" name="status_operacao">
-                            <option value="true">Aberto</option>
-                            <option value="false" selected>Fechado</option>
+                            <option value="1">Aberto</option>
+                            <option value="2" selected>Fechado</option>
+                            <option value="3" selected>Bloaqueado</option>
                         </select>
                         <label for="status_operacao">Status atual de Operação</label>
                     </div>
