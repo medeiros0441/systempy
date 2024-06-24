@@ -20,6 +20,7 @@ from ..models import (
 from app.static import Alerta, UserInfo
 from app.utils import Utils
 
+from django.db.models import Q
 
 class views_pdv:
     @staticmethod
@@ -28,27 +29,18 @@ class views_pdv:
         return render(request, "pdv/lista_pdv.html")
 
     @Utils.verificar_permissoes("pdv", True)
-    def list_pdv(request, id_loja=None):
+    @csrf_exempt
+    def list_pdv(request, id_loja=None, id_empresa=None):
         if request.method == "GET":
             try:
-                if id_loja != None:
-                    pdvs = PDV.objects.filter(loja_id=id_loja)
+                if id_loja is not None:
+                    pdvs = PDV.objects.filter(Q(loja_id=id_loja) & Q(status_operacao__gt=1))
                 else:
-                    id_empresa = UserInfo.get_id_empresa(request)
-                    pdvs = PDV.objects.filter(loja__empresa_id=id_empresa)
-                pdv_list = []
-                for pdv in pdvs:
-                    pdv_list.append(
-                        {
-                            "id_pdv": pdv.id_pdv,
-                            "nome": pdv.nome,
-                            "loja": pdv.loja_id,
-                            "insert": pdv.insert,
-                            "update": pdv.update,
-                            "saldo_inicial": pdv.saldo_inicial,
-                            "status_operacao": pdv.status_operacao,
-                        }
-                    )
+                    if id_empresa is None:
+                        id_empresa = UserInfo.get_id_empresa(request)
+                    pdvs = PDV.objects.filter(Q(loja__empresa_id=id_empresa) & Q(status_operacao__gt=0))
+
+                pdv_list = Utils.modelos_para_lista_json(pdvs)
                 return JsonResponse({"success": True, "data": pdv_list}, status=200)
             except Exception as e:
                 return JsonResponse({"success": False, "message": str(e)}, status=500)
@@ -56,7 +48,7 @@ class views_pdv:
         return JsonResponse(
             {"success": False, "message": "Método não permitido"}, status=405
         )
-
+    
     @Utils.verificar_permissoes("pdv", True)
     @csrf_exempt
     def create_pdv(request):
@@ -76,8 +68,8 @@ class views_pdv:
         nome = data.get("nome", "PDV Padrão")
         loja_id = data.get("id_loja")
         saldo_inicial = data.get("saldo_inicial", 100)
-        status_operacao = data.get("status_operacao", 2)
-        colaborador_selecionado = data.get("id_usuario")
+        status_operacao = int(data.get("status_operacao", 2))
+        colaboradores_selecionados = data.get("usuarios_associados", [])
 
         # Verifica se o ID da loja foi fornecido
         if not loja_id:
@@ -120,9 +112,7 @@ class views_pdv:
 
             for usuario in list_usuario:
                 try:
-                    views_pdv.associar_usuario_pdv(
-                        usuario, loja_id, colaborador_selecionado, data, request
-                    )
+                    views_pdv.associar_usuario_pdv(usuario, loja_id, colaboradores_selecionados, data, request)
                 except Exception as e:
                     return JsonResponse(
                         {
@@ -144,12 +134,11 @@ class views_pdv:
                 status=500,
             )
 
-    def associar_usuario_pdv(usuario, loja_id, colaborador_selecionado, data, request):
+    def associar_usuario_pdv(usuario, loja_id, colaboradores_selecionados, data, request):
         if usuario.nivel_usuario == 1:
             # Associa administradores ao PDV
             data["usuario"] = usuario.id_usuario
             views_associado_pdv.create_associado_pdv(request, data)
-
         elif usuario.nivel_usuario == 2:
             # Associa gerentes ao PDV se estiverem associados à loja
             gerente_associado = Associado.objects.filter(
@@ -158,23 +147,18 @@ class views_pdv:
             if gerente_associado and gerente_associado.status_acesso:
                 data["usuario"] = gerente_associado.usuario_id
                 views_associado_pdv.create_associado_pdv(request, data)
-
         elif usuario.nivel_usuario == 3:
             # Associa colaboradores ao PDV se estiverem associados à loja
             colaborador_associado = Associado.objects.filter(
                 loja_id=loja_id, usuario_id=usuario.id_usuario
             ).first()
-            data["usuario"] = usuario.id_usuario
-            if (
-                colaborador_associado
-                and colaborador_associado.status_acesso
-                and colaborador_associado.usuario_id == colaborador_selecionado
-            ):
+            if colaborador_associado and colaborador_associado.status_acesso:
                 data["usuario"] = colaborador_associado.usuario_id
-                views_associado_pdv.create_associado_pdv(request, data)
-            else:
-                data["status_acesso"] = False
-                views_associado_pdv.create_associado_pdv(request, data)
+                if colaborador_associado.usuario_id in colaboradores_selecionados:
+                    views_associado_pdv.create_associado_pdv(request, data)
+                else:
+                    data["status_acesso"] = False
+                    views_associado_pdv.create_associado_pdv(request, data)
 
     @Utils.verificar_permissoes("pdv", True)
     @csrf_exempt
@@ -197,8 +181,8 @@ class views_pdv:
             nome = data.get("nome", "PDV Padrão")
             loja_id = data.get("id_loja")
             saldo_inicial = Utils.converter_para_decimal(data.get("saldo_inicial", 100))
-            status_operacao = data.get("status_operacao", True)
-            usuario_associado_id = data.get("id_usuario")
+            status_operacao = int(data.get("status_operacao"))
+            usuarios_associados = data.get("usuarios_associados", [])
 
             # Buscar o PDV
             try:
@@ -225,70 +209,38 @@ class views_pdv:
             pdv.update = Utils.obter_data_hora_atual()
             pdv.save()
 
-            # Associar usuário ao PDV, se fornecido
-            if usuario_associado_id:
-                id_empresa = UserInfo.get_id_empresa(request)
-                try:
-                    usuario_associado = Usuario.objects.get(
-                        empresa_id=id_empresa, id=usuario_associado_id
-                    )
-                except Usuario.DoesNotExist:
-                    return JsonResponse(
-                        {"success": False, "message": "Usuário não encontrado"},
-                        status=404,
-                    )
+            id_empresa = UserInfo.get_id_empresa(request)
 
-                # Verificar se o usuário já está associado a outro PDV
-                associados_filtrados = AssociadoPDV.objects.filter(
-                    pdv=pdv, usuario__nivel_usuario__gte=2
-                )
-                associado_atual = associados_filtrados.first()
+            # Obter associações atuais do PDV
+            associados_atuais = AssociadoPDV.objects.filter(pdv=pdv)
+            ids_associados_atuais = list(associados_atuais.values_list('usuario_id', flat=True))
 
-                if associado_atual:
-                    # Atualizar associação do usuário ao PDV
-                    if (
-                        associado_atual.usuario.id_usuario
-                        != usuario_associado.id_usuario
-                    ):
-                        if AssociadoPDV.objects.filter(
-                            usuario_id=usuario_associado_id
-                        ).exists():
-                            return JsonResponse(
-                                {
-                                    "success": False,
-                                    "message": "Usuário não pode estar associado a dois pontos de venda, remova do ponto atual, para inserir associar ao novo.",
-                                },
-                                status=400,
-                            )
-                        data2 = {
-                            "usuario": usuario_associado.id_usuario,
-                            "pdv": pdv.id_pdv,
-                            "id_associado": associado_atual.id_associado,
-                        }
-                        views_associado_pdv.update_associado_pdv(request, data2)
-                else:
-                    # Criar nova associação do usuário ao PDV
-                    data2 = {
-                        "usuario": usuario_associado.id_usuario,
-                        "pdv": pdv.id_pdv,
-                    }
-                    request.method = "POST"
-                    views_associado_pdv.create_associado_pdv(request, data2)
-            else:
-                # Remover associação do usuário ao PDV
-                associados_filtrados = AssociadoPDV.objects.filter(
-                    pdv=pdv, usuario__nivel_usuario__gte=2
-                )
-                associado_atual = associados_filtrados.first()
-                if associado_atual:
-                    associado_atual.delete()
-                    return JsonResponse(
-                        {
-                            "success": True,
-                            "message": "PDV atualizado com sucesso, usuário removido.",
-                        },
-                        status=200,
-                    )
+            # Adicionar novas associações e manter as existentes
+            for usuario_associado_id in usuarios_associados:
+                if usuario_associado_id not in ids_associados_atuais:
+                    try:
+                        usuario_associado = Usuario.objects.get(
+                            empresa_id=id_empresa, id_usuario=usuario_associado_id
+                        )
+                        # Criar nova associação do usuário ao PDV
+                        AssociadoPDV.objects.create(
+                            usuario=usuario_associado, pdv=pdv
+                        )
+                    except Usuario.DoesNotExist:
+                        return JsonResponse(
+                            {"success": False, "message": f"Usuário {usuario_associado_id} não encontrado"},
+                            status=404,
+                        )
+
+            # Remover associações de usuários que não estão mais na lista fornecida
+            for associado_atual in associados_atuais:
+                if str(associado_atual.usuario_id) not in usuarios_associados:
+                    try:
+                        usuario = Usuario.objects.get(id_usuario=associado_atual.usuario_id)
+                        if usuario.nivel_usuario == 3:
+                            associado_atual.delete()
+                    except Usuario.DoesNotExist:
+                        pass 
 
             return JsonResponse(
                 {"success": True, "message": "PDV atualizado com sucesso"}, status=200
@@ -300,7 +252,6 @@ class views_pdv:
             )
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
-
 
 class views_registro_diario_pdv:
 

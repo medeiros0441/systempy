@@ -2,7 +2,7 @@
 
 {% block content %}
     <div class="modal fade" id="ModalPvd" data-bs-backdrop="static"   data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog  modal-md modal-fullscreen-sm-down modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog  modal-md modal-fullscreen-sm modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold font-montserrat" id="ModalLabel" ></h5>
@@ -22,12 +22,7 @@
                             <p id="detalhes-loja" class="form-control-plaintext"></p>
                         </div>
                     </div>
-                    <div class="mb-1 row">
-                        <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi bi-person me-2"></i>Usuário Associado:</label>
-                        <div class="col ps-0">
-                            <p id="detalhes-responsavel" class="form-control-plaintext"></p>
-                        </div>
-                    </div>
+                   
                     <div class="mb-1 row">
                         <label class="col-auto col-form-label fw-bold  pe-1"><i class="bi bi-calendar-plus me-2"></i>Data de Inserção:</label>
                         <div class="col ps-0">
@@ -52,15 +47,18 @@
                             <p id="detalhes-status_operacao" class="form-control-plaintext"></p>
                         </div>
                     </div>
+                    <div id="container_users" class=" mb-1 row">
+                    </div>
+
                 </div>
     <!-- body  com o formulario de um pdv, é possivel  editar ou criar-->
 
                 <div class="modal-body d-none " id="container-form">
                     
                     <div class="container-alert-personalizado"    data-codigo="alerta_informativo_pdv_modal" 
-        data-labela="Uma loja pode ter vários pontos de venda, conforme sua assinatura. Usuários colaboradores podem estar associados a apenas um ponto de venda, enquanto administradores têm acesso total aos recursos" 
-         data-labelb="Para remover um colaborador de um ponto de venda, apague o nome do usuário. Para adicionar, selecione uma das opções exibidas. Um colaborador associado a uma loja não pode ser associado a um PDV de outra loja. Portanto, para associar um colaborador a um PDV, ele deve estar associado à mesma loja">  </div>
-    
+                        data-labela="Uma loja pode ter vários pontos de venda, conforme sua assinatura." 
+                        data-labelb="Para remover um colaborador de um ponto de venda, apague o nome do usuário. Para adicionar, selecione uma das opções exibidas. Um colaborador associado a uma loja não pode ser associado a um PDV de outra loja. Portanto, para associar um colaborador a um PDV, ele deve estar associado à mesma loja">  </div>
+
                     <div class="form-floating mb-2">
                         <input type="text" class="form-control" id="nome" name="nome"  >
                         <label for="nome">Nome do PDV</label>
@@ -72,11 +70,12 @@
                     </div>
 
                     <div class="form-floating mb-2">
-                        <input type="text" class="form-control  "  id="select_usuario" 
+                        <input type="text" class="form-control  "  id="select_usuario" data-onselect="setUsuario" 
                         data-storage="data_usuarios" data-label="nome_completo" data-key="id_usuario"  >
-                        <label for="autocomplete_usuario">Usuario Associado</label>
+                        <label for="autocomplete_usuario">Buscar Associados</label>
                     </div>
-                      
+                    <div id="container_users_form" class=" px-3">
+                    </div>
                     <div class="form-floating mb-2">
                         <input type="text" class="form-control money-mask" id="saldo_inicial" value="100,00" name="saldo_inicial" >
                         <label for="saldo_inicial">Saldo Inicial</label>
@@ -84,8 +83,8 @@
                     <div class="form-floating mb-2">
                         <select class="form-select" id="status_operacao" name="status_operacao">
                             <option value="1">Aberto</option>
-                            <option value="2" selected>Fechado</option>
-                            <option value="3" selected>Bloaqueado</option>
+                            <option value="2" selected  >Fechado</option>
+                            <option value="3"  >Bloaqueado</option>
                         </select>
                         <label for="status_operacao">Status atual de Operação</label>
                     </div>
@@ -114,13 +113,17 @@
     document.getElementById('select_usuario').addEventListener('change', function() {
         if (this.value === "") {
             this.setAttribute("data-value", "");
+            return;
         }
+
+         
     });
     
 function iniciar_modal(action,id) {
     const modal = document.getElementById('ModalPvd');
     const modalLabel = modal.querySelector("#ModalLabel");
     const detalhes = modal.querySelector("#container-detalhes");
+     
     const form = modal.querySelector("#container-form");
     const container_fechar_pdv = modal.querySelector("#container-form-close-pdv");
     const btn_salvar = modal.querySelector("#btn_salvar");
@@ -128,6 +131,8 @@ function iniciar_modal(action,id) {
     form.classList.add("d-none");
     container_fechar_pdv.classList.add("d-none");
     btn_salvar.classList.add("d-none");
+    modal.querySelector("#container_users_form").innerHTML=""; 
+    modal.querySelector("#container_users").innerHTML="";  
     // Desestruturar os valores passados como argumento
     switch (action) {
         case 1:
@@ -152,7 +157,6 @@ function iniciar_modal(action,id) {
             btn_salvar.classList.remove("d-none");
             applyAutocomplete();
             document.getElementById("id_pdv").value=id;
-
             fillModalFields(2,id);
             openModal();
             break;
@@ -164,34 +168,41 @@ function iniciar_modal(action,id) {
             console.error("Ação inválida fornecida a iniciar_modal.");
     }
 }
-
-// Função para coletar os valores dos campos e criar o objeto de dados
 function criarDadosParaPDV() {
+    // Obter os valores dos campos
     var nomePDV = $("#nome").val();
     var idLoja = $("#select_loja").attr("data-value");
-    var idUsuario = $("#select_usuario").attr("data-value");
     var saldoInicial = $("#saldo_inicial").val();
     var statusOperacao = $("#status_operacao").val();
-
+    
     // Verificar se todos os campos necessários estão preenchidos
-    if (!nomePDV || !idLoja || !saldoInicial  ) {
+    if (!nomePDV || !idLoja || !saldoInicial) {
         alertCustomer("Por favor, preencha todos os campos.");
         return null;
     }
+    
+
+    // Obter os IDs de usuários do container
+    const container = document.getElementById("container_users_form");
+    const userElements = container.querySelectorAll('[data-id-usuario]');
+    const userIds = Array.from(userElements).map(el => el.getAttribute('data-id-usuario'));
+
+    // Obter outros valores necessários
     var id_pdv = $("#id_pdv").val();
 
     // Criar o objeto de dados
     var data = {
         nome: nomePDV,
         id_loja: idLoja,
-        id_usuario: idUsuario,
         saldo_inicial: saldoInicial,
-        status_operacao: statusOperacao === "true" ? true : false,
+        status_operacao: statusOperacao,
         id_pdv: id_pdv,
+        usuarios_associados: userIds  // Incluir os IDs de usuários associados
     };
 
     return data;
 }
+
 
 // Função para lidar com o clique no botão de salvar
 function salvarPDV() {
@@ -310,22 +321,23 @@ function clearModalFields() {
         setTextField("detalhes-insert", pdv.insert);
         setTextField("detalhes-update", pdv.update);
         setTextField("detalhes-saldo_inicial", pdv.saldo_inicial);
-        setTextField("detalhes-status_operacao", pdv.status_operacao ? 'Ativo' : 'Inativo');
-        setTextField("detalhes-responsavel", usuarios[0]?.nome_completo || 'Usuário não encontrado');
+        document.getElementById('detalhes-status_operacao').value =  pdv.status_operacao;
+        List_AssociadosPDV(usuarios,"container_users");
     } else {
         // Preencher os inputs no container-form
         setInputField("nome", pdv.nome);
         setInputField("select_loja", loja.nome_loja);
         $("#select_loja").attr("data-value", loja.id_loja);
-        setInputField("select_usuario", usuarios[0]?.nome_completo || '');
-        $("#select_usuario").attr("data-value", usuarios[0]?.id);
         setInputField("saldo_inicial", pdv.saldo_inicial || '100,00');
-        document.getElementById("status_operacao").selectedLabel = pdv.status_operacao ? 'Aberto' : 'Fechado';
+        document.getElementById('detalhes-status_operacao').value =  pdv.status_operacao;
         handleSelectLoja(loja.id_loja);
+
+        usuarios.forEach(function(usuario) {
+            setUsuario(usuario.id_usuario);
+        });
     }
 }
-
-// Aplicar o autocomplete automaticamente ao carregar a página
+// Função para configurar o autocomplete baseado na loja selecionada
 function handleSelectLoja(selectedId) {
     var data_lojas = localStorage.getItem("data_lojas");
     var data_usuarios = localStorage.getItem("data_usuarios");
@@ -345,7 +357,7 @@ function handleSelectLoja(selectedId) {
                 if (associado.status_acesso) {
                     // Encontrar o objeto de usuário correspondente
                     var usuario = usuarios.find(function(usuario) {
-                        return usuario.id_usuario == associado.usuario.id_usuario  && usuario.nivel_usuario > 2;
+                        return usuario.id_usuario == associado.usuario.id_usuario && usuario.nivel_usuario > 2;
                     });
                     // Adicionar o usuário à lista de sugestões
                     if (usuario) {
@@ -355,30 +367,109 @@ function handleSelectLoja(selectedId) {
             });
         }
     });
-   // Atualizar o autocomplete do campo select_usuario com as novas sugestões
-   $("#select_usuario").autocomplete({
-    source: sugestoes,
-    select: function(event, ui) {
-        var selectedId = ui.item.id;
-        var selectedLabel = ui.item.label;
 
-        // Mudar o valor do input para o label do item selecionado
-        $("#select_usuario").val(selectedLabel);
-        // Armazenar o id do item selecionado no atributo data-value
-        $("#select_usuario").attr("data-value", selectedId);
+    // Atualizar o autocomplete do campo select_usuario com as novas sugestões
+    $("#select_usuario").autocomplete({
+        source: sugestoes,
+        select: function(event, ui) {
+            var selectedId = ui.item.id;
+            var selectedLabel = ui.item.label;
 
-        var onSelectConfig = $("#select_usuario").data("onselect"); // Configuração de seleção
-        if (onSelectConfig) {
-            var onSelectParams = onSelectConfig.split(","); // Dividindo a configuração
-            var onSelectFunction = window[onSelectParams[0]]; // Função de seleção
-            if (typeof onSelectFunction === "function") {
-                onSelectFunction(selectedId); // Chamando a função de seleção com o valor relevante
+            $("#select_usuario").val("");
+            // Recuperar a configuração de seleção
+            var onSelectConfig = $("#select_usuario").data("onselect");
+            if (onSelectConfig) {
+                var onSelectFunction = window[onSelectConfig]; // Função de seleção
+                if (typeof onSelectFunction === "function") {
+                    onSelectFunction(selectedId); // Chamando a função de seleção com o valor relevante
+                } else {
+                    console.error(`Função ${onSelectConfig} não encontrada ou não é uma função.`);
+                }
             }
-        }
 
-        return false; // Evitar que o valor padrão do label seja inserido no input
+            return false; // Evitar que o valor padrão do label seja inserido no input
+        }
+    });
+} // Função para configurar o usuário baseado no ID
+function setUsuario(id) {
+    // Recuperar os dados de usuários do localStorage
+    const dataUsuarios = JSON.parse(localStorage.getItem("data_usuarios")) || [];
+
+    // Encontrar o usuário correspondente ao ID fornecido
+    const usuario = dataUsuarios.find(usuario => usuario.id_usuario === id);
+
+    // Verificar se o usuário foi encontrado e tem status de acesso permitido
+    if (usuario && usuario.status_acesso) {
+        // Encontrar o container correspondente ao ID
+        const container = document.getElementById("container_users_form");
+
+        if (container) {
+            // Verificar se o usuário já está no container
+            const existingUser = container.querySelector(`[data-id-usuario="${usuario.id_usuario}"]`);
+            if (!existingUser) {
+                // Criar o HTML para exibir o usuário associado
+                const associadoHTML = `
+                    <div class="mb-1 row" data-id-usuario="${usuario.id_usuario}">
+                        <label class="col-auto col-form-label fw-bold pe-1">
+                            <i class="bi bi-person me-2"></i>Usuário Associado:
+                        </label>
+                        <div class="col ps-0 d-flex justify-content-between align-items-center ">
+                            <p class="form-control-plaintext me-auto">${usuario.nome_completo}</p>
+                         <i class="bi bi-x-circle ms-auto text-danger" style="cursor:pointer; font-size: 1.1rem;" onclick="removeUsuario('${usuario.id_usuario}')"></i>
+                        </div>
+                    </div>`;
+                
+                // Adicionar o HTML ao container
+                container.innerHTML += associadoHTML;
+            } else {
+                alertCustomer(`Usuário com nome ${usuario.nome_completo} já foi selecionado.`);
+            }
+        } else {
+            console.error(`Elemento com ID container_users_form não encontrado.`);
+        }
+    } else {
+        console.error(`Usuário com ID ${id} não encontrado ou acesso não permitido.`);
     }
-});
-} 
+}
+
+// Função para remover o usuário baseado no ID
+function removeUsuario(id) {
+    // Encontrar o container correspondente ao ID
+    const container = document.getElementById("container_users_form");
+
+    if (container) {
+        // Encontrar o usuário correspondente no container
+        const userElement = container.querySelector(`[data-id-usuario="${id}"]`);
+        if (userElement) {
+            container.removeChild(userElement);
+        } else {
+            console.error(`Usuário com ID ${id} não encontrado no container.`);
+        }
+    } else {
+        console.error(`Elemento com ID container_users_form não encontrado.`);
+    }
+}
+ 
+   function List_AssociadosPDV(list, id) {
+    const container = document.getElementById(id);
+    container.innerHTML = ''; // Limpa o contêiner antes de adicionar novos elementos
+    
+    list.forEach(function(associado) {
+        if (associado.status_acesso) {
+            const associadoHTML = `
+                <div class="mb-1 row">
+                    <label class="col-auto col-form-label fw-bold pe-1">
+                        <i class="bi bi-person me-2"></i>Usuários Associado:
+                    </label>
+                    <div class="col ps-0">
+                        <p class="form-control-plaintext">${associado.nome_completo}</p>
+                    </div>
+                </div>`;
+            container.innerHTML += associadoHTML;
+        }
+    });
+}
+
+
 </script>
 {% endblock %}

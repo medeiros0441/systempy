@@ -25,7 +25,7 @@
                     <th scope="col" class="text-start">Nome</th>
                     <th scope="col" class="d-none d-sm-table-cell text-start">Loja</th>
                     <th scope="col" class="text-start">Status</th>
-                    <th scope="col" class="d-none d-sm-table-cell text-center">Responsável</th>
+                    <th scope="col" class="d-none d-sm-table-cell text-center">Colaboradores</th>
                     <th scope="col" class="text-end">Ações</th>
                 </tr>
             </thead>
@@ -261,22 +261,40 @@ function montarTabela() {
     TdlojaCell.appendChild(smalllojaCell);
     row.appendChild(TdlojaCell);
 
-    // Coluna Status
     const statusCell = document.createElement("td");
     statusCell.className = "text-start";
-    statusCell.innerHTML = item.status_operacao
-        ? '<span class="badge rounded-pill text-bg-success">Aberto</span>'
-        : '<span class="badge rounded-pill text-bg-danger">Fechado</span>';
+    
+    let statusBadge;
+    switch (item.status_operacao) {
+        case 1:
+            statusBadge = '<span class="badge rounded-pill text-bg-success">Aberto</span>';
+            break;
+        case 2:
+            statusBadge = '<span class="badge rounded-pill text-bg-warning">Fechado</span>';
+            break;
+        case 3:
+            statusBadge = '<span class="badge rounded-pill text-bg-danger">Bloqueado</span>';
+            break;
+        case 0:
+            statusBadge = '<span class="badge rounded-pill text-bg-danger">Excluído</span>';
+            break;
+        default:
+            statusBadge = '<span class="badge rounded-pill text-bg-secondary">Desconhecido</span>';
+            break;
+    }
+    statusCell.innerHTML = statusBadge;
     row.appendChild(statusCell);
+
+     
 
     // Coluna Responsável
     const responsavelCell = document.createElement("td");
     responsavelCell.className = "text-center d-none d-sm-table-cell order-1";
-    const associados = data_associados.filter(obj => obj.pdv === item.id_pdv);
+    const associados = data_associados.filter(obj => obj.pdv === item.id_pdv && item.status_operacao==true);
     const usuarios = associados
         .map(associado => data_usuario.find(usuario => usuario.id_usuario === associado.usuario && usuario.nivel_usuario > 2))
         .filter(Boolean);
-    responsavelCell.textContent = usuarios.map(usuario => usuario.nome_completo).join(" ");
+    responsavelCell.textContent = usuarios.map(usuario => usuario.nome_completo).join(", ");
     row.appendChild(responsavelCell);
 
     // Coluna Ações
@@ -284,15 +302,20 @@ function montarTabela() {
     acoesCell.className = "text-end";
     const btnGroup = document.createElement("div");
     btnGroup.className = "btn-group";
+        
+    // Botão de alteração de status (apenas para status 1 ou 2)
+    if (item.status_operacao === 1 || item.status_operacao === 2) {
+        const AlterStatusBtn = document.createElement("button");
+        AlterStatusBtn.className = item.status_operacao === 1 ? "btn btn-sm btn-danger" : "btn btn-sm btn-success";
+        AlterStatusBtn.innerHTML = item.status_operacao === 1 ? '<i class="bi bi-x-circle"></i>' : '<i class="bi bi-check2-circle"></i>';
+        AlterStatusBtn.onclick = function() {
+            PDV_status(item.id_pdv, item.status_operacao === 1 ? 0 : 1); // Alterna entre 0 e 1
+        };
+        btnGroup.appendChild(AlterStatusBtn);
+    }
 
-    // Botão de excluir
-    const AlterStatusBtn = document.createElement("button");
-    AlterStatusBtn.className = item.status_operacao? "btn btn-sm btn-danger" : "btn btn-sm btn-success";
-    AlterStatusBtn.innerHTML = item.status_operacao? '<i class="bi bi-x-circle"></i>' : '<i class="bi bi-check2-circle"></i>';
-    AlterStatusBtn.onclick = function() {
-        PDV_status(item.id_pdv,!item.status_operacao);
-    };
-    btnGroup.appendChild(AlterStatusBtn);
+    // Adiciona o grupo de botões à linha (row)
+    row.appendChild(btnGroup);
     // Botão de visualizar transação
     const visualizarTransacoeBtn = document.createElement("button");
     visualizarTransacoeBtn.className = "btn btn-sm btn-secondary";
