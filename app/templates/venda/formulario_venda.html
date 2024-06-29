@@ -8,18 +8,13 @@
     <span class="text-dark font-monospace fw-bold" style="font-size: 1.2rem;">
         <i class="bi bi-file-earmark-text mr-2"></i> Formulario de vendas
     </span>
-    
-    <div class="col-auto"  id="container_btns_salvar">
-        <button type="button" onclick="clean_form();" class="btn btn-secondary btn-sm">Limpar</button>
-        <button type="button" id="btnSubmit" class="btn btn-primary btn-sm btn-loading">Salvar</button>
-    </div>
+     
 </div>
 
 
         
     <form   id="form_cadastro" class="container-fluid needs-validation  my-2  row mx-auto " autocomplete="off" novalidate>
-   
-            <div class="  col-sm-6 order-1 p-1">
+            <div class="  col-sm-6 order-1 p-1 ">
                 <div class="  form-floating mb-2  ">
                     <select name="loja" class="form-select select_lojas"  id="select_loja">
                          <option value="0">Selecione</option>
@@ -27,177 +22,154 @@
                     <label for="select_loja" class="fw-bold">Loja:</label>
                 </div>
                 <label class="fw-bold ms-2">Pesquisar produto:</label>
-                <div class="input-group">
+                <div class="input-group  mb-2 ">
                     <select class="form-select" id="select_produto" autocomplete="off"></select>
                     <button class="btn btn-outline-secondary bi-plus" type="button" onclick="Ouvinte();" id="adicionarProdutoBtn"></button>
                 </div>
                    
-                   <!-- lista de produtos -->
-                    <div class="card-body rounded bg-dark p-1 my-2">
-                        <h5 class="text-white fw-bold px-2 py-1 m-0">
-                            <i class="bi bi-cart-fill"></i> Carrinho
-                        </h5>
-                        <ul class="list-group row mx-auto p-1" id="ul_produtos"></ul>
-                        <div class=" mb-1 px-1 mx-1 text-white fw-bold row font-monospace mt-2" style="font-size: 0.8;" >
-                            <label  id="valor_total" style="font-size: 0.8rem" class="fw-bold col">Valor total de produtos:</label>
-                            <label class="ms-auto float-end   col-auto fw-bold"   style="font-size: 0.8rem" id="id_valor_total">00,00</label>
-                        </div>
-                    </div>
 
-        <div class="card mb-2  shadow">
-            <div class=" card-header bg-dark text-white ">
-                <div class="d-flex align-items-center font-monospace">
-                    <span class="me-auto font-monospace   "> Gestão de pagamento </span>
-                    <button type="button" id="btn_gestao_pagamento" class="btn btn-sm text-white " onclick="toggleGestaproduto();">
-                        <i class="bi bi-eye-slash d-none"  id="icone_pagamento_close"></i>
-                        <i class="bi bi-eye  " id="icone_pagamento_open"></i>
-                    </button>
+            <div class="card mb-2  shadow">
+                <div class=" card-header bg-dark text-white ">
+                    <div class="d-flex align-items-center font-monospace">
+                        <span class="me-auto font-monospace   "> Gestão de pagamento </span>
+                        <button type="button" id="btn_gestao_pagamento" class="btn btn-sm text-white " onclick="toggleGestaproduto();">
+                            <i class="bi bi-eye-slash d-none"  id="icone_pagamento_close"></i>
+                            <i class="bi bi-eye  " id="icone_pagamento_open"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-                <div class="card-body mt-0 " id="body_gestao_pay">
-                    <div class="form-floating mb-2">
-                    <select name="metodo_entrega" class="form-select"    id="id_metodo_entrega">
-                    <option value="0">Selecione</option>
-                    <option value="retirado na loja">Retirado na Loja</option>
-                    <option value="entrega no local">Entrega no Local</option>
-                    </select>
-                    <label for="metodo_entrega">Método de Entrega:</label></div>  
-
-                    <div class="form-floating mb-2 d-none " id="id_container_entrega">
-                    <input id="id_taxa_entrega" name="taxa_entrega" class="form-control money-mask" type="text" maxlength="14">
-                    <label for="id_taxa_entrega">Taxa de Entrega:  <span style="font-size: 0.8;">R$ 00,00</span></label> </div> 
-
-                    <div class="form-floating mb-2">
-                    <select name="estado_transacao" class="form-select" id="id_estado_transacao">
-                    <option value="0">Selecione</option>
-                    <option value="finalizado">Finalizado</option>
-                    <option value="processando">Processando</option>
-                    <option value="pendente">Pendente</option>
-                    </select>
-                    <label for="estado_transacao">Estado da Transação:</label> </div> 
-                    <div class="form-floating mb-2">
-                    <select name="forma_pagamento" class="form-select"   id="id_forma_pagamento">
-                        <option value="0">Selecione</option>
-                        <option value="dinheiro">Dinheiro</option>
-                        <option value="pix">Pix</option>
-                        <option value="cartao credito">Cartão de Crédito</option>
-                        <option value="cartao debito">Cartão de Débito</option>
-                        <option value="fiado">Fiado</option>
-                    </select>
-                    <label for="forma_pagamento">Forma de Pagamento:</label> </div> 
-                    <div class="form-floating mb-2">
-                    <input id="id_desconto" name="desconto" class="form-control money-mask" type="text" maxlength="14">
-                    <label for="id_desconto">Desconto:  <span style="font-size: 0.8rem;">R$ 00,00</span></label> </div> 
-                    <div class=" mb-1 px-1 mx-1 font-monospace mt-2" style="font: size 1rem;">
-                        <label id="valor_total" class="fw-bold   ">Valor Total: </label>
-                        <label class="ms-auto float-end   fw-bold"    id="txt_valor_apagar">00,00</label></div>
-                    <div class="    row  m-0  gestaotroco d-none">
-                        <div class="col-sm-8">
+                    <div class="card-body mt-0 " id="body_gestao_pay">
                         <div class="form-floating mb-2">
-                            <input type="text" name="valor_pago" class="form-control money-mask " id="id_valor_pago" maxlength="14">
-                            <label for="id_valor_pago"  style="font-size: 0.6rem;">Valor Pago:  <span  style="font-size: 0.6rem;">R$ 00,00</span></label></div>
-                        </div>
-                            <div class="col-sm-4 mx-auto my-auto">
-                                    <label id="txt_troco" style="font-size: 0.8rem;" class="small text-small">00,00</label> </div>
-                    </div>
-                    <div class="form-floating mb-2">
-                    <textarea name="descricao_venda" cols="40" rows="5" class="form-control" id="id_descricao_venda"></textarea>
-                    <label for="descricao">Descrição:</label> </div>
-                    
-                </div> 
-        </div>
-       
-        </div>
-                    
-                    
-            <div class="col-sm-6 order-2 p-1 ">
+                        <select name="metodo_entrega" class="form-select"    id="id_metodo_entrega">
+                        <option value="0">Selecione</option>
+                        <option value="retirado na loja">Retirado na Loja</option>
+                        <option value="entrega no local">Entrega no Local</option>
+                        </select>
+                        <label for="metodo_entrega">Método de Entrega:</label></div>  
+
+                        <div class="form-floating mb-2 d-none " id="id_container_entrega">
+                        <input id="id_taxa_entrega" name="taxa_entrega" class="form-control money-mask" type="text" maxlength="14">
+                        <label for="id_taxa_entrega">Taxa de Entrega:  <span style="font-size: 0.8;">R$ 00,00</span></label> </div> 
+
+                        <div class="form-floating mb-2">
+                        <select name="estado_transacao" class="form-select" id="id_estado_transacao">
+                        <option value="0">Selecione</option>
+                        <option value="finalizado">Finalizado</option>
+                        <option value="processando">Processando</option>
+                        <option value="pendente">Pendente</option>
+                        </select>
+                        <label for="estado_transacao">Estado da Transação:</label> </div> 
+                        <div class="form-floating mb-2">
+                        <select name="forma_pagamento" class="form-select"   id="id_forma_pagamento">
+                            <option value="0">Selecione</option>
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="pix">Pix</option>
+                            <option value="cartao credito">Cartão de Crédito</option>
+                            <option value="cartao debito">Cartão de Débito</option>
+                            <option value="fiado">Fiado</option>
+                        </select>
+                        <label for="forma_pagamento">Forma de Pagamento:</label> </div> 
+                        <div class="p-0 m-0  gestaotroco d-none">
+                            <div class="form-floating mb-2">
+                                <input type="text" name="valor_pago" class="form-control money-mask " id="id_valor_pago_dinheiro" maxlength="14">
+                                <label for="id_valor_pago_dinheiro"  >Valor Pago: </label>
+                            </div>
+                        </div> 
+                        <div class="form-floating mb-2">
+                        <input id="id_desconto" name="desconto" class="form-control money-mask" type="text" maxlength="14">
+                        <label for="id_desconto">Desconto:  <span style="font-size: 0.8rem;">R$ 00,00</span></label> </div> 
+                        <div class="form-floating mb-2">
+                            <textarea name="descricao_venda" cols="40" rows="5" class="form-control" id="id_descricao_venda"></textarea>
+                            <label for="descricao">Descrição:</label> </div>
+                         
+                        </div> 
+            </div>
+        
+   
         <!--card pesquisa_cliente-->
         <div class="card my-2 shadow">
             <div class="card-header bg-dark text-white">
                 <div class="d-flex align-items-center font-monospace">
                     <span class="me-auto fs-6 text-white" id="title_header_cliente">Buscar Cliente</span>
-                    <button type="button" class="btn btn-sm text-white me-2" id="btn_toggle" onclick="toggleCliente()">
-                        <i class="bi bi-person-plus" id="icon_btn_toggle"></i>
+                    <button type="button" class="btn btn-sm text-white " id="btn_toggle" onclick="toggleCliente()">
+                        <i class="bi bi-person-plus" id="icon_btn_toggle" style="font:size 0.9rem"></i>
                     </button>
                 </div>
             </div>
             <div class="card-body" id="container_buscar_cliente"> 
-                        <!-- Conteúdo do container buscar cliente -->
-                        <div class="form-floating mb-2">
-                            <input type="text" class="form-control" id="input_pesquisa_cliente">
-                            <label class="fw-bold" for="input_pesquisa_cliente">Pesquisar Cliente:</label>
-                        </div>
-                        
-                    
-                    <h5 class="mb-0 font-monospace text-center">Resultado da Busca</h5>
-                    <div id="result-pesquisa" class=" border-0  p-2 overflow-auto" style="max-height: 300px">
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control autocomplete_input"  id="select_cliente" 
+                        data-onselect="montarInfoCliente" 
+                        data-storage="data_clientes" data-label="nome,telefone,rua" data-key="id_cliente"  >
+                            <label for="select_loja">Pesquisar Cliente:</label>
                     </div>
                         
-            </div>
+                </div>
+
             <div class="card-body d-none " id="container_selecionar_cliente">
                 <h5 class="mb-1 text-center" style="font:size 0.6rem">Informações do Cliente</h5>
-                <div class="col-auto d-inline-flex">
-                    <i class="bi bi-person-fill me-1"></i>
+                <div class="col-12 d-inline-flex">
+                    <i class="bi bi-person me-1"></i>
                     <span class="fw-bold me-1">Nome do Cliente:  </span>
                     <span id="info_nome_cliente"></span>
                 </div>
-                <div class="col-auto d-inline-flex">
-                    <i class="bi bi-phone-fill me-1"></i>
+                <div class="col-12 d-inline-flex">
+                    <i class="bi bi-phone me-1"></i>
                     <span class="fw-bold me-1 small">Telefone do Cliente: </span>
                     <span id="info_telefone_cliente"></span>
                 </div>
-                <div class="col-auto d-inline-flex ">
-                    <i class="bi bi-people-fill me-1"></i>
-                    <span class="fw-bold  me-1'">Tipo de Cliente: </span>
+                <div class="col-12 d-inline-flex ">
+                    <i class="bi bi-people me-1"></i>
+                    <span class="fw-bold  me-1">Tipo de Cliente: </span>
                     <span id="info_tipo_cliente"></span>
                 </div>
                 <div class=" mb-1 ">
-                    <i class="bi bi-card-text-fill me-1"></i>
+                    <i class="bi bi-card-text me-1"></i>
                     <span class="fw-bold me-1">Descrição do Cliente: </span>
                     <span id="info_descricao_cliente"></span>
                 </div>
+                    <h5 class="mb-1 text-center mt-2" style="font:size 0.6rem">Informações de Endereço</h5>
             <hr class="my-2">
-                    <h5 class="mb-1 text-center" style="font:size 0.6rem">Informações de Endereço</h5>
-                    <div class="col-sm-6 d-inline-flex">
-                        <i class="bi bi-geo-alt-fill me-1"></i>
+            <div class="col-sm-12  d-inline-flex">
+                        <i class="bi bi-geo-alt me-1"></i>
                         <span class="fw-bold me-1">Código Postal: </span>
                         <span id="info_codigo_postal"></span>
                     </div>
-                    <div class="col-sm-6 d-inline-flex">
-                        <i class="bi bi-house-fill me-1"></i>
+                    <div class="col-sm-12  d-inline-flex">
+                        <i class="bi bi-house me-1"></i>
                         <span class="fw-bold me-1">Rua: </span>
                         <span id="info_rua"></span>
                     </div>
-                    <div class="col-sm-6 d-inline-flex">
-                        <i class="bi bi-geo-alt-fill me-1"></i>
+                    <div class="col-sm-12  d-inline-flex">
+                        <i class="bi bi-geo-alt me-1"></i>
                         <span class="fw-bold me-1">Número: </span>
                         <span id="info_numero"></span>
                     </div>
-                    <div class="col-sm-6 d-inline-flex">
-                        <i class="bi bi-geo-alt-fill me-1"></i>
+                    <div class="col-sm-12  d-inline-flex">
+                        <i class="bi bi-geo-alt me-1"></i>
                         <span class="fw-bold me-1">Bairro: </span>
                         <span id="info_bairro"></span>
                     </div>
-                    <div class="col-sm-6 d-inline-flex">
-                        <i class="bi bi-geo-alt-fill me-1"></i>
+                    <div class="col-sm-9  d-inline-flex">
+                        <i class="bi bi-geo-alt me-1"></i>
                         <span class="fw-bold me-1">Cidade: </span>
                         <span id="info_cidade"></span>
                     </div>
-                    <div class="col-sm-6 d-inline-flex">
-                        <i class="bi bi-flag-fill me-2"></i>
+                    <div class="col-sm-3  d-inline-flex">
+                        <i class="bi bi-flag me-2"></i>
                         <span class="fw-bold me-1">Estado: </span>
                         <span id="info_estado"></span>
                     </div>
                     <div class=" mb-1 ">
-                        <i class="bi bi-card-text-fill me-1"></i>
+                        <i class="bi bi-card-text  me-1"></i>
                         <span class="fw-bold me-1">Descrição: </span>
                         <span id="info_descricao_endereco"></span>
                     </div>
+                    <h5 class="mb-1 text-center mt-2" style="font:size 0.6rem">Última Compra</h5>
             <hr class="my-2">
-                    <h5 class="mb-1 text-center" style="font:size 0.6rem">Última Compra</h5>
-                    <div class="col-sm-12 d-inline-flex">
-                        <i class="bi bi-calendar-check-fill me-1"></i>
-                        <span class="fw-bold me-1">Data da Venda: </span>
+            <div class="col-sm-12 d-inline-flex">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        <span class="fw-bold me-1">Data & Hora: </span>
                         <span id="info_ultima_venda_data_venda"></span>
                     </div>
                     <div class="col-sm-12 d-inline-flex">
@@ -211,7 +183,7 @@
                         <span id="info_ultima_venda_valor_total"></span>
                     </div>
                     <div class="col-sm-12 d-inline-flex">
-                        <i class="bi bi-card-text-fill me-1"></i>
+                        <i class="bi bi-card-text me-1"></i>
                         <span class="fw-bold me-1">Descrição: </span>
                         <span id="info_ultima_venda_descricao"></span>
                     </div>
@@ -220,7 +192,7 @@
                         <span class="fw-bold  me-1">Produtos: </span>
                         <span id="info_ultima_venda_produtos" class=" text-truncate text-small small"></span>
                     </div> 
-            </div>
+                </div>
             <div class="card-body d-none" id="container_cria_cliente">
                 <div class="form-floating mb-2">
                     <input type="text" name="nome_cliente" class="form-control" required="" maxlength="255" id="id_nome_cliente">
@@ -273,7 +245,7 @@
                 <button type="button" class="btn btn-primary  " id="btnCriarCliente" onclick="submitCadastroCliente()">Cadastrar Cliente</button>
             </div>
         </div>
-            <!--Produtos retornaveis--->
+            <!--Produtos retornaveis -->
         <div class="card shadow mb-2">
                 <div class="card-header bg-dark text-white  " id="toggleAccordion">
                     <div class="d-flex align-items-center font-monospace">
@@ -285,7 +257,7 @@
                 </div>
             <div class="card-body mt-0 d-none" id="body_gestaoRetornavel"  >
                 <div class="alert alert-warning font-monospace" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <i class="bi bi-exclamation-triangle"></i>
                     <strong>Atenção:</strong> <span class="" style="font-size: 0.7rem"> Estas configurações se referem à gestão de produtos retornáveis. 
                     Este campo pode ser ignorado, mas sua utilização foi modelada para galões de água, que possuem data de validade. Preenchendo as informações, você consegue saber qual foi o último galão pego pelo cliente, entre outras informações.
                 </div>  
@@ -294,8 +266,9 @@
                     </div>
             </div>
         </div> 
+            <!--Produtos entrega -->
             
-                <div class="card mb-2 shadow "  >
+            <div class="card mb-2 shadow "  >
                     <div class="card-header bg-dark text-white">
                         <div class="d-flex align-items-center font-monospace">
                             <span class="me-auto fs-6 text-white">Gestão de Entregas</span>
@@ -328,7 +301,51 @@
                             <button type="button" class="btn btn-primary btn-loading" id="btnCriarBoy" onclick="insertMotoboy()">Cadastrar Motoboy</button>
                         </div>
                 
+                </div>
             </div>
+</div>
+                    
+                    
+    <div class="col-sm-6 order-2 p-1 ">
+            <div class="card-body rounded bg-dark p-1 my-2">
+                <h5 class="text-white fw-bold px-2 py-1 m-0">
+                    <i class="bi bi-cart"></i> Carrinho
+                </h5>
+                <ul class="list-group row mx-auto p-1" id="ul_produtos"></ul>
+                <div class=" mb-1 px-1 mx-1 text-white fw-bold row font-monospace mt-2" style="font-size: 0.8;" >
+                    <label  id="valor_total" style="font-size: 0.8rem" class="fw-bold col">Valor total de produtos:</label>
+                    <label class="ms-auto float-end   col-auto fw-bold"   style="font-size: 0.8rem" id="txt_valor_total_produtos">00,00</label>
+                </div>
+            </div>
+
+            <div class=" rounded-3 shadow  bg-white card" style="max-width 200px;">
+                <div class="  card-header bg-dark"  >
+                    <label  class="fw-bold    text-white ">Resumo </label>
+                </div>
+                <div class="  card-body"  >
+                    <div class="   font-monospace " style="font: size 1rem;">
+                        <label  class="fw-bold   ">Taxa Entrega: </label>
+                        <label class="ms-auto float-end   fw-bold"    id="txt_taxa_entrega">00,00</label></div> 
+                    <div class="   font-monospace  " style="font: size 1rem;">
+                        <label   class="fw-bold   ">Desconto: </label>
+                        <label class="ms-auto float-end   fw-bold"    id="txt_desconto">00,00</label></div>
+                        <div class="  font-monospace  " style="font: size 1rem;">
+                            <label  class="fw-bold   ">Troco: </label>
+                            <label class="ms-auto float-end   fw-bold"    id="txt_troco">00,00</label></div>
+
+                    <div class=" font-monospace " style="font: size 1rem;">
+                        <label  class="fw-bold   ">Total: </label>
+                        <label class="ms-auto float-end   fw-bold" id="txt_valor_total_apagar">00,00</label></div>
+                        
+                </div>
+
+                <div class="container  card-footer"  id="container_btns_salvar">
+                    <button type="button" onclick="clean_form();" class="btn small btn-secondary btn-sm">Limpar</button>
+                    <button type="button" id="btnSubmit" class="btn float-end btn-primary btn-sm btn-loading">Salvar</button>
+                </div>
+                        
+            </div> 
+    </div>
       
   
     </form>
@@ -339,54 +356,10 @@
 
 
 <input type="hidden" id="id_venda" value="{{ id_venda }}">
-<input  name="troco" id="troco" type="hidden" value="0" > 
-<input  name="total_apagar" id="total_apagar" type="hidden" value="0" > 
+<input   id="input_troco" type="hidden" value="0" > 
+<input   id="input_total_apagar" type="hidden" value="0" > 
 <input id="id_cliente" name="id_cliente" type="hidden" value="0" > 
-<script type="text/javascript" src="{% static '/js/pages/FunctionsModalVendas.js' %}" ></script>
-<script  type="text/javascript" > 
-    function get_data(){
-        try {
-            chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
-                if (response.success === true) {
-                    // Armazenar os dados no localStorage
-                    Utils.setLocalStorageItem('data_lojas', response.lojas);
-                    Utils.setLocalStorageItem('data_vendas', response.vendas);
-                    Utils.setLocalStorageItem('data_produtos', response.produtos);
-                } else {
-                    alertCustomer(response.error);
-                }
-            });
-        } catch (error) {
-            console.error("Erro ao chamar a função Python:", error);
-        }
-        
-    } 
- 
-function clean_form() {
-    document.getElementById('id_taxa_entrega').innerText= "";
-    document.getElementById('id_desconto').innerText= "";
-    document.getElementById('id_valor_pago').innerText="";
-    document.getElementById('id_descricao_venda').innerText= "";
-    document.getElementById("txt_valor_apagar").textContent = "";
-    document.getElementById("txt_troco").textContent = "00,00";
-    document.getElementById("id_valor_total").textContent = "00,00";
-    document.getElementById("ul_produtos").innerHTML = "";
-    document.getElementById("id_motoboy").value= "0";
-    document.getElementById('id_forma_pagamento').selectedIndex= 0;
-    document.getElementById("select_loja").selectedIndex = 0
-    document.getElementById('id_estado_transacao').selectedIndex= 0;
-    document.getElementById('id_metodo_entrega').selectedIndex = 0;
-    document.getElementById('id_motoboy').selectedIndex = 0;
-    document.getElementById("select_loja").dispatchEvent(new Event('change'));
-    document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
-    document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
-    document.getElementById('id_cliente').value = "0";
-    document.getElementById('info_cliente').classList.add("d-none")
-    toggleResultadoPesquisa(false);
-    alertCustomer("Formulario Limpado.");
-}
- 
-</script>
+<script type="text/javascript" src="{% static '/js/pages/FunctionsModalVendas.js' %}" ></script> 
 </div>
 </div>
 </div>

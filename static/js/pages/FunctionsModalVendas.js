@@ -1,3 +1,131 @@
+
+
+        
+window.onload = inicializarPagina;
+
+
+function getData() {
+    try {
+        chamarFuncaoPython("/api/vendas/dados", null, 'GET', handleResponse);
+    } catch (error) {
+        console.error("Erro ao chamar a função Python:", error);
+    }
+}
+
+function handleResponse(response) {
+    if (response.success === true) {
+        // Armazenar os dados no localStorage
+        Utils.setLocalStorageItem('data_lojas', response.lojas);
+        Utils.setLocalStorageItem('data_vendas', response.vendas);
+        Utils.setLocalStorageItem('data_produtos', response.produtos);
+        // Atualizar dropdown e filtrar vendas
+        atualizarDropdownLojas(response.lojas, "select_lojas");
+    } else {
+        alertCustomer(response.error);
+    }
+}
+function inicializarPagina() {
+    Promise.all([
+        getData(),
+        listarMotoboys(),
+        carregarListaClientes(),
+        atualizarDropdownLojas(Utils.getLocalStorageItem('data_lojas'), "select_lojas"),
+        preencherListaDeProdutos(),
+        verificarVendaExistente(),
+        verificarRetornaveis(),
+        verificarListaProdutos()
+    ]).then(() => {
+        adicionarOuvintesDeEventos();
+        configurarObservadorDeMutacao();
+        applyAutocomplete();
+    }).catch((error) => {
+        console.error("Erro ao inicializar a página:", error);
+    });
+}
+/**
+ * Função principal para calcular o resumo dos valores e atualizar a interface.
+ */
+function calcularResumo() {
+    var valorTotalItens = calcularValorItens();
+    var valorTaxaEntrega = obterValorInput('id_taxa_entrega');
+    var valorDesconto = obterValorInput('id_desconto');
+    var valorPago = obterValorInput('id_valor_pago_dinheiro');
+
+    var valorTotalComTaxaDesconto = valorTotalItens + valorTaxaEntrega - valorDesconto;
+    var troco = calcularTroco(valorTotalComTaxaDesconto, valorPago);
+
+    atualizarResumo(valorTotalItens, valorTaxaEntrega, valorDesconto, valorTotalComTaxaDesconto, troco);
+}
+
+/**
+ * Obtém o valor de um input específico da interface.
+ * @param {string} id - ID do input no DOM.
+ * @returns {number} - Valor do input.
+ */
+function obterValorInput(id) {
+    var input = document.getElementById(id);
+    var valorText = input ? input.value.trim() : '';
+    return parseFloat(valorText.replace(',', '.')) || 0;
+}
+
+/**
+ * Calcula o valor total dos itens na lista.
+ * @returns {number} - Valor total dos itens.
+ */
+function calcularValorItens() {
+    var ul_produtos = document.getElementById("ul_produtos");
+    var itensLista = ul_produtos.querySelectorAll(".list-group-item");
+    var valorTotal = 0;
+    var produtosData = Utils.getLocalStorageItem('data_produtos');
+
+    itensLista.forEach(function(item) {
+        var quantidade = parseInt(item.querySelector(".quantidade").textContent);
+        var idProduto = item.getAttribute("data-id-produto");
+
+        produtosData.forEach(function(produto) {
+            if (produto.id_produto == idProduto) {
+                var valorUnitario = parseFloat(produto.preco_venda);
+                valorTotal += quantidade * valorUnitario;
+            }
+        });
+    });
+
+    var labelValorTotal = document.getElementById("txt_valor_total_produtos");
+    if (labelValorTotal) {
+        labelValorTotal.textContent = valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    }
+
+    return valorTotal;
+}
+
+/**
+ * Calcula o troco a ser devolvido.
+ * @param {number} valorTotalComTaxaDesconto - Valor total com taxa de entrega e desconto.
+ * @param {number} valorPago - Valor pago pelo cliente.
+ * @returns {number} - Valor do troco.
+ */
+function calcularTroco(valorTotalComTaxaDesconto, valorPago) {
+    return valorPago - valorTotalComTaxaDesconto;
+}
+
+/**
+ * Atualiza o resumo dos valores na interface.
+ * @param {number} valorTotalItens - Valor total dos itens.
+ * @param {number} valorTaxaEntrega - Valor da taxa de entrega.
+ * @param {number} valorDesconto - Valor do desconto.
+ * @param {number} valorTotalComTaxaDesconto - Valor total com taxa de entrega e desconto.
+ * @param {number} troco - Valor do troco.
+ */
+function atualizarResumo(valorTotalItens, valorTaxaEntrega, valorDesconto, valorTotalComTaxaDesconto, troco) {
+    document.getElementById('txt_taxa_entrega').textContent = valorTaxaEntrega.toFixed(2).replace('.', ',');
+    document.getElementById('txt_desconto').textContent = valorDesconto.toFixed(2).replace('.', ',');
+    document.getElementById('txt_valor_total_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
+    document.getElementById('txt_troco').textContent =  troco.toFixed(2).replace('.', ',');
+}
+
+
+
+ 
 function toggleCliente(selecionado = false) {
     const titleHeader = document.getElementById('title_header_cliente');
     const iconBtnToggle = document.getElementById('icon_btn_toggle');
@@ -62,14 +190,13 @@ function verificarListaProdutos() {
 function forma_pagamento() {
     var selectedOption = this.options[this.selectedIndex];
     var selectedValue = selectedOption.value;
-
-        if (selectedValue === "dinheiro") {
-            document.querySelector(".gestaotroco").classList.remove("d-none"); // Remove a classe que oculta o container
-        } else {
-            document.querySelector(".gestaotroco").classList.add("d-none"); // Adiciona a classe que oculta o container
-            document.getElementById('id_valor_pago').innerText="00,00";
-            document.getElementById('txt_troco').innerText="00,00";
-}
+    if (selectedValue === "dinheiro") {
+        document.querySelector(".gestaotroco").classList.remove("d-none"); // Remove a classe que oculta o container
+    } else {
+        document.querySelector(".gestaotroco").classList.add("d-none"); // Adiciona a classe que oculta o container
+        document.getElementById('id_valor_pago_dinheiro').value="00,00";
+        calcularResumo();
+    }
 } 
 function metodo_entrega() {
     var selectedOption = this.value; // Obtém o valor selecionado
@@ -112,6 +239,7 @@ function toggleGestaoCliente(status) {
     }
 
 }
+
 function gerencia_container_cliente(obj) {
     var selectcliente = document.getElementById("select_cliente");
     var btnCadastrarCliente = document.getElementById("btnCadastrarCliente");
@@ -143,36 +271,14 @@ function gerencia_container_cliente(obj) {
 
 // Função para carregar e manipular a lista de clientes
 function carregarListaClientes() {
-    chamarFuncaoPython( '/api/cliente/by_empresa/', null, 'GET', function(response) {
+    chamarFuncaoPython( '/api/cliente/by_empresa', null, 'GET', function(response) {
         if (response.success == true) {
             Utils.setLocalStorageItem("data_clientes",response.clientes)
-            manipularPesquisaClientes(response.clientes);   
-
         }  
     });  
      
-}
+} 
 
-function get_data(){
-
-try {
-    chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
-        if (response.success === true) {
-            // Armazenar os dados no localStorage
-            Utils.setLocalStorageItem('data_lojas', response.lojas);
-            Utils.setLocalStorageItem('data_vendas', response.vendas);
-            Utils.setLocalStorageItem('data_produtos', response.produtos);
-            atualizarDropdownLojas(response.lojas, "select_lojas");
-            filtrarVendas(response.vendas);
-        } else {
-            alertCustomer(response.error);
-        }
-    });
-} catch (error) {
-    console.error("Erro ao chamar a função Python:", error);
-}
-
-}
 
 function submitCadastroCliente() {
     const formInputs = {
@@ -199,11 +305,10 @@ function submitCadastroCliente() {
     }
 
     // Ativar o indicador de carregamento
-    chamarFuncaoPython('/api/cliente/create/', formInputs, 'POST', function(response) {
+    chamarFuncaoPython('/api/cliente/create', formInputs, 'POST', function(response) {
         if (response.data) {
             alertCustomer("Cliente criado com sucesso!");
-             
-            montarInfoCliente(response.data);
+            montarInfoCliente(response.data,true);
             toggleCliente(true);
 
         } else {
@@ -211,78 +316,13 @@ function submitCadastroCliente() {
         }
     } );
      
-}
-var clientesCache = null;
-function manipularPesquisaClientes(clientes) {
-    const inputPesquisa = document.getElementById('input_pesquisa_cliente');
-    const resultPesquisa = document.getElementById('result-pesquisa');
-    const clienteIdInput = document.getElementById('id_cliente');
-    exibirResultados(clientes);
-    inputPesquisa.addEventListener('input', function(event) {
-        const termoPesquisa = event.target.value.toLowerCase();
-
-        const resultados = clientes.filter(cliente => {
-            return Object.values(cliente).some(value =>
-                value && value.toString().toLowerCase().includes(termoPesquisa)
-            );
-        });
-
-        exibirResultados(resultados);
-    });
-
-    function exibirResultados(resultados) {
-        resultPesquisa.innerHTML = '';
-
-        resultados.forEach(cliente => {
-            const divResultado = document.createElement('div');
-            divResultado.classList.add('p-2', 'my-1', 'mx-2',  'border', 'rounded',  'flex-wrap', 'text-center', 'd-intial-flex',);
-
-            const iconUsuario = document.createElement('i');
-            iconUsuario.classList.add('bi', 'bi-person-fill', 'me-2');
-
-            const detalhesCliente = document.createElement('div');
-            detalhesCliente.classList.add('flex-grow-1', 'me-3');
-
-            const nomeCliente = document.createElement('span');
-            nomeCliente.textContent = cliente.nome;
-            nomeCliente.classList.add('fw-bold');
-            detalhesCliente.appendChild(iconUsuario);
-            detalhesCliente.appendChild(nomeCliente);
-            detalhesCliente.appendChild(document.createElement('br'));
-
-            const telefoneCliente = document.createElement('span');
-            telefoneCliente.textContent = cliente.telefone;
-            detalhesCliente.appendChild(telefoneCliente);
-            detalhesCliente.appendChild(document.createElement('br'));
-
-            const enderecoCliente = document.createElement('span');
-            enderecoCliente.textContent = `${cliente.rua} ${cliente.numero} ${cliente.bairro} ${cliente.cidade}`;
-            detalhesCliente.appendChild(enderecoCliente);
-
-            divResultado.appendChild(detalhesCliente);
-
-            const btnSelecionar = document.createElement('button');
-            btnSelecionar.textContent = 'Selecionar';
-            btnSelecionar.classList.add('btn', 'btn-primary', 'btn-sm', 'mx-auto');
-            btnSelecionar.setAttribute("type", "button");
-            btnSelecionar.addEventListener('click', function() {
-                toggleCliente(true);
-                clienteIdInput.value = cliente.id_cliente;
-                montarInfoCliente(cliente); 
-            });
-
-            divResultado.appendChild(btnSelecionar);
-
-            resultPesquisa.appendChild(divResultado);
-        });
-
-        toggleResultadoPesquisa(true);
-    }
-}
+} 
 // Função para alternar a visibilidade do container
 function toggleResultadoPesquisa(status=null) {
     const container = document.getElementById('result-pesquisa'); 
 
+    const iconeClose = document.getElementById('icone_pesquisa_close');
+    const iconeOpen = document.getElementById('icone_pesquisa_open');
    
     if (status !== null) {
         // Se o status for fornecido, definir a visibilidade com base no status
@@ -309,7 +349,7 @@ function toggleResultadoPesquisa(status=null) {
 }// Função para montar o container de informações
 function limparInfoCliente() {
     var container = document.getElementById("container_selecionar_cliente");
-    // Limpar os textos dos campos no container
+    // Limpar os textos dos campos no containerx
     container.querySelector("#info_nome_cliente").textContent = "";
     container.querySelector("#info_telefone_cliente").textContent = "";
     container.querySelector("#info_tipo_cliente").textContent = "";
@@ -326,44 +366,103 @@ function limparInfoCliente() {
     container.querySelector("#info_ultima_venda_forma_pagamento").textContent = "";
     container.querySelector("#info_ultima_venda_valor_total").textContent = "";
     container.querySelector("#info_ultima_venda_produtos").textContent = "";
-    // Exibir o container vazio
-
     document.getElementById('id_cliente').value = "0"; 
-    alertCustomer(`Cliente Retirado de Selecão`)
 }
 
-function montarInfoCliente(data) {
-    var container = document.getElementById("container_selecionar_cliente");
-    // Atualizar os valores dos campos com os dados fornecidos
-    container.querySelector("#info_nome_cliente").textContent = data.nome;
-    container.querySelector("#info_telefone_cliente").textContent = data.telefone;
-    container.querySelector("#info_tipo_cliente").textContent = data.tipo_cliente;
-    container.querySelector("#info_descricao_cliente").textContent = data.descricao;
-    container.querySelector("#info_codigo_postal").textContent = data.codigo_postal;
-    container.querySelector("#info_rua").textContent = data.rua;
-    container.querySelector("#info_numero").textContent = data.numero;
-    container.querySelector("#info_bairro").textContent = data.bairro;
-    container.querySelector("#info_cidade").textContent = data.cidade;
-    container.querySelector("#info_estado").textContent = data.estado;
-    container.querySelector("#info_descricao_endereco").textContent = data.descricao_endereco;
+function montarInfoCliente(cliente, isData = false) {
+    // Se isData for falso, buscar o cliente pelo ID
+    if (!isData) {
+        const data_clientes = Utils.getLocalStorageItem('data_clientes');
+        cliente = data_clientes.find(c => c.id_cliente == cliente);
+    }
+
+    if (!cliente) {
+        console.error(`Cliente não encontrado`);
+        return;
+    }
+
+    const container = document.getElementById("container_selecionar_cliente");
+
+    // Função auxiliar para atualizar o conteúdo de um campo
+    function updateField(selector, value) {
+        container.querySelector(selector).textContent = value || "N/A";
+    }
+
+    // Atualizar os valores dos campos com os dados do cliente
+    const clienteFields = [
+        { selector: "#info_nome_cliente", value: cliente.nome },
+        { selector: "#info_telefone_cliente", value: cliente.telefone },
+        { selector: "#info_tipo_cliente", value: cliente.tipo_cliente },
+        { selector: "#info_descricao_cliente", value: cliente.descricao },
+        { selector: "#info_codigo_postal", value: cliente.codigo_postal },
+        { selector: "#info_rua", value: cliente.rua },
+        { selector: "#info_numero", value: cliente.numero },
+        { selector: "#info_bairro", value: cliente.bairro },
+        { selector: "#info_cidade", value: cliente.cidade },
+        { selector: "#info_estado", value: cliente.estado },
+        { selector: "#info_descricao_endereco", value: cliente.descricao_endereco }
+    ];
+
+    clienteFields.forEach(field => updateField(field.selector, field.value));
+
     // Verificar se há informações da última venda
-    if (data.ultima_venda) {
-        // Atualizar os valores das informações da última venda
-        container.querySelector("#info_ultima_venda_descricao").textContent = data.ultima_venda.descricao || "N/A";
-        container.querySelector("#info_ultima_venda_data_venda").textContent = data.ultima_venda.data_venda || "N/A";
-        container.querySelector("#info_ultima_venda_forma_pagamento").textContent = data.ultima_venda.forma_pagamento || "N/A";
-        container.querySelector("#info_ultima_venda_valor_total").textContent = data.ultima_venda.valor_total || "N/A";
-        container.querySelector("#info_ultima_venda_produtos").textContent = data.ultima_venda.produtos ? data.ultima_venda.produtos.join(", ") : "N/A";
-    } else{
-        container.querySelector("#info_ultima_venda_descricao").textContent ="";
-        container.querySelector("#info_ultima_venda_data_venda").textContent ="";
-        container.querySelector("#info_ultima_venda_forma_pagamento").textContent = "";
-        container.querySelector("#info_ultima_venda_valor_total").textContent = "";
-        container.querySelector("#info_ultima_venda_produtos").textContent = "";
-    } 
-     
-    alertCustomer(`Cliente selecionado: ${data.nome}`); 
-} 
+    if (cliente.ultima_venda) {
+        const vendaFields = [
+            { selector: "#info_ultima_venda_descricao", value: cliente.ultima_venda.descricao },
+            { selector: "#info_ultima_venda_data_venda", value: cliente.ultima_venda.data_venda },
+            { selector: "#info_ultima_venda_forma_pagamento", value: cliente.ultima_venda.forma_pagamento },
+            { selector: "#info_ultima_venda_valor_total", value: cliente.ultima_venda.valor_total },
+            { selector: "#info_ultima_venda_produtos", value: cliente.ultima_venda.produtos ? cliente.ultima_venda.produtos.join(", ") : "N/A" }
+        ];
+
+        vendaFields.forEach(field => updateField(field.selector, field.value));
+    } else {
+        const emptyVendaFields = [
+            "#info_ultima_venda_descricao",
+            "#info_ultima_venda_data_venda",
+            "#info_ultima_venda_forma_pagamento",
+            "#info_ultima_venda_valor_total",
+            "#info_ultima_venda_produtos"
+        ];
+
+        emptyVendaFields.forEach(selector => updateField(selector, ""));
+    }
+
+    alertCustomer(`Cliente selecionado: ${cliente.nome}`);
+    toggleCliente(true);
+}
+
+ 
+function clean_form() {
+    document.getElementById('id_taxa_entrega').innerText= "";
+    document.getElementById('id_desconto').innerText= "";
+    document.getElementById('id_valor_pago_dinheiro').innerText="";
+    document.getElementById('id_descricao_venda').innerText= "";
+    //resumo
+    document.getElementById("txt_valor_total_apagar").textContent = "00,00";
+    document.getElementById("txt_troco").textContent = "00,00";
+    document.getElementById("txt_taxa_entrega").textContent = "00,00";
+    document.getElementById("txt_desconto").textContent = "00,00";
+    //carrinho
+    document.getElementById("txt_valor_total_produtos").textContent = "00,00";
+    document.getElementById("ul_produtos").innerHTML = "";
+
+    document.getElementById("id_motoboy").value= "0";
+
+    document.getElementById('id_forma_pagamento').selectedIndex= 0;
+    document.getElementById('id_estado_transacao').selectedIndex= 0;
+    document.getElementById('id_metodo_entrega').selectedIndex = 0;
+    document.getElementById('id_motoboy').selectedIndex = 0;
+    document.getElementById("select_loja").selectedIndex = 0
+
+    document.getElementById("select_loja").dispatchEvent(new Event('change'));
+    document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
+    document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
+    document.getElementById('id_cliente').value = "0";
+    toggleCliente(false);
+    alertCustomer("Formulario Limpado.");
+}
+ 
 
 // Função para atualizar o dropdown com as lojas
 function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
@@ -394,7 +493,7 @@ function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
 } 
 
 function listarMotoboys() {
-        chamarFuncaoPython('/listar_motoboys_por_empresa/', null, 'GET', function(response) {
+        chamarFuncaoPython('/listar_motoboys_por_empresa', null, 'GET', function(response) {
             if (response.motoboys) {
                 var selectMotoboy = document.getElementById('id_motoboy');
                 selectMotoboy.innerHTML = ''; // Limpar as opções existentes
@@ -404,16 +503,15 @@ function listarMotoboys() {
                     option.value = 0;
                     option.text = "Selecione";
                     selectMotoboy.appendChild(option);
-
                     response.motoboys.forEach(motoboy => {
-                    var option = document.createElement('option');
-                    option.value = motoboy.id_motoboy;
-                    option.text = motoboy.nome;
-                    selectMotoboy.appendChild(option);
-                });
+                        var option = document.createElement('option');
+                        option.value = motoboy.id_motoboy;
+                        option.text = motoboy.nome;
+                        selectMotoboy.appendChild(option);
+                    });
     
-            }  
-     }
+                }  
+        }
     });
 }
 function toggleGestaoEntrega() {
@@ -512,9 +610,6 @@ function toggleGestaproduto() {
 
 // Defina sua função de verificação
 function verificarAntesDoSubmit() {
-     
-
-
    // Verifica se uma loja foi selecionada
     if (document.getElementById('select_loja').value == "0") {
         alertCustomer('selecione uma loja antes de enviar o formulário.');
@@ -565,11 +660,8 @@ function obterValores() {
     dados['metodo_entrega'] = metodoEntrega.value;
 
     // Taxa de Entrega (se visível)
-    var containerEntrega = document.getElementById('id_container_entrega');
-    if (containerEntrega.classList.contains('d-none') === false) {
-        var taxaEntrega = document.getElementById('id_taxa_entrega');
-        dados['taxa_entrega'] = taxaEntrega.value;
-    }
+    var taxaEntrega = document.getElementById('id_taxa_entrega');
+    dados['taxa_entrega'] = taxaEntrega.value;
 
     // Estado da Transação
     var estadoTransacao = document.getElementById('id_estado_transacao');
@@ -584,7 +676,7 @@ function obterValores() {
     dados['desconto'] = desconto.value;
 
     // Valor Pago (se visível)
-    var valorPago = document.getElementById('id_valor_pago');
+    var valorPago = document.getElementById('id_valor_pago_dinheiro');
     dados['valor_pago'] = valorPago.value;
 
     // Descrição da Venda
@@ -607,7 +699,7 @@ function obterValores() {
         dados['troco'] = 0; 
     }
     // Total a Pagar
-    var totalApagar = document.getElementById('total_apagar');
+    var totalApagar = document.getElementById('input_total_apagar');
     dados['total_apagar'] = totalApagar.value;
 
     // ID do Cliente
@@ -646,10 +738,10 @@ function obterValores() {
 
 function enviarDadosVenda() {
     data= obterValores();
-    chamarFuncaoPython('/vendas/criar/insert_venda_ajax/',data,'POST',function(response){
+    chamarFuncaoPython('/vendas/criar/processar_venda',data,'POST',function(response){
             if (response.success===true) {
                 if(data.id_venda!= ""){
-                    window.location.href =  "/vendas/"; 
+                    window.location.href =  "/vendas"; 
             }else{
                     alertCustomer(response.message,1);
                     clean_form();
@@ -666,7 +758,9 @@ function enviarDadosVenda() {
     }); 
      
 
-} document.getElementById("btnSubmit").addEventListener("click", function(event) {
+} 
+
+document.getElementById("btnSubmit").addEventListener("click", function(event) {
     var btnSubmit = document.getElementById("btnSubmit");
     
     // Desabilita o botão para evitar cliques repetidos
@@ -705,81 +799,7 @@ function atualizarCamposCarrinho() {
     return data; // Retorna os itens do carrinho dentro de um objeto data
 }
 
- 
-     
 
-
-    function calcularValorTotal() {
-        var ul_produtos = document.getElementById("ul_produtos");
-
-        var itensLista = ul_produtos.querySelectorAll(".list-group-item");
-        var valorTotal = 0;
-        // Itera sobre os itens da lista e calcula o valor total
-            itensLista.forEach(function (item) {
-                var quantidade = parseInt(item.querySelector(".quantidade").textContent);
-                var idProduto = item.getAttribute("data-id-produto");
-                    produtos_data = Utils.getLocalStorageItem('data_produtos');
-
-                    produtos_data.forEach(function(produto) {
-                            if(produto.id_produto == idProduto){
-                                var valorUnitario = parseFloat(produto.preco_venda);
-                                valorTotal += quantidade * valorUnitario;
-                            }
-                    });
-            });
-            // Define o valor total no label, formatando-o com vírgula e duas casas decimais
-            var labelValorTotal = document.getElementById("id_valor_total");
-
-            if (labelValorTotal) {
-                labelValorTotal.textContent = valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            }  
-            calcularTroco();
-
-    }
- 
-    function calcularTroco() {
-        // Obtém o valor total
-        var valorTotalInput = document.getElementById('id_valor_total');
-        var valorTotalText = valorTotalInput ? valorTotalInput.textContent.trim() : '';
-        var valorTotal = parseFloat(valorTotalText.replace(',', '.')) || 0;
-    
-        // Obtém a taxa de entrega
-        var taxaEntregaInput = document.getElementById('id_taxa_entrega');
-        var taxaEntregaText = taxaEntregaInput ? taxaEntregaInput.value.trim() : '';
-        var taxaEntrega = parseFloat(taxaEntregaText.replace(',', '.')) || 0;
-    
-        // Obtém o desconto
-        var descontoInput = document.getElementById('id_desconto');
-        var descontoText = descontoInput ? descontoInput.value.trim() : '';
-        var desconto = parseFloat(descontoText.replace(',', '.')) || 0;
-    
-        // Calcula o valor total considerando a taxa de entrega e o desconto
-        var valorTotalComTaxaDesconto = valorTotal + taxaEntrega - desconto;
-    
-        // Define o valor total a ser pago
-        document.getElementById('txt_valor_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
-        document.getElementById('total_apagar').value = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
-    
-        // Obtém o valor pago
-        var valorPagoInput = document.getElementById('id_valor_pago');
-        var valorPago = valorPagoInput ? parseFloat(valorPagoInput.value.replace(',', '.')) : 0;
-    
-        // Calcula o troco apenas se o valor pago for maior ou igual ao total
-        var troco = valorPago - valorTotalComTaxaDesconto;
-    
-        // Exibe a mensagem dependendo do resultado
-        if (valorPago < valorTotalComTaxaDesconto) {
-            // Calcula o valor que está faltando para cobrir o total da compra
-            var valorFaltante = (valorTotalComTaxaDesconto - valorPago).toFixed(2);
-
-            // Exibe a mensagem informando o valor faltante
-            $('#txt_troco').text('Está Faltando: R$ ' + valorFaltante.replace('.', ',')).css('color', 'red');
-        } else {
-            // Exibe a mensagem informando o troco
-            $('#txt_troco').text('Troco  R$ ' + troco.toFixed(2).replace('.', ',')).css('color', 'green');
-        }
-    }
-    
 function aumentarQuantidade(elemento) {
     // Encontra o elemento pai do elemento atual
     var pai = elemento.closest(".list-group-item");
@@ -793,7 +813,7 @@ function aumentarQuantidade(elemento) {
             var quantidadeAtual = parseInt(quantidadeSpan.textContent);
                 if(produto.quantidade_atual_estoque >= quantidadeAtual) {
                     quantidadeSpan.textContent = quantidadeAtual + 1;
-                    calcularValorTotal();
+                    calcularResumo();
                 } else {
                     alertCustomer("Não há mais produto disponível no estoque.");
                 }
@@ -810,10 +830,12 @@ function diminuirQuantidade(elemento) {
     } else {
          elemento.parentElement.remove();
     }
-    calcularValorTotal();
+    calcularResumo();
     verificarListaProdutos();
 
-}function toggleGestaoRetornavel(status) {
+}
+
+function toggleGestaoRetornavel(status) {
     var container = document.getElementById("body_gestaoRetornavel");
     var icone = document.getElementById("icone_produto");
     var botao = document.getElementById("btn_gestao_retornaveis");
@@ -870,31 +892,13 @@ function select_loja() {
                     }
                 }
             });
-            calcularValorTotal();
+            calcularResumo();
         }
     }
     preencherListaDeProdutos();
 }
 
-         
-         
-    window.onload = function() {
-        inicializarPagina();
-    };
-    
-    function inicializarPagina() {
-        get_data();
-        listarMotoboys();
-        carregarListaClientes();
-        atualizarDropdownLojas(Utils.getLocalStorageItem('data_lojas'), "select_lojas");
-        adicionarOuvintesDeEventos();
-        preencherListaDeProdutos();
-        verificarVendaExistente();
-        configurarObservadorDeMutacao();
-        verificarRetornaveis();
-        verificarListaProdutos();
-    }
-
+          
 function verificarVendaExistente() {
     const id_venda = document.getElementById('id_venda').value;
     if (id_venda !== "") {
@@ -922,10 +926,11 @@ function preencherListaDeProdutos() {
         select_produto.appendChild(option);
     });
 }
+
 function adicionarOuvintesDeEventos() {
-    document.getElementById('id_taxa_entrega').addEventListener('input', calcularTroco);
-    document.getElementById('id_desconto').addEventListener('input', calcularTroco);
-    document.getElementById('id_valor_pago').addEventListener('input', calcularTroco);
+    document.getElementById('id_taxa_entrega').addEventListener('input', calcularResumo);
+    document.getElementById('id_desconto').addEventListener('input', calcularResumo);
+    document.getElementById('id_valor_pago_dinheiro').addEventListener('input', calcularResumo);
     document.getElementById('id_forma_pagamento').addEventListener('change', forma_pagamento);
     document.getElementById('id_metodo_entrega').addEventListener('change', metodo_entrega);
     document.getElementById('select_loja').addEventListener('change', select_loja);
@@ -1044,130 +1049,131 @@ function Ouvinte(produtoId) {
             ul_produtos.appendChild(novoItemLista);
         }
 
-        calcularValorTotal();
+        calcularResumo();
     }
 
     verificarListaProdutos();
 }
-    // Função para verificar os produtos retornáveis
-    function verificarRetornaveis() {
-        
-        var itensLista = document.getElementById("ul_produtos").querySelectorAll(".list-group-item");
-        var numeroGaloes = 0;
-        // Verifica se há algum item retornado na lista e conta o número de galões saindo
-        for (var item of itensLista) {
-            var isRetornavel = item.dataset.retornavel === "true";
-        
-            if (isRetornavel) {
-                numeroGaloes += parseInt(item.querySelector(".quantidade").textContent);
-            }
-        }
-
-        // Alterna a visibilidade do corpo do acordeão e dos ícones com base na presença de itens retornáveis
-        if (numeroGaloes > 0) {
-            gerarInputs(numeroGaloes);
-            toggleGestaoRetornavel(true);
-        } else { 
-            document.getElementById("form_galaoGestao").innerHTML= "";
-            
-            toggleGestaoRetornavel(false);
+// Função para verificar os produtos retornáveis
+function verificarRetornaveis() {
+    
+    var itensLista = document.getElementById("ul_produtos").querySelectorAll(".list-group-item");
+    var numeroGaloes = 0;
+    // Verifica se há algum item retornado na lista e conta o número de galões saindo
+    for (var item of itensLista) {
+        var isRetornavel = item.dataset.retornavel === "true";
+    
+        if (isRetornavel) {
+            numeroGaloes += parseInt(item.querySelector(".quantidade").textContent);
         }
     }
 
-        // Função para gerar os inputs dinamicamente com base no número de galões que estão saindo
-    function gerarInputs(numeroGaloes,obj={}) {
-            var formGestaoGalao = document.getElementById("form_galaoGestao");
-                // Encontra o número de formulários já existentes
-                var numFormulariosExistentes = formGestaoGalao.querySelectorAll('.container_galao_troca').length;
+    // Alterna a visibilidade do corpo do acordeão e dos ícones com base na presença de itens retornáveis
+    if (numeroGaloes > 0) {
+        gerarInputs(numeroGaloes);
+        toggleGestaoRetornavel(true);
+    } else { 
+        document.getElementById("form_galaoGestao").innerHTML= "";
+        
+        toggleGestaoRetornavel(false);
+    }
+}
 
-                // Calcula quantos novos formulários precisam ser adicionados
-                var numNovosFormularios = numeroGaloes - numFormulariosExistentes;
-               var i  = numFormulariosExistentes;
-                
-                // Adiciona apenas os novos formulários que faltam
-                for (var o = 0; o < numNovosFormularios; o++) {
-                    // Inputs para os galões que estão entrando
-                  // Verificando e preenchendo os campos para o galão que está entrando
-                  container_galao_troca = `
-                    <div class=" container_galao_troca">
-                    <div class="border-dark border rounded    bg-success p-3 m-0 text-dark bg-opacity-25 mb-1">
-                        <div class="row">
-                            <label class="form-label" style="font-size: 1rem">Galão que está entrando ${i + 1}.</label>
-                            <div class="col mx-1 p-0">
-                                <div class="form-floating mb-2">
-                                    <input type="text" id="data_validade_entrada" name="data_validade_entrada" value="${obj.validade_entrada ? obj.validade_entrada : ''}" class="form-control data-validade data-mes-ano-mask">
-                                    <label for="data_validade_entrada" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
-                                </div>
-                            </div>
-                            <div class="col mx-1 p-0">
-                                <div class="form-floating mb-2">
-                                    <input type="text" id="data_fabricacao_entrada" name="data_fabricacao_entrada" value="${obj.fabricacao_entrada ? obj.fabricacao_entrada : ''}" class="form-control data-fabricacao data-mes-ano-mask">
-                                    <label for="data_fabricacao_entrada" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
-                                </div>
-                            </div>
-                        </div>
+
+// Função para gerar os inputs dinamicamente com base no número de galões que estão saindo
+function gerarInputs(numeroGaloes,obj={}) {
+     var formGestaoGalao = document.getElementById("form_galaoGestao");
+        // Encontra o número de formulários já existentes
+        var numFormulariosExistentes = formGestaoGalao.querySelectorAll('.container_galao_troca').length;
+
+        // Calcula quantos novos formulários precisam ser adicionados
+        var numNovosFormularios = numeroGaloes - numFormulariosExistentes;
+        var i  = numFormulariosExistentes;
+        
+        // Adiciona apenas os novos formulários que faltam
+        for (var o = 0; o < numNovosFormularios; o++) {
+            // Inputs para os galões que estão entrando
+            // Verificando e preenchendo os campos para o galão que está entrando
+            container_galao_troca = `
+            <div class=" container_galao_troca">
+            <div class="border-dark border rounded    bg-success p-3 m-0 text-dark bg-opacity-25 mb-1">
+                <div class="row">
+                    <label class="form-label" style="font-size: 1rem">Galão que está entrando ${i + 1}.</label>
+                    <div class="col mx-1 p-0">
                         <div class="form-floating mb-2">
-                            <select id="tipo_entrada" name="tipo_entrada" class="form-select">
-                                <option value="Não Selecionado" disabled>Selecione</option>
-                                ${obj.tipo_entrada ? `<option value="${obj.tipo_entrada}" selected>${obj.tipo_entrada}</option>` : ''}
-                                <option value="Galão 20 Litros">Galão 20 Litros</option>
-                                <option value="Galão 10 Litros">Galão 10 Litros</option>
-                                <option value="Galão 5 Litros">Galão 5 Litros</option>
-                                <option value="outro">Outro</option>
-                            </select>
-                            <label for="tipo_entrada" style="font-size: 0.7rem" class="form-label">Tipo de entrada:</label>
-                        </div>
-                    </div> 
-                    <div class="border-dark border rounded bg-danger p-3 m-0 text-dark bg-opacity-25 mb-2">
-                        <div class="row">
-                            <label class="form-label" style="font-size: 1rem">Galão que está saindo ${i + 1}.</label>
-                            <div class="col mx-1 p-0">
-                                <div class="form-floating mb-2">
-                                    <input type="text" id="data_validade_saida" name="data_validade_saida" value="${obj.validade_saida ? obj.validade_saida : ''}" class="form-control data-validade data-mes-ano-mask">
-                                    <label for="data_validade_saida" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
-                                </div>
-                            </div>
-                            <div class="col mx-1 p-0">
-                                <div class="form-floating mb-2">
-                                    <input type="text" id="data_fabricacao_saida" name="data_fabricacao_saida" value="${obj.fabricacao_saida ? obj.fabricacao_saida : ''}" class="form-control data-fabricacao data-mes-ano-mask">
-                                    <label for="data_fabricacao_saida" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-floating mb-2">
-                            <select id="tipo_saida" name="tipo_saida" class="form-select">
-                                ${obj.tipo_saida ? `<option value="${obj.tipo_saida}" selected>${obj.tipo_saida}</option>` : ''}
-                                <option value="Não Selecionado" disabled>Selecione</option>
-                                <option value="Galão 20 Litros">Galão 20 Litros</option>
-                                <option value="Galão 10 Litros">Galão 10 Litros</option>
-                                <option value="Galão 5 Litros">Galão 5 Litros</option>
-                                <option value="outro">Outro</option>
-                            </select>
-                            <label for="tipo_saida" style="font-size: 0.7rem" class="form-label">Tipo de saída:</label>
-                        </div>
-                        <div class="form-floating mb-2">
-                            <input type="text" id="id_descricao_gestão_galao" value="${obj.descricao_gestao ? obj.descricao_gestao : ''}" name="id_descricao_gestão_galao" class="form-control">
-                            <label for="id_descricao_gestão_galao" style="font-size: 0.7rem" class="form-label">Descrição: <span style="font-size: 0.6rem;">(Opcional)</span></label>
+                            <input type="text" id="data_validade_entrada" name="data_validade_entrada" value="${obj.validade_entrada ? obj.validade_entrada : ''}" class="form-control data-validade data-mes-ano-mask">
+                            <label for="data_validade_entrada" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
                         </div>
                     </div>
+                    <div class="col mx-1 p-0">
+                        <div class="form-floating mb-2">
+                            <input type="text" id="data_fabricacao_entrada" name="data_fabricacao_entrada" value="${obj.fabricacao_entrada ? obj.fabricacao_entrada : ''}" class="form-control data-fabricacao data-mes-ano-mask">
+                            <label for="data_fabricacao_entrada" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                        </div>
                     </div>
-                    `;
+                </div>
+                <div class="form-floating mb-2">
+                    <select id="tipo_entrada" name="tipo_entrada" class="form-select">
+                        <option value="Não Selecionado" disabled>Selecione</option>
+                        ${obj.tipo_entrada ? `<option value="${obj.tipo_entrada}" selected>${obj.tipo_entrada}</option>` : ''}
+                        <option value="Galão 20 Litros">Galão 20 Litros</option>
+                        <option value="Galão 10 Litros">Galão 10 Litros</option>
+                        <option value="Galão 5 Litros">Galão 5 Litros</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                    <label for="tipo_entrada" style="font-size: 0.7rem" class="form-label">Tipo de entrada:</label>
+                </div>
+            </div> 
+            <div class="border-dark border rounded bg-danger p-3 m-0 text-dark bg-opacity-25 mb-2">
+                <div class="row">
+                    <label class="form-label" style="font-size: 1rem">Galão que está saindo ${i + 1}.</label>
+                    <div class="col mx-1 p-0">
+                        <div class="form-floating mb-2">
+                            <input type="text" id="data_validade_saida" name="data_validade_saida" value="${obj.validade_saida ? obj.validade_saida : ''}" class="form-control data-validade data-mes-ano-mask">
+                            <label for="data_validade_saida" style="font-size: 0.6rem" class="form-label">Data de Validade: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                        </div>
+                    </div>
+                    <div class="col mx-1 p-0">
+                        <div class="form-floating mb-2">
+                            <input type="text" id="data_fabricacao_saida" name="data_fabricacao_saida" value="${obj.fabricacao_saida ? obj.fabricacao_saida : ''}" class="form-control data-fabricacao data-mes-ano-mask">
+                            <label for="data_fabricacao_saida" style="font-size: 0.6rem" class="form-label">Data de Fabricação: <span style="font-size: 0.5rem;">(mes/ano)</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-floating mb-2">
+                    <select id="tipo_saida" name="tipo_saida" class="form-select">
+                        ${obj.tipo_saida ? `<option value="${obj.tipo_saida}" selected>${obj.tipo_saida}</option>` : ''}
+                        <option value="Não Selecionado" disabled>Selecione</option>
+                        <option value="Galão 20 Litros">Galão 20 Litros</option>
+                        <option value="Galão 10 Litros">Galão 10 Litros</option>
+                        <option value="Galão 5 Litros">Galão 5 Litros</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                    <label for="tipo_saida" style="font-size: 0.7rem" class="form-label">Tipo de saída:</label>
+                </div>
+                <div class="form-floating mb-2">
+                    <input type="text" id="id_descricao_gestão_galao" value="${obj.descricao_gestao ? obj.descricao_gestao : ''}" name="id_descricao_gestão_galao" class="form-control">
+                    <label for="id_descricao_gestão_galao" style="font-size: 0.7rem" class="form-label">Descrição: <span style="font-size: 0.6rem;">(Opcional)</span></label>
+                </div>
+            </div>
+            </div>
+            `;
 
-                    formGestaoGalao.insertAdjacentHTML('beforeend', container_galao_troca);
-                }
-
-                // Se houver mais formulários do que galões especificados, remova o último container
-                if (numFormulariosExistentes > numeroGaloes) {
-                    for (var j = 0; j < numFormulariosExistentes - numeroGaloes; j++) {
-                        // Encontra os containers de entrada e saída
-                        var container_galao_troca = formGestaoGalao.querySelector('.container_galao_troca:last-child');
-
-                        // Remove os containers do formulário
-                        container_galao_troca.remove();
-                    }
-                }
-                
+            formGestaoGalao.insertAdjacentHTML('beforeend', container_galao_troca);
         }
+
+        // Se houver mais formulários do que galões especificados, remova o último container
+        if (numFormulariosExistentes > numeroGaloes) {
+            for (var j = 0; j < numFormulariosExistentes - numeroGaloes; j++) {
+                // Encontra os containers de entrada e saída
+                var container_galao_troca = formGestaoGalao.querySelector('.container_galao_troca:last-child');
+
+                // Remove os containers do formulário
+                container_galao_troca.remove();
+            }
+        }
+        
+}
 
          
 
@@ -1195,9 +1201,9 @@ function editarVenda(id_venda) {
         setElementValue("id_estado_transacao", venda.estado_transacao);
         setElementValue("id_forma_pagamento", venda.forma_pagamento);
         setElementValue("id_desconto", parseFloat(venda.desconto).toFixed(2));
-        setTextContent("txt_valor_apagar", parseFloat(venda.valor_total).toFixed(2));
+        setTextContent("txt_valor_total_apagar", parseFloat(venda.valor_total).toFixed(2));
         setElementValue("id_taxa_entrega", parseFloat(venda.valor_entrega).toFixed(2));
-        setElementValue("id_valor_pago", parseFloat(venda.valor_pago).toFixed(2));
+        setElementValue("id_valor_pago_dinheiro", parseFloat(venda.valor_pago).toFixed(2));
         setTextContent("txt_troco", parseFloat(venda.troco).toFixed(2));
         setElementValue("id_descricao", venda.descricao);
         setElementValue("select_loja", venda.loja_id);
@@ -1234,21 +1240,21 @@ function editarVenda(id_venda) {
                     `;
                     ul_produtos.appendChild(novoItemLista);
             });
-            calcularValorTotal();
+            calcularResumo();
         }
         else {
             alertCustomer(response.message);
         }
     });
-    chamarFuncaoPython("/api/cliente/by/venda/" + id_venda, {}, "GET", function(response) {
+    chamarFuncaoPython("/api/cliente/by/venda" + id_venda, {}, "GET", function(response) {
         if (response.success === true) {
-            montarInfoCliente(response.cliente);
+            montarInfoCliente(response.cliente,true);
             toggleCliente(true);
         }  
     });
  
     
-    chamarFuncaoPython("/api/retornaveis/by/venda/" + id_venda, {}, "GET", function(response) {
+    chamarFuncaoPython("/api/retornaveis/by/venda" + id_venda, {}, "GET", function(response) {
         if (response.success === true) {
             if(response.list_retornaveis.length >0){
                 response.list_retornaveis.forEach(obj => {

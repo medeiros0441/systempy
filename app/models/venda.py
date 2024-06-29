@@ -14,6 +14,24 @@ class Venda(models.Model):
     data_venda = models.CharField(
         default=Utils.obter_data_hora_atual, editable=False, max_length=100
     )
+    DINHEIRO = 1
+    MAQUINA_CREDITO = 2
+    MAQUINA_DEBITO = 3
+    PIX = 4
+    FIADO = 5
+    BOLETO = 6
+
+    TIPO_PAGAMENTO_CHOICES = [
+        (DINHEIRO, "Dinheiro"),
+        (MAQUINA_CREDITO, "Máquina de Crédito"),
+        (MAQUINA_DEBITO, "Máquina de Débito"),
+        (PIX, "PIX"),
+        (FIADO, "Fiado"),
+        (BOLETO, "Boleto"),
+    ]
+    tipo_pagamento = models.IntegerField(
+        choices=TIPO_PAGAMENTO_CHOICES, null=True, blank=True
+    )
     forma_pagamento = models.CharField(max_length=50)
     estado_transacao = models.CharField(max_length=20, null=True)
     metodo_entrega = models.CharField(max_length=50, null=True, blank=True)
@@ -36,6 +54,11 @@ class Venda(models.Model):
     nota_fiscal = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
+
+    def get_tipo_pagamento_display(self):
+        return dict(self.TIPO_PAGAMENTO_CHOICES).get(
+            self.tipo_pagamento, "Desconhecido"
+        )
 
     def save(self, *args, **kwargs):
         self.update = Utils.obter_data_hora_atual()

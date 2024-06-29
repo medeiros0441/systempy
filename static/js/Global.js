@@ -225,9 +225,7 @@ function alertCustomer(text, type = null, container = false, time = 180000) {
 if (document.getElementById("id_codigo_postal")) {
   document.getElementById("id_codigo_postal").addEventListener("blur", buscarEnderecoPorCEP);
 }
-
 function applyAutocomplete() {
-    // Selecionando todos os elementos com a classe 'autocomplete_input'
     $(".autocomplete_input").each(function() {
         var $input = $(this);
         var storageKey = $input.data("storage"); // Chave para acessar os dados no localStorage
@@ -273,9 +271,16 @@ function applyAutocomplete() {
             }
         });
 
+        // Definir o número máximo de itens
+        var maxItems = 5; // Altere este valor para o número desejado de sugestões
+
         // Inicializando o autocompletar no campo de entrada atual
         $input.autocomplete({
-            source: values,
+            source: function(request, response) {
+                var filteredValues = $.ui.autocomplete.filter(values, request.term);
+                response(filteredValues.slice(0, maxItems));
+            },
+            minLength: 0,
             select: function(event, ui) {
                 var selectedId = ui.item.id;
                 var selectedLabel = ui.item.label;
@@ -297,8 +302,13 @@ function applyAutocomplete() {
                 return false; // Evitar que o valor padrão do label seja inserido no input
             }
         });
+
+        $input.focus(function() {
+            $(this).autocomplete("search", ""); // Chamar o método search com uma string vazia
+        });
     });
 }
+
 
 $(function () {
     // Selecionar todos os botões com a classe btn_confirmacao

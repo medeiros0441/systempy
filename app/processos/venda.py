@@ -9,7 +9,7 @@ from django.db.models import Q
 from datetime import datetime
 from django.utils.dateparse import parse_date
 from django.utils import timezone
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.core.exceptions import ObjectDoesNotExist
 import traceback
 from django.db.models import F, Sum
@@ -17,6 +17,12 @@ import uuid
 
 
 class processos:
+
+    def converter_para_decimal(valor):
+        try:
+            return Decimal(valor)
+        except (InvalidOperation, ValueError, TypeError):
+            return None
 
     def _processar_carrinho(data, venda):
         try:
@@ -105,7 +111,7 @@ class processos:
             # Trate possíveis erros
             print(f"Erro ao processar carrinho: {e}")
             raise
- 
+
     def criar_ou_atualizar_venda(dados):
         try:
             id_venda = dados.get("id_venda")
@@ -116,6 +122,7 @@ class processos:
                 try:
                     venda = models.Venda.objects.get(id_venda=id_venda)
                     venda.forma_pagamento = dados["forma_pagamento"]
+                    venda.tipo_pagamento = dados["tipo_pagamento"]
                     venda.estado_transacao = dados["estado_transacao"]
                     venda.metodo_entrega = dados["metodo_entrega"]
                     venda.desconto = dados["desconto"]
@@ -135,6 +142,7 @@ class processos:
             else:  # Caso contrário, criamos uma nova venda
                 venda = models.Venda.objects.create(
                     forma_pagamento=dados["forma_pagamento"],
+                    tipo_pagamento=dados["tipo_pagamento"],
                     estado_transacao=dados["estado_transacao"],
                     metodo_entrega=dados["metodo_entrega"],
                     desconto=dados["desconto"],
@@ -190,7 +198,6 @@ class processos:
             print(f"Erro ao processar entrega: {e}")
             return False
 
- 
     def _processar_dados_galoes(data, venda):
         try:
             # Iterar sobre as entradas do request.POST

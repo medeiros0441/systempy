@@ -269,9 +269,9 @@ url_venda = [  # vendas
         name="excluir_venda",
     ),
     path(
-        "vendas/criar/insert_venda_ajax",
-        view.views_venda.insert_venda_ajax,
-        name="insert_venda_ajax",
+        "vendas/criar/processar_venda",
+        view.views_venda.processar_venda,
+        name="processar_venda",
     ),
     path(
         "api/vendas/dados",

@@ -163,7 +163,8 @@ function iniciar_modal(action,id) {
         case 4:
             modalLabel.innerText = "Fechar PDV";
             container_fechar_pdv.classList.remove("d-none");
-             
+            openModal();
+            break;
         default:
             console.error("Ação inválida fornecida a iniciar_modal.");
     }

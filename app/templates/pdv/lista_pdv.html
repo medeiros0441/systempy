@@ -167,13 +167,12 @@ function load_data() {
 }
 function PDV_status(id, status) {
     // Desabilitar o botão
-    if (status === false){
-
-
-
-        alertCustomer("btn é false", 1);
+    if (status ===1){
+        iniciar_modal(4, id);
         return;
-    }else{
+    } else if (status == 2){
+        return;
+
     manageLoading(true, "table_pdv");
 
         chamarFuncaoPython("registro_diario_pdv/create/" + id, null, "POST", function(response) {
@@ -309,7 +308,7 @@ function montarTabela() {
         AlterStatusBtn.className = item.status_operacao === 1 ? "btn btn-sm btn-danger" : "btn btn-sm btn-success";
         AlterStatusBtn.innerHTML = item.status_operacao === 1 ? '<i class="bi bi-x-circle"></i>' : '<i class="bi bi-check2-circle"></i>';
         AlterStatusBtn.onclick = function() {
-            PDV_status(item.id_pdv, item.status_operacao === 1 ? 0 : 1); // Alterna entre 0 e 1
+            PDV_status(item.id_pdv, item.status_operacao); // Alterna entre 0 e 1
         };
         btnGroup.appendChild(AlterStatusBtn);
     }

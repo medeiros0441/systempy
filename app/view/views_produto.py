@@ -13,7 +13,7 @@ from .views_erro import views_erro
 
 class views_produto:
     @staticmethod
-    @Utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6, True)
     def lista_produtos(request, context=None):
         id_empresa = UserInfo.get_id_empresa(request, True)
         if context is None:
@@ -32,7 +32,7 @@ class views_produto:
         return render(request, "produto/lista_produtos.html", context)
 
     @staticmethod
-    @Utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6, True)
     def form_produto(request, id_produto=None):
         try:
             produto = None
@@ -156,7 +156,7 @@ class views_produto:
         return True, None, data
 
     @staticmethod
-    @Utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6, True)
     def acrescentar_produto(request):
         try:
 
@@ -220,7 +220,7 @@ class views_produto:
             return views_erro.erro(request, mensagem_erro)
 
     @staticmethod
-    @Utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6, True)
     def selecionar_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)
@@ -237,7 +237,7 @@ class views_produto:
             return views_erro.erro(request, mensagem_erro)
 
     @staticmethod
-    @Utils.verificar_permissoes(6)
+    @Utils.verificar_permissoes(6, True)
     def excluir_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)

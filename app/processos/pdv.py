@@ -1,27 +1,134 @@
 import uuid
 from decimal import Decimal
-from ..models import RegistroDiarioPDV, TransacaoPDV, PDV, AssociadoPDV
+from ..models import RegistroDiarioPDV, TransacaoPDV, PDV, AssociadoPDV, Usuario, Venda
 from django.core.exceptions import ObjectDoesNotExist
 from ..static import UserInfo
+from django.db.models import Sum
+from django.db import transaction
+from datetime import datetime
+from ..utils import Utils
 
 
 class processos_pdv:
-    def processar_transacao(request, modelo):
-        id_usuario = UserInfo.get_id_usuario(request)
-        id_empresa = UserInfo.get_id_empresa(request)
-        if id_usuario or id_empresa is None:
-            return False, "Usuario  Não está logado."
-        # primeiro buscamos qual seria o ponto que o usuariop está associado.
-        # depois de ter o ponto  vamos processar a trasacao no ponto correto.
-        #
-        pdv_id = AssociadoPDV.objects.filter(
-            usuario_id=id_usuario, loja__empresa_id=id_empresa
-        )
-        pdv = PDV.objects.filter(id_pdv=pdv_id)
 
-        if modelo.id_venda is None:
-            return False
-        return True
+    def abrir_registro_diario(pdv,usuario):
+        today = Utils.obter_data_hora_atual("date")
+        # Verifica se já existe um registro diário aberto para o PDV e o dia corrente
+        registro_diario_aberto = RegistroDiarioPDV.objects.filter(pdv=pdv, dia=today, horario_fechamento__isnull=True).first()
+        if registro_diario_aberto:
+            return True, "já existe um registro diário aberto"
+
+        # Cria um novo registro diário
+        registro_diario = RegistroDiarioPDV(
+            pdv=pdv,
+            descricao_interna= " Abertura efetuada peo usuario "+usuario.nome_completo ,
+            saldo_inicial_dinheiro=pdv.saldo_inicial,
+            dia=today
+        )
+        registro_diario.save()
+        
+        pdv.status_operacao = PDV.ABERTO
+        pdv.save()
+        
+        return registro_diario
+
+    def fechar_registro_diario(registro_diario,usuario):
+        with transaction.atomic():
+            # Obtem todas as transações do registro diário
+            transacoes = TransacaoPDV.objects.filter(registro_diario=registro_diario)
+
+            saldo_dinheiro = 0
+            saldo_maquina = 0
+
+            for transacao in transacoes:
+                if transacao.tipo_pagamento == TransacaoPDV.DINHEIRO:
+                    if transacao.tipo_operacao == TransacaoPDV.ENTRADA:
+                        saldo_dinheiro += transacao.valor
+                    elif transacao.tipo_operacao == TransacaoPDV.RETIRADO:
+                        saldo_dinheiro -= transacao.valor
+                else:
+                    if transacao.tipo_operacao == TransacaoPDV.ENTRADA:
+                        saldo_maquina += transacao.valor
+                    elif transacao.tipo_operacao == TransacaoPDV.RETIRADO:
+                        saldo_maquina -= transacao.valor
+
+            registro_diario.saldo_final_dinheiro = saldo_dinheiro
+            registro_diario.saldo_final_maquina = saldo_maquina
+            registro_diario.saldo_final_total = saldo_dinheiro + saldo_maquina
+            registro_diario.descricao_interna =+ "- Registro fechado pelo associado -" +usuario.nome_completo
+            registro_diario.horario_fechamento = Utils.obter_data_hora_atual("time")
+            registro_diario.save()
+
+            pdv = registro_diario.pdv
+            pdv.status_operacao = PDV.FECHADO
+            pdv.save()
+
+        return registro_diario 
+
+    def processar_transacao_PDV(data):
+        """
+        Processa uma transação no PDV com os dados fornecidos.
+        """
+        required_fields = [
+            "registro_diario_id",
+            "usuario_id",
+            "venda_id",
+            "valor",
+            "descricao",
+        ]
+
+        # Verifica se todos os campos obrigatórios estão presentes
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return False, f"Campos obrigatórios ausentes: {', '.join(missing_fields)}"
+        tipo_operacao = data["tipo_operacao"]
+        registro_diario_id = data["registro_diario_id"]
+        usuario_id = data["usuario_id"]
+        venda_id = data["venda_id"]
+        valor = data["valor"]
+        descricao = data["descricao"]
+
+        # Verifica se os IDs fornecidos são válidos
+        status, message = processos_pdv.verificar_ids(
+            usuario_id, venda_id, registro_diario_id
+        )
+        if not status:
+            return False, message
+
+        # Tenta criar a transação no PDV
+        try:
+            TransacaoPDV.objects.create(
+                registro_diario_id=registro_diario_id,
+                usuario_id=usuario_id,
+                venda_id=venda_id,
+                valor=valor,
+                descricao=descricao,
+                tipo_operacao=tipo_operacao,
+            )
+            return True, "Transação processada com sucesso"
+        except Exception as e:
+            return False, f"Erro ao processar a transação: {str(e)}"
+
+    def verificar_ids(usuario_id, venda_id, registro_diario_id):
+        """
+        Verifica se os IDs fornecidos existem no banco de dados.
+        """
+        try:
+            RegistroDiarioPDV.objects.get(pk=registro_diario_id)
+        except RegistroDiarioPDV.DoesNotExist:
+            return False, "registro_diario_id não é válido"
+
+        try:
+            Usuario.objects.get(pk=usuario_id)
+        except Usuario.DoesNotExist:
+            return False, "usuario_id não é válido"
+
+        try:
+            Venda.objects.get(pk=venda_id)
+        except Venda.DoesNotExist:
+            return False, "venda_id não é válido"
+
+        return True, "IDs verificados com sucesso"
 
     def fechar_operacao(self):
         from utils import Utils

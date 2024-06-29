@@ -45,10 +45,10 @@ class Utils:
         dt_brasil = datetime.now(brasil_tz)
 
         # Formata a data e hora de acordo com o parâmetro especificado
-        if value == True:
+        if value == True or value == "date":
             # Retorna apenas a data no formato dia/mes/ano
             return dt_brasil.strftime("%d/%m/%Y")
-        elif value == False:
+        elif value == False or value == "time":
             return dt_brasil.strftime("%H:%M")
         else:
             # Retorna data e hora no formato dia/mes/ano hora:minutos
@@ -385,7 +385,6 @@ class Utils:
                 return configuracao["nome"]
         return None
 
-    
     def modelo_para_json(instance):
         """
         Converte uma instância de um modelo Django para um dicionário JSON.
@@ -395,12 +394,16 @@ class Utils:
 
         try:
             # Converte a instância para um dicionário, incluindo todos os campos
-            data = model_to_dict(instance, fields=[field.name for field in instance._meta.fields])
+            data = model_to_dict(
+                instance, fields=[field.name for field in instance._meta.fields]
+            )
 
             # Adiciona a chave primária manualmente, caso não tenha sido incluída
             pk_name = instance._meta.pk.name
             if pk_name not in data:
-                data[pk_name] = str(getattr(instance, pk_name))  # Certifique-se de converter UUIDs para string
+                data[pk_name] = str(
+                    getattr(instance, pk_name)
+                )  # Certifique-se de converter UUIDs para string
 
             # Converte UUIDs e ForeignKeys para suas representações em string
             for key, value in data.items():
@@ -415,7 +418,7 @@ class Utils:
                 if isinstance(value, uuid.UUID):
                     data[field.name] = str(value)
                 elif isinstance(field, ForeignKey):
-                    data[field.name + '_id'] = str(value.pk) if value else None
+                    data[field.name + "_id"] = str(value.pk) if value else None
                 else:
                     data[field.name] = value
 

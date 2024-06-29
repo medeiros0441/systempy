@@ -4,15 +4,14 @@ from app.utils import Utils
 from app.static import Alerta, UserInfo
 from django.db.models import Q
 from ..processos.venda import processos
-from ..processos.pdv import processos_pdv
 from django.http import JsonResponse
-
 from django.views.decorators.csrf import csrf_exempt
-from django.forms.models import model_to_dict
 import json
 from app import models
-
 from .views_erro import views_erro
+from .views_pdv import views_pdv, views_transacao_pdv
+from .views_pdv import views_associado_pdv, views_registro_diario_pdv
+from .views_personalizacao import views_personalizacao
 
 
 class views_venda:
@@ -103,16 +102,14 @@ class views_venda:
             status=405,
         )
 
-    @csrf_exempt
     @Utils.verificar_permissoes(7, True)
-    def insert_venda_ajax(request):
+    @csrf_exempt
+    def processar_venda(request):
         try:
             if request.method == "POST":
                 # Processa a venda
                 id = UserInfo.get_id_usuario(request)
-
                 dados = json.loads(request.body.decode("utf-8"))
-
                 data, mensagem_erro = views_venda.validar_dados_formulario(dados, id)
                 venda, menssagem = processos.criar_ou_atualizar_venda(data)
                 if venda is not None:
@@ -123,9 +120,8 @@ class views_venda:
                             processos.processo_entrega(
                                 venda=venda, id_motoboy=id_motoboy
                             )
-                    if venda.forma_pagamento == "dinheiro":
-                        processos_pdv.processar_transacao(venda)
-
+                    ##processando transacao
+                    views_transacao_pdv.processar_trasacao_pdv(venda, request)
                     # Processa o carrinho
                     carrinho = dados.get("carrinho")
                     processos._processar_carrinho(carrinho, venda)
@@ -144,13 +140,12 @@ class views_venda:
         dados = {}
 
         try:
-
-            estado_transacao = data_formulario.get("estado_transacao")
-            forma_pagamento = data_formulario.get("forma_pagamento")
-            desconto = data_formulario.get("desconto", None)
-            desconto = processos.converter_para_decimal(desconto)
+            desconto = processos.converter_para_decimal(
+                data_formulario.get("desconto", None)
+            )
             metodo_entrega = data_formulario.get("metodo_entrega", "").strip()
             taxa_entrega = data_formulario.get("taxa_entrega", "").strip()
+
             if metodo_entrega != "0":
                 if metodo_entrega == "entrega no local":
                     taxa_entrega_decimal = processos.converter_para_decimal(
@@ -159,29 +154,43 @@ class views_venda:
                     if taxa_entrega_decimal is None or taxa_entrega_decimal <= 0:
                         return None, "Taxa de entrega inválida."
 
-            if estado_transacao == "0" or forma_pagamento == "0":
+            valor_pago = processos.converter_para_decimal(
+                data_formulario.get("valor_pago", "").strip()
+            )
+            total_apagar = processos.converter_para_decimal(
+                data_formulario.get("total_apagar", "").strip()
+            )
+            troco = processos.converter_para_decimal(data_formulario.get("troco", 0.0))
+
+            forma_pagamento_str = data_formulario.get("forma_pagamento")
+            estado_transacao = data_formulario.get("estado_transacao")
+
+            if estado_transacao == "0" or forma_pagamento_str == "0":
                 return None, "Estado da transação ou forma de pagamento inválidos."
 
-            valor_pago = data_formulario.get("valor_pago").strip()
-            total_apagar = data_formulario.get("total_apagar").strip()
-            valor_pago = processos.converter_para_decimal(valor_pago)
-            total_apagar = processos.converter_para_decimal(total_apagar)
-            troco = data_formulario.get("troco", 0.0)
-            troco = processos.converter_para_decimal(troco)
-            if forma_pagamento == "dinheiro":
+            forma_pagamento_int = views_venda.verificar_forma_pagamento(
+                forma_pagamento_str
+            )
+
+            if forma_pagamento_int is None:
+                return None, "Forma de pagamento inválida."
+
+            if forma_pagamento_int == 1:
                 if (
                     valor_pago is None
                     or total_apagar is None
                     or valor_pago <= 0.0
                     or valor_pago < total_apagar
                 ):
-                    return None, "Valor pago inválido."
+                    return None, "Valor pago é inválido."
             else:
                 valor_pago = total_apagar
 
             id_loja = data_formulario.get("loja")
             if id_loja == "0":
-                return None, "Loja não está selecionada."
+                id_loja = views_personalizacao.get_loja_id(id)
+                if id_loja is None:
+                    return None, "Loja não está selecionada."
             dados["loja"] = models.Loja.objects.get(id_loja=id_loja)
 
             id_cliente = data_formulario.get("id_cliente")
@@ -190,31 +199,37 @@ class views_venda:
             else:
                 dados["cliente"] = None
 
-            # Adicionando os valores essenciais ao dicionário
-            dados["forma_pagamento"] = forma_pagamento
-            dados["estado_transacao"] = estado_transacao
-            dados["desconto"] = desconto
-            dados["metodo_entrega"] = metodo_entrega
-            dados["taxa_entrega"] = taxa_entrega
-            dados["valor_pago"] = valor_pago
-            dados["troco"] = troco
-
-            # Preenchendo campos relacionados ao troco, se aplicável
-            dados["valor_total"] = processos.converter_para_decimal(
-                data_formulario.get("total_apagar")
+            dados.update(
+                {
+                    "forma_pagamento": forma_pagamento_str,
+                    "tipo_pagamento": forma_pagamento_int,
+                    "estado_transacao": estado_transacao,
+                    "desconto": desconto,
+                    "metodo_entrega": metodo_entrega,
+                    "taxa_entrega": taxa_entrega,
+                    "valor_pago": valor_pago,
+                    "troco": troco,
+                    "valor_total": total_apagar,
+                    "user": models.Usuario.objects.get(id_usuario=id),
+                    "desc_venda": data_formulario.get("descricao_venda"),
+                    "id_venda": data_formulario.get("id_venda", None) or None,
+                }
             )
-            dados["user"] = models.Usuario.objects.get(id_usuario=id)
-            dados["desc_venda"] = data_formulario.get("descricao_venda")
-
-            dados["id_venda"] = data_formulario.get("id_venda", None)
-            if dados["id_venda"] == "":
-                dados["id_venda"] = None
 
             return dados, None
         except Exception as e:
-            # Trate possíveis erros
-            print(f"Erro ao validar dados do formulário: {e}")
             return None, f"Erro ao validar dados do formulário: {e}"
+
+    def verificar_forma_pagamento(forma_pagamento_str):
+        FORMA_PAGAMENTO_MAP = {
+            "dinheiro": 1,
+            "cartao credito": 2,
+            "cartao debito": 3,
+            "pix": 4,
+            "fiado": 5,
+            "boleto": 6,
+        }
+        return FORMA_PAGAMENTO_MAP.get(forma_pagamento_str)
 
     @staticmethod
     @Utils.verificar_permissoes(7, True)

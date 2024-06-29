@@ -6,7 +6,6 @@ from django.db.models import F, DateTimeField
 from django.db.models.functions import Cast
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-import app.view as view
 from ..models import (
     Usuario,
     PDV,
@@ -16,11 +15,14 @@ from ..models import (
     TransacaoPDV,
     Associado,
     Personalizacao,
+    Venda,
 )
 from app.static import Alerta, UserInfo
 from app.utils import Utils
-
+from ..processos.pdv import processos_pdv
+from .views_personalizacao import views_personalizacao
 from django.db.models import Q
+
 
 class views_pdv:
     @staticmethod
@@ -34,11 +36,15 @@ class views_pdv:
         if request.method == "GET":
             try:
                 if id_loja is not None:
-                    pdvs = PDV.objects.filter(Q(loja_id=id_loja) & Q(status_operacao__gt=1))
+                    pdvs = PDV.objects.filter(
+                        Q(loja_id=id_loja) & Q(status_operacao__gt=1)
+                    )
                 else:
                     if id_empresa is None:
                         id_empresa = UserInfo.get_id_empresa(request)
-                    pdvs = PDV.objects.filter(Q(loja__empresa_id=id_empresa) & Q(status_operacao__gt=0))
+                    pdvs = PDV.objects.filter(
+                        Q(loja__empresa_id=id_empresa) & Q(status_operacao__gt=0)
+                    )
 
                 pdv_list = Utils.modelos_para_lista_json(pdvs)
                 return JsonResponse({"success": True, "data": pdv_list}, status=200)
@@ -48,7 +54,7 @@ class views_pdv:
         return JsonResponse(
             {"success": False, "message": "Método não permitido"}, status=405
         )
-    
+
     @Utils.verificar_permissoes("pdv", True)
     @csrf_exempt
     def create_pdv(request):
@@ -112,7 +118,9 @@ class views_pdv:
 
             for usuario in list_usuario:
                 try:
-                    views_pdv.associar_usuario_pdv(usuario, loja_id, colaboradores_selecionados, data, request)
+                    views_pdv.associar_usuario_pdv(
+                        usuario, loja_id, colaboradores_selecionados, data, request
+                    )
                 except Exception as e:
                     return JsonResponse(
                         {
@@ -134,7 +142,9 @@ class views_pdv:
                 status=500,
             )
 
-    def associar_usuario_pdv(usuario, loja_id, colaboradores_selecionados, data, request):
+    def associar_usuario_pdv(
+        usuario, loja_id, colaboradores_selecionados, data, request
+    ):
         if usuario.nivel_usuario == 1:
             # Associa administradores ao PDV
             data["usuario"] = usuario.id_usuario
@@ -213,7 +223,9 @@ class views_pdv:
 
             # Obter associações atuais do PDV
             associados_atuais = AssociadoPDV.objects.filter(pdv=pdv)
-            ids_associados_atuais = list(associados_atuais.values_list('usuario_id', flat=True))
+            ids_associados_atuais = list(
+                associados_atuais.values_list("usuario_id", flat=True)
+            )
 
             # Adicionar novas associações e manter as existentes
             for usuario_associado_id in usuarios_associados:
@@ -223,12 +235,13 @@ class views_pdv:
                             empresa_id=id_empresa, id_usuario=usuario_associado_id
                         )
                         # Criar nova associação do usuário ao PDV
-                        AssociadoPDV.objects.create(
-                            usuario=usuario_associado, pdv=pdv
-                        )
+                        AssociadoPDV.objects.create(usuario=usuario_associado, pdv=pdv)
                     except Usuario.DoesNotExist:
                         return JsonResponse(
-                            {"success": False, "message": f"Usuário {usuario_associado_id} não encontrado"},
+                            {
+                                "success": False,
+                                "message": f"Usuário {usuario_associado_id} não encontrado",
+                            },
                             status=404,
                         )
 
@@ -236,11 +249,13 @@ class views_pdv:
             for associado_atual in associados_atuais:
                 if str(associado_atual.usuario_id) not in usuarios_associados:
                     try:
-                        usuario = Usuario.objects.get(id_usuario=associado_atual.usuario_id)
+                        usuario = Usuario.objects.get(
+                            id_usuario=associado_atual.usuario_id
+                        )
                         if usuario.nivel_usuario == 3:
                             associado_atual.delete()
                     except Usuario.DoesNotExist:
-                        pass 
+                        pass
 
             return JsonResponse(
                 {"success": True, "message": "PDV atualizado com sucesso"}, status=200
@@ -252,6 +267,14 @@ class views_pdv:
             )
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+    def verificar_status_pdv(pdv):
+        if pdv.status_operacao == PDV.EXCLUIDO:
+            return False, "O PDV foi excluído e não pode ter alterações.", 403
+        if pdv.status_operacao == PDV.BLOQUEADO:
+            return False, "O PDV está bloqueado para operações.", 403
+        return True, "", 200
+
 
 class views_registro_diario_pdv:
 
@@ -286,7 +309,6 @@ class views_registro_diario_pdv:
             if id is None:
                 data = json.loads(request.body)
                 id = data.get("id_pdv")
-
             if not id:
                 return JsonResponse(
                     {"success": False, "message": "ID do PDV não fornecido"}, status=400
@@ -294,33 +316,10 @@ class views_registro_diario_pdv:
 
             id_empresa = UserInfo.get_id_empresa(request)
             pdv = PDV.objects.get(id_pdv=id, loja__empresa_id=id_empresa)
-
-            data_atual = Utils.obter_data_hora_atual(True)
-
-            registro, created = RegistroDiarioPDV.objects.get_or_create(
-                pdv_id=id,
-                dia=data_atual,
-                defaults={
-                    "saldo_inicial_dinheiro": pdv.saldo_inicial,
-                    "horario_iniciou": Utils.obter_data_hora_atual(False),
-                    "horario_fechamento": None,
-                    "saldo_final_dinheiro": 0.00,
-                    "saldo_final_total": 0.00,
-                    "maquina_tipo": 0.00,
-                    "saldo_final_maquina": 0.00,
-                },
-            )
-
-            if created:
-                message = "Registro diário criado com sucesso"
-                pdv.status_operacao = True
-            else:
-                message = "Registro diário atualizado com sucesso"
-                pdv.status_operacao = False
-
-            pdv.save()
-
-            return JsonResponse({"success": True, "message": message}, status=200)
+            id_usuario = UserInfo.get_id_usuario(request)
+            usuario = Usuario.objects.get(pk=id_usuario)
+            status, message = processos_pdv.abrir_registro_diario(pdv, usuario)
+            return JsonResponse({"success": status, "message": message}, status=200)
 
         except ObjectDoesNotExist:
             return JsonResponse(
@@ -336,47 +335,70 @@ class views_registro_diario_pdv:
                 {"success": False, "message": f"Erro: {str(e)}"}, status=500
             )
 
+    def GetRegistroPdvAberto(pdv_id):
+        today = Utils.obter_data_hora_atual("date")
+        if pdv_id:
+            registro_diario_aberto = RegistroDiarioPDV.objects.filter(
+                pdv_id=pdv_id, dia=today, horario_fechamento__isnull=True
+            ).first()
+            if registro_diario_aberto:
+                return True, registro_diario_aberto
+            return False, None
+        return False, None
+
     @Utils.verificar_permissoes("RegistroDiarioPDV", True)
     @csrf_exempt
-    def update_status_registro_diario_pdv(request, id=None):
+    def update_status_registro_diario_pdv(self, request, pdv_id=None):
         if request.method != "PUT":
             return JsonResponse(
                 {"success": False, "message": "Método não permitido"}, status=405
             )
 
         try:
-            if id is None:
+            if pdv_id is None:
                 data = json.loads(request.body)
-                id = data.get("id_pdv")
+                pdv_id = data.get("pdv_id")
+                usuario_id = data.get("usuario_id")
+            else:
+                usuario_id = UserInfo.get_id_usuario(request)
 
-            if not id:
+            if not pdv_id or usuario_id is None:
                 return JsonResponse(
-                    {"success": False, "message": "ID do PDV não fornecido"}, status=400
+                    {
+                        "success": False,
+                        "message": "ID do PDV ou ID do usuário não fornecido",
+                    },
+                    status=400,
                 )
 
-            id_empresa = UserInfo.get_id_empresa(request)
-            pdv = PDV.objects.get(id_pdv=id, loja__empresa_id=id_empresa)
-            data_atual = Utils.obter_data_hora_atual(True)
-            if pdv.status_operacao:
-                exist = RegistroDiarioPDV.objects.get(pdv_id=id).exist()
-                # se não existir um registro com base  no status atual do  pdv.status_operacao se for true
-                # siginifica que ja tem uma ativo no momento, caso for fale fazmos a  conta dos
-                if exist == False:
-                    RegistroDiarioPDV.objects.create(
-                        pdv=pdv,
-                        dia=Utils.obter_data_hora_atual(True),
-                        update=Utils.obter_data_hora_atual(),
+            pdv = PDV.objects.get(id_pdv=pdv_id)
+            status_pdv, mensagem, status_code = views_pdv.verificar_status_pdv(pdv)
+            if not status_pdv:
+                return JsonResponse(
+                    {"success": False, "message": mensagem}, status=status_code
+                )
+
+            if pdv.status_operacao == 2 or pdv.status_operacao == 1:
+                status_registro, registro_diario_aberto = self.GetRegistroPdvAberto(
+                    pdv.id_pdv
+                )
+                status_associado, associado = (
+                    views_associado_pdv.UsuarioIsAssociadoInPDV(usuario_id, pdv.id_pdv)
+                )
+
+                if not status_associado:
+                    return JsonResponse(
+                        {"success": False, "message": associado}, status=403
                     )
 
-            if RegistroDiarioPDV.objects.get(pdv_id=id, dia=data_atual).exist:
-                message = "Registro diário finalizado com sucesso"
-                pdv.status_operacao = False
+                if status_registro:
+                    processos_pdv.fechar_registro_diario(registro_diario_aberto)
+                    message = "Registro diário finalizado com sucesso!"
+                else:
+                    processos_pdv.abrir_registro_diario(pdv)
+                    message = "Registro diário criado com sucesso!"
 
-            else:
-                message = "PDV Em Operção, Registro diário criado com sucesso!"
-                pdv.status_operacao = True
-            pdv.save
-            return JsonResponse({"success": True, "message": message}, status=200)
+                return JsonResponse({"success": True, "message": message}, status=200)
 
         except ObjectDoesNotExist:
             return JsonResponse(
@@ -459,6 +481,61 @@ class views_transacao_pdv:
     def lista_transacao(request):
         return render(request, "caixa/transacao/lista_transacao.html")
 
+    def processar_trasacao_pdv(self, request, venda):
+        """
+        Processa uma venda com base na forma de pagamento e cria as transações PDV apropriadas.
+        """
+        data = {}
+
+        data["venda_id"] = venda.id_venda
+        data["usuario_id"] = Utils.get_id_usuario(request)
+        usuario_id = data["usuario_id"]
+        registro_diario_id = views_associado_pdv.get_registro_diario_id(usuario_id)
+
+        if not registro_diario_id:
+            return False, "Erro ao obter registro diário"
+
+        RegistroDiarioPDV.objects.get(pk=registro_diario_id)
+
+        data["registro_diario_id"] = registro_diario_id
+
+        if venda.tipo_pagamento == 1:
+            self.processar_entrada_dinheiro(data, venda)
+            if venda.troco:
+                self.processar_retirada_troco(data, venda.troco)
+        else:
+            tipo_pagamento_str = venda.get_tipo_pagamento_display()
+            self.processar_entrada_pg(data, venda.valor_total, tipo_pagamento_str)
+
+        return True, "Processamento de venda concluído com sucesso"
+
+    def processar_entrada_dinheiro(data, venda):
+        """
+        Processa a entrada de dinheiro no PDV.
+        """
+        data["descricao"] = "ENTRADA EM DINHEIRO, PARA PAGAMENTO."
+        data["valor"] = venda.valor_total
+        data["tipo_operacao"] = 1  # Tipo de operação para entrada
+        processos_pdv.processar_transacao_PDV(data)
+
+    def processar_retirada_troco(data, troco):
+        """
+        Processa a retirada de troco no PDV.
+        """
+        data["descricao"] = "RETIRADO VALOR EM DINHEIRO PARA TROCO."
+        data["valor"] = troco
+        data["tipo_operacao"] = 2  # Tipo de operação para retirada
+        processos_pdv.processar_transacao_PDV(data)
+
+    def processar_entrada_pg(data, valor_total, tipo_pagamento_str):
+        """
+        Processa a entrada de valores via máquina no PDV.
+        """
+        data["descricao"] = f"ENTRADA DE RECIBO PAGAMENTO VIA {tipo_pagamento_str}"
+        data["valor"] = valor_total
+        data["tipo_operacao"] = 1  # Tipo de operação para entrada
+        processos_pdv.processar_transacao_PDV(data)
+
 
 class views_associado_pdv:
 
@@ -496,7 +573,6 @@ class views_associado_pdv:
     def create_associado_pdv(request, data):
         if request.method == "POST":
             try:
-
                 usuario = Usuario.objects.get(id_usuario=data["usuario"])
                 pdv = PDV.objects.get(id_pdv=data["pdv"])
                 associado = AssociadoPDV.objects.create(
@@ -561,3 +637,12 @@ class views_associado_pdv:
         return JsonResponse(
             {"success": False, "message": "Método não permitido"}, status=405
         )
+
+    def UsuarioIsAssociadoInPDV(id_usuario, id_pdv):
+        try:
+            associado = AssociadoPDV.objects.get(usuario_id=id_usuario, pdv_id=id_pdv)
+            if associado.status_acesso:
+                return True, associado
+            return False, "Usuário não tem permissão de acesso ao PDV"
+        except AssociadoPDV.DoesNotExist:
+            return False, "Associação não encontrada"
