@@ -8,7 +8,8 @@
                     <h5 class="modal-title fw-bold font-monospace" id="ModalLabel" > </h5>
                 </div>
                 <div class="modal-body  font-monospace d-none" id="container-form">
-                        <input   id="id_cliente" type="hidden" value="" > 
+                        <input   id="id_cliente" type="hidden" value="" /> 
+                        <input   id="id_endereco" type="hidden" value="" /> 
                         <div class="form-floating mb-2">
                             <input type="text" name="nome_cliente"  class="form-control" required="" maxlength="255" id="id_nome_cliente">
                             <label for="id_nome_cliente" class="form-label">Nome do Cliente:</label>
@@ -61,17 +62,17 @@
                 <div class="modal-body  font-monospace d-none" id="container-info">
                     <div  class=" card-body row d-flex"  >
                         <div class="col-12">
-                            <i class="bi bi-person-fill me-1"></i>
+                            <i class="bi bi-person me-1"></i>
                             <span class="fw-bold">Nome: </span>
                             <span id="info_nome_cliente"></span>
                         </div>
                         <div class="col-12">
-                            <i class="bi bi-phone-fill me-1"></i>
+                            <i class="bi bi-phone me-1"></i>
                             <span class="fw-bold">Telefone: </span>
                             <span id="info_telefone_cliente"></span>
                         </div>
                         <div class="col-12">
-                            <i class="bi bi-people-fill me-1"></i>
+                            <i class="bi bi-people me-1"></i>
                             <span class="fw-bold">Tipo de Cliente: </span>
                             <span id="info_tipo_cliente"></span>
                         </div>
@@ -85,32 +86,32 @@
                     <div class="  card-body row d-flex">
                         <h5 class="mb-1 text-center" style="font:size 0.5rem">Informações de Endereço</h5>
                         <div class="col-sm-auto d-inline-flex">
-                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <i class="bi bi-geo-alt me-1"></i>
                             <span class="fw-bold">Código Postal: </span>
                             <span id="info_codigo_postal"></span>
                         </div>
                         <div class="col-sm-auto d-inline-flex">
-                            <i class="bi bi-house-fill me-1"></i>
+                            <i class="bi bi-house me-1"></i>
                             <span class="fw-bold">Rua: </span>
                             <span id="info_rua"></span>
                         </div>
                         <div class="col-sm-auto d-inline-flex">
-                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <i class="bi bi-geo-alt me-1"></i>
                             <span class="fw-bold">Número: </span>
                             <span id="info_numero"></span>
                         </div>
                         <div class="col-sm-auto d-inline-flex">
-                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <i class="bi bi-geo-alt me-1"></i>
                             <span class="fw-bold">Bairro: </span>
                             <span id="info_bairro"></span>
                         </div>
                         <div class="col-sm-auto d-inline-flex">
-                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <i class="bi bi-geo-alt me-1"></i>
                             <span class="fw-bold">Cidade: </span>
                             <span id="info_cidade"></span>
                         </div>
                         <div class="col-sm-auto d-inline-flex">
-                            <i class="bi bi-flag-fill me-2"></i>
+                            <i class="bi bi-flag me-2"></i>
                             <span class="fw-bold">Estado: </span>
                             <span id="info_estado"></span>
                         </div>
@@ -124,9 +125,9 @@
 
                     </div>
                 </div>  
-                <div class="modal-footer ">
+                <div class="modal-footer " id='id_container_btns'>
                             <button type="button" onclick="close_modal();"  class="btn btn-secondary float-start me-auto btn-sm">Fechar</a>
-                        <button type="submit"  id="btnSalvar" class="btn btn-primary float-start ms-auto btn-sm">Salvar</a>
+                        <button  id="btnSalvar" type="button" class="btn btn-primary float-start ms-auto btn-sm">Salvar</a>
                 </div>  
             </div>
         </div>
@@ -134,7 +135,7 @@
 
 <script>
     function tipo_modal(id=false,isEditar=false) {
-        cliente=false;
+        data=false;
         if(id === false){
             document.getElementById("container-info").classList.add("d-none");
             document.getElementById("container-form").classList.remove("d-none");
@@ -144,11 +145,11 @@
         }
         else{
             var dadosLocalStorage = Utils.getLocalStorageItem('data-clientes');
-             var cliente = dadosLocalStorage.find(function(item) {
-            return item.id_cliente === id;
-        });
+            var data = dadosLocalStorage.find(function(item) {
+                return item.cliente.id_cliente === id;
+            });
         }
-        if (cliente){
+        if (data){
                 if(isEditar){
 
                     document.getElementById("container-info").classList.add("d-none");
@@ -156,12 +157,13 @@
                     document.getElementById("ModalLabel").innerHTML="Formulario";
                     document.getElementById("btnSalvar").classList.remove("d-none");
                     document.getElementById("id_cliente").value=id;
-                    preencherDadosForm(cliente);
+                    document.getElementById("id_endereco").value=data.endereco?.id_endereco ||"";
+                    preencherDadosForm(data);
                     
                 }   else{
                     document.getElementById("container-info").classList.remove("d-none");
                     document.getElementById("container-form").classList.add("d-none");
-                     preencherDadosInfo(cliente);
+                     preencherDadosInfo(data);
                     document.getElementById("btnSalvar").classList.add("d-none");
                      get_vendas_by_cliente(id);
                     document.getElementById("ModalLabel").innerHTML="Detalhes";
@@ -180,31 +182,38 @@
             manageLoading(false,"container_vendas_cliente");
         });
     }
-    function preencherDadosInfo(dados) {
-        document.getElementById("info_nome_cliente").textContent = dados.nome;
-        document.getElementById("info_telefone_cliente").textContent = dados.telefone;
-        document.getElementById("info_tipo_cliente").textContent = dados.tipo_cliente;
-        document.getElementById("info_descricao_cliente").textContent = dados.descricao;
-        document.getElementById("info_codigo_postal").textContent = dados.cep;
-        document.getElementById("info_rua").textContent = dados.rua;
-        document.getElementById("info_numero").textContent = dados.numero;
-        document.getElementById("info_bairro").textContent = dados.bairro;
-        document.getElementById("info_cidade").textContent = dados.cidade;
-        document.getElementById("info_estado").textContent = dados.estado;
-        document.getElementById("info_descricao_endereco").textContent = dados.descricao_endereco;
+    function preencherDadosInfo(data) {
+        var cliente = data.cliente || {};
+        document.getElementById("info_nome_cliente").textContent = cliente.nome || '';
+        document.getElementById("info_telefone_cliente").textContent = cliente.telefone || '';
+        document.getElementById("info_tipo_cliente").textContent = cliente.tipo_cliente || '';
+        document.getElementById("info_descricao_cliente").textContent = cliente.descricao || '';
+    
+        var endereco = data.endereco || {};
+        document.getElementById("info_codigo_postal").textContent = endereco.codigo_postal || '';
+        document.getElementById("info_rua").textContent = endereco.rua || '';
+        document.getElementById("info_numero").textContent = endereco.numero || '';
+        document.getElementById("info_bairro").textContent = endereco.bairro || '';
+        document.getElementById("info_cidade").textContent = endereco.cidade || '';
+        document.getElementById("info_estado").textContent = endereco.estado || '';
+        document.getElementById("info_descricao_endereco").textContent = endereco.descricao || '';
     }
-    function preencherDadosForm(dados) {
-        document.getElementById("id_nome_cliente").value = dados.nome;
-        document.getElementById("id_telefone_cliente").value = dados.telefone;
-        document.getElementById("id_select_tipo_cliente").value = dados.tipo_cliente;
-        document.getElementById("id_descricao_cliente").value = dados.descricao; 
-        document.getElementById("id_codigo_postal").value = dados.cep;
-        document.getElementById("id_rua").value = dados.rua;
-        document.getElementById("id_numero").value = dados.numero;
-        document.getElementById("id_bairro").value = dados.bairro;
-        document.getElementById("id_cidade").value = dados.cidade;
-        document.getElementById("id_estado").value = dados.estado;
-        document.getElementById("id_descricao_endereco").value = dados.descricao_endereco;
+    
+    function preencherDadosForm(data) {
+        var cliente = data.cliente || {};
+        document.getElementById("id_nome_cliente").value = cliente.nome || '';
+        document.getElementById("id_telefone_cliente").value = cliente.telefone || '';
+        document.getElementById("id_select_tipo_cliente").value = cliente.tipo_cliente || '';
+        document.getElementById("id_descricao_cliente").value = cliente.descricao || '';
+    
+        var endereco = data.endereco || {};
+        document.getElementById("id_codigo_postal").value = endereco.codigo_postal || '';
+        document.getElementById("id_rua").value = endereco.rua || '';
+        document.getElementById("id_numero").value = endereco.numero || '';
+        document.getElementById("id_bairro").value = endereco.bairro || '';
+        document.getElementById("id_cidade").value = endereco.cidade || '';
+        document.getElementById("id_estado").value = endereco.estado || '';
+        document.getElementById("id_descricao_endereco").value = endereco.descricao || '';
     }
     function limparLabels() {
         document.getElementById("info_nome_cliente").textContent = "";
@@ -233,120 +242,133 @@
         document.getElementById("id_estado").value = "";
         document.getElementById("id_descricao_endereco").value = "";
     }
+
+function renderizarVendas(vendas) {
+    const container = document.getElementById('container_vendas_cliente');
+    container.innerHTML = ''; // Limpa o conteúdo atual do contêiner
+
+    vendas.forEach(venda => {
+        // Criação do card para a venda
+        const card = document.createElement('div');
+        card.className = 'my-1 font-monospace row d-flex card border border-dark';
+
+        // Criação do header do card
+        const cardHeader = document.createElement('div');
+        cardHeader.className = 'card-header bg-dark text-white';
+        const headerContent = document.createElement('div');
+        headerContent.className = 'd-flex align-items-center font-monospace';
+        const headerTitle = document.createElement('span');
+        headerTitle.className = 'me-auto  text-white text-center';
+        headerTitle.innerText = 'Compra do Cliente';
+        headerContent.appendChild(headerTitle);
+        cardHeader.appendChild(headerContent);
+        card.appendChild(cardHeader);
+
+        // Criação do corpo do card
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body';
+
+        // Informações adicionais da venda
+        const infoVenda = document.createElement('div');
+        infoVenda.className = 'mt-2';
+        infoVenda.innerHTML = `
+        <div class="row d-flex" style="font-size: 0.9rem;">
+                <p class="mb-1 col-12 d-inline-flex  "><span class="fw-bold"><i class="bi bi-person"></i> Nome Usuário: </span> ${venda.usuario}</p>
+                <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-shop"></i> Nome Loja: </span> ${venda.loja}</p>
+                <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-credit-card"></i> Forma de Pagamento: </span> ${venda.forma_pagamento}</p>
+                <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-exclamation-circle"></i> Status: </span> ${venda.estado_transacao}</p>
+                <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-truck"></i> Entrega: </span> ${venda.metodo_entrega}</p> 
+                <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash-stack"></i> Desconto: </span> ${venda.desconto}</p>
+                <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash"></i> Valor Total: </span> ${venda.valor_total}</p>
+                <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-truck"></i> Valor de Entrega: </span> ${venda.valor_entrega}</p>
+                <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash-stack"></i> Valor Pago: </span> ${venda.valor_pago}</p>
+                <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash-stack"></i> Troco: </span> ${venda.troco}</p>
+                <p  class="mb-1 col-12 d-inline-flex  "><span class="fw-bold"><i class="bi bi-clock"></i> Data: </span> ${venda.insert}</p>
+                <p class="mb-2 col-12"><span class="fw-bold"><i class="bi bi-card-text"></i> Descrição: </span> ${venda.descricao}</p> 
+        </div>
+    `;
     
-    function renderizarVendas(vendas) {
-        const container = document.getElementById('container_vendas_cliente');
-        container.innerHTML = ''; // Limpa o conteúdo atual do contêiner
+    // Adicionando classe do Bootstrap e a fonte monoespaçada
+    infoVenda.classList.add('font-monospace');
     
-        vendas.forEach(venda => {
-            // Criação do card para a venda
-            const card = document.createElement('div');
-            card.className = 'my-1 font-monospace row d-flex card border border-dark';
-    
-            // Criação do header do card
-            const cardHeader = document.createElement('div');
-            cardHeader.className = 'card-header bg-dark text-white';
-            const headerContent = document.createElement('div');
-            headerContent.className = 'd-flex align-items-center font-monospace';
-            const headerTitle = document.createElement('span');
-            headerTitle.className = 'me-auto  text-white text-center';
-            headerTitle.innerText = 'Compra do Cliente';
-            headerContent.appendChild(headerTitle);
-            cardHeader.appendChild(headerContent);
-            card.appendChild(cardHeader);
-    
-            // Criação do corpo do card
-            const cardBody = document.createElement('div');
-            cardBody.className = 'card-body';
-    
-            // Informações adicionais da venda
-            const infoVenda = document.createElement('div');
-            infoVenda.className = 'mt-2';
-            infoVenda.innerHTML = `
-            <div class="row d-flex" style="font-size: 0.9rem;">
-                    <p class="mb-1 col-12 d-inline-flex  "><span class="fw-bold"><i class="bi bi-person"></i> Nome Usuário: </span> ${venda.usuario}</p>
-                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-shop"></i> Nome Loja: </span> ${venda.loja}</p>
-                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-credit-card"></i> Forma de Pagamento: </span> ${venda.forma_pagamento}</p>
-                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-exclamation-circle"></i> Status: </span> ${venda.estado_transacao}</p>
-                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-truck"></i> Entrega: </span> ${venda.metodo_entrega}</p> 
-                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash-stack"></i> Desconto: </span> ${venda.desconto}</p>
-                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash"></i> Valor Total: </span> ${venda.valor_total}</p>
-                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-truck"></i> Valor de Entrega: </span> ${venda.valor_entrega}</p>
-                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash-stack"></i> Valor Pago: </span> ${venda.valor_pago}</p>
-                    <p  class="mb-1 col-12 d-inline-flex "><span class="fw-bold"><i class="bi bi-cash-stack"></i> Troco: </span> ${venda.troco}</p>
-                    <p  class="mb-1 col-12 d-inline-flex  "><span class="fw-bold"><i class="bi bi-clock"></i> Data: </span> ${venda.insert}</p>
-                    <p class="mb-2 col-12"><span class="fw-bold"><i class="bi bi-card-text"></i> Descrição: </span> ${venda.descricao}</p> 
-            </div>
-        `;
+        cardBody.appendChild(infoVenda);
+
+        // Lista de produtos
+        const ulProdutos = document.createElement('ul');
+        ulProdutos.className = 'list-group';
         
-        // Adicionando classe do Bootstrap e a fonte monoespaçada
-        infoVenda.classList.add('font-monospace');
-        
-            cardBody.appendChild(infoVenda);
-    
-            // Lista de produtos
-            const ulProdutos = document.createElement('ul');
-            ulProdutos.className = 'list-group';
-            
-            venda.itens_compra.forEach(item => {
-                var novoItemLista = document.createElement("li");
-                novoItemLista.classList.add("list-group-item", "d-flex","bg-dark", "text-white","justify-content-between", "align-items-center");
-                novoItemLista.innerHTML = `
-                    <span class="badge text-bg-primary me-1 rounded-pill quantidade"> ${item.quantidade}</span>
-                    <span class="text-small small " style="font-size: 0.8rem;" >${item.nome} </span>
-                `;
-                ulProdutos.appendChild(novoItemLista);
-            });
-    
-            cardBody.appendChild(ulProdutos);
-            card.appendChild(cardBody);
-     
-            // Adiciona o card ao contêiner
-            container.appendChild(card);
+        venda.itens_compra.forEach(item => {
+            var novoItemLista = document.createElement("li");
+            novoItemLista.classList.add("list-group-item", "d-flex","bg-dark", "text-white","justify-content-between", "align-items-center");
+            novoItemLista.innerHTML = `
+                <span class="badge text-bg-primary me-1 rounded-pill quantidade"> ${item.quantidade}</span>
+                <span class="text-small small " style="font-size: 0.8rem;" >${item.nome} </span>
+            `;
+            ulProdutos.appendChild(novoItemLista);
         });
-    }
+
+        cardBody.appendChild(ulProdutos);
+        card.appendChild(cardBody);
+    
+        // Adiciona o card ao contêiner
+        container.appendChild(card);
+    });
+}
 
 document.getElementById("btnSalvar").addEventListener("click", function(event) {
-        insertCliente()
+    insert_or_update_cliente(); 
 });
-function insertCliente() {
-    id_cliente = document.getElementById('id_cliente').value;
-    
-    const formInputs = {
-        'id_cliente':id_cliente,
-        'nome': document.getElementById('id_nome_cliente').value.trim(),
-        'telefone': document.getElementById('id_telefone_cliente').value.trim(),
-        'descricao': document.getElementById('id_descricao_cliente').value.trim(),
-        'rua': document.getElementById('id_rua').value.trim(),
-        'numero': document.getElementById('id_numero').value.trim(),
-        'cep': document.getElementById('id_codigo_postal').value.trim(),
-        'estado': document.getElementById('id_estado').value.trim(),
-        'bairro': document.getElementById('id_bairro').value.trim(),
-        'cidade': document.getElementById('id_cidade').value.trim(),
-        'descricao_endereco': document.getElementById('id_descricao_endereco').value.trim(),
-        'tipo_cliente': document.getElementById('id_select_tipo_cliente').value.trim()
+
+function insert_or_update_cliente() {
+
+    const idCliente = document.getElementById('id_cliente').value || "";
+    const idEndereco = document.getElementById('id_endereco').value || "";
+    const cliente = {
+        id_cliente: idCliente,
+        nome: document.getElementById('id_nome_cliente').value.trim(),
+        telefone: document.getElementById('id_telefone_cliente').value.trim(),
+        descricao: document.getElementById('id_descricao_cliente').value.trim(),
+        tipo_cliente: document.getElementById('id_select_tipo_cliente').value.trim()
     };
+    const endereco = {
+        id_endereco: idEndereco,
+        rua: document.getElementById('id_rua').value.trim(),
+        numero: document.getElementById('id_numero').value.trim(),
+        cep: document.getElementById('id_codigo_postal').value.trim(),
+        estado: document.getElementById('id_estado').value.trim(),
+        bairro: document.getElementById('id_bairro').value.trim(),
+        cidade: document.getElementById('id_cidade').value.trim(),
+        descricao_endereco: document.getElementById('id_descricao_endereco').value.trim()
+    };
+
+    const formInputs = { cliente, endereco };
 
     // Verificar se todos os campos obrigatórios estão preenchidos
     const obrigatoryFields = ['nome', 'telefone', 'tipo_cliente'];
     for (const field of obrigatoryFields) {
-        if (!formInputs[field]) {
-            alertCustomer(`preencha o campo ${field}, é obrigatório.`);
+        if (!cliente[field]) {
+            alertCustomer(`Preencha o campo ${field}, é obrigatório.`);
             return;
         }
     }
 
+    const url = idCliente ? '/api/cliente/update' : '/api/cliente/create';
+    const metodo = idCliente ? 'PUT' : 'POST';
+
     // Ativar o indicador de carregamento
-    chamarFuncaoPython('/api/cliente/create/', formInputs, 'POST', function(response) {
+    manageLoading(true, "container-form");
+
+    chamarFuncaoPython(url, formInputs, metodo, function(response) {
         if (response.data) {
-            alertCustomer(response.message,1);
+            alertCustomer(response.message, 1);
             carregarClientes();
             close_modal();
         } else {
-            alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error,2,"container-form");
+            alertCustomer(response.message, 2, "container-form");
         }
-    } );
-     
+        manageLoading(false, "container-form");
+    });
 }
+
 </script>
 {% endblock %}

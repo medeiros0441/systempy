@@ -4,7 +4,11 @@ from .gerencia_email.config_email import enviar_email
 from random import choices
 from django.http import JsonResponse
 from functools import wraps
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import (
+    ObjectDoesNotExist,
+    MultipleObjectsReturned,
+    FieldDoesNotExist,
+)
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from pytz import timezone
@@ -14,9 +18,9 @@ from decimal import Decimal
 from app.static import UserInfo, Alerta
 import json
 from django.forms.models import model_to_dict
-from django.db.models import Model, ForeignKey
 import uuid
 import logging
+from django.db.models import Model, ForeignKey
 
 logger = logging.getLogger(__name__)
 
@@ -385,46 +389,72 @@ class Utils:
                 return configuracao["nome"]
         return None
 
-    def modelo_para_json(instance):
+    def extract_data_to_model_instance(model_class, data, instance=None):
         """
-        Converte uma instância de um modelo Django para um dicionário JSON.
-        """
-        if instance is None:
-            return {"error": "Instance is None"}
+        Extrai dados de um dicionário e os atribui a uma instância do modelo fornecido.
 
-        try:
-            # Converte a instância para um dicionário, incluindo todos os campos
-            data = model_to_dict(
-                instance, fields=[field.name for field in instance._meta.fields]
+        Args:
+            model_class (Model): A classe do modelo Django.
+            data (dict): O dicionário de dados do qual extrair os valores.
+            instance (Model, optional): A instância do modelo para atualizar. Se None, uma nova instância será criada.
+
+        Returns:
+            Model: Uma instância do modelo com os dados extraídos.
+        """
+        if not issubclass(model_class, Model):
+            raise ValueError(
+                "O argumento 'model_class' deve ser uma classe de modelo Django."
             )
 
-            # Adiciona a chave primária manualmente, caso não tenha sido incluída
-            pk_name = instance._meta.pk.name
-            if pk_name not in data:
-                data[pk_name] = str(
-                    getattr(instance, pk_name)
-                )  # Certifique-se de converter UUIDs para string
+        if instance is None:
+            instance = model_class()
 
-            # Converte UUIDs e ForeignKeys para suas representações em string
-            for key, value in data.items():
-                if isinstance(value, uuid.UUID):
-                    data[key] = str(value)
-                elif isinstance(value, Model):  # Verifica se o campo é uma ForeignKey
-                    data[key] = value.pk
+        for field in model_class._meta.get_fields():
+            field_name = field.name
+            if field_name in data:
+                setattr(instance, field_name, data[field_name])
+            elif isinstance(field, ForeignKey) and field_name + "_id" in data:
+                setattr(instance, field_name + "_id", data[field_name + "_id"])
 
-            # Adiciona campos não incluídos no model_to_dict, como ForeignKeys representadas por _id
-            for field in instance._meta.fields:
-                value = getattr(instance, field.name)
-                if isinstance(value, uuid.UUID):
-                    data[field.name] = str(value)
-                elif isinstance(field, ForeignKey):
-                    data[field.name + "_id"] = str(value.pk) if value else None
-                else:
-                    data[field.name] = value
+        return instance
 
-            return data
-        except Exception as e:
-            return {"error": str(e)}
+    def modelo_para_json(*instances):
+        """
+        Converte várias instâncias de modelos Django para um dicionário JSON agrupado.
+        """
+
+        def instance_to_dict(instance):
+            if instance is None:
+                return {}
+
+            try:
+                # Converte a instância para um dicionário, incluindo todos os campos
+                data = model_to_dict(
+                    instance, fields=[field.name for field in instance._meta.fields]
+                )
+
+                # Adiciona a chave primária manualmente, caso não tenha sido incluída
+                pk_name = instance._meta.pk.name
+                if pk_name not in data:
+                    data[pk_name] = str(getattr(instance, pk_name))
+
+                # Adiciona campos de ForeignKey representadas por _id
+                for field in instance._meta.fields:
+                    if isinstance(field, ForeignKey):
+                        related_instance = getattr(instance, field.name)
+                        if related_instance:
+                            data[field.name + "_id"] = str(related_instance.pk)
+
+                return data
+            except Exception as e:
+                return {"error": str(e)}
+
+        combined_data = {}
+        for instance in instances:
+            if instance:
+                instance_name = instance.__class__.__name__.lower()
+                combined_data[instance_name] = instance_to_dict(instance)
+        return combined_data
 
     def modelos_para_lista_json(instances):
         """

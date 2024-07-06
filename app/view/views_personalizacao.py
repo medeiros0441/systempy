@@ -5,6 +5,8 @@ import json
 from ..utils import Utils
 from django.core.exceptions import ObjectDoesNotExist
 from ..static import UserInfo
+from app import models
+from uuid import UUID
 
 
 class views_personalizacao:
@@ -41,7 +43,6 @@ class views_personalizacao:
             except json.JSONDecodeError:
                 return JsonResponse({"error": "Dados inválidos"}, status=400)
 
-
         try:
             personalizacao = Personalizacao.objects.create(
                 usuario_id=data["id_usuario"],
@@ -57,6 +58,40 @@ class views_personalizacao:
             )
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
+
+    @Utils.verificar_permissoes(0, True)
+    @csrf_exempt
+    def get_personalizacao_for_venda(request):
+        """
+        Função para obter a personalização para uma venda.
+        """
+        try:
+            id_usuario = UserInfo.get_id_usuario(request)
+            id_loja = views_personalizacao.get_loja_id(id_usuario)
+            id_pdv = views_personalizacao.get_pdv(id_usuario)
+
+            loja = models.Loja.objects.get(id_loja=int(id_loja))
+            pdv = models.PDV.objects.get(id_pdv=UUID(id_pdv))
+
+            return JsonResponse(
+                {"data": Utils.modelo_para_json(loja, pdv), "success": True},
+                status=201,
+            )
+        except models.Loja.DoesNotExist:
+            return JsonResponse({"error": "Loja não encontrada."}, status=404)
+        except models.PDV.DoesNotExist:
+            return JsonResponse({"error": "PDV não encontrado."}, status=404)
+        except ValueError as ve:
+            return JsonResponse({"error": f"Erro de valor: {str(ve)}"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": f"Erro inesperado: {str(e)}"}, status=400)
+
+    def get_pdv(usuario_id):
+        """
+        Obtém o registro diário com base no ID do usuário.
+        """
+        obj = views_personalizacao.get_personalizacao_codigo(usuario_id, 2)
+        return obj.data.valor if obj else None
 
     def get_registro_diario_id(usuario_id):
         """

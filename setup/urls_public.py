@@ -204,6 +204,7 @@ ur_personalizacao = [
         view.views_personalizacao.list_personalizacao,
         name="list_personalizacao",
     ),
+     path('get_personalizacao_for_venda',  view.views_personalizacao.get_personalizacao_for_venda, name='get_personalizacao_for_venda'),
 ]
 url_loja = [
     # lojas
@@ -321,7 +322,7 @@ url_cliente = [  # clientes
     ),
     path(
         "api/cliente/create",
-        view.views_cliente.api_create_update_cliente,
+        view.views_cliente.api_create_cliente,
         name="api_create_cliente",
     ),
     path(
@@ -330,7 +331,7 @@ url_cliente = [  # clientes
         name="api_get_cliente",
     ),
     path(
-        "api/cliente/<uuid:cliente_id>/update",
+        "api/cliente/update",
         view.views_cliente.api_update_cliente,
         name="api_update_cliente",
     ),

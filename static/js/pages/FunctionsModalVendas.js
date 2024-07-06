@@ -15,11 +15,9 @@ function getData() {
 function handleResponse(response) {
     if (response.success === true) {
         // Armazenar os dados no localStorage
-        Utils.setLocalStorageItem('data_lojas', response.lojas);
         Utils.setLocalStorageItem('data_vendas', response.vendas);
         Utils.setLocalStorageItem('data_produtos', response.produtos);
         // Atualizar dropdown e filtrar vendas
-        atualizarDropdownLojas(response.lojas, "select_lojas");
     } else {
         alertCustomer(response.error);
     }
@@ -29,15 +27,14 @@ function inicializarPagina() {
         getData(),
         listarMotoboys(),
         carregarListaClientes(),
-        atualizarDropdownLojas(Utils.getLocalStorageItem('data_lojas'), "select_lojas"),
-        preencherListaDeProdutos(),
+        get_personalizacao(),
         verificarVendaExistente(),
         verificarRetornaveis(),
         verificarListaProdutos()
     ]).then(() => {
         adicionarOuvintesDeEventos();
         configurarObservadorDeMutacao();
-        applyAutocomplete();
+       
     }).catch((error) => {
         console.error("Erro ao inicializar a página:", error);
     });
@@ -120,7 +117,9 @@ function atualizarResumo(valorTotalItens, valorTaxaEntrega, valorDesconto, valor
     document.getElementById('txt_taxa_entrega').textContent = valorTaxaEntrega.toFixed(2).replace('.', ',');
     document.getElementById('txt_desconto').textContent = valorDesconto.toFixed(2).replace('.', ',');
     document.getElementById('txt_valor_total_apagar').textContent = valorTotalComTaxaDesconto.toFixed(2).replace('.', ',');
-    document.getElementById('txt_troco').textContent =  troco.toFixed(2).replace('.', ',');
+    if (document.getElementById('id_forma_pagamento').value === "dinheiro"){
+        document.getElementById('txt_troco').textContent =  troco.toFixed(2).replace('.', ',');
+    }
 }
 
 
@@ -194,7 +193,7 @@ function forma_pagamento() {
         document.querySelector(".gestaotroco").classList.remove("d-none"); // Remove a classe que oculta o container
     } else {
         document.querySelector(".gestaotroco").classList.add("d-none"); // Adiciona a classe que oculta o container
-        document.getElementById('id_valor_pago_dinheiro').value="00,00";
+        document.getElementById('id_valor_pago_dinheiro').value="0.00";
         calcularResumo();
     }
 } 
@@ -269,54 +268,6 @@ function gerencia_container_cliente(obj) {
     }
 }  
 
-// Função para carregar e manipular a lista de clientes
-function carregarListaClientes() {
-    chamarFuncaoPython( '/api/cliente/by_empresa', null, 'GET', function(response) {
-        if (response.success == true) {
-            Utils.setLocalStorageItem("data_clientes",response.clientes)
-        }  
-    });  
-     
-} 
-
-
-function submitCadastroCliente() {
-    const formInputs = {
-        'nome': document.getElementById('id_nome_cliente').value.trim(),
-        'telefone': document.getElementById('id_telefone_cliente').value.trim(),
-        'descricao': document.getElementById('id_descricao_cliente').value.trim(),
-        'rua': document.getElementById('id_rua').value.trim(),
-        'numero': document.getElementById('id_numero').value.trim(),
-        'cep': document.getElementById('id_codigo_postal').value.trim(),
-        'estado': document.getElementById('id_estado').value.trim(),
-        'bairro': document.getElementById('id_bairro').value.trim(),
-        'cidade': document.getElementById('id_cidade').value.trim(),
-        'descricao_endereco': document.querySelector('#form_descricao #id_descricao').value.trim(),
-        'tipo_cliente': document.getElementById('id_select_tipo_cliente').value.trim()
-    };
-
-    // Verificar se todos os campos obrigatórios estão preenchidos
-    const obrigatoryFields = ['nome', 'telefone', 'tipo_cliente'];
-    for (const field of obrigatoryFields) {
-        if (!formInputs[field]) {
-            alertCustomer(`preencha o campo ${field}, é obrigatório.`);
-            return;
-        }
-    }
-
-    // Ativar o indicador de carregamento
-    chamarFuncaoPython('/api/cliente/create', formInputs, 'POST', function(response) {
-        if (response.data) {
-            alertCustomer("Cliente criado com sucesso!");
-            montarInfoCliente(response.data,true);
-            toggleCliente(true);
-
-        } else {
-            alertCustomer('Ocorreu um erro ao criar o cliente: ' + response.error);
-        }
-    } );
-     
-} 
 // Função para alternar a visibilidade do container
 function toggleResultadoPesquisa(status=null) {
     const container = document.getElementById('result-pesquisa'); 
@@ -346,49 +297,104 @@ function toggleResultadoPesquisa(status=null) {
             iconeOpen.classList.add('d-none');
         }
     }
-}// Função para montar o container de informações
+}// Função para carregar e manipular a lista de clientes
+function carregarListaClientes() {
+    chamarFuncaoPython('/api/cliente/by_empresa', null, 'GET', (response) => {
+        if (response.success) {
+            Utils.setLocalStorageItem("data_clientes", response.data);
+             applyAutocomplete();
+        }
+    });
+}
+function getFormInputs() {
+    // Dados do cliente
+    var clienteData = {
+        'nome': document.getElementById('id_nome_cliente').value.trim(),
+        'telefone': document.getElementById('id_telefone_cliente').value.trim(),
+        'descricao': document.getElementById('id_descricao_cliente').value.trim(),
+        'tipo_cliente': document.getElementById('id_select_tipo_cliente').value.trim()
+    };
+
+    // Dados do endereço
+    var enderecoData = {
+        'rua': document.getElementById('id_rua').value.trim(),
+        'numero': document.getElementById('id_numero').value.trim(),
+        'cep': document.getElementById('id_codigo_postal').value.trim(),
+        'estado': document.getElementById('id_estado').value.trim(),
+        'bairro': document.getElementById('id_bairro').value.trim(),
+        'cidade': document.getElementById('id_cidade').value.trim(),
+        'descricao': document.querySelector('#form_descricao #id_descricao').value.trim()
+    };
+
+    // Retornar os dados organizados
+    return {
+        'cliente': clienteData,
+        'endereco': enderecoData
+    };
+}
+
+
+function validateFormInputs(inputs, fields) {
+    for (const field of fields) {
+        if (!inputs[field]) {
+            alertCustomer(`Preencha o campo ${field}, é obrigatório.`);
+            return false;
+        }
+    }
+    return true;
+}
+
+function submitCadastroCliente() {
+    const formInputs = getFormInputs();
+    const obrigatoryFields = ['nome', 'telefone', 'tipo_cliente'];
+
+    if (!validateFormInputs(formInputs, obrigatoryFields)) {
+        return;
+    }
+
+    chamarFuncaoPython('/api/cliente/create', formInputs, 'POST', (response) => {
+        if (response.data) {
+            carregarListaClientes();
+            alertCustomer("Cliente criado com sucesso!");
+            montarInfoCliente(response.data.id_cliente, false);
+            limparInfoCliente();
+        } else {
+            alertCustomer(`Ocorreu um erro ao criar o cliente: ${response.error}`);
+        }
+    });
+}
+
 function limparInfoCliente() {
-    var container = document.getElementById("container_selecionar_cliente");
-    // Limpar os textos dos campos no containerx
-    container.querySelector("#info_nome_cliente").textContent = "";
-    container.querySelector("#info_telefone_cliente").textContent = "";
-    container.querySelector("#info_tipo_cliente").textContent = "";
-    container.querySelector("#info_descricao_cliente").textContent = "";
-    container.querySelector("#info_codigo_postal").textContent = "";
-    container.querySelector("#info_rua").textContent = "";
-    container.querySelector("#info_numero").textContent = "";
-    container.querySelector("#info_bairro").textContent = "";
-    container.querySelector("#info_cidade").textContent = "";
-    container.querySelector("#info_estado").textContent = "";
-    container.querySelector("#info_descricao_endereco").textContent = "";
-    container.querySelector("#info_ultima_venda_descricao").textContent = "";
-    container.querySelector("#info_ultima_venda_data_venda").textContent = "";
-    container.querySelector("#info_ultima_venda_forma_pagamento").textContent = "";
-    container.querySelector("#info_ultima_venda_valor_total").textContent = "";
-    container.querySelector("#info_ultima_venda_produtos").textContent = "";
-    document.getElementById('id_cliente').value = "0"; 
+    const container = document.getElementById("container_selecionar_cliente");
+    const fields = [
+        "#info_nome_cliente", "#info_telefone_cliente", "#info_tipo_cliente",
+        "#info_descricao_cliente", "#info_codigo_postal", "#info_rua",
+        "#info_numero", "#info_bairro", "#info_cidade", "#info_estado",
+        "#info_descricao_endereco", "#info_ultima_venda_descricao",
+        "#info_ultima_venda_data_venda", "#info_ultima_venda_forma_pagamento",
+        "#info_ultima_venda_valor_total", "#info_ultima_venda_produtos"
+    ];
+
+    fields.forEach(selector => container.querySelector(selector).textContent = "");
+    document.getElementById('id_cliente').value = "0";
+}
+
+function updateField(container, selector, value) {
+    container.querySelector(selector).textContent = value || "N/A";
 }
 
 function montarInfoCliente(cliente, isData = false) {
-    // Se isData for falso, buscar o cliente pelo ID
     if (!isData) {
         const data_clientes = Utils.getLocalStorageItem('data_clientes');
         cliente = data_clientes.find(c => c.id_cliente == cliente);
     }
 
     if (!cliente) {
-        console.error(`Cliente não encontrado`);
+        console.error("Cliente não encontrado");
         return;
     }
 
     const container = document.getElementById("container_selecionar_cliente");
-
-    // Função auxiliar para atualizar o conteúdo de um campo
-    function updateField(selector, value) {
-        container.querySelector(selector).textContent = value || "N/A";
-    }
-
-    // Atualizar os valores dos campos com os dados do cliente
     const clienteFields = [
         { selector: "#info_nome_cliente", value: cliente.nome },
         { selector: "#info_telefone_cliente", value: cliente.telefone },
@@ -403,9 +409,8 @@ function montarInfoCliente(cliente, isData = false) {
         { selector: "#info_descricao_endereco", value: cliente.descricao_endereco }
     ];
 
-    clienteFields.forEach(field => updateField(field.selector, field.value));
+    clienteFields.forEach(field => updateField(container, field.selector, field.value));
 
-    // Verificar se há informações da última venda
     if (cliente.ultima_venda) {
         const vendaFields = [
             { selector: "#info_ultima_venda_descricao", value: cliente.ultima_venda.descricao },
@@ -415,17 +420,15 @@ function montarInfoCliente(cliente, isData = false) {
             { selector: "#info_ultima_venda_produtos", value: cliente.ultima_venda.produtos ? cliente.ultima_venda.produtos.join(", ") : "N/A" }
         ];
 
-        vendaFields.forEach(field => updateField(field.selector, field.value));
+        vendaFields.forEach(field => updateField(container, field.selector, field.value));
     } else {
         const emptyVendaFields = [
-            "#info_ultima_venda_descricao",
-            "#info_ultima_venda_data_venda",
-            "#info_ultima_venda_forma_pagamento",
-            "#info_ultima_venda_valor_total",
+            "#info_ultima_venda_descricao", "#info_ultima_venda_data_venda",
+            "#info_ultima_venda_forma_pagamento", "#info_ultima_venda_valor_total",
             "#info_ultima_venda_produtos"
         ];
 
-        emptyVendaFields.forEach(selector => updateField(selector, ""));
+        emptyVendaFields.forEach(selector => updateField(container, selector, ""));
     }
 
     alertCustomer(`Cliente selecionado: ${cliente.nome}`);
@@ -439,13 +442,12 @@ function clean_form() {
     document.getElementById('id_valor_pago_dinheiro').innerText="";
     document.getElementById('id_descricao_venda').innerText= "";
     //resumo
-    document.getElementById("txt_valor_total_apagar").textContent = "00,00";
-    document.getElementById("txt_troco").textContent = "00,00";
-    document.getElementById("txt_taxa_entrega").textContent = "00,00";
-    document.getElementById("txt_desconto").textContent = "00,00";
+    document.getElementById("txt_valor_total_apagar").textContent = "0.00";
+    document.getElementById("txt_troco").textContent = "0.00";
+    document.getElementById("txt_taxa_entrega").textContent = "0.00";
+    document.getElementById("txt_desconto").textContent = "0.00";
     //carrinho
-    document.getElementById("txt_valor_total_produtos").textContent = "00,00";
-    document.getElementById("ul_produtos").innerHTML = "";
+    document.getElementById("txt_valor_total_produtos").textContent = "0.00";
 
     document.getElementById("id_motoboy").value= "0";
 
@@ -453,44 +455,17 @@ function clean_form() {
     document.getElementById('id_estado_transacao').selectedIndex= 0;
     document.getElementById('id_metodo_entrega').selectedIndex = 0;
     document.getElementById('id_motoboy').selectedIndex = 0;
-    document.getElementById("select_loja").selectedIndex = 0
 
-    document.getElementById("select_loja").dispatchEvent(new Event('change'));
     document.getElementById("id_metodo_entrega").dispatchEvent(new Event('change'));
     document.getElementById("id_forma_pagamento").dispatchEvent(new Event('change'));
     document.getElementById('id_cliente').value = "0";
     toggleCliente(false);
+    verificarListaProdutos();
+
     alertCustomer("Formulario Limpado.");
 }
  
-
-// Função para atualizar o dropdown com as lojas
-function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
-    // Seleciona todos os elementos select com a classe especificada
-    const selects = document.querySelectorAll('.' + classe_select_lojas);
-
-    // Itera sobre cada select encontrado
-    selects.forEach(function(select) {
-        // Limpa as opções existentes
-        select.innerHTML = '';
-
-        // Adiciona a opção padrão, se houver mais de uma loja na lista
-        if (list_lojas.length > 1) {
-            const optionDefault = document.createElement('option');
-            optionDefault.value = '0';
-            optionDefault.textContent = 'Selecione';
-            select.appendChild(optionDefault);
-        }
-
-        // Adiciona as opções de lojas
-        list_lojas.forEach(function(loja) {
-            const option = document.createElement('option');
-            option.value = loja.id_loja;
-            option.textContent = loja.nome_loja;
-            select.appendChild(option);
-        });
-    });
-} 
+ 
 
 function listarMotoboys() {
         chamarFuncaoPython('/listar_motoboys_por_empresa', null, 'GET', function(response) {
@@ -609,12 +584,7 @@ function toggleGestaproduto() {
  
 
 // Defina sua função de verificação
-function verificarAntesDoSubmit() {
-   // Verifica se uma loja foi selecionada
-    if (document.getElementById('select_loja').value == "0") {
-        alertCustomer('selecione uma loja antes de enviar o formulário.');
-        return false;  
-    }
+function verificarAntesDoSubmit() { 
     // Verifica se há itens no carrinho
     var carrinho = atualizarCamposCarrinho();
     if (carrinho === false) {
@@ -653,8 +623,10 @@ function obterValores() {
     var dados = {}; // Objeto para armazenar os dados
 
     // Método de Entrega
-    var loja = document.getElementById('select_loja');
-    dados['loja'] = loja.value;
+    var loja = document.getElementById('id_loja');
+    dados['loja_id'] = loja.value;
+    var pdv = document.getElementById('id_pdv');
+    dados['pdv_id'] = pdv.value;
 
     var metodoEntrega = document.getElementById('id_metodo_entrega');
     dados['metodo_entrega'] = metodoEntrega.value;
@@ -854,49 +826,7 @@ function toggleGestaoRetornavel(status) {
 }
 
   
-
-function select_loja() {
-    // Obtém o ID da loja selecionada convertendo para um número inteiro
-    const selectedLoja = parseInt(this.value);
-
-    const produtosUl = document.getElementById("ul_produtos");
-
-    // Verifica se há produtos na lista atual
-    if (produtosUl.innerHTML !== "") {
-        const itensLista = produtosUl.querySelectorAll(".list-group-item");
-
-        // Verifica se há itens na lista
-        if (itensLista.length > 0) {
-            let mensagemExibida = false; // Variável de controle para verificar se a mensagem já foi exibida
-
-            const produtosData = Utils.getLocalStorageItem('data_produtos');
-
-            // Obtém o loja_id do primeiro produto no carrinho
-            const idExistente = itensLista[0].getAttribute("data-id-produto");
-            const primeiroProduto = produtosData.find(prod => prod.id_produto === idExistente);
-            const lojaIdCarrinho = primeiroProduto ? primeiroProduto.loja_id : null;
-
-            // Itera sobre os itens da lista para verificar se o produto já está na lista
-            itensLista.forEach(item => {
-                const idExistente = item.getAttribute("data-id-produto");
-                const produto = produtosData.find(prod => prod.id_produto === idExistente);
-
-                // Verifica se o produto existe e se ele não pertence à loja selecionada
-                if (produto && produto.loja_id !== selectedLoja) {
-                    // Exibe a mensagem apenas uma vez
-                    if (!mensagemExibida) {
-                        alertCustomer("Não é possível vender produtos de diferentes lojas. Limpe o carrinho caso queira alterar a loja.", 4);
-                        mensagemExibida = true; // Marca que a mensagem foi exibida
-                        // Restaura o valor do select para o loja_id do carrinho
-                        this.value = lojaIdCarrinho;
-                    }
-                }
-            });
-            calcularResumo();
-        }
-    }
-    preencherListaDeProdutos();
-}
+ 
 
           
 function verificarVendaExistente() {
@@ -905,13 +835,34 @@ function verificarVendaExistente() {
         editarVenda(id_venda);
     }
 }
- 
-function preencherListaDeProdutos() {
+
+function get_personalizacao() {
+    chamarFuncaoPython("/get_personalizacao_for_venda", null, "GET", function(callback) {
+        if (callback.success) {
+            document.getElementById("txt_pdv").innerText = callback.data.loja.nome;
+            document.getElementById("txt_loja").innerText = callback.data.pdv.nome;
+
+            const produtos_data = Utils.getLocalStorageItem('data_produtos').filter(
+                produto => produto.loja_id === callback.data.loja.id_loja
+            );
+            preencherListaDeProdutos(produtos_data);
+        } else {
+            // Trate o caso de erro aqui
+            alert('Erro ao obter personalização: ' + callback.error);
+        }
+    });
+}
+
+function preencherListaDeProdutos(produtos_data) {
     const select_produto = document.getElementById('select_produto');
     select_produto.innerHTML = ''; // Limpa opções existentes
-    const select_loja = document.getElementById('select_loja');
-    const loja_selecionada = parseInt(select_loja.value); // Obtém o valor da loja selecionada
-    produtos_data = Utils.getLocalStorageItem('data_produtos').filter(produto => produto.loja_id === loja_selecionada);
+
+    if (produtos_data.length === 0) {
+        const option = document.createElement('option');
+        option.text = "Não há produtos cadastrados na loja.";
+        select_produto.appendChild(option);
+        return;
+    }
 
     const defaultOption = document.createElement('option');
     defaultOption.text = "Selecione";
@@ -933,7 +884,7 @@ function adicionarOuvintesDeEventos() {
     document.getElementById('id_valor_pago_dinheiro').addEventListener('input', calcularResumo);
     document.getElementById('id_forma_pagamento').addEventListener('change', forma_pagamento);
     document.getElementById('id_metodo_entrega').addEventListener('change', metodo_entrega);
-    document.getElementById('select_loja').addEventListener('change', select_loja);
+    
 }
 
 
@@ -1249,7 +1200,7 @@ function editarVenda(id_venda) {
     chamarFuncaoPython("/api/cliente/by/venda" + id_venda, {}, "GET", function(response) {
         if (response.success === true) {
             montarInfoCliente(response.cliente,true);
-            toggleCliente(true);
+            
         }  
     });
  

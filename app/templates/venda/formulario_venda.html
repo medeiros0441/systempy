@@ -49,7 +49,7 @@
 
                         <div class="form-floating mb-2 d-none " id="id_container_entrega">
                         <input id="id_taxa_entrega" name="taxa_entrega" class="form-control money-mask" type="text" maxlength="14">
-                        <label for="id_taxa_entrega">Taxa de Entrega:  <span style="font-size: 0.8;">R$ 00,00</span></label> </div> 
+                        <label for="id_taxa_entrega">Taxa de Entrega:  <span style="font-size: 0.8;">R$ 0,00</span></label> </div> 
 
                         <div class="form-floating mb-2">
                         <select name="estado_transacao" class="form-select" id="id_estado_transacao">
@@ -77,7 +77,7 @@
                         </div> 
                         <div class="form-floating mb-2">
                         <input id="id_desconto" name="desconto" class="form-control money-mask" type="text" maxlength="14">
-                        <label for="id_desconto">Desconto:  <span style="font-size: 0.8rem;">R$ 00,00</span></label> </div> 
+                        <label for="id_desconto">Desconto:  <span style="font-size: 0.8rem;">R$ 0,00</span></label> </div> 
                         <div class="form-floating mb-2">
                             <textarea name="descricao_venda" cols="40" rows="5" class="form-control" id="id_descricao_venda"></textarea>
                             <label for="descricao">Descrição:</label> </div>
@@ -314,7 +314,7 @@
                 <ul class="list-group row mx-auto p-1" id="ul_produtos"></ul>
                 <div class=" mb-1 px-1 mx-1 text-white fw-bold row font-monospace mt-2" style="font-size: 0.8;" >
                     <label  id="valor_total" style="font-size: 0.8rem" class="fw-bold col">Valor total de produtos:</label>
-                    <label class="ms-auto float-end   col-auto fw-bold"   style="font-size: 0.8rem" id="txt_valor_total_produtos">00,00</label>
+                    <label class="ms-auto float-end   col-auto fw-bold"   style="font-size: 0.8rem" id="txt_valor_total_produtos">0,00</label>
                 </div>
             </div>
 
@@ -324,18 +324,25 @@
                 </div>
                 <div class="  card-body"  >
                     <div class="   font-monospace " style="font: size 1rem;">
+                        <label  class="fw-bold   ">Loja: </label>
+                        <label class="ms-auto float-end   fw-bold"    id="txt_loja"></label></div> 
+                    <div class="   font-monospace " style="font: size 1rem;">
+                        <label  class="fw-bold   ">Ponto de venda: </label>
+                        <label class="ms-auto float-end   fw-bold"    id="txt_pdv"></label></div> 
+                    
+                    <div class="   font-monospace " style="font: size 1rem;">
                         <label  class="fw-bold   ">Taxa Entrega: </label>
-                        <label class="ms-auto float-end   fw-bold"    id="txt_taxa_entrega">00,00</label></div> 
+                        <label class="ms-auto float-end   fw-bold"    id="txt_taxa_entrega">0,00</label></div> 
                     <div class="   font-monospace  " style="font: size 1rem;">
                         <label   class="fw-bold   ">Desconto: </label>
-                        <label class="ms-auto float-end   fw-bold"    id="txt_desconto">00,00</label></div>
+                        <label class="ms-auto float-end   fw-bold"    id="txt_desconto">0,00</label></div>
                         <div class="  font-monospace  " style="font: size 1rem;">
                             <label  class="fw-bold   ">Troco: </label>
-                            <label class="ms-auto float-end   fw-bold"    id="txt_troco">00,00</label></div>
+                            <label class="ms-auto float-end   fw-bold"    id="txt_troco">0,00</label></div>
 
                     <div class=" font-monospace " style="font: size 1rem;">
                         <label  class="fw-bold   ">Total: </label>
-                        <label class="ms-auto float-end   fw-bold" id="txt_valor_total_apagar">00,00</label></div>
+                        <label class="ms-auto float-end   fw-bold" id="txt_valor_total_apagar">0,00</label></div>
                         
                 </div>
 
@@ -355,6 +362,8 @@
 
 
 
+<input type="hidden" id="id_loja" value="">
+<input type="hidden" id="id_pdv" value="">
 <input type="hidden" id="id_venda" value="{{ id_venda }}">
 <input   id="input_troco" type="hidden" value="0" > 
 <input   id="input_total_apagar" type="hidden" value="0" > 

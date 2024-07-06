@@ -422,3 +422,4 @@ class views_venda:
             return views_erro.erro(
                 request, "Você não está autorizado a fazer esta requisição."
             )
+    
