@@ -86,27 +86,6 @@ class views_personalizacao:
         except Exception as e:
             return JsonResponse({"error": f"Erro inesperado: {str(e)}"}, status=400)
 
-    def get_pdv(usuario_id):
-        """
-        Obtém o registro diário com base no ID do usuário.
-        """
-        obj = views_personalizacao.get_personalizacao_codigo(usuario_id, 2)
-        return obj.data.valor if obj else None
-
-    def get_registro_diario_id(usuario_id):
-        """
-        Obtém o registro diário com base no ID do usuário.
-        """
-        obj = views_personalizacao.get_personalizacao_codigo(usuario_id, 2)
-        return obj.data.valor if obj else None
-
-    def get_loja_id(usuario_id):
-        """
-        Obtém o id_loja com base no ID do usuário.
-        """
-        obj = views_personalizacao.get_personalizacao_codigo(usuario_id, 1)
-        return obj.data.valor if obj else None
-
     @Utils.verificar_permissoes(0, True)
     @csrf_exempt
     def get_personalizacao(request, id):
@@ -128,23 +107,66 @@ class views_personalizacao:
 
     @Utils.verificar_permissoes(0, True)
     @csrf_exempt
-    def get_personalizacao_codigo(request, id_usuario, codigo):
+    def api_get_personalizacao_codigo(request, id_usuario, codigo):
         """
         Obtém a personalização com base no ID do usuário e código.
         """
         try:
-            personalizacao = Personalizacao.objects.filter(
-                codigo=codigo,
-                usuario_id=id_usuario,
-            ).first()
+            personalizacao, status, msg = (
+                views_personalizacao.get_personalizacao_codigo(id_usuario, codigo)
+            )
             if not personalizacao:
-                raise ObjectDoesNotExist
+                return JsonResponse(
+                    {"error": "Personalização não encontrada"}, status=404
+                )
+
             return JsonResponse(
                 {"data": Utils.modelo_para_json(personalizacao), "success": True},
-                status=201,
+                status=200,
             )
         except ObjectDoesNotExist:
             return JsonResponse({"error": "Personalização não encontrada"}, status=404)
+
+    def get_personalizacao_codigo(id_usuario, codigo):
+        """
+        Obtém a personalização com base no ID do usuário e código.
+        """
+        personalizacao = Personalizacao.objects.filter(
+            codigo=codigo,
+            usuario_id=id_usuario,
+        ).first()
+
+        if not personalizacao:
+            return None, False, "Não encontrado."
+
+        return personalizacao, True, "Objeto encontrado."
+
+    def get_registro_diario_id(usuario_id):
+        """
+        Obtém o registro diário com base no ID do usuário.
+        """
+        personalizacao, status, msg = views_personalizacao.get_personalizacao_codigo(
+            usuario_id, 2
+        )
+        return personalizacao.get("valor") if personalizacao else None
+
+    def get_pdv(usuario_id):
+        """
+        Obtém o registro diário com base no ID do usuário.
+        """
+        personalizacao, status, msg = views_personalizacao.get_personalizacao_codigo(
+            usuario_id, 2
+        )
+        return personalizacao.valor if personalizacao else None
+
+    def get_loja_id(usuario_id):
+        """
+        Obtém o id_loja com base no ID do usuário.
+        """
+        personalizacao, status, msg = views_personalizacao.get_personalizacao_codigo(
+            usuario_id, 1
+        )
+        return personalizacao.valor if personalizacao else None
 
     @Utils.verificar_permissoes(0, True)
     @csrf_exempt

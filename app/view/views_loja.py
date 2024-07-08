@@ -1,5 +1,4 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from ..forms import LojaForm, EnderecoForm
 from app.utils import Utils
 from app.static import Alerta, UserInfo
 from ..models import Empresa, Loja, Associado, Usuario
@@ -39,7 +38,7 @@ class views_loja:
             for loja in lojas:
                 loja_data = {
                     "id_loja": loja.id_loja,
-                    "nome_loja": loja.nome_loja,
+                    "nome": loja.nome,
                     "numero_telefone": loja.numero_telefone,
                     "horario_operacao_inicio": (
                         loja.horario_operacao_inicio.strftime("%H:%M:%S")
@@ -90,8 +89,8 @@ class views_loja:
     def criar_loja(request):
         try:
             if request.method == "POST":
-                form_loja = LojaForm(request.POST)
-                form_endereco = EnderecoForm(request.POST)
+                form_loja = {}
+                form_endereco = {}
 
                 id_empresa_get = UserInfo.get_id_empresa(request, True)
                 # Obtenha a instância da Empresa com base no ID
@@ -123,7 +122,7 @@ class views_loja:
 
                     Associado.objects.bulk_create(associados)
 
-                    Alerta.set_mensagem(f"Loja {loja.nome_loja} criada com sucesso")
+                    Alerta.set_mensagem(f"Loja {loja.nome} criada com sucesso")
                     return redirect("lista_lojas")
                 else:
                     if not form_endereco.is_valid():
@@ -140,8 +139,8 @@ class views_loja:
                         },
                     )
             else:
-                formloja = LojaForm()
-                form = EnderecoForm()
+                formloja = {}
+                form = {}
                 return views_loja.lista_lojas(
                     request,
                     {"open_modal": True, "form_endereco": form, "form_loja": formloja},
@@ -178,8 +177,8 @@ class views_loja:
         if loja.empresa.id_empresa != id:
             return views_erro.erro(request, "vôce não está associado a empresa..")
         if request.method == "POST":
-            form_loja = LojaForm(request.POST, instance=loja)
-            form_endereco = EnderecoForm(request.POST, instance=loja.endereco)
+            form_loja = {}
+            form_endereco = {}
 
             if form_endereco.is_valid() and form_loja.is_valid():
                 endereco = form_endereco.save()  # Cria um novo registro de Endereco
@@ -203,8 +202,8 @@ class views_loja:
                 )
 
         else:
-            formloja = LojaForm(instance=loja)
-            form = EnderecoForm(instance=loja.endereco)
+            formloja = {}
+            form = {}
             return views_loja.lista_lojas(
                 request,
                 {"open_modal": True, "form_endereco": form, "form_loja": formloja},

@@ -256,7 +256,7 @@ function montarTabela() {
     const smalllojaCell = document.createElement("small");
     smalllojaCell.className = "text-start  d-none d-sm-table-cell text-truncate";
     const loja = data_lojas.find(loja => loja.id_loja === item.loja);
-    smalllojaCell.textContent = loja ? loja.nome_loja : "Loja não encontrada";
+    smalllojaCell.textContent = loja ? loja.nome : "Loja não encontrada";
     TdlojaCell.appendChild(smalllojaCell);
     row.appendChild(TdlojaCell);
 

@@ -354,7 +354,7 @@ function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
         list_lojas.forEach(function(loja) {
             const option = document.createElement('option');
             option.value = loja.id_loja;
-            option.textContent = loja.nome_loja;
+            option.textContent = loja.nome;
             select.appendChild(option);
         });
     });

@@ -323,7 +323,7 @@ class views_cliente:
                     {
                         "itens_compra": itens_data,
                         "usuario": venda.usuario.nome_completo,
-                        "loja": venda.loja.nome_loja,
+                        "loja": venda.loja.nome,
                         "cliente_id": venda.cliente_id,
                     }
                 )
@@ -353,8 +353,8 @@ class views_cliente:
         Cria uma instância do modelo Cliente com base nos dados fornecidos.
         """
         try:
-            if not data['empresa_id']:
-               None,False,"Está faltando o id_empresa." 
+            if not data["empresa_id"]:
+                None, False, "Está faltando o id_empresa."
             cliente = models.Cliente.objects.create(
                 nome=data.get("nome", ""),
                 telefone=data.get("telefone", ""),

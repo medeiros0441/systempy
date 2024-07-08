@@ -7,7 +7,7 @@ from app.utils import Utils
 
 class Loja(models.Model):
     id_loja = models.AutoField(primary_key=True)
-    nome_loja = models.CharField(max_length=255)
+    nome = models.CharField(max_length=255)
     numero_telefone = models.CharField(max_length=50, null=True)
     horario_operacao_inicio = models.TimeField(null=True, blank=True)
     horario_operacao_fim = models.TimeField(null=True, blank=True)

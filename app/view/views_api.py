@@ -27,7 +27,7 @@ class views_api:
         for loja in lojas:
             data_loja = {
                 "id": str(loja.id_loja),  # Convertendo o ID para string
-                "nome_loja": loja.nome_loja,
+                "nome": loja.nome_nome,
                 # Adicione outros campos da loja conforme necessário
             }
             list_lojas.append(data_loja)

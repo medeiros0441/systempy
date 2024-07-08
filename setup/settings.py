@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "app",
     "corsheaders",
     "django_extensions",
+    "webpack_loader",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -55,6 +56,14 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "setup.urls"
+WEBPACK_LOADER = {
+    "DEFAULT": {
+        "CACHE": not DEBUG,
+        "BUNDLE_DIR_NAME": "bundles/",  # Diretorio onde os arquivos compilados serão colocados
+        "STATS_FILE": os.path.join(BASE_DIR, "frontend", "webpack-stats.json"),
+    }
+}
+
 # Templates
 TEMPLATES = [
     {
@@ -123,6 +132,9 @@ APP_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_ROOT = os.path.dirname(APP_DIR)
 STATIC_ROOT = os.path.join(APP_ROOT, "app", "staticfiles")
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"), os.path.join(BASE_DIR, "frontend", "static")]
+
 # Configurações de segurança
 if DEBUG:
     SESSION_COOKIE_SECURE = False

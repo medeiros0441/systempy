@@ -345,7 +345,7 @@ function detalhes_modal_cliente(id_venda) {
         // Encontra a venda selecionada
         data_lojas.forEach(function(item) {
             if (item.id_loja === data.loja_id) {
-                document.getElementById("detalhes_loja_venda").textContent = item.nome_loja;
+                document.getElementById("detalhes_loja_venda").textContent = item.nome;
             }
         });
         manageLoading(false,"details-cliente");

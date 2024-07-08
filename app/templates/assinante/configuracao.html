@@ -371,7 +371,7 @@ function atualizarDropdownLojas(listLojas, id = false) {
             select.appendChild(new Option('Nao há PDV Cadastrado', '0'));
         }
         listLojas.forEach(loja => {
-            select.appendChild(new Option(loja.nome_loja, loja.id_loja));
+            select.appendChild(new Option(loja.nome, loja.id_loja));
         });
         if (id !== false) {
             select.value = id;

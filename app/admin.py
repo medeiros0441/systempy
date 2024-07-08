@@ -145,7 +145,7 @@ class LogAdmin(admin.ModelAdmin):
 
 class LojaAdmin(admin.ModelAdmin):
     list_display = (
-        "nome_loja",
+        "nome",
         "numero_telefone",
         "horario_operacao_inicio",
         "horario_operacao_fim",
@@ -171,7 +171,7 @@ class LojaAdmin(admin.ModelAdmin):
         "sabado",
         "domingo",
     )
-    search_fields = ["nome_loja", "numero_telefone"]
+    search_fields = ["nome", "numero_telefone"]
     readonly_fields = ("insert", "update")
 
 

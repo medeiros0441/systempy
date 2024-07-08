@@ -3,7 +3,6 @@ from app.utils import Utils
 from django.http import HttpResponse
 from app.static import Alerta, UserInfo
 from ..models import Loja, Produto
-from ..forms.form_produto import ProdutoForm as Form
 import datetime
 from decimal import Decimal
 from django.utils import timezone

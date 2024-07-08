@@ -16,8 +16,8 @@
         <div class="modal-body  fonrt-monospace"  style="font-size: 0.8rem;">
             {% if text_loja %} 
             <div class="form-group">
-                <label for="nome_loja" class="fw-bold">Nome da Loja:</label>
-                <span id="nome_loja">{{ text_loja.nome_loja }}</span>
+                <label for="nome" class="fw-bold">Nome da Loja:</label>
+                <span id="nome">{{ text_loja.nome }}</span>
               </div>
               <div class="form-group">
                 <label  class="fw-bold" for="numero_telefone">Número Telefone:</label>
@@ -77,8 +77,8 @@
             <form method="post" id="form_cadastro" class="needs-validation" novalidate>
                 {% csrf_token %}
                 <div class="form-floating mb-2 ">
-                    {{ form_loja.nome_loja }}
-                    <label for="id_nome_loja" style="font-size: 0.8rem;">nome para referenciar a loja:</label>
+                    {{ form_loja.nome }}
+                    <label for="id_nome" style="font-size: 0.8rem;">nome para referenciar a loja:</label>
                 </div>
                 <div class="form-floating mb-2 ">
                     {{ form_loja.numero_telefone }}
@@ -263,7 +263,7 @@
         }
 
         function validateForm(form) {
-            const nomeLoja = form.querySelector('#id_nome_loja').value.trim();
+            const nomeLoja = form.querySelector('#id_nome').value.trim();
             const numeroTelefone = form.querySelector('#id_numero_telefone').value.trim();
             // Ajuste na validação para ignorar o campo descricao
             if (nomeLoja === '' || numeroTelefone === ''   ) {

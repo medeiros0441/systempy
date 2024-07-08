@@ -50,8 +50,8 @@
                     <hr class="fw-border text-black mt-0 mb-1">
                     
                     <div class="form-group">
-                        <label for="nome_loja" class="fw-bold"><i class="bi bi-shop-window"></i> Nome da Loja:</label>
-                        <span id="nome_loja">{{ text_produto.loja.nome_loja }}</span>
+                        <label for="nome" class="fw-bold"><i class="bi bi-shop-window"></i> Nome da Loja:</label>
+                        <span id="nome">{{ text_produto.loja.nome }}</span>
                     </div>
                     
                     <div class="form-group">
@@ -147,7 +147,7 @@
                     {% csrf_token %}
                     <div class="form-floating mb-2">
                         <select  {% if form_produto.loja  %}   class="    form-select" {% else %}  class="form-select classe_select_lojas"    {% endif %}id="select_loja" name="select_loja">
-                            {% if form_produto.loja %} <option value="{{form_produto.loja_id}}" select  >{{form_produto.loja.nome_loja}}</option>{% endif %}
+                            {% if form_produto.loja %} <option value="{{form_produto.loja_id}}" select  >{{form_produto.loja.nome}}</option>{% endif %}
                         </select>
                         <label for="select_loja">Loja:</label>
                     </div>

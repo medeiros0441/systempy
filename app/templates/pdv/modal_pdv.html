@@ -65,7 +65,7 @@
                     </div>
                     <div class="form-floating mb-2">
                     <input type="text" class="form-control autocomplete_input"   id="select_loja" 
-                    data-storage="data_lojas" data-key="id_loja" data-label="nome_loja" data-onselect="handleSelectLoja"  >
+                    data-storage="data_lojas" data-key="id_loja" data-label="nome" data-onselect="handleSelectLoja"  >
                         <label for="select_loja">Loja:</label>
                     </div>
 
@@ -318,7 +318,7 @@ function clearModalFields() {
     if (tipo == 1) {
         // Preencher os campos de texto no container-detalhes
         setTextField("detalhes-nome", pdv.nome);
-        setTextField("detalhes-loja", loja.nome_loja);
+        setTextField("detalhes-loja", loja.nome);
         setTextField("detalhes-insert", pdv.insert);
         setTextField("detalhes-update", pdv.update);
         setTextField("detalhes-saldo_inicial", pdv.saldo_inicial);
@@ -327,7 +327,7 @@ function clearModalFields() {
     } else {
         // Preencher os inputs no container-form
         setInputField("nome", pdv.nome);
-        setInputField("select_loja", loja.nome_loja);
+        setInputField("select_loja", loja.nome);
         $("#select_loja").attr("data-value", loja.id_loja);
         setInputField("saldo_inicial", pdv.saldo_inicial || '100,00');
         document.getElementById('detalhes-status_operacao').value =  pdv.status_operacao;

@@ -839,8 +839,8 @@ function verificarVendaExistente() {
 function get_personalizacao() {
     chamarFuncaoPython("/get_personalizacao_for_venda", null, "GET", function(callback) {
         if (callback.success) {
-            document.getElementById("txt_pdv").innerText = callback.data.loja.nome;
-            document.getElementById("txt_loja").innerText = callback.data.pdv.nome;
+            document.getElementById("txt_pdv").innerText = callback.data.pdv.nome;
+            document.getElementById("txt_loja").innerText = callback.data.loja.nome;
 
             const produtos_data = Utils.getLocalStorageItem('data_produtos').filter(
                 produto => produto.loja_id === callback.data.loja.id_loja

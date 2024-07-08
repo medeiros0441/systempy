@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from ..models import Endereco, Configuracao
-from ..forms import EnderecoForm
 from app.utils import Utils
 from app.static import Alerta, UserInfo
 from django.db import IntegrityError
@@ -30,7 +29,7 @@ class views_endereco:
     @Utils.verificar_permissoes(3, True)
     def criar_endereco(request):
         if request.method == "POST":
-            form = EnderecoForm(request.POST)
+            form = {}
             if form.is_valid():
                 form.save()
                 Alerta.set_mensagem("Cadastrado com Sucesso.")
@@ -41,7 +40,7 @@ class views_endereco:
                     request, {"open_modal": True, "form": form}
                 )
         else:
-            form = EnderecoForm()
+            form = {}
             return views_endereco.lista_enderecos(
                 request, {"open_modal": True, "form": form}
             )
@@ -59,14 +58,14 @@ class views_endereco:
     def editar_endereco(request, pk):
         endereco = get_object_or_404(Endereco, pk=pk)
         if request.method == "POST":
-            form = EnderecoForm(request.POST, instance=endereco)
+            form = {}
             if form.is_valid():
                 form.save()
                 Alerta.set_mensagem("Endereço Editado")
                 return redirect("lista_enderecos")
 
         else:
-            form = EnderecoForm(instance=endereco)
+            form = {}
             return views_endereco.lista_enderecos(
                 request, {"open_modal": True, "form": form}
             )

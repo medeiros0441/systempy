@@ -254,7 +254,7 @@
                 data_lojas = Utils.getLocalStorageItem('data_lojas');
                 data_lojas.forEach(function(loja) {
                     if (loja.id_loja === venda.loja_id) {
-                        tdLoja.textContent = loja.nome_loja;
+                        tdLoja.textContent = loja.nome;
                         tdLoja.classList.add( 'd-sm-table-cell', 'order-1', 'text-start');
                         return; // Parar de percorrer o array assim que entrar no if
                     }
@@ -340,7 +340,7 @@ function atualizarDropdownLojas(list_lojas, classe_select_lojas) {
         list_lojas.forEach(function(loja) {
             const option = document.createElement('option');
             option.value = loja.id_loja;
-            option.textContent = loja.nome_loja;
+            option.textContent = loja.nome;
             select.appendChild(option);
         });
     });

@@ -74,7 +74,7 @@
                         const loja = data_lojas.find(loja => loja.id_loja === produto.loja_id);
                         
                         if (loja) {
-                            tr.setAttribute('data-loja', loja.nome_loja);
+                            tr.setAttribute('data-loja', loja.nome);
                         } else {
                             console.error('Loja não encontrada para o produto:', produto);
                         }
@@ -248,7 +248,7 @@
                 list_lojas.forEach(function(loja) {
                     const option = document.createElement('option');
                     option.value = loja.id_loja;
-                    option.textContent = loja.nome_loja;
+                    option.textContent = loja.nome;
                     select.appendChild(option);
                 });
             });

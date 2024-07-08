@@ -5,7 +5,6 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
 from ..models import Usuario, Configuracao, Loja, Associado
 from .views_configuracao import views_configuracao
-from ..forms import UsuarioForm
 from app.utils import Utils
 import json
 from django.http import JsonResponse
@@ -70,7 +69,7 @@ class views_usuarios:
             associados_list.append(
                 {
                     "status": status,
-                    "nome": associado.loja.nome_loja,
+                    "nome": associado.loja.nome,
                     "atualizado": associado.update,
                 }
             )
@@ -103,7 +102,7 @@ class views_usuarios:
         except (Associado.DoesNotExist, Loja.DoesNotExist):
             pass
         Alerta.set_mensagem("Para associar um usuário à loja, precisa criar uma!")
-        form_usuario = UsuarioForm(instance=usuario)
+        form_usuario = {}
         return views_usuarios.listar_usuarios(
             request,
             {
@@ -143,7 +142,7 @@ class views_usuarios:
             associacao.save()
 
     def _editar_usuario_get(request, usuario, list_lojas):
-        form_usuario = UsuarioForm(instance=usuario)
+        form_usuario = { }
         list_objs = []
 
         associado = Associado.objects.filter(usuario=usuario)
@@ -151,7 +150,7 @@ class views_usuarios:
         for loja in list_lojas:
             loja_info = {
                 "id_loja": loja.id_loja,
-                "nome_loja": loja.nome_loja,
+                "nome": loja.nome,
                 "status_acesso": False,
             }
             associado_loja = associado.filter(
@@ -229,11 +228,11 @@ class views_usuarios:
     @Utils.verificar_permissoes(1, True)
     def cadastrar_usuario(request):
         id_empresa = UserInfo.get_id_empresa(request)
-        form_usuario = UsuarioForm()
+        form_usuario = {}
         lojas = Loja.objects.filter(empresa_id=id_empresa)
 
         if request.method == "POST":
-            form = UsuarioForm(request.POST)
+            form =   {}
             if form.is_valid():
                 email_responsavel = form.cleaned_data["email"]
                 email_responsavel.lower().strip()
@@ -300,7 +299,7 @@ class views_usuarios:
                 Alerta.set_mensagem(
                     "Para associar um usuario a loja, precisa criar uma!"
                 )
-                form_usuario = UsuarioForm()
+                form_usuario = {}
                 return views_usuarios.listar_usuarios(
                     request,
                     {
