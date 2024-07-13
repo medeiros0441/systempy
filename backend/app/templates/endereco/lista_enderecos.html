@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Endereços{% endblock %}
+
+{% block content %}
+{% include 'endereco/modal_endereco.html' %}
+
+ 
+
+<div class="my-5 container-xl mx-auto ">
+  <div class="d-flex justify-content-between mb-2">
+      <h1 style="font-size: 1.3rem;"><i class="bi bi-map"></i> Endereços</h1>
+      <a  type="button" href="{% url 'criar_endereco' %}"  id="btnCriar" class="btn btn-warning btn-sm" style="font-size: 0.8rem;">
+        <i style="font-size: 0.8rem;" class="bi bi-plus me-1"></i>  Cadastrar Endereço</a>
+  </div>
+<div class=" container-xl p-3   mx-auto bg-dark rounded">
+    
+    
+    <table class="table table-hover table-responsive table-sm table-dark">
+        <thead>
+          <tr>
+            <th scope="col">Rua</th>
+            <th scope="col">Número</th>
+            <th scope="col">Bairro</th>
+            <th scope="col" class="text-end">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+        {% for endereco in enderecos %}
+        <tr>
+            <th scope="row">   {{ endereco.rua }} </th>
+            <td> {{  endereco.numero }} </td>
+            <td>  {{  endereco.bairro }}    <td> 
+                <div class="btn-group float-end" role="group" aria-label="Ações do Usuário">
+                    <div class="btn-group" role="group" aria-label="Ações do Usuário">
+                 
+                      <a href="{% url 'selecionar_endereco' endereco.id_endereco %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-eye me-1"></i>  
+                    </a>
+                    <a href="{% url 'editar_endereco' endereco.id_endereco %}" class="btn btn-warning btn-sm">
+                      <i class="bi bi-pencil  me-1"></i> 
+                    </a>
+                    <a href="{% url 'delete_endereco' endereco.id_endereco %}" class="btn btn-danger btn-sm btn-confirmacao"
+                    data-acao="excluir" 
+                    data-titulo="Excluir Endereço" 
+                    data-descricao="Tem certeza de que deseja excluir este Endereço? dados não será possivel recuperar."
+                     >
+                            <i class="bi bi-trash  me-1"></i>  
+                        </a>
+                           
+                    </div>  </div>
+                </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Abrir o modal se a variável indicar que deve ser aberto automaticamente
+    {% if open_modal %}
+    document.addEventListener('DOMContentLoaded', function() {
+        var myModal = new bootstrap.Modal(document.getElementById('ModalEndereco'));
+        myModal.show();
+    });
+    {% endif %}
+
+  </script>
+        {% endblock %}

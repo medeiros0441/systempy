@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Pag. Erro {% endblock %}
+
+{% block content %}
+  
+    <style>
+       
+        .container-erro {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .h1-erro {
+            color: #333;
+        }
+        .p-erro {
+            color: #666;
+        }
+        .error-list {
+            text-align: left;
+            margin-top: 20px;
+        }
+        .error-list li {
+            margin-bottom: 10px;
+        }
+        .error-message {
+            color: #ff6347;
+            font-weight: bold;
+        }
+    </style>
+    <div class="container-erro my-5">
+        <h1 clas="h1-erro">Ocorreu um erro!</h1>
+        <p class="p-erro">Desculpe-nos pelo inconveniente. Abaixo está um resumo do erro:</p>
+        <ul class="error-list">
+            <li><span class="error-message">Erro:</span> {{ error_message }}</li>
+        </ul>
+        <p>Por favor, tente novamente mais tarde ou entre em contato conosco para obter assistência.</p>
+    </div>
+{% endblock %}

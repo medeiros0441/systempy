@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Painel{% endblock %}
+
+{% block content %}
+
+
+<div class="container mx-auto mt-3">
+    <div class="row">
+           <!-- Primeiro Container: Faturamento Total -->
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-bar-chart-line"></i> Faturamento Total
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title" id="total-faturamento">R$ 0,00</h5>
+                    <p class="card-text">Este é o faturamento total de todas as lojas, desse mes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  // Executa automaticamente ao inicializar a página
+    window.onload = function() {
+        get_data(); // Busca os dados de vendas
+          // Atualiza o DOM com o faturamento total
+        checkStockLevels();
+    };
+
+   
+    function calcularFaturamentoTotal() {
+        const vendas = JSON.parse(localStorage.getItem('data_vendas'));
+        let totalFaturamento = 0;
+        const mesAtual = new Date().getMonth() + 1; // Obtém o mês atual (1 a 12)
+    
+        if (vendas && vendas.length > 0) {
+            vendas.forEach(venda => {
+                const dataVenda = Utils.converterStringParaData(venda.insert); // Utiliza a função da classe Utils
+                
+                // Verifica se a data é válida
+                if (dataVenda !== null) {
+                    const mesVenda = dataVenda.getMonth() + 1; // Obtém o mês da venda
+                    const valorVenda = parseFloat(venda.valor_total);
+    
+                    // Verifica se a venda pertence ao mês atual
+                    if (!isNaN(valorVenda) && mesVenda === mesAtual) {
+                        totalFaturamento += valorVenda;
+                    }
+                } else {
+                    console.error("Data inválida:", venda.insert);
+                }
+            });
+        }
+        return formatarNumero(totalFaturamento);
+    }
+        
+        // Função para formatar um número com duas casas decimais
+        function formatarNumero(numero) {
+            // Verificar se o número é válido antes de formatar
+            if (typeof numero === 'number' && !isNaN(numero)) {
+                return numero.toFixed(2);
+            } else {
+                return '0.00'; // Valor padrão se o número não for válido
+            }
+        }
+
+        // Função para atualizar o DOM com o faturamento total
+        function atualizarFaturamento() {
+            const totalFaturamento = calcularFaturamentoTotal();
+            document.getElementById('total-faturamento').innerText = `R$ ${totalFaturamento}`;
+        }
+
+        function checkStockLevels() {
+            const products = JSON.parse(localStorage.getItem('data_produtos'));
+            if (products && products.length > 0) {
+                products.forEach(product => {
+                    const currentStock = product.quantidade_atual_estoque;
+                    const minStock = product.quantidade_minima_estoque;
+                    if (currentStock <= minStock ) {
+                        mensage =`O produto ${product.nome} está próximo da quantidade mínima de estoque. Quantidade atual: ${currentStock}`;
+                        alertCustomer(mensage,4);     
+                    }
+                });
+            }
+        }
+                 
+
+
+function get_data(){
+
+    try {
+        chamarFuncaoPython("/api/vendas/dados", null, 'GET', function(response) {
+            if (response.success === true) {
+                // Armazenar os dados no localStorage
+                Utils.setLocalStorageItem('data_lojas', response.lojas);
+                Utils.setLocalStorageItem('data_vendas', response.vendas);
+                Utils.setLocalStorageItem('data_produtos', response.produtos);
+                atualizarFaturamento();
+            } else {
+                alertCustomer(response.error);
+            }
+        });
+    } catch (error) {
+        console.error("Erro ao chamar a função Python:", error);
+    }
+    
+}
+</script>
+
+{% endblock %}

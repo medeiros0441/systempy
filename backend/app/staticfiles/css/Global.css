@@ -1,0 +1,123 @@
+ /* Estilizando a barra de rolagem */
+ 
+:root {
+    --tema-black: #000000;
+    --tema-blue: #0d1b2a;
+    --tema-white: #FFFFFF;
+    --tema-verde: #00bf63;
+    --siglas-empresa: "{ CPS }";
+    --name-empresa: "Comércio Prime Soluções";
+    --font-path: "../font/GLIKER-FAMILY/";
+    --font-family: 'Gliker', sans-serif;
+}
+    
+
+
+@font-face {
+    font-family: 'Gliker';
+    src: url('../font/GLIKER-FAMILY/Gliker-Regular.woff') format('woff');
+    font-weight: normal; /* Peso da fonte Regular */
+}
+
+@font-face {
+    font-family: 'Gliker';
+        src: url('../font/GLIKER-FAMILY/Gliker-Bold.woff') format('woff');
+    font-weight: bold; /* Peso da fonte Bold */
+}
+
+@font-face {
+    font-family: 'Gliker';
+    src: url('../font/GLIKER-FAMILY/Gliker-SemiBold.woff') format('woff');
+    font-weight: 600; /* Peso da fonte SemiBold */
+}
+
+.Font-Gliker {
+font-family: var(--font-family);
+font-weight: normal; /* Padrão para o corpo do documento (Regular) */
+
+}
+
+    .logo-siglas::before  {
+        content: var(--siglas-empresa);
+        font-family: var(--font-family);
+        font-size: 40px;
+        letter-spacing: 10px;
+    }
+
+    .nome-empresa::after  {
+        content: var(--name-empresa);
+        font-family: var(--font-family);
+    }
+                
+@media (max-width: 600px) {
+    .logo-content::before {
+        content: var(--siglas-empresa);
+        font-family: var(--font-family);
+        font-size: 40px;
+        letter-spacing: 10px;
+    }
+}
+
+@media (min-width: 601px) {
+    .logo-content::before {
+        content: var(--name-empresa);
+        font-family: var(--font-family);
+    }
+}
+/* Defina os tamanhos de letra desejados */
+.Size1 {
+    font-size: 1.0rem;
+}
+
+.Size2 {
+    font-size: 1.9rem;
+}
+
+.wrapper    {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.content {
+    flex: 1;
+  }
+
+
+
+  .custom-shape-divider-top-1708368195 {
+    
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+}
+
+.custom-shape-divider-top-1708368195 svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 110px;
+    transform: rotateY(180deg);
+}
+
+.custom-shape-divider-top-1708368195 .shape-fill {
+    fill: #0D1B2A;
+}
+
+.custom-shape-divider-bottom-1708368458 {
+   
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+}
+
+.custom-shape-divider-bottom-1708368458 svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 102px;
+}
+
+.custom-shape-divider-bottom-1708368458 .shape-fill {
+    fill: #0D1B2A;
+}  

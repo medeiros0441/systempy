@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% load static  %}
+{% block content %}
+{% include './senha_update.html' %}
+
+<form   id="form_login" class="form-signin container mx-auto ">
+  <div class="px-sm-2 p-4 my-3 modal modal-signin position-static d-block align-items-center">
+      <div class="modal-dialog m-0 m-sm-auto">
+          <div class="modal-content mb-2 bg-body rounded-3 border">
+              <div class="modal-header">
+                  <div class="d-flex align-items-center">
+                      <i width="32" height="32" class="bi mb-1 bi-person"></i>
+                      <h1 class="text-center mb-1 ms-2 fw-normal small text-dark mx-auto">Acessar Conta</h1>
+                  </div>
+              </div>
+              <div class="modal-body">
+                  <div class="form-floating mb-2">
+                      <input type="email" class="form-control" autocomplete="off" id="email" name="email" value="{{ email_saved }}">
+                      <label for="emaill">E-mail </label>
+                  </div>
+
+                  <div class="form-floating mb-2">
+                      <input type="password" class="form-control" autocomplete="off" id="senha" name="senha" value="{{ email_saved }}">
+                      <label for="senha">Senha</label>
+                  </div>
+
+                  <div class="form-check text-start my-3 text-dark">
+                      <input class="form-check-input" type="checkbox" value="on" {% if checkbox_login == "on" %} checked {% endif %} autocomplete="off" id="flexCheckDefault" name="flexCheckDefault">
+                      <label class="form-check-label" for="flexCheckDefault">
+                          lembre-me
+                      </label>
+                      <a type="button" class="link link-secondary small float-end" data-bs-toggle="modal" data-bs-target="#ModalRecuperarSenha">recuperar senha</a>
+                  </div>
+
+                  <div class="col-12 mb-4">
+                      <a tabindex="8" class="ms-auto link-secondary small mx-auto rounded-2" href="/cadastro">Cadastre-se</a>
+                      <button id="submit-btn" class="btn btn-primary float-end me-2 btn-md" type="button">Entrar</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</form>
+
+
+<script>
+  function isValidEmail(email) {
+      return /\S+@\S+\.\S+/.test(email);
+  }
+
+  function validateForm() {
+      var email = document.getElementById("email").value;
+      var senha = document.getElementById("senha").value;
+        status = Utils.validateInputs(['email','senha']);
+      if (!isValidEmail(email)) { 
+          alertCustomer("Email invalido.");  
+        return false;
+
+      }  
+      return status;
+  }
+  window.onload = function() {
+    document.getElementById("submit-btn").addEventListener("click", function () {
+        if (validateForm()) {
+          var email = document.getElementById("email").value;
+          var senha = document.getElementById("senha").value;
+          var flexCheckDefault = document.getElementById("flexCheckDefault").checked ? "on" : "off";
+
+          var data = {
+              "email": email,
+              "senha": senha,
+              "flexCheckDefault": flexCheckDefault
+          };
+            set_login(data);
+        }
+    });
+
+    var elemento = document.getElementById('btn-login-nav');
+    if (elemento) {
+        elemento.style.display = 'none';
+    }
+    var myModal = new bootstrap.Modal(document.getElementById('ModalRecuperarSenha'));
+};
+
+function set_login(data) {
+    manageLoading(true, "form_login");
+    chamarFuncaoPython('/api_login', data, 'POST', function(response) {
+        if (response.success === true) {
+            window.location.href = response.redirect_url;
+        } else {
+            alertCustomer(response.message,2);
+        }
+        manageLoading(false, "form_login");
+    });
+}
+  </script>
+
+{% endblock %}

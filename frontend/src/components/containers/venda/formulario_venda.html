@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% load static%}
+
+{% block title %} Gestão Vendas{% endblock %}
+{% block content %}
+
+<div class="container-fluid  p-3 mt-0 d-flex justify-content-between align-items-center">
+    <span class="text-dark font-monospace fw-bold" style="font-size: 1.2rem;">
+        <i class="bi bi-file-earmark-text mr-2"></i> Formulario de vendas
+    </span>
+     
+</div>
+
+
+        
+    <form   id="form_cadastro" class="container-fluid needs-validation  my-2  row mx-auto " autocomplete="off" novalidate>
+            <div class="  col-sm-6 order-1 p-1 ">
+                <label class="fw-bold ms-2">Pesquisar produto:</label>
+                <div class="input-group  mb-2 ">
+                    <select class="form-select" id="select_produto" autocomplete="off"></select>
+                    <button class="btn btn-outline-secondary bi-plus" type="button" onclick="Ouvinte();" id="adicionarProdutoBtn"></button>
+                </div>
+                   
+
+            <div class="card mb-2  shadow">
+                <div class=" card-header bg-dark text-white ">
+                    <div class="d-flex align-items-center font-monospace">
+                        <span class="me-auto font-monospace   "> Gestão de pagamento </span>
+                        <button type="button" id="btn_gestao_pagamento" class="btn btn-sm text-white " onclick="toggleGestaproduto();">
+                            <i class="bi bi-eye-slash d-none"  id="icone_pagamento_close"></i>
+                            <i class="bi bi-eye  " id="icone_pagamento_open"></i>
+                        </button>
+                    </div>
+                </div>
+                    <div class="card-body mt-0 " id="body_gestao_pay">
+                        <div class="form-floating mb-2">
+                        <select name="metodo_entrega" class="form-select"    id="id_metodo_entrega">
+                        <option value="0">Selecione</option>
+                        <option value="retirado na loja">Retirado na Loja</option>
+                        <option value="entrega no local">Entrega no Local</option>
+                        </select>
+                        <label for="metodo_entrega">Método de Entrega:</label></div>  
+
+                        <div class="form-floating mb-2 d-none " id="id_container_entrega">
+                        <input id="id_taxa_entrega" name="taxa_entrega" class="form-control money-mask" type="text" maxlength="14">
+                        <label for="id_taxa_entrega">Taxa de Entrega:  <span style="font-size: 0.8;">R$ 0,00</span></label> </div> 
+
+                        <div class="form-floating mb-2">
+                        <select name="estado_transacao" class="form-select" id="id_estado_transacao">
+                        <option value="0">Selecione</option>
+                        <option value="finalizado">Finalizado</option>
+                        <option value="processando">Processando</option>
+                        <option value="pendente">Pendente</option>
+                        </select>
+                        <label for="estado_transacao">Estado da Transação:</label> </div> 
+                        <div class="form-floating mb-2">
+                        <select name="forma_pagamento" class="form-select"   id="id_forma_pagamento">
+                            <option value="0">Selecione</option>
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="pix">Pix</option>
+                            <option value="cartao credito">Cartão de Crédito</option>
+                            <option value="cartao debito">Cartão de Débito</option>
+                            <option value="fiado">Fiado</option>
+                        </select>
+                        <label for="forma_pagamento">Forma de Pagamento:</label> </div> 
+                        <div class="p-0 m-0  gestaotroco d-none">
+                            <div class="form-floating mb-2">
+                                <input type="text" name="valor_pago" class="form-control money-mask " id="id_valor_pago_dinheiro" maxlength="14">
+                                <label for="id_valor_pago_dinheiro"  >Valor Pago: </label>
+                            </div>
+                        </div> 
+                        <div class="form-floating mb-2">
+                        <input id="id_desconto" name="desconto" class="form-control money-mask" type="text" maxlength="14">
+                        <label for="id_desconto">Desconto:  <span style="font-size: 0.8rem;">R$ 0,00</span></label> </div> 
+                        <div class="form-floating mb-2">
+                            <textarea name="descricao_venda" cols="40" rows="5" class="form-control" id="id_descricao_venda"></textarea>
+                            <label for="descricao">Descrição:</label> </div>
+                         
+                        </div> 
+            </div>
+        
+   
+        <!--card pesquisa_cliente-->
+        <div class="card my-2 shadow">
+            <div class="card-header bg-dark text-white">
+                <div class="d-flex align-items-center font-monospace">
+                    <span class="me-auto fs-6 text-white" id="title_header_cliente">Buscar Cliente</span>
+                    <button type="button" class="btn btn-sm text-white " id="btn_toggle" onclick="toggleCliente()">
+                        <i class="bi bi-person-plus" id="icon_btn_toggle" style="font:size 0.9rem"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body" id="container_buscar_cliente"> 
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control autocomplete_input"  id="select_cliente" 
+                        data-onselect="montarInfoCliente" 
+                        data-storage="data_clientes" data-label="nome,telefone,rua" data-key="id_cliente"  >
+                            <label for="select_loja">Pesquisar Cliente:</label>
+                    </div>
+                        
+                </div>
+
+            <div class="card-body d-none " id="container_selecionar_cliente">
+                <h5 class="mb-1 text-center" style="font:size 0.6rem">Informações do Cliente</h5>
+                <div class="col-12 d-inline-flex">
+                    <i class="bi bi-person me-1"></i>
+                    <span class="fw-bold me-1">Nome do Cliente:  </span>
+                    <span id="info_nome_cliente"></span>
+                </div>
+                <div class="col-12 d-inline-flex">
+                    <i class="bi bi-phone me-1"></i>
+                    <span class="fw-bold me-1 small">Telefone do Cliente: </span>
+                    <span id="info_telefone_cliente"></span>
+                </div>
+                <div class="col-12 d-inline-flex ">
+                    <i class="bi bi-people me-1"></i>
+                    <span class="fw-bold  me-1">Tipo de Cliente: </span>
+                    <span id="info_tipo_cliente"></span>
+                </div>
+                <div class=" mb-1 ">
+                    <i class="bi bi-card-text me-1"></i>
+                    <span class="fw-bold me-1">Descrição do Cliente: </span>
+                    <span id="info_descricao_cliente"></span>
+                </div>
+                    <h5 class="mb-1 text-center mt-2" style="font:size 0.6rem">Informações de Endereço</h5>
+            <hr class="my-2">
+            <div class="col-sm-12  d-inline-flex">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        <span class="fw-bold me-1">Código Postal: </span>
+                        <span id="info_codigo_postal"></span>
+                    </div>
+                    <div class="col-sm-12  d-inline-flex">
+                        <i class="bi bi-house me-1"></i>
+                        <span class="fw-bold me-1">Rua: </span>
+                        <span id="info_rua"></span>
+                    </div>
+                    <div class="col-sm-12  d-inline-flex">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        <span class="fw-bold me-1">Número: </span>
+                        <span id="info_numero"></span>
+                    </div>
+                    <div class="col-sm-12  d-inline-flex">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        <span class="fw-bold me-1">Bairro: </span>
+                        <span id="info_bairro"></span>
+                    </div>
+                    <div class="col-sm-9  d-inline-flex">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        <span class="fw-bold me-1">Cidade: </span>
+                        <span id="info_cidade"></span>
+                    </div>
+                    <div class="col-sm-3  d-inline-flex">
+                        <i class="bi bi-flag me-2"></i>
+                        <span class="fw-bold me-1">Estado: </span>
+                        <span id="info_estado"></span>
+                    </div>
+                    <div class=" mb-1 ">
+                        <i class="bi bi-card-text  me-1"></i>
+                        <span class="fw-bold me-1">Descrição: </span>
+                        <span id="info_descricao_endereco"></span>
+                    </div>
+                    <h5 class="mb-1 text-center mt-2" style="font:size 0.6rem">Última Compra</h5>
+            <hr class="my-2">
+            <div class="col-sm-12 d-inline-flex">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        <span class="fw-bold me-1">Data & Hora: </span>
+                        <span id="info_ultima_venda_data_venda"></span>
+                    </div>
+                    <div class="col-sm-12 d-inline-flex">
+                        <i class="bi bi-cash-coin me-1"></i>
+                        <span class="fw-bold me-1">Forma de Pagamento: </span>
+                        <span id="info_ultima_venda_forma_pagamento"></span>
+                    </div>
+                    <div class="col-sm-12 d-inline-flex">
+                        <i class="bi bi-currency-dollar me-1"></i>
+                        <span class="fw-bold me-1">Valor Total: </span>
+                        <span id="info_ultima_venda_valor_total"></span>
+                    </div>
+                    <div class="col-sm-12 d-inline-flex">
+                        <i class="bi bi-card-text me-1"></i>
+                        <span class="fw-bold me-1">Descrição: </span>
+                        <span id="info_ultima_venda_descricao"></span>
+                    </div>
+                    <div class="col-sm-12 d-inline-flex">
+                        <i class="bi bi-box-seam me-1"></i>
+                        <span class="fw-bold  me-1">Produtos: </span>
+                        <span id="info_ultima_venda_produtos" class=" text-truncate text-small small"></span>
+                    </div> 
+                </div>
+            <div class="card-body d-none" id="container_cria_cliente">
+                <div class="form-floating mb-2">
+                    <input type="text" name="nome_cliente" class="form-control" required="" maxlength="255" id="id_nome_cliente">
+                    <label for="id_nome_cliente" class="form-label">Nome do Cliente:</label>
+                    </div>
+            
+            
+                <div class="form-floating mb-2">
+                    <input type="text" name="telefone" class="form-control telefone-mask" required="" maxlength="19" id="id_telefone_cliente">
+                    <label for="id_telefone_cliente" class="form-label">Telefone do Cliente:</label></div>
+    
+                <div class="form-floating mb-2" id="form_select_tipo_cliente">
+                    <select class="form-select" id="id_select_tipo_cliente">
+                        <option value="0">selecione</option>
+                        <option value="corporativo">Corporativo</option>
+                        <option value="ocasional">Ocasional</option>
+                        <option value="regular">Regular</option>
+                        <option value="residencial">Residencial</option>
+                    </select>            <label for="id_select_tipo_cliente" class="form-label">Tipo de Cliente:</label>        </div>
+                <div class="form-floating mb-2">
+                    <textarea name="descricao_cliente" cols="40" rows="10" class="form-control" maxlength="300" id="id_descricao_cliente"></textarea>
+                        <label for="id_descricao_cliente" class="form-label">Descrição do Cliente:</label></div>
+                <h5 class="modal-title mx-auto fw-bold font-monospace" style="font:size 1rem">  Formulario de  Endereço  </h5>
+                <div class="form-floating mb-2  ">
+                        <input type="text" name="codigo_postal" maxlength="9" class="form-control form-control-validate cep-mask input form-control form-control-validate input" required="" id="id_codigo_postal">
+                        <label for="id_codigo_postal">Código Postal</label> </div>  
+                <div class="form-floating mb-2  ">
+                    <input type="text" name="rua" maxlength="255" class=" form-control form-control-validate input" id="id_rua">
+                    <label for="id_rua">Rua</label>    </div>
+                <div class="form-floating mb-2  ">
+                    <input type="text" name="numero" maxlength="10" class=" form-control form-control-validate input" id="id_numero">
+                    <label for="id_numero">Número</label></div>
+    
+                <div class="form-floating mb-2  ">
+                    <input type="text" name="bairro" maxlength="100" class=" form-control form-control-validate input" id="id_bairro">
+                    <label for="id_bairro">Bairro</label></div>
+    
+                <div class="form-floating mb-2  ">
+                    <input type="text" name="cidade" maxlength="100" class=" form-control form-control-validate input" id="id_cidade">
+                    <label for="id_cidade">Cidade</label></div>
+    
+                <div class="form-floating mb-2  ">
+                    <input type="text" name="estado" maxlength="50" class=" form-control form-control-validate input" id="id_estado">
+                    <label for="id_estado">Estado</label></div>
+    
+                <div class="form-floating mb-2 " id="form_descricao">
+                <textarea name="descricao_endereco" cols="40" rows="10" maxlength="100" class=" form-control form-control-validate input" required="False" id="id_descricao"></textarea>
+                <label for="id_descricao">Descrição</label></div> 
+    
+                <button type="button" class="btn btn-primary  " id="btnCriarCliente" onclick="submitCadastroCliente()">Cadastrar Cliente</button>
+            </div>
+        </div>
+            <!--Produtos retornaveis -->
+        <div class="card shadow mb-2">
+                <div class="card-header bg-dark text-white  " id="toggleAccordion">
+                    <div class="d-flex align-items-center font-monospace">
+                        <span class="me-auto font-monospace" style="font-size: 0.8rem">Gestão de produtos retornáveis</span>
+                        <button type="button" id="btn_gestao_retornaveis" class="btn btn-sm text-white" onclick="toggleGestaoRetornavel(true);">
+                            <i class="bi bi-eye-slash" id="icone_produto"></i>
+                        </button>
+                    </div>
+                </div>
+            <div class="card-body mt-0 d-none" id="body_gestaoRetornavel"  >
+                <div class="alert alert-warning font-monospace" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Atenção:</strong> <span class="" style="font-size: 0.7rem"> Estas configurações se referem à gestão de produtos retornáveis. 
+                    Este campo pode ser ignorado, mas sua utilização foi modelada para galões de água, que possuem data de validade. Preenchendo as informações, você consegue saber qual foi o último galão pego pelo cliente, entre outras informações.
+                </div>  
+                <div id="form_galaoGestao">
+                    
+                    </div>
+            </div>
+        </div> 
+            <!--Produtos entrega -->
+            
+            <div class="card mb-2 shadow "  >
+                    <div class="card-header bg-dark text-white">
+                        <div class="d-flex align-items-center font-monospace">
+                            <span class="me-auto fs-6 text-white">Gestão de Entregas</span>
+                            <button type="button" class="btn btn-sm  text-white  me-2" id="btnCadastrarBoy" onclick="toggleMotoboyFields();">
+                                <i class="bi bi-person-plus"></i>  
+                            </button>
+                            <button type="button" class="btn btn-sm text-white " onclick="toggleGestaoEntrega();" id="toggleAccordion">
+                                <i class="bi bi-eye-slash"  id="icone_entrega_close"></i>
+                                <i class="bi bi-eye d-none" id="icone_entrega_open"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body d-none" id="container_gestao_entrega">
+                        <div class="m-0 p-0 " id="select_motoboy">
+                            <div class="form-floating mb-2">
+                                <select id="id_motoboy" name="motoboy" class="form-select">
+                                 <option value="0">Selecione</option>
+                                </select>
+                                <label for="id_motoboy">Selecione Motoboy:</label>
+                            </div> </div>
+                        <div class="m-0 p-0 d-none" id="cadastrar_motoboy">
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control" id="nome_motoboy" placeholder=" ">
+                                <label for="nome_motoboy" class="form-label">Nome do Motoboy:</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control telefone-mask" id="telefone_motoboy" placeholder=" ">
+                                <label for="telefone_motoboy" class="form-label">Telefone do Motoboy:</label>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-loading" id="btnCriarBoy" onclick="insertMotoboy()">Cadastrar Motoboy</button>
+                        </div>
+                
+                </div>
+            </div>
+</div>
+                    
+                    
+    <div class="col-sm-6 order-2 p-1 ">
+            <div class="card-body rounded bg-dark p-1 my-2">
+                <h5 class="text-white fw-bold px-2 py-1 m-0">
+                    <i class="bi bi-cart"></i> Carrinho
+                </h5>
+                <ul class="list-group row mx-auto p-1" id="ul_produtos"></ul>
+                <div class=" mb-1 px-1 mx-1 text-white fw-bold row font-monospace mt-2" style="font-size: 0.8;" >
+                    <label  id="valor_total" style="font-size: 0.8rem" class="fw-bold col">Valor total de produtos:</label>
+                    <label class="ms-auto float-end   col-auto fw-bold"   style="font-size: 0.8rem" id="txt_valor_total_produtos">0,00</label>
+                </div>
+            </div>
+
+            <div class=" rounded-3 shadow  bg-white card" style="max-width 200px;">
+                <div class="  card-header bg-dark"  >
+                    <label  class="fw-bold    text-white ">Resumo </label>
+                </div>
+                <div class="  card-body"  >
+                    <div class="   font-monospace " style="font: size 1rem;">
+                        <label  class="fw-bold   ">Loja: </label>
+                        <label class="ms-auto float-end   fw-bold"    id="txt_loja"></label></div> 
+                    <div class="   font-monospace " style="font: size 1rem;">
+                        <label  class="fw-bold   ">Ponto de venda: </label>
+                        <label class="ms-auto float-end   fw-bold"    id="txt_pdv"></label></div> 
+                    
+                    <div class="   font-monospace " style="font: size 1rem;">
+                        <label  class="fw-bold   ">Taxa Entrega: </label>
+                        <label class="ms-auto float-end   fw-bold"    id="txt_taxa_entrega">0,00</label></div> 
+                    <div class="   font-monospace  " style="font: size 1rem;">
+                        <label   class="fw-bold   ">Desconto: </label>
+                        <label class="ms-auto float-end   fw-bold"    id="txt_desconto">0,00</label></div>
+                        <div class="  font-monospace  " style="font: size 1rem;">
+                            <label  class="fw-bold   ">Troco: </label>
+                            <label class="ms-auto float-end   fw-bold"    id="txt_troco">0,00</label></div>
+
+                    <div class=" font-monospace " style="font: size 1rem;">
+                        <label  class="fw-bold   ">Total: </label>
+                        <label class="ms-auto float-end   fw-bold" id="txt_valor_total_apagar">0,00</label></div>
+                        
+                </div>
+
+                <div class="container  card-footer"  id="container_btns_salvar">
+                    <button type="button" onclick="clean_form();" class="btn small btn-secondary btn-sm">Limpar</button>
+                    <button type="button" id="btnSubmit" class="btn float-end btn-primary btn-sm btn-loading">Salvar</button>
+                </div>
+                        
+            </div> 
+    </div>
+      
+  
+    </form>
+</div> 
+</div> 
+
+
+
+
+<input type="hidden" id="id_loja" value="">
+<input type="hidden" id="id_pdv" value="">
+<input type="hidden" id="id_venda" value="{{ id_venda }}">
+<input   id="input_troco" type="hidden" value="0" > 
+<input   id="input_total_apagar" type="hidden" value="0" > 
+<input id="id_cliente" name="id_cliente" type="hidden" value="0" > 
+<script type="text/javascript" src="{% static '/js/pages/FunctionsModalVendas.js' %}" ></script> 
+</div>
+</div>
+</div>
+{% endblock%}

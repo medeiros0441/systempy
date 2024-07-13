@@ -1,0 +1,484 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestão PDV{% endblock %}
+
+{% block content %}
+{% include 'pdv/modal_pdv.html' %}   
+    <div id="container_table">
+
+        <div class="container-alert-personalizado"    data-codigo="alerta_informativo_pdv1" 
+        data-labela="Um PDV ou ponto de venda refere-se a um caixa ou checkout, com ele você conseguirá ver detalhes de cada transação, como troco e informações finais de cada dia, incluindo quando iniciou e quando finalizou. Além disso, você também terá acesso às formas de pagamento." 
+         data-labelb="Na coluna 'Ações', você encontrará os seguintes botões: abrir ou fechar PDV, ver transações, ver informações sobre o PDV e editar o PDV.">  </div>
+    
+    <div class="container px-2 py-3 my-3 mx-auto bg-dark rounded shadow " id="table_pdv">
+
+<div class="container  text-light mx-auto px-1">
+    <div class="d-flex   mb-2 justify-content-between">
+        <span   class="    text-light font-montserrat fw-border my-auto" style="font-size: 1.0rem;">Pontos de Vendas</span>
+        <button type="button" onclick="iniciar_modal(1);" id="btnCriar" class="btn btn-success btn-sm" style="font-size: 0.8rem;"><i style="font-size: 1.rem;" class="bi bi-plus me-1"></i>Cadastrar Ponto</button>
+    </div>
+</div>
+
+        <table class="table table-hover table-responsive table-sm table-dark"  >
+            <thead>
+                <tr class="text-truncate">
+                    <th scope="col" class="text-start">Nome</th>
+                    <th scope="col" class="d-none d-sm-table-cell text-start">Loja</th>
+                    <th scope="col" class="text-start">Status</th>
+                    <th scope="col" class="d-none d-sm-table-cell text-center">Colaboradores</th>
+                    <th scope="col" class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider" id="tdbody_pdv"></tbody>
+        </table>
+    </div>
+    <div class="container px-2 py-3 my-3 mx-auto bg-dark rounded shadow  d-none" id="table_pdv_diario">
+    
+        <div class="d-flex   justify-content-between align-items-center mb-1"  >
+            <span class="font-montserrat fw-bold text-white" style="font-size: 1.0rem;">Histórico PDV: <label id="name_pdv_nome"></label></span>
+            <button type="button" onclick="alterando_tabela('table_pdv');" id="btnCriar" class="btn text-light p-0" style="font-size: 1.8rem;">
+                <i class="bi bi-x "></i>
+            </button>
+        </div>
+    
+        <table class="table   table-hover table-responsive table-sm table-dark"  >
+            <thead>
+                <tr class="text-truncate">
+                    <th scope="col" class="text-start">Data</th>
+                    <th scope="col" class="text-start">Saldo Final</th>
+                    <th scope="col" class="d-none d-sm-table-cell text-center">Horário Início</th>
+                    <th scope="col" class="d-none d-sm-table-cell text-center">Horário Finalizado</th>
+                    <th scope="col" class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider" id="tdbody_pdv_diario"></tbody>
+        </table>
+    </div>
+    <div class="container px-2 py-3 my-3 mx-auto bg-dark rounded shadow d-none " id="table_pdv_tansacoes">
+        <div class="d-flex   justify-content-between align-items-center mb-1"  >
+            <span class="font-montserrat fw-bold text-white" style="font-size: 1.0rem;">PDV Histórico do dia: <span id="name_pdv_trancoes"></span> </span>
+            <button type="button" onclick="alterando_tabela('table_pdv_diario');" id="btnCriar" class="btn text-light p-0" style="font-size: 1.8rem;">
+                <i class="bi bi-x "></i>
+            </button>
+        </div>
+        <table class="table  table-hover table-responsive table-sm table-dark" >
+            <thead>
+                <tr>
+                    <th scope="col" class="d-none d-sm-table-cell text-center">Hora</th>
+                    <th scope="col" class="text-start">Venda</th>
+                    <th scope="col" class="d-none d-sm-table-cell text-start">Valor</th>
+                    <th scope="col" class="text-start">Descrição</th>
+                    <th scope="col" class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider" id="tdbody_pdv_diario_transacoes"></tbody>
+        </table>
+    </div>
+    
+</div> 
+<script>
+let myModal;
+window.onload = function() {
+    load_data();
+};
+function openModal() {
+    if (!myModal) {
+        myModal = new bootstrap.Modal(document.getElementById('ModalPvd'));
+
+    }
+    myModal.show();
+}
+
+function closeModal() {
+
+    if (myModal) {
+        myModal.hide();
+        clearModalFields();
+    } else {
+        console.error('myModal não está definido.');
+    }
+}
+
+function load_data() {
+    manageLoading(true, "container_table");
+
+    // Array para armazenar as Promises das chamadas assíncronas
+    const requests = [];
+
+    // Chamar as funções assíncronas e armazenar as Promises
+    requests.push(new Promise((resolve, reject) => {
+        chamarFuncaoPython("pdv/lista", null, 'GET', function(response) {
+            if (response.success === true) {
+                Utils.setLocalStorageItem('data_pdvs', response.data);
+                resolve();
+            } else {
+                alertCustomer(response.message);
+                reject();
+            }
+        });
+    })); 
+    requests.push(new Promise((resolve, reject) => {
+        chamarFuncaoPython("api_lojas", null, 'GET', function(response) {
+            if (response.success === true) {
+                Utils.setLocalStorageItem('data_lojas', response.lojas);
+                resolve();
+            } else {
+                alertCustomer(response.message);
+                reject();
+            }
+        });
+    }));
+
+    requests.push(new Promise((resolve, reject) => {
+        chamarFuncaoPython("api_usuarios", null, 'GET', function(response) {
+            if (response.success === true) {
+                Utils.setLocalStorageItem('data_usuarios', response.usuarios);
+                resolve();
+            } else {
+                alertCustomer(response.message);
+                reject();
+            }
+        });
+    }));
+
+    requests.push(new Promise((resolve, reject) => {
+        chamarFuncaoPython("associado_pdv", null, 'GET', function(response) {
+            if (response.success === true) {
+                Utils.setLocalStorageItem('data_associados_pdv', response.data);
+                resolve();
+            } else {
+                alertCustomer(response.message);
+                reject();
+            }
+        });
+    }));
+
+    // Aguardar até que todas as Promises sejam resolvidas ou rejeitadas
+    Promise.all(requests)
+        .then(() => {
+            // Todas as chamadas assíncronas foram concluídas com sucesso
+                montarTabela();
+                manageLoading(false, "container_table");
+        })
+        .catch(() => {
+            // Pelo menos uma chamada assíncrona falhou
+            manageLoading(false, "container_table");
+    });
+}
+function PDV_status(id, status) {
+    // Desabilitar o botão
+    if (status ===1){
+        iniciar_modal(4, id);
+        return;
+    } else if (status == 2){
+        return;
+
+    manageLoading(true, "table_pdv");
+
+        chamarFuncaoPython("registro_diario_pdv/create/" + id, null, "POST", function(response) {
+            if (response.status) {
+                alertCustomer(response.message, 1);
+            load_data();
+                manageLoading(false, "table_pdv");
+
+            } else {
+                alertCustomer(response.message, 2);
+            }
+        });
+    }
+
+}
+
+function alterando_tabela(table,value=null) {
+    // Obtém referências para os elementos
+    var table_pdv = document.getElementById("table_pdv");
+    var table_pdv_diario = document.getElementById("table_pdv_diario");
+    var table_pdv_tansacoes = document.getElementById("table_pdv_tansacoes");
+    if (table === "table_pdv") {
+        table_pdv.classList.remove("d-none");
+        table_pdv_diario.classList.add("d-none");
+        table_pdv_tansacoes.classList.add("d-none");
+    } else if (table === "table_pdv_diario") {
+        table_pdv.classList.add("d-none");
+        table_pdv_diario.classList.remove("d-none");
+        table_pdv_tansacoes.classList.add("d-none");
+        gerenciar_table(table,value);
+    } else if (table === "table_pdv_tansacoes") {
+        table_pdv.classList.add("d-none");
+        table_pdv_diario.classList.add("d-none");
+        table_pdv_tansacoes.classList.remove("d-none");
+        gerenciar_table(table,value);
+    }
+}
+
+function  gerenciar_table(table,id){
+    manageLoading(true,table);
+    if (table === "table_pdv_diario") {
+        
+        chamarFuncaoPython("registro_diario_pdv/" +id,null,"GET", function(response){
+            if(response.success){
+             montarTabela_pdv_diario(response.data);
+            }else{
+                alertCustomer(response.message,2);
+            }
+            manageLoading(false,table);
+
+        });
+
+    } else if (table === "table_pdv_tansacoes"){
+        montarTabela_pdv_diario_transacoes(list_data);
+    }
+} 
+
+function montarTabela() {
+    const tabela = document.getElementById("tdbody_pdv");
+    tabela.innerHTML = ''; // Limpar a tabela antes de popular
+
+    const data_pdvs = Utils.getLocalStorageItem('data_pdvs');
+    const data_lojas = Utils.getLocalStorageItem('data_lojas');
+    const data_associados = Utils.getLocalStorageItem('data_associados_pdv');
+    const data_usuario = Utils.getLocalStorageItem('data_usuarios');
+
+    data_pdvs.forEach(item => {
+    const row = document.createElement("tr");
+
+    // Coluna Nome
+    const nomeCell = document.createElement("td");
+    const SmallnomeCell = document.createElement("small");
+    SmallnomeCell.className = "text-start text-truncate";
+    SmallnomeCell.textContent = item.nome;
+    nomeCell.appendChild(SmallnomeCell);
+    row.appendChild(nomeCell);
+
+    // Coluna Loja
+    const TdlojaCell = document.createElement("td");
+    TdlojaCell.className = "text-start  d-none d-sm-table-cell  ";
+    const smalllojaCell = document.createElement("small");
+    smalllojaCell.className = "text-start  d-none d-sm-table-cell text-truncate";
+    const loja = data_lojas.find(loja => loja.id_loja === item.loja);
+    smalllojaCell.textContent = loja ? loja.nome : "Loja não encontrada";
+    TdlojaCell.appendChild(smalllojaCell);
+    row.appendChild(TdlojaCell);
+
+    const statusCell = document.createElement("td");
+    statusCell.className = "text-start";
+    
+    let statusBadge;
+    switch (item.status_operacao) {
+        case 1:
+            statusBadge = '<span class="badge rounded-pill text-bg-success">Aberto</span>';
+            break;
+        case 2:
+            statusBadge = '<span class="badge rounded-pill text-bg-warning">Fechado</span>';
+            break;
+        case 3:
+            statusBadge = '<span class="badge rounded-pill text-bg-danger">Bloqueado</span>';
+            break;
+        case 0:
+            statusBadge = '<span class="badge rounded-pill text-bg-danger">Excluído</span>';
+            break;
+        default:
+            statusBadge = '<span class="badge rounded-pill text-bg-secondary">Desconhecido</span>';
+            break;
+    }
+    statusCell.innerHTML = statusBadge;
+    row.appendChild(statusCell);
+
+     
+
+    // Coluna Responsável
+    const responsavelCell = document.createElement("td");
+    responsavelCell.className = "text-center d-none d-sm-table-cell order-1";
+    const associados = data_associados.filter(obj => obj.pdv === item.id_pdv && item.status_operacao==true);
+    const usuarios = associados
+        .map(associado => data_usuario.find(usuario => usuario.id_usuario === associado.usuario && usuario.nivel_usuario > 2))
+        .filter(Boolean);
+    responsavelCell.textContent = usuarios.map(usuario => usuario.nome_completo).join(", ");
+    row.appendChild(responsavelCell);
+
+    // Coluna Ações
+    const acoesCell = document.createElement("td");
+    acoesCell.className = "text-end";
+    const btnGroup = document.createElement("div");
+    btnGroup.className = "btn-group";
+        
+    // Botão de alteração de status (apenas para status 1 ou 2)
+    if (item.status_operacao === 1 || item.status_operacao === 2) {
+        const AlterStatusBtn = document.createElement("button");
+        AlterStatusBtn.className = item.status_operacao === 1 ? "btn btn-sm btn-danger" : "btn btn-sm btn-success";
+        AlterStatusBtn.innerHTML = item.status_operacao === 1 ? '<i class="bi bi-x-circle"></i>' : '<i class="bi bi-check2-circle"></i>';
+        AlterStatusBtn.onclick = function() {
+            PDV_status(item.id_pdv, item.status_operacao); // Alterna entre 0 e 1
+        };
+        btnGroup.appendChild(AlterStatusBtn);
+    }
+
+    // Adiciona o grupo de botões à linha (row)
+    row.appendChild(btnGroup);
+    // Botão de visualizar transação
+    const visualizarTransacoeBtn = document.createElement("button");
+    visualizarTransacoeBtn.className = "btn btn-sm btn-secondary";
+    visualizarTransacoeBtn.innerHTML = '<i class="bi bi-info-circle"></i>';
+    visualizarTransacoeBtn.onclick = function() {
+        alterando_tabela("table_pdv_diario", item.id_pdv);
+    };
+    btnGroup.appendChild(visualizarTransacoeBtn);
+
+    // Botão de visualizar
+    const visualizarBtn = document.createElement("button");
+    visualizarBtn.className = "btn btn-sm btn-primary";
+    visualizarBtn.innerHTML = '<i class="bi bi-eye"></i>';
+    visualizarBtn.onclick = function() {
+        iniciar_modal(2, item.id_pdv);
+    };
+    btnGroup.appendChild(visualizarBtn);
+
+    // Botão de editar
+    const editarBtn = document.createElement("button");
+    editarBtn.className = "btn btn-sm btn-warning";
+    editarBtn.innerHTML = '<i class="bi bi-pencil"></i>';
+    editarBtn.onclick = function() {
+        iniciar_modal(3, item.id_pdv);
+    };
+    btnGroup.appendChild(editarBtn);
+ 
+
+    acoesCell.appendChild(btnGroup);
+    row.appendChild(acoesCell);
+
+    tabela.appendChild(row);
+    });
+}
+
+function montarTabela_pdv_diario(list_data) {
+    var tbody = document.getElementById("tdbody_pdv_diario");
+    tbody.innerHTML = "";
+
+
+    if (list_data.length == 0 ){
+        const tr = document.createElement('tr');
+        const tdMensagem = document.createElement('td');
+        tdMensagem.textContent = 'Nenhuma resultado encontrado';
+        tdMensagem.setAttribute('colspan', '4');
+        tr.appendChild(tdMensagem);
+        tbody.appendChild(tr);
+        return 
+    } 
+    const data_pdvs = Utils.getLocalStorageItem('data_pdvs');
+    const item = data_pdvs.find(item => item.id_pdv === list_data[0].pdv_id);
+    
+    if (item) {
+        obj = document.getElementById("name_pdv_nome");
+       obj.innerHTML =  item.nome || '';
+    } else {
+        console.error("PDV não encontrado");
+    }
+    
+    // Itera sobre a lista de modelos JSON
+    list_data.forEach(function(modelo) {
+        // Cria uma nova linha na tabela
+        var row = document.createElement("tr");
+
+        // Adiciona as células com os valores do modelo
+        var diaCell = document.createElement("td");
+        diaCell.classList.add("text-start");
+        diaCell.textContent = modelo.dia; // Supondo que o campo seja dia
+        row.appendChild(diaCell);
+
+        var saldoFinalCell = document.createElement("td");
+        saldoFinalCell.classList.add("text-start");
+        saldoFinalCell.textContent = modelo.saldo_final_total || "00,00"; // Supondo que o campo seja saldo_final
+        row.appendChild(saldoFinalCell);
+
+        var horarioInicioCell = document.createElement("td");
+        horarioInicioCell.classList.add("text-center", "d-none", "d-sm-table-cell", "order-1");
+        horarioInicioCell.textContent = modelo.horario_iniciou || "Não Inserido"; // Supondo que o campo seja horario_iniciou
+        row.appendChild(horarioInicioCell);
+
+        var horarioFinalizadoCell = document.createElement("td");
+        horarioFinalizadoCell.classList.add("text-center", "d-none", "d-sm-table-cell", "order-1");
+        horarioFinalizadoCell.textContent = modelo.horario_fechamento || "Não Inserido"; // Supondo que o campo seja horario_fechamento
+        row.appendChild(horarioFinalizadoCell);
+
+        const acoesCell = document.createElement("td");
+        acoesCell.className = "text-end";
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "btn-group";
+        // Botão de visualizar transação
+        const visualizarTransacoeBtn = document.createElement("button");
+        visualizarTransacoeBtn.className = "btn btn-sm btn-secondary";
+        visualizarTransacoeBtn.innerHTML = '<i class="bi bi-info-circle"></i>';
+        visualizarTransacoeBtn.onclick = function() {
+            alterando_tabela("table_pdv_tansacoes", modelo.pdv_id);
+        };
+        btnGroup.appendChild(visualizarTransacoeBtn);
+        // Botão de visualizar
+        const visualizarBtn = document.createElement("button");
+        visualizarBtn.className = "btn btn-sm btn-primary";
+        visualizarBtn.innerHTML = '<i class="bi bi-eye"></i>';
+        visualizarBtn.onclick = function() {
+            iniciar_modal(2, modelo.pdv_id);
+        };
+        btnGroup.appendChild(visualizarBtn);
+     
+        acoesCell.appendChild(btnGroup);
+        row.appendChild(acoesCell);
+
+        // Adiciona a linha à tabela
+        tbody.appendChild(row);
+    });
+}
+function montarTabela_pdv_diario_transacoes(list_data) {
+    var tbody = document.getElementById("tdbody_pdv_diario_transacoes");
+
+    // Limpa o conteúdo anterior da tabela
+    tbody.innerHTML = "";
+
+
+    if (list_data.length == 0 ){
+        const tr = document.createElement('tr');
+        const tdMensagem = document.createElement('td');
+        tdMensagem.textContent = 'Nenhuma resultado encontrado';
+        tdMensagem.setAttribute('colspan', '4');
+        tr.appendChild(tdMensagem);
+        tbody.appendChild(tr);
+        return 
+    }
+    // Itera sobre a lista de modelos JSON
+    list_data.forEach(function(modelo) {
+        // Cria uma nova linha na tabela
+        var row = document.createElement("tr");
+
+        // Adiciona as células com os valores do modelo
+        var horaCell = document.createElement("td");
+        horaCell.classList.add("text-center", "d-none", "d-sm-table-cell", "order-1");
+        horaCell.textContent = modelo.horario_iniciou; // Supondo que o campo seja horario_iniciou
+        row.appendChild(horaCell);
+
+        var vendaCell = document.createElement("td");
+        vendaCell.classList.add("text-start");
+        vendaCell.textContent = modelo.venda_id; // Supondo que o campo seja venda_id
+        row.appendChild(vendaCell);
+
+        var valorCell = document.createElement("td");
+        valorCell.classList.add("text-start", "d-none", "d-sm-table-cell");
+        valorCell.textContent = modelo.valor;
+        row.appendChild(valorCell);
+
+        var descricaoCell = document.createElement("td");
+        descricaoCell.classList.add("text-start");
+        descricaoCell.textContent = modelo.descricao;
+        row.appendChild(descricaoCell);
+
+        var acoesCell = document.createElement("td");
+        acoesCell.classList.add("text-end");
+        // Adicione aqui qualquer ação que deseja incluir nesta célula
+        row.appendChild(acoesCell);
+
+        // Adiciona a linha à tabela
+        tbody.appendChild(row);
+    });
+}
+
+</script>
+{% endblock%}

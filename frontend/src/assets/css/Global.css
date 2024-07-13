@@ -1,0 +1,202 @@
+ /* Estilizando a barra de rolagem */
+ 
+:root {
+    --tema-black: #000000;
+    --tema-blue: #0d1b2a;
+    --tema-white: #FFFFFF;
+    --tema-verde: #00bf63;
+    --siglas-empresa: "{ CPS }";
+    --name-empresa: "Comércio Prime Soluções";
+    --font-path: "../font/GLIKER-FAMILY/";
+    --font-family: 'Gliker', sans-serif;
+}
+    
+/* Aplicação da fonte Montserrat apenas para elementos com a classe .font-montserrat */
+.font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.6;
+    color: #333; /* Cor do texto padrão */
+}
+
+/* Exemplo de estilo adicional para elementos específicos */
+.font-montserrat h1, .font-montserrat h2, .font-montserrat h3, 
+.font-montserrat h4, .font-montserrat h5, .font-montserrat h6 {
+    font-weight: 700; /* Negrito para cabeçalhos */
+}
+
+.font-montserrat p {
+    margin-bottom: 1.5em;
+}
+
+.font-montserrat a {
+    text-decoration: none;
+}
+
+.font-montserrat a:hover {
+    text-decoration: underline;
+}
+
+@font-face {
+    font-family: 'Gliker';
+    src: url('../font/GLIKER-FAMILY/Gliker-Regular.woff') format('woff');
+    font-weight: normal; /* Peso da fonte Regular */
+}
+
+@font-face {
+    font-family: 'Gliker';
+        src: url('../font/GLIKER-FAMILY/Gliker-Bold.woff') format('woff');
+    font-weight: bold; /* Peso da fonte Bold */
+}
+
+@font-face {
+    font-family: 'Gliker';
+    src: url('../font/GLIKER-FAMILY/Gliker-SemiBold.woff') format('woff');
+    font-weight: 600; /* Peso da fonte SemiBold */
+}
+
+.Font-Gliker {
+font-family: var(--font-family);
+font-weight: normal; /* Padrão para o corpo do documento (Regular) */
+
+}
+
+    .logo-siglas::before  {
+        content: var(--siglas-empresa);
+        font-family: var(--font-family);
+        font-size: 40px;
+        letter-spacing: 10px;
+    }
+
+    .nome-empresa::after  {
+        content: var(--name-empresa);
+        font-family: var(--font-family);
+    }
+                
+@media (max-width: 600px) {
+    .logo-content::before {
+        content: var(--siglas-empresa);
+        font-family: var(--font-family);
+        font-size: 40px;
+        letter-spacing: 10px;
+    }
+}
+
+@media (min-width: 601px) {
+    .logo-content::before {
+        content: var(--name-empresa);
+        font-family: var(--font-family);
+    }
+}
+/* Defina os tamanhos de letra desejados */
+.Size1 {
+    font-size: 1.0rem;
+}
+
+.Size2 {
+    font-size: 1.9rem;
+}
+
+.wrapper    {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.content {
+    flex: 1;
+  }
+
+
+
+  .custom-shape-divider-top-1708368195 {
+    
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+}
+
+.custom-shape-divider-top-1708368195 svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 110px;
+    transform: rotateY(180deg);
+}
+
+.custom-shape-divider-top-1708368195 .shape-fill {
+    fill: #0D1B2A;
+}
+
+.custom-shape-divider-bottom-1708368458 {
+   
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+}
+
+.custom-shape-divider-bottom-1708368458 svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 102px;
+}
+
+.custom-shape-divider-bottom-1708368458 .shape-fill {
+    fill: #0D1B2A;
+}  
+
+
+
+
+.ui-autocomplete {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index:9999 !important;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    list-style: none;
+    font-size: 14px;
+    text-align: left;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    background-clip: padding-box;
+    
+  }
+  
+  .ui-autocomplete > li > div {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: normal;
+    line-height: 1.42857143;
+    color: #333333;
+    white-space: nowrap;
+  }
+  
+  .ui-state-hover,
+  .ui-state-active,
+  .ui-state-focus {
+    text-decoration: none;
+    color: #262626;
+    background-color: #f5f5f5;
+    cursor: pointer;
+  }
+  
+  .ui-helper-hidden-accessible {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }

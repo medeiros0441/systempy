@@ -1,0 +1,63 @@
+using System;
+using System.Diagnostics;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Caminho para o interpretador Python
+        string pythonPath = "python"; // Pode ser necessário especificar o caminho completo para o python.exe
+
+        // Caminho para o arquivo Python que você deseja executar
+        string pythonScriptPath = @"C:\Users\medei\source\repos\project\py processador\main.py";
+
+        // Argumentos para passar para o script Python (substitua pelos argumentos reais, se necessário)
+        string arguments = "";
+
+        // Configurar o processo de inicialização
+        ProcessStartInfo processStartInfo = new ProcessStartInfo(pythonPath)
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            Arguments = $"{pythonScriptPath} {arguments}"
+        };
+
+        // Iniciar o processo
+        Process process = new Process { StartInfo = processStartInfo };
+        process.Start();
+
+        // Ler a saída padrão e a saída de erro (opcional)
+        string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
+
+        // Aguardar até que o processo termine
+        process.WaitForExit();
+
+        // Exibir a saída (opcional)
+        Console.WriteLine("Saída do Python:");
+        Console.WriteLine(output);
+
+        // Exibir a saída de erro (opcional)
+        Console.WriteLine("Erro do Python:");
+        Console.WriteLine(error);
+
+        // Verificar o código de saída do processo
+        int exitCode = process.ExitCode;
+        Console.WriteLine($"Código de Saída do Processo: {exitCode}");
+
+        // Lidar com base no código de saída (se necessário)
+        if (exitCode == 0)
+        {
+            Console.WriteLine("O script Python foi executado com sucesso.");
+        }
+        else
+        {
+            Console.WriteLine("Ocorreu um erro ao executar o script Python.");
+        }
+
+        // Fechar o processo
+        process.Close();
+    }
+}
