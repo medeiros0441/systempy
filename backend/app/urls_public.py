@@ -5,20 +5,13 @@ from app.utils import Utils
 import app.view as view
 from django.views.generic import TemplateView
 
-aurlpatterns2314 = [
-    path("", TemplateView.as_view(template_name="index.html")),
+url_default = [
     path("home", view.views_default.home, name="home"),
     path("cadastro", view.views_default.cadastro, name="cadastro"),
     path("login", view.views_default.login, name="login"),
-    path("sobre", view.views_default.sobre, name="sobre"),
+    path("sobre", view.views_default.sobre, name="sobre")
 ]
 
-
-urlpatterns = [
-    path(
-        "", TemplateView.as_view(template_name="index.html")
-    ),  # Servir o React index.html
-]
 url_erros = [
     path("erro", view.views_erro.erro, name="erro"),
     path(
@@ -44,8 +37,7 @@ url_erros = [
         view.views_erro.erro,
         {"error_message": "Requisição inválida"},
         name="erro_400",
-    ),
-    # Adicione outras rotas de erro conforme necessário
+    )   
 ]
 
  
@@ -465,8 +457,9 @@ url_motoboy = [
 ]
 
 
-urlpatterns2 = (
-    url_api
+urlpatterns2= (
+    url_default
+    + url_api
     + url_assinante
     + url_empresa
     + url_usuario
