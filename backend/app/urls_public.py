@@ -457,7 +457,7 @@ url_motoboy = [
 ]
 
 
-urlpatterns2= (
+urlpatterns= (
     url_default
     + url_api
     + url_assinante
