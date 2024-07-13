@@ -1,25 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import routes from './routes/default';
+import Base from './components/Base';
+import { isAuthenticated } from './utils/auth';
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Base>
+        <Routes>
+          {routes.map((route, index) => {
+            if (route.private) {
+              return (
+                <Route 
+                  key={index}
+                  path={route.path}
+                  element={isAuthenticated() ? <route.component /> : <Navigate to="/login" />}
+                />
+              );
+            } else {
+              return (
+                <Route 
+                  key={index}
+                  path={route.path}
+                  element={<route.component />}
+                />
+              );
+            }
+          })}
+        </Routes>
+      </Base>
+    </Router>
   );
-}
+};
 
 export default App;
