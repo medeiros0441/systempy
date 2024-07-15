@@ -9,7 +9,7 @@ url_default = [
     path("home", view.views_default.home, name="home"),
     path("cadastro", view.views_default.cadastro, name="cadastro"),
     path("login", view.views_default.login, name="login"),
-    path("sobre", view.views_default.sobre, name="sobre")
+    path("sobre", view.views_default.sobre, name="sobre/"),
 ]
 
 url_erros = [
@@ -37,10 +37,10 @@ url_erros = [
         view.views_erro.erro,
         {"error_message": "Requisição inválida"},
         name="erro_400",
-    )   
+    ),
 ]
 
- 
+
 url_assinante = [
     path("dashboard", view.views_assinante.dashboard, name="dashboard"),
     path("desconect", view.views_assinante.desconect, name="desconect"),
@@ -457,7 +457,7 @@ url_motoboy = [
 ]
 
 
-urlpatterns= (
+urlpatterns = (
     url_default
     + url_api
     + url_assinante
