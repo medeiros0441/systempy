@@ -22,7 +22,6 @@ else:
 CORS_ALLOWED_ORIGINS = [
     "https://comercioprime.azurewebsites.net",
     "http://comercioprime.azurewebsites.net",
-    "http://localhost:3000",
 ]
 
 ALLOWED_HOSTS = [
@@ -34,7 +33,7 @@ ALLOWED_HOSTS = [
     "localhost",
 ]
 
-SECRET_KEY = "p@#j8^nhjt@8f7q898yck7$-jm7p--r*-ip#k*$v%%p$&%q$ol"
+SECRET_KEY = config("SECRET_KEY")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -45,13 +44,27 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "crispy_forms",
     "crispy_bootstrap5",
-    "app",
+    "api",
     "corsheaders",
     "django_extensions",
     "webpack_loader",
     "rest_framework",
+    "rest_framework_simplejwt",
 ]
 
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+}
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -59,13 +72,13 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "app.middlewares.AtualizarDadosClienteMiddleware",
+    "api.middlewares.AtualizarDadosClienteMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "app.middlewares.ErrorLoggingMiddleware",
-    "app.middlewares.ErrorHandlerMiddleware",
-    "app.middlewares.NotFoundMiddleware",
+    "api.middlewares.ErrorLoggingMiddleware",
+    "api.middlewares.ErrorHandlerMiddleware",
+    "api.middlewares.NotFoundMiddleware",
 ]
 
 ROOT_URLCONF = "setup.urls"

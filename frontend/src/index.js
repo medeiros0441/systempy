@@ -1,16 +1,14 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { BrowserRouter as Router } from 'react-router-dom';
-import App from './App'; // Importe seu componente App
-import 'src/assets/js/Global.js';
-import 'src/assets/js/utils.js';
-import 'src/assets/css/Global.css';
+import { createRoot } from 'react-dom/client'; // Importa createRoot
+import App from './App';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Importa o CSS do Bootstrap
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'src/assets/css/Global.css'
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Router>
-      <App />
-    </Router>
-  </React.StrictMode>,
-  document.getElementById('root')
+const container = document.getElementById('root');
+const root = createRoot(container);
+
+root.render(
+    <App />
 );

@@ -1,67 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { manageLoading } from 'src/utils/loading';
-import { alertCustomer } from 'src/utils/alerta';
-import RecuperarSenhaModal from './modal_recuperar_senha';
-import { Modal } from 'bootstrap';  // Importação do modal do Bootstrap
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';  // Import useNavigate
+import { request } from 'src/utils/api';  
+import alerta from 'src/utils/alerta';
+import loading from 'src/utils/loading';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [lembrarMe, setLembrarMe] = useState(false);
+  const navigate = useNavigate();  // Use useNavigate hook
 
-  const isValidEmail = (email) => {
-    return /\S+@\S+\.\S+/.test(email);
-  };
+  const validateForm = () => email.trim() !== '' && senha.trim() !== '';
 
-  const validateForm = () => {
-    let status = true;
-
-    if (!isValidEmail(email)) {
-      alert("Email inválido.");
-      status = false;
+  const handleLogin = async () => {
+    if (!validateForm()) {
+      alerta('Preencha todos os campos!', 2);
+      return;
     }
+    try {
+      loading(true, 'form_login');
 
-    return status;
-  };
+      const response = await request('setlogin', { email, senha }, 'POST');
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      const data = {
-        email: email,
-        senha: senha,
-        flexCheckDefault: lembrarMe ? "on" : "off"
-      };
-      setLogin(data);
-    }
-  };
-
-  useEffect(() => {
-    const elemento = document.getElementById('btn-login-nav');
-    if (elemento) {
-      elemento.style.display = 'none';
-    }
-
-    const myModal = new Modal(RecuperarSenhaModal);
-  }, []);
-
-  const setLogin = (data) => {
-    manageLoading(true, "form_login");
-
-    // Substitua chamarFuncaoPython pela chamada adequada à sua API em React
-    // Exemplo: axios.post('/api_login', data).then(response => { ... }).catch(error => { ... });
-    // Simulação:
-    setTimeout(() => {
-      const response = {
-        success: true,
-        redirect_url: '/dashboard' // URL para redirecionamento em caso de sucesso
-      };
-      if (response.success === true) {
-        window.location.href = response.redirect_url;
+      if (response.status === 200) {
+        navigate('/dashboard');  // Redireciona o usuário
       } else {
-        alertCustomer(response.message, 2);
+        alerta(response.message, 2);
       }
-      manageLoading(false, "form_login");
-    }, 1000); // Simulação de chamada assíncrona, remova isso no seu código real
+    } catch (error) {
+      alerta("Erro interno", 2, 'form');
+    } finally {
+      loading(false, 'form_login');
+    }
   };
 
   return (
@@ -81,8 +51,6 @@ const LoginForm = () => {
                   type="email"
                   className="form-control"
                   autoComplete="off"
-                  id="email"
-                  name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -117,9 +85,8 @@ const LoginForm = () => {
                 </label>
                 <button
                   type="button"
-                  className="link link-secondary small float-end"
-                  data-bs-toggle="modal"
-                  data-bs-target="#ModalRecuperarSenha"
+                  className="link link-secondary link-button small float-end"
+                 
                 >
                   Recuperar senha
                 </button>
@@ -133,7 +100,7 @@ const LoginForm = () => {
                   id="submit-btn"
                   className="btn btn-primary float-end me-2 btn-md"
                   type="button"
-                  onClick={handleSubmit}
+                  onClick={handleLogin}
                 >
                   Entrar
                 </button>

@@ -1,0 +1,278 @@
+from django.shortcuts import render, redirect
+from django.contrib.auth.hashers import check_password, make_password
+from django.http import JsonResponse
+from functools import wraps
+from django.core.exceptions import (
+    ObjectDoesNotExist,
+    MultipleObjectsReturned,
+    FieldDoesNotExist,
+)
+from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime
+from pytz import timezone
+import random
+import string
+from decimal import Decimal
+import json
+from django.forms.models import model_to_dict
+import uuid
+import logging
+from django.db.models import Model, ForeignKey
+
+logger = logging.getLogger(__name__)
+
+
+class Utils:
+
+    def set_cookie(response, key, value, days_expire=7):
+        if days_expire is None:
+            max_age = 365 * 24 * 60 * 60  # 1 year
+        else:
+            max_age = days_expire * 24 * 60 * 60
+        response.set_cookie(key, value, max_age=max_age, httponly=True)
+
+    def get_cookie(request, key):
+        return request.COOKIES.get(key)
+
+    def converter_para_decimal(valor):
+        try:
+            if valor is None or valor == "":
+                return Decimal(0)
+            elif valor == "NaN":
+                return Decimal(0)
+            elif "," in valor:
+                # Se houver vírgula no valor, substituímos por ponto e convertemos para Decimal
+                valor = valor.replace(",", ".")
+                return Decimal(valor)
+            else:
+                return Decimal(valor)
+        except (ValueError, TypeError):
+            return Decimal(0)
+
+    @staticmethod
+    def obter_data_hora_atual(value=None):
+        # Obtém a data e hora atual no fuso horário do Brasil
+        brasil_tz = timezone("America/Sao_Paulo")
+        dt_brasil = datetime.now(brasil_tz)
+
+        # Formata a data e hora de acordo com o parâmetro especificado
+        if value == True or value == "date":
+            # Retorna apenas a data no formato dia/mes/ano
+            return dt_brasil.strftime("%d/%m/%Y")
+        elif value == False or value == "time":
+            return dt_brasil.strftime("%H:%M")
+        else:
+            # Retorna data e hora no formato dia/mes/ano hora:minutos
+            return dt_brasil.strftime("%d/%m/%Y %H:%M")
+
+    def erro(request, error_message):
+        if request.headers.get("Accept") == "application/json":
+            # Se a solicitação aceitar JSON, retorne um JsonResponse com a mensagem de erro
+            return JsonResponse({"error_message": error_message}, status=500)
+        else:
+            # Caso contrário, retorne o template HTML para exibir a mensagem de erro na página
+            return render(request, "Erro.html", {"error_message": error_message})
+
+    def gerar_numero_aleatorio(tamanho=4):
+        # Gerar um número aleatório com 'tamanho' dígitos
+        return "".join(random.choices(string.digits, k=tamanho))
+
+    def obter_dados_localizacao_ipinfo(ip, requests):
+        # Chave de API do ipinfo.io
+        api_key = "7a622c40229db0"
+
+        # URL da API ipinfo.io
+        url = f"http://ipinfo.io/{ip}?token={api_key}"
+
+        try:
+            # Fazendo uma solicitação GET para a API ipinfo.io
+            response = requests.get(url)
+            from api.models import Sessao
+
+            # Verifica se a solicitação foi bem-sucedida (código de status HTTP 200)
+            if response.status_code == 200:
+                # Parseia os dados JSON da resposta
+                data = response.json()
+                sessao = Sessao.objects.create(
+                    ip_sessao=ip,
+                    cidade=data.get("city"),
+                    regiao=data.get("region"),
+                    pais=data.get("country"),
+                    latitude=float(data.get("loc", "").split(",")[0]),
+                    longitude=float(data.get("loc", "").split(",")[1]),
+                    codigo_postal=data.get("postal"),
+                    organizacao=data.get("org"),
+                )
+
+            else:
+                # Se a solicitação falhar, imprime o status da resposta
+                print(f"Erro: {response.status_code}")
+
+        except Exception as e:
+            print(f"Erro ao obter dados de localização: {e}")
+
+    def configuracao_usuario(request, id_usuario, codigo):
+        from api.view.views_erro import views_erro
+        from api.models import Configuracao
+
+        try:
+            configuracao = Configuracao.objects.get(
+                usuario_id=id_usuario, codigo=codigo
+            )
+            if not configuracao.status_acesso:
+                mensagem = (
+                    "Acesso negado: você não tem permissão para executar o método."
+                )
+                return False, views_erro.erro(request, mensagem)
+            else:
+                return True, None
+        except ObjectDoesNotExist:
+            mensagem = "Configuração não encontrada."
+            return False, views_erro.erro(request, mensagem)
+        except MultipleObjectsReturned:
+            mensagem = "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte."
+            return False, views_erro.erro(request, mensagem)
+
+    def verificar_permissoes(codigo_model=None, auth_required=False):
+        """
+        Decorador para verifiar as permissões do usuário antes de executar a função.
+        """
+
+        def decorator(func):
+            @wraps(func)
+            def wrapper(request, *args, **kwargs):
+                from api.static import UserInfo
+
+                # Obtém o ID do usuário da requisição
+                id_empresa = UserInfo.get_id_empresa(request)
+                id_usuario = UserInfo.get_id_usuario(request)
+
+                # Verifica se autenticação é necessária e se o usuário está autenticado
+                if auth_required and (id_usuario == None or id_empresa == None):
+                    return redirect("login")
+
+                # Verifica se o usuário está com acesso permitido
+                if not Utils.get_status_acesso(id_usuario):
+                    return redirect("login")
+
+                # Configurações de modelo, se aplicável
+                if codigo_model:
+                    codigo_model_convertido = codigo_model
+                    if isinstance(codigo_model, str):
+                        lista = Utils.lista_de_configuracao()
+                        codigo_model_lower = codigo_model.lower()
+                        for item in lista:
+                            if item["nome"].lower() == codigo_model_lower:
+                                codigo_model_convertido = item["codigo"]
+                                break
+
+                    status, render = Utils.configuracao_usuario(
+                        request, id_usuario, codigo_model_convertido
+                    )
+                else:
+                    status = True
+
+                if status:
+                    return func(request, *args, **kwargs)
+                else:
+                    return render
+
+            return wrapper
+
+        return decorator
+
+    def lista_de_configuracao():
+        return [
+            {"nome": "Usuario", "codigo": 1},
+            {"nome": "Empresa", "codigo": 2},
+            {"nome": "Endereco", "codigo": 3},
+            {"nome": "Galao", "codigo": 4},
+            {"nome": "Loja", "codigo": 5},
+            {"nome": "Produto", "codigo": 6},
+            {"nome": "Venda", "codigo": 7},
+            {"nome": "Cliente", "codigo": 8},
+            {"nome": "Motoboy", "codigo": 9},
+            {"nome": "Pdv", "codigo": 10},
+            {"nome": "TransacaoPDV", "codigo": 11},
+            {"nome": "RegistroDiarioPDV", "codigo": 12},
+            {"nome": "Faturamento", "codigo": 13},
+        ]
+
+    def buscar_nome_por_codigo(codigo_classe):
+        for configuracao in Utils.lista_de_configuracao():
+            if configuracao["codigo"] == codigo_classe:
+                return configuracao["nome"]
+        return None
+
+    def extract_data_to_model_instance(model_class, data, instance=None):
+        """
+        Extrai dados de um dicionário e os atribui a uma instância do modelo fornecido.
+
+        Args:
+            model_class (Model): A classe do modelo Django.
+            data (dict): O dicionário de dados do qual extrair os valores.
+            instance (Model, optional): A instância do modelo para atualizar. Se None, uma nova instância será criada.
+
+        Returns:
+            Model: Uma instância do modelo com os dados extraídos.
+        """
+        if not issubclass(model_class, Model):
+            raise ValueError(
+                "O argumento 'model_class' deve ser uma classe de modelo Django."
+            )
+
+        if instance is None:
+            instance = model_class()
+
+        for field in model_class._meta.get_fields():
+            field_name = field.name
+            if field_name in data:
+                setattr(instance, field_name, data[field_name])
+            elif isinstance(field, ForeignKey) and field_name + "_id" in data:
+                setattr(instance, field_name + "_id", data[field_name + "_id"])
+
+        return instance
+
+    def modelo_para_json(*instances):
+        """
+        Converte várias instâncias de modelos Django para um dicionário JSON agrupado.
+        """
+
+        def instance_to_dict(instance):
+            if instance is None:
+                return {}
+
+            try:
+                # Converte a instância para um dicionário, incluindo todos os campos
+                data = model_to_dict(
+                    instance, fields=[field.name for field in instance._meta.fields]
+                )
+
+                # Adiciona a chave primária manualmente, caso não tenha sido incluída
+                pk_name = instance._meta.pk.name
+                if pk_name not in data:
+                    data[pk_name] = str(getattr(instance, pk_name))
+
+                # Adiciona campos de ForeignKey representadas por _id
+                for field in instance._meta.fields:
+                    if isinstance(field, ForeignKey):
+                        related_instance = getattr(instance, field.name)
+                        if related_instance:
+                            data[field.name + "_id"] = str(related_instance.pk)
+
+                return data
+            except Exception as e:
+                return {"error": str(e)}
+
+        combined_data = {}
+        for instance in instances:
+            if instance:
+                instance_name = instance.__class__.__name__.lower()
+                combined_data[instance_name] = instance_to_dict(instance)
+        return combined_data
+
+    def modelos_para_lista_json(instances):
+        """
+        Converte uma lista de instâncias de um modelo Django para uma lista de dicionários JSON.
+        """
+        return [Utils.modelo_para_json(instance) for instance in instances]

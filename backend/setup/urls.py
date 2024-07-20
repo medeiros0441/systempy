@@ -4,6 +4,6 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    path("api/", include("app.urls_public")),  # URLs da sua API
+    path("api/", include("api.urls_api")),  # URLs da sua API
     re_path(r"^.*$", TemplateView.as_view(template_name="index.html")),  # Rota do React
 ]

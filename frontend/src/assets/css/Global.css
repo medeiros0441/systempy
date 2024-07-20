@@ -1,5 +1,30 @@
  /* Estilizando a barra de rolagem */
  
+ .container-erro {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.1);
+}
+.h1-erro {
+    color: #333;
+}
+.p-erro {
+    color: #666;
+}
+.error-list {
+    text-align: left;
+    margin-top: 20px;
+}
+.error-list li {
+    margin-bottom: 10px;
+}
+.error-message {
+    color: #ff6347;
+    font-weight: bold;
+}
 :root {
     --tema-black: #000000;
     --tema-blue: #0d1b2a;

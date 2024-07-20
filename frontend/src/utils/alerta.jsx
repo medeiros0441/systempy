@@ -1,5 +1,3 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
 import { Modal } from 'bootstrap';  // Importação do modal do Bootstrap
 
 function showAlert(type, text, containerId) {
@@ -92,7 +90,7 @@ function showCustomAlert(text, containerId, time) {
   }, time);
 }
 
-export function alertCustomer(text, type = null, container = false, time = 180000) {
+export default function alerta(text, type = null, container = false, time = 180000) {
   if (type === null) {
     showCustomAlert(text, container, time);
   } else {
