@@ -2,35 +2,35 @@ from pathlib import Path
 from decouple import config
 import os
 from dotenv import load_dotenv
-
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = "/static/"
+
 # Carregar variáveis de ambiente do arquivo correspondente ao ambiente atual
 ENVIRONMENT = os.getenv("DJANGO_ENV", "")
+load_dotenv(".env")  # Carrega o arquivo .env para todas as variáveis de ambiente
+
 if ENVIRONMENT == "development":
-    load_dotenv(".env")
     DEBUG = True
 else:
     DEBUG = False
-    load_dotenv(".env")
-    CSRF_TRUSTED_ORIGINS = [
-        "https://comercioprime.azurewebsites.net",
-        "http://comercioprime.azurewebsites.net",
-    ]
-CORS_ALLOWED_ORIGINS = [
+
+# Defina a lista de origens permitidas
+ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
     "https://comercioprime.azurewebsites.net",
     "http://comercioprime.azurewebsites.net",
 ]
+
+CSRF_TRUSTED_ORIGINS = ALLOWED_ORIGINS
+CORS_ALLOWED_ORIGINS = ALLOWED_ORIGINS
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "comercioprime.azurewebsites.net",
-    "https://comercioprime.azurewebsites.net",
-    "http://comercioprime.azurewebsites.net",
-    "localhost",
 ]
 
 SECRET_KEY = config("SECRET_KEY")
@@ -52,19 +52,18 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
 ]
 
-
-from datetime import timedelta
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -72,16 +71,15 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "api.middlewares.AtualizarDadosClienteMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "api.middlewares.ErrorLoggingMiddleware",
-    "api.middlewares.ErrorHandlerMiddleware",
-    "api.middlewares.NotFoundMiddleware",
+    "api.middlewares.Middleware",
 ]
 
 ROOT_URLCONF = "setup.urls"
+CSRF_COOKIE_NAME = "csrftoken"
+
 
 WEBPACK_LOADER = {
     "DEFAULT": {
@@ -165,5 +163,29 @@ if DEBUG:
 else:
     CSRF_COOKIE_SECURE = True
     CSRF_COOKIE_HTTPONLY = False
+    # Redireciona todas as solicitações HTTP para HTTPS
+    # Isso garante que todas as comunicações com o servidor sejam seguras.
+    SECURE_SSL_REDIRECT = True
+
+    # Configura o cabeçalho HTTP Strict Transport Security (HSTS) com um tempo de validade
+    # HSTS informa aos navegadores para sempre usar HTTPS ao se conectar ao site.
+    # O valor 3600 define o tempo em segundos (1 hora) durante o qual os navegadores devem manter a política HSTS.
+    SECURE_HSTS_SECONDS = 3600
+
+    # Inclui subdomínios no cabeçalho HSTS
+    # Garante que todos os subdomínios também sigam a política HSTS.
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+    # Adiciona o domínio ao preload list do HSTS
+    # Isso faz com que o navegador trate o site como sempre HTTPS mesmo antes da primeira visita.
+    SECURE_HSTS_PRELOAD = True
+
+    # Ativa o filtro XSS (Cross-Site Scripting) no navegador
+    # Protege contra ataques que injetam scripts maliciosos em páginas da web.
+    SECURE_BROWSER_XSS_FILTER = True
+
+    # Impede que os navegadores detectem o tipo de conteúdo de maneira insegura
+    # Protege contra ataques de tipo de conteúdo, onde o navegador pode tentar interpretar dados maliciosos.
+    SECURE_CONTENT_TYPE_NOSNIFF = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

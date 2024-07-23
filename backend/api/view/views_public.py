@@ -7,27 +7,28 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from random import choices
-from django.core.exceptions import (
-    ObjectDoesNotExist,
-)
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import check_password, make_password
 from ..models import Empresa, Usuario
 from .views_configuracao import views_configuracao
 from django.utils import timezone
-import jwt
-from datetime import datetime, timedelta
 from django.conf import settings
-from ..static import UserInfo
+from ..user import UserInfo
 from ..TokenManager import TokenManager
+
+
 class views_public(APIView):
     permission_classes = [AllowAny]
 
     def check_authentication(request):
         if UserInfo.is_authenticated(request):
-            return JsonResponse({'authenticated': True}, status=200)
+            return JsonResponse({"authenticated": True}, status=200)
         else:
-            return JsonResponse({'authenticated': False, 'message': "Usuário não autenticado."}, status=403)
-        
+            return JsonResponse(
+                {"authenticated": False, "message": "Usuário não autenticado."},
+                status=403,
+            )
+
     @csrf_exempt
     def contato(request):
 
@@ -68,14 +69,13 @@ class views_public(APIView):
         # Caso não seja uma requisição POST, retornar um erro 405 Método Não Permitido
         return JsonResponse({"error": "Método não permitido"}, status=405)
 
-    
     @csrf_exempt
     def SetLogin(request):
         try:
             if request.method == "POST":
                 data = json.loads(request.body)
                 email = data.get("email", "").lower().strip()
-                senha = data.get("senha",  "")
+                senha = data.get("senha", "")
                 # Verifica se o usuário existe
                 usuario = Usuario.objects.filter(email=email).first()
                 if usuario:
@@ -97,14 +97,13 @@ class views_public(APIView):
                             "id_usuario": str(usuario.id_usuario),
                             "id_empresa": str(usuario.empresa.id_empresa),
                             "nivel_usuario": usuario.nivel_usuario,
-                            "status_acesso": usuario.status_acesso
+                            "status_acesso": usuario.status_acesso,
                         }
-                        
+
                         response = TokenManager.create_token(
-                            nome_token="jwt_token",
+                            nome_token="token_user",
                             payload=payload,
-                            time=24,  # Expiração em horas
-                            httponly=False  # pode ser variável
+                            time=10,  # Expiração em horas
                         )
 
                         return response

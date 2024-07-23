@@ -1,5 +1,3 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.hashers import check_password, make_password
 from django.http import JsonResponse
 from functools import wraps
 from django.core.exceptions import (
@@ -7,7 +5,6 @@ from django.core.exceptions import (
     MultipleObjectsReturned,
     FieldDoesNotExist,
 )
-from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from pytz import timezone
 import random
@@ -65,13 +62,7 @@ class Utils:
             # Retorna data e hora no formato dia/mes/ano hora:minutos
             return dt_brasil.strftime("%d/%m/%Y %H:%M")
 
-    def erro(request, error_message):
-        if request.headers.get("Accept") == "application/json":
-            # Se a solicitação aceitar JSON, retorne um JsonResponse com a mensagem de erro
-            return JsonResponse({"error_message": error_message}, status=500)
-        else:
-            # Caso contrário, retorne o template HTML para exibir a mensagem de erro na página
-            return render(request, "Erro.html", {"error_message": error_message})
+    
 
     def gerar_numero_aleatorio(tamanho=4):
         # Gerar um número aleatório com 'tamanho' dígitos
@@ -133,54 +124,7 @@ class Utils:
             mensagem = "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte."
             return False, views_erro.erro(request, mensagem)
 
-    def verificar_permissoes(codigo_model=None, auth_required=False):
-        """
-        Decorador para verifiar as permissões do usuário antes de executar a função.
-        """
-
-        def decorator(func):
-            @wraps(func)
-            def wrapper(request, *args, **kwargs):
-                from api.static import UserInfo
-
-                # Obtém o ID do usuário da requisição
-                id_empresa = UserInfo.get_id_empresa(request)
-                id_usuario = UserInfo.get_id_usuario(request)
-
-                # Verifica se autenticação é necessária e se o usuário está autenticado
-                if auth_required and (id_usuario == None or id_empresa == None):
-                    return redirect("login")
-
-                # Verifica se o usuário está com acesso permitido
-                if not Utils.get_status_acesso(id_usuario):
-                    return redirect("login")
-
-                # Configurações de modelo, se aplicável
-                if codigo_model:
-                    codigo_model_convertido = codigo_model
-                    if isinstance(codigo_model, str):
-                        lista = Utils.lista_de_configuracao()
-                        codigo_model_lower = codigo_model.lower()
-                        for item in lista:
-                            if item["nome"].lower() == codigo_model_lower:
-                                codigo_model_convertido = item["codigo"]
-                                break
-
-                    status, render = Utils.configuracao_usuario(
-                        request, id_usuario, codigo_model_convertido
-                    )
-                else:
-                    status = True
-
-                if status:
-                    return func(request, *args, **kwargs)
-                else:
-                    return render
-
-            return wrapper
-
-        return decorator
-
+  
     def lista_de_configuracao():
         return [
             {"nome": "Usuario", "codigo": 1},

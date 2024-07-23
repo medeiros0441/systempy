@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAccessToken, refreshAccessToken } from './token';
+import { getToken } from './token';
 
 // Configurações padrão do Axios
 const axiosInstance = axios.create({
@@ -18,10 +18,10 @@ const axiosInstance = axios.create({
  */
 export const request = (url, method, data = null, config = {}) => {
   // Adiciona o token de autenticação ao cabeçalho
-  const token = getAccessToken();
+  const retorn = getToken("token_user");
   const headers = {
     ...config.headers,
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(retorn.success ? { Authorization: `Bearer ${retorn.token}` } : {}),
   };
 
   return axiosInstance({

@@ -1,59 +1,28 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from api.utils import Utils
-from api.static import Alerta, UserInfo
+from api.permissions import permissions
+from api.user import UserInfo
 from django.db.models import Q
 from ..processos.venda import processos
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from api import models
+from api.models import (
+    Usuario,
+    ItemCompra,
+    Produto,
+    Venda,
+    Loja,
+    Cliente,
+    Associado,
+    GestaoGalao,
+)
 from .views_erro import views_erro
 from .views_pdv import views_pdv, views_transacao_pdv
-from .views_pdv import views_associado_pdv, views_registro_diario_pdv
 from .views_personalizacao import views_personalizacao
+from rest_framework.views import APIView
 
 
-class views_venda:
-
-    @staticmethod
-    @Utils.verificar_permissoes(7, True)
-    def lista_vendas(request, context={}, id_loja=None, **kwargs):
-
-        alerta = Alerta.get_mensagem()
-        if alerta:
-            context["alerta_js"] = Utils.criar_alerta_js(alerta)
-
-        return render(request, "venda/lista_vendas.html", context)
-
-    @staticmethod
-    @Utils.verificar_permissoes(7, True)
-    def editar_venda(request, id_venda):
-        try:
-            context = {}
-            alerta = Alerta.get_mensagem()
-            if alerta:
-                context["alerta_js"] = Utils.criar_alerta_js(alerta)
-            context["type"] = 2
-            context["id_venda"] = id_venda
-
-            return render(request, "venda/formulario_venda.html", context)
-        except Exception as e:
-            mensagem_erro = str(e)
-            return views_erro.erro(request, mensagem_erro)
-
-    @staticmethod
-    @Utils.verificar_permissoes(7, True)
-    def criar_venda(request, context={}):
-        try:
-            alerta = Alerta.get_mensagem()
-            if alerta:
-                context["alerta_js"] = Utils.criar_alerta_js(alerta)
-            context["type"] = 1
-            return render(request, "venda/formulario_venda.html", context)
-        except Exception as e:
-            mensagem_erro = str(e)
-            return views_erro.erro(request, mensagem_erro)
+class views_venda(APIView):
 
     @csrf_exempt
     def obter_dados(request):
@@ -62,19 +31,19 @@ class views_venda:
                 id_empresa = UserInfo.get_id_empresa(request, True)
                 id_usuario = UserInfo.get_id_usuario(request)
                 context = {}
-                associacao = models.Associado.objects.filter(
+                associacao = Associado.objects.filter(
                     usuario_id=id_usuario, status_acesso=True
                 )
                 ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
 
-                produtos = models.Produto.objects.filter(
+                produtos = Produto.objects.filter(
                     Q(loja_id__in=ids_lojas_associadas),
                     loja__empresa_id=id_empresa,
                     status=True,
                 )
-                lojas = models.Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
+                lojas = Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
 
-                vendas = models.Venda.objects.filter(
+                vendas = Venda.objects.filter(
                     Q(loja_id__in=ids_lojas_associadas),
                     loja__empresa__id_empresa=id_empresa,
                 ).prefetch_related("loja")
@@ -86,11 +55,11 @@ class views_venda:
                 }
 
                 return JsonResponse(context)
-            except models.Associado.DoesNotExist:
+            except Associado.DoesNotExist:
                 context["menssage"] = (
                     "Tivemos um problema para recuperar as lojas. Entre em contato com um administrador da assinatura. Você precisa estar associado a uma loja para realizar uma venda."
                 )
-            except models.Produto.DoesNotExist:
+            except Produto.DoesNotExist:
                 context["menssage"] = (
                     "Tivemos um problema para recuperar os Produtos. Entre em contato com um administrador da assinatura. Você precisa Ter produto para vender-los."
                 )
@@ -102,7 +71,7 @@ class views_venda:
             status=405,
         )
 
-    @Utils.verificar_permissoes(7, True)
+    @permissions.isAutorizado(7, True)
     @csrf_exempt
     def processar_venda(request):
         try:
@@ -191,11 +160,11 @@ class views_venda:
                 id_loja = views_personalizacao.get_loja_id(id)
                 if id_loja is None:
                     return None, "Loja não está selecionada."
-            dados["loja"] = models.Loja.objects.get(id_loja=id_loja)
+            dados["loja"] = Loja.objects.get(id_loja=id_loja)
 
             id_cliente = data_formulario.get("id_cliente")
             if id_cliente != "0":
-                dados["cliente"] = models.Cliente.objects.get(id_cliente=id_cliente)
+                dados["cliente"] = Cliente.objects.get(id_cliente=id_cliente)
             else:
                 dados["cliente"] = None
 
@@ -210,7 +179,7 @@ class views_venda:
                     "valor_pago": valor_pago,
                     "troco": troco,
                     "valor_total": total_apagar,
-                    "user": models.Usuario.objects.get(id_usuario=id),
+                    "user": Usuario.objects.get(id_usuario=id),
                     "desc_venda": data_formulario.get("descricao_venda"),
                     "id_venda": data_formulario.get("id_venda", None) or None,
                 }
@@ -232,57 +201,64 @@ class views_venda:
         return FORMA_PAGAMENTO_MAP.get(forma_pagamento_str)
 
     @staticmethod
-    @Utils.verificar_permissoes(7, True)
+    @permissions.isAutorizado(7, True)
     def _open_venda(request):
         try:
-            context = {}
             id_usuario = UserInfo.get_id_usuario(request)
             id_empresa = UserInfo.get_id_empresa(request)
 
-            associacao = models.Associado.objects.filter(
+            associacao = Associado.objects.filter(
                 usuario_id=id_usuario, status_acesso=True
             )
-            # Obtém uma lista de IDs de loja associadas
-            ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
+            if not associacao.exists():
+                raise Associado.DoesNotExist
 
-            # Filtra os produtos com base nas lojas associadas
-            produtos = models.Produto.objects.filter(
+            ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
+            produtos = Produto.objects.filter(
                 Q(loja_id__in=ids_lojas_associadas),
                 loja__empresa_id=id_empresa,
                 status=True,
             )
+            if not produtos.exists():
+                raise Produto.DoesNotExist
+
             context = {
                 "list_produtos": produtos,
                 "open_modal": True,
             }
-            return views_venda.lista_vendas(request, context)
-        except models.Associado.DoesNotExist:
-            Alerta.set_mensagem(
-                "Tivemos um problema para recuperar as lojas. Entre em contato com um administrador da assinatura. Você precisa estar associado a uma loja para realizar uma venda."
+            return JsonResponse(context)
+
+        except Associado.DoesNotExist:
+            set_mensagem = (
+                "Tivemos um problema para recuperar informações sobre Associado. "
+                "Entre em contato com um administrador da assinatura. "
+                "Você precisa estar associado a uma loja para realizar uma venda."
             )
-            context["open_modal"] = False
-            return views_venda.lista_vendas(request, context)
-        except models.Produto.DoesNotExist:
-            Alerta.set_mensagem(
-                "Tivemos um problema para recuperar os Produtos. Entre em contato com um administrador da assinatura. Você precisa Ter produto para vender-los."
+            return JsonResponse(
+                {"message": set_mensagem, "open_modal": False}, status=404
             )
-            context["open_modal"] = False
-            return views_venda.lista_vendas(request, context)
+
+        except Produto.DoesNotExist:
+            set_mensagem = (
+                "Tivemos um problema para recuperar os Produtos. "
+                "Entre em contato com um administrador da assinatura. "
+                "Você precisa ter produtos para vendê-los."
+            )
+            return JsonResponse(
+                {"message": set_mensagem, "open_modal": False}, status=404
+            )
+
         except Exception as e:
             mensagem_erro = str(e)
-            return views_erro.erro(request, mensagem_erro)
-
-    @staticmethod
-    @Utils.verificar_permissoes(7, True)
-    def selecionar_venda(request, venda_id):
-
-        return views_venda.lista_vendas(request)
+            return JsonResponse(
+                {"message": mensagem_erro, "open_modal": False}, status=500
+            )
 
     @csrf_exempt
     def selecionar_produto_by_venda(request, id_venda):
         try:
             # Tenta encontrar a venda pelo ID
-            itens_compra = models.ItemCompra.objects.filter(venda_id=id_venda)
+            itens_compra = ItemCompra.objects.filter(venda_id=id_venda)
             # Inicializa uma lista para armazenar os detalhes dos produtos
             detalhes_produtos = []
             # Itera sobre os itens de compra para obter os detalhes dos produtos
@@ -306,7 +282,7 @@ class views_venda:
                     "list_produtos": detalhes_produtos,
                 }
             )
-        except models.Venda.DoesNotExist:
+        except Venda.DoesNotExist:
             # Se a venda não for encontrada, retorna uma resposta de erro
             return JsonResponse({"message": "Venda não encontrada"}, status=404)
         except Exception as e:
@@ -317,7 +293,7 @@ class views_venda:
     @csrf_exempt
     def selecionar_retornaveis_by_venda(request, id_venda):
         try:
-            gestao_galoes = models.GestaoGalao.objects.filter(venda__id_venda=id_venda)
+            gestao_galoes = GestaoGalao.objects.filter(venda__id_venda=id_venda)
             # Lista para armazenar os objetos obj
             data_list = []
             # Itera sobre os objetos GestaoGalao
@@ -350,7 +326,7 @@ class views_venda:
                     "list_retornaveis": data_list,
                 }
             )
-        except models.Venda.DoesNotExist:
+        except Venda.DoesNotExist:
             # Se a venda não for encontrada, retorna uma resposta de erro
             return JsonResponse({"message": "Venda não encontrada"}, status=404)
         except Exception as e:
@@ -362,9 +338,9 @@ class views_venda:
     def selecionar_cliente_by_venda(request, id_venda):
         try:
             # Obtém a venda junto com o cliente e suas informações de endereço relacionadas
-            venda = models.Venda.objects.select_related(
-                "cliente", "cliente__endereco"
-            ).get(id_venda=id_venda)
+            venda = Venda.objects.select_related("cliente", "cliente__endereco").get(
+                id_venda=id_venda
+            )
 
             # Agora você pode acessar o cliente e seu endereço diretamente sem fazer consultas adicionais
             cliente = venda.cliente
@@ -399,17 +375,17 @@ class views_venda:
                 }
             )
 
-        except models.Venda.DoesNotExist:
+        except Venda.DoesNotExist:
             return JsonResponse({"message": "Venda não encontrada"}, status=404)
 
-        except models.Cliente.DoesNotExist:
+        except Cliente.DoesNotExist:
             return JsonResponse({"message": "cliente não encontrada"}, status=404)
         except Exception as e:
             mensagem_erro = str(e)
             return JsonResponse({"message": mensagem_erro}, status=500)
 
     @staticmethod
-    @Utils.verificar_permissoes(7, True)
+    @permissions.isAutorizado(7, True)
     def excluir_venda(request, venda_id):
         if (
             request.session.get("id_empresa", 0) != 0

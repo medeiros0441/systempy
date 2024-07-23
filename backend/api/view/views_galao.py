@@ -1,16 +1,16 @@
 from api.utils import Utils
-from django.shortcuts import render
 from django.http import HttpResponse
 from ..models import Galao, Configuracao
-from api.static import Alerta, UserInfo
 
 from .views_erro import views_erro
+
+from api.permissions import permissions
 
 
 class views_galao:
 
     @staticmethod
-    @Utils.verificar_permissoes(3, True)
+    @permissions.isAutorizado(3, True)
     def lista_galao(request):
         if (
             request.session.get("id_empresa", 0) != 0
@@ -24,7 +24,7 @@ class views_galao:
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
-    @Utils.verificar_permissoes(3, True)
+    @permissions.isAutorizado(3, True)
     def editar_galao(request, galao_id):
         if (
             request.session.get("id_empresa", 0) != 0
@@ -38,7 +38,7 @@ class views_galao:
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
-    @Utils.verificar_permissoes(3, True)
+    @permissions.isAutorizado(3, True)
     def selecionar_galao(request, galao_id):
         if (
             request.session.get("id_empresa", 0) != 0
@@ -52,7 +52,7 @@ class views_galao:
                 request, "Você não está autorizado a fazer esta requisição."
             )
 
-    @Utils.verificar_permissoes(3, True)
+    @permissions.isAutorizado(3, True)
     def excluir_galao(request, galao_id):
         if (
             request.session.get("id_empresa", 0) != 0

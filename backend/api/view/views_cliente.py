@@ -1,69 +1,22 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from api.utils import Utils
 from api import models
-from api.static import Alerta, UserInfo
+from api.user import UserInfo
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.db.models import F, DateTimeField
-from django.db.models.functions import Cast
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 import api.view as view
+from api.permissions import permissions
 
 
 class views_cliente:
 
-    @staticmethod
-    @Utils.verificar_permissoes(8, True)
-    def lista_clientes(request, Alerta=None):
-        return render(request, "cliente/lista_clientes.html")
-
-    @Utils.verificar_permissoes(8, True)
-    def criar_cliente(request):
-        if Utils.get_status(request):
-            if request.method == "POST":
-                status, msg = views_cliente.create_cliente_data(request.POST)
-                return redirect("cliente/lista_clientes")
-            else:
-                return render(request, "cadastrar_cliente.html")
-        else:
-            return view.views_erro.erro(
-                request, "Você não está autorizado a fazer esta requisição."
-            )
-
-    @Utils.verificar_permissoes(8, True)
-    def editar_cliente(request, cliente_id):
-        cliente = get_object_or_404(models.Cliente, id_cliente=cliente_id)
-        if request.method == "POST":
-            status, msg = views_cliente.update_cliente_data(request.POST)
-            cliente.save()
-            return redirect("cliente/lista_clientes")
-        else:
-            return render(request, "editar_cliente.html", {"cliente": cliente})
-
-    @Utils.verificar_permissoes(8, True)
-    def selecionar_cliente(request, cliente_id):
-        if Utils.get_status(request):
-            cliente = get_object_or_404(models.Cliente, id_cliente=cliente_id)
-            return render(request, "selecionar_cliente.html", {"cliente": cliente})
-        else:
-            return view.views_erro.erro(
-                request, "Você não está autorizado a fazer esta requisição."
-            )
-
-    @Utils.verificar_permissoes(8, True)
-    def excluir_cliente(request, cliente_id):
-        cliente = get_object_or_404(models.Cliente, id_cliente=cliente_id)
-        if request.method == "POST":
-            # Lógica para excluir o cliente
-            return redirect("cliente/lista_clientes")
-        else:
-            return render(request, "excluir_cliente.html", {"cliente": cliente})
-
-    @Utils.verificar_permissoes(8, True)
+    @permissions.isAutorizado(8, True)
     @csrf_exempt
-    def api_create_cliente(request):
+    def create_cliente(request):
         if request.method == "POST":
             try:
                 data = json.loads(request.body)
@@ -106,9 +59,9 @@ class views_cliente:
             return JsonResponse({"error": "Método não permitido"}, status=405)
 
     @staticmethod
-    @Utils.verificar_permissoes(8, True)
+    @permissions.isAutorizado(8, True)
     @csrf_exempt
-    def api_update_cliente(request):
+    def update_cliente(request):
         if request.method == "PUT":
             try:
                 data = json.loads(request.body)
@@ -162,14 +115,14 @@ class views_cliente:
             return JsonResponse({"error": "Método não permitido"}, status=405)
 
     @staticmethod
-    @Utils.verificar_permissoes(8, True)
-    def api_get_cliente(request, cliente_id):
+    @permissions.isAutorizado(8, True)
+    def get_cliente(request, cliente_id):
         cliente = get_object_or_404(models.Cliente, pk=cliente_id)
         return JsonResponse({"success": True, "data": Utils.modelo_para_json(cliente)})
 
     @staticmethod
-    @Utils.verificar_permissoes(8, True)
-    def api_delete_cliente(request, cliente_id):
+    @permissions.isAutorizado(8, True)
+    def delete_cliente(request, cliente_id):
         try:
             empresa_id = UserInfo.get_id_empresa(request)
             cliente = models.Cliente.objects.get(
@@ -190,9 +143,9 @@ class views_cliente:
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-    @Utils.verificar_permissoes(8, True)
+    @permissions.isAutorizado(8, True)
     @csrf_exempt
-    def api_get_clientes_by_empresa(request):
+    def get_clientes_by_empresa(request):
         empresa_id = UserInfo.get_id_empresa(request)
 
         # Obter clientes da empresa com os dados do endereço
@@ -264,8 +217,8 @@ class views_cliente:
             return JsonResponse({"error": str(e)}, status=500)
 
     @staticmethod
-    @Utils.verificar_permissoes(8, True)
-    def api_get_cliente(request):
+    @permissions.isAutorizado(8, True)
+    def get_cliente(request):
         empresa_id = UserInfo.get_id_empresa(
             request
         )  # Obtenha o ID da empresa do usuário
@@ -296,8 +249,8 @@ class views_cliente:
             )
 
     @staticmethod
-    @Utils.verificar_permissoes(8, True)
-    def api_get_vendas_by_cliente(request, id_cliente):
+    @permissions.isAutorizado(8, True)
+    def get_vendas_by_cliente(request, id_cliente):
         try:
             # Convertendo o campo 'insert' para um campo de data e ordenando pelos mais recentes
             vendas = models.Venda.objects.filter(cliente_id=id_cliente).order_by(

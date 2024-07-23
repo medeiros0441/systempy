@@ -1,36 +1,21 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from api.utils import Utils
-from api.static import Alerta, UserInfo
-from ..models import Empresa, Loja, Associado, Usuario
+from api.user import UserInfo
+from ..models import Empresa, Loja, Associado, Usuario, Endereco
 from .views_erro import views_erro
 import json
 from django.http import JsonResponse
 from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
+from api.permissions import permissions
+from django.views.decorators.csrf import csrf_exempt
 
 
 class views_loja:
-    @Utils.verificar_permissoes(5, True)
-    def lista_lojas(request, context=None):
-        id_empresa = UserInfo.get_id_empresa(request, True)
 
-        if context is None:
-            context = {}
-
-        try:
-            lojas = Loja.objects.filter(empresa=id_empresa)
-
-            context["lojas"] = lojas
-        except Loja.DoesNotExist:
-            # Caso a loja não exista, simplesmente não adicionamos nada ao contexto.
-            pass
-        alerta = Alerta.get_mensagem()
-        if alerta:
-            context["alerta_js"] = Utils.criar_alerta_js(alerta)
-        return render(request, "loja/lista_lojas.html", context)
-
-    @Utils.verificar_permissoes(5, True)
-    def api_lista_lojas(request):
+    @csrf_exempt
+    @permissions.isAutorizado(5, True)
+    def lista_lojas(request):
         try:
             id_empresa = UserInfo.get_id_empresa(request)
             lojas = Loja.objects.filter(empresa_id=id_empresa)
@@ -85,71 +70,93 @@ class views_loja:
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-    @Utils.verificar_permissoes(5, True)
+    @permissions.isAutorizado(5, True)
+    @csrf_exempt
     def criar_loja(request):
         try:
-            if request.method == "POST":
-                form_loja = {}
-                form_endereco = {}
+            data = json.loads(request.body)
 
-                id_empresa_get = UserInfo.get_id_empresa(request, True)
-                # Obtenha a instância da Empresa com base no ID
-                empresa_instance = get_object_or_404(Empresa, id_empresa=id_empresa_get)
-                # Verifique se a instância da Empresa foi encontrada
-                if empresa_instance:
-                    form_loja.instance.empresa = empresa_instance
+            # Validação básica dos dados recebidos
+            required_loja_fields = [
+                "nome",
+                "descricao",
+            ]  # Adicione outros campos obrigatórios da Loja aqui
+            required_endereco_fields = [
+                "rua",
+                "cidade",
+                "estado",
+                "cep",
+            ]  # Adicione outros campos obrigatórios do Endereco aqui
 
-                if form_endereco.is_valid() and form_loja.is_valid():
-                    endereco = form_endereco.save()  # Cria um novo registro de Endereco
-                    form_loja.instance.endereco = endereco  # Associa o endereço à loja
-                    loja = form_loja.save()  # Cria um novo registro de Loja
-                    Alerta.set_mensagem("Cadastrado com Sucesso.")
-                    id_usuario = UserInfo.get_id_usuario(request)
-                    usuario_adm = Usuario.objects.get(
-                        empresa_id=loja.empresa_id, nivel_usuario=1
-                    )
+            missing_fields = []
 
-                    associados = [
-                        Associado(usuario_id=id_usuario, loja=loja, status_acesso=True)
-                    ]
+            for field in required_loja_fields:
+                if field not in data:
+                    missing_fields.append(f"loja.{field}")
 
-                    if usuario_adm.id_usuario != id_usuario:
-                        associados.append(
-                            Associado(
-                                usuario=usuario_adm, loja=loja, status_acesso=True
-                            )
-                        )
+            for field in required_endereco_fields:
+                if field not in data:
+                    missing_fields.append(f"endereco.{field}")
 
-                    Associado.objects.bulk_create(associados)
-
-                    Alerta.set_mensagem(f"Loja {loja.nome} criada com sucesso")
-                    return redirect("lista_lojas")
-                else:
-                    if not form_endereco.is_valid():
-                        Alerta.set_mensagem("Formulário de Endereço inválido.")
-                    elif not form_loja.is_valid():
-                        Alerta.set_mensagem("Formulário de Loja inválido.")
-                    # Renderiza o template com os formulários inválidos
-                    return views_loja.views_loja.lista_lojas(
-                        request,
-                        {
-                            "open_modal": True,
-                            "form_endereco": form_endereco,
-                            "form_loja": form_loja,
-                        },
-                    )
-            else:
-                formloja = {}
-                form = {}
-                return views_loja.lista_lojas(
-                    request,
-                    {"open_modal": True, "form_endereco": form, "form_loja": formloja},
+            if missing_fields:
+                return JsonResponse(
+                    {
+                        "detail": "Campos obrigatórios ausentes",
+                        "missing_fields": missing_fields,
+                    },
+                    status=400,
                 )
+
+            # Obter a instância da Empresa
+            id_empresa_get = UserInfo.get_id_empresa(request, True)
+            empresa_instance = get_object_or_404(Empresa, id_empresa=id_empresa_get)
+
+            # Criar endereço
+            endereco = Endereco(
+                rua=data["rua"],
+                cidade=data["cidade"],
+                estado=data["estado"],
+                cep=data["cep"],
+            )
+            endereco.save()
+
+            # Criar loja
+            loja = Loja(
+                nome=data["nome"],
+                descricao=data["descricao"],
+                endereco=endereco,
+                empresa=empresa_instance,
+            )
+            loja.save()
+
+            # Associar usuários
+            id_usuario = UserInfo.get_id_usuario(request)
+            usuario_adm = Usuario.objects.get(
+                empresa_id=loja.empresa_id, nivel_usuario=1
+            )
+
+            associados = [
+                Associado(usuario_id=id_usuario, loja=loja, status_acesso=True)
+            ]
+
+            if usuario_adm.id_usuario != id_usuario:
+                associados.append(
+                    Associado(usuario=usuario_adm, loja=loja, status_acesso=True)
+                )
+
+            Associado.objects.bulk_create(associados)
+
+            return JsonResponse(
+                {"detail": f"Loja {loja.nome} criada com sucesso"}, status=201
+            )
         except Exception as e:
             mensagem_erro = str(e)
-            return views_erro.erro(request, mensagem_erro)
+            return JsonResponse(
+                {"detail": "Erro ao processar a solicitação", "error": mensagem_erro},
+                status=500,
+            )
 
-    @Utils.verificar_permissoes(5, True)
+    @permissions.isAutorizado(5, True)
     def selecionar_loja(request, id_loja):
 
         try:
@@ -170,48 +177,96 @@ class views_loja:
             mensagem_erro = str(e)
             return views_erro.erro(request, mensagem_erro)
 
-    @Utils.verificar_permissoes(5, True)
+    @permissions.isAutorizado(5, True)
+    @csrf_exempt
     def editar_loja(request, id_loja):
-        loja = get_object_or_404(Loja, pk=id_loja)
-        id = UserInfo.get_id_empresa(request)
-        if loja.empresa.id_empresa != id:
-            return views_erro.erro(request, "vôce não está associado a empresa..")
-        if request.method == "POST":
-            form_loja = {}
-            form_endereco = {}
+        try:
+            loja = get_object_or_404(Loja, pk=id_loja)
+            id_empresa = UserInfo.get_id_empresa(request)
 
-            if form_endereco.is_valid() and form_loja.is_valid():
-                endereco = form_endereco.save()  # Cria um novo registro de Endereco
-                form_loja.instance.endereco = endereco  # Associa o endereço à loja
-                form_loja.save()  # Cria um novo registro de Loja
-                Alerta.set_mensagem("Cadastrado com Sucesso.")
-                return redirect("lista_lojas")
-            else:
-                if not form_endereco.is_valid():
-                    Alerta.set_mensagem("Formulário de Endereço inválido.")
-                elif not form_loja.is_valid():
-                    Alerta.set_mensagem("Formulário de Loja inválido.")
-                # Renderiza o template com os formulários inválidos
-                return views_loja.lista_lojas(
-                    request,
-                    {
-                        "open_modal": True,
-                        "form_endereco": form_endereco,
-                        "form_loja": form_loja,
-                    },
+            if loja.empresa.id_empresa != id_empresa:
+                return JsonResponse(
+                    {"detail": "Você não está associado a esta empresa."}, status=403
                 )
 
-        else:
-            formloja = {}
-            form = {}
-            return views_loja.lista_lojas(
-                request,
-                {"open_modal": True, "form_endereco": form, "form_loja": formloja},
+            if request.method == "POST":
+                data = json.loads(request.body)
+
+                # Validação básica dos dados recebidos
+                required_loja_fields = [
+                    "nome",
+                    "descricao",
+                ]  # Adicione outros campos obrigatórios da Loja aqui
+                required_endereco_fields = [
+                    "rua",
+                    "cidade",
+                    "estado",
+                    "cep",
+                ]  # Adicione outros campos obrigatórios do Endereco aqui
+
+                missing_fields = []
+
+                for field in required_loja_fields:
+                    if field not in data:
+                        missing_fields.append(f"loja.{field}")
+
+                for field in required_endereco_fields:
+                    if field not in data:
+                        missing_fields.append(f"endereco.{field}")
+
+                if missing_fields:
+                    return JsonResponse(
+                        {
+                            "detail": "Campos obrigatórios ausentes",
+                            "missing_fields": missing_fields,
+                        },
+                        status=400,
+                    )
+
+                # Atualizar endereço
+                endereco = loja.endereco
+                endereco.rua = data.get("rua", endereco.rua)
+                endereco.cidade = data.get("cidade", endereco.cidade)
+                endereco.estado = data.get("estado", endereco.estado)
+                endereco.cep = data.get("cep", endereco.cep)
+                endereco.save()
+
+                # Atualizar loja
+                loja.nome = data.get("nome", loja.nome)
+                loja.descricao = data.get("descricao", loja.descricao)
+                loja.endereco = endereco
+                loja.save()
+
+                return JsonResponse(
+                    {"detail": f"Loja {loja.nome} atualizada com sucesso"}, status=200
+                )
+            else:
+                # Envia os dados atuais da loja e do endereço
+                loja_data = {
+                    "nome": loja.nome,
+                    "descricao": loja.descricao,
+                    "rua": loja.endereco.rua,
+                    "cidade": loja.endereco.cidade,
+                    "estado": loja.endereco.estado,
+                    "cep": loja.endereco.cep,
+                }
+                return JsonResponse(loja_data, status=200)
+        except Exception as e:
+            mensagem_erro = str(e)
+            return JsonResponse(
+                {"detail": "Erro ao processar a solicitação", "error": mensagem_erro},
+                status=500,
             )
 
-    @Utils.verificar_permissoes(5, True)
+    @csrf_exempt
+    @permissions.isAutorizado(5, True)
     def excluir_loja(request, id_loja):
-        loja = get_object_or_404(Loja, id_loja=id_loja)
-        loja.delete()
-        Alerta.set_mensagem("Loja excluído com sucesso.")
-        return redirect("lista_lojas")
+        try:
+            loja = get_object_or_404(Loja, pk=id_loja)
+            loja.delete()
+            return JsonResponse({"detail": "Loja excluída com sucesso"}, status=200)
+        except Exception as e:
+            mensagem_erro = str(e)
+            return JsonResponse(
+                {"detail": "Erro ao excluir a loja", "error": mensagem_erro}, status=500
+            )

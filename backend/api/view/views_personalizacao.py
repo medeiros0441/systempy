@@ -1,17 +1,17 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from ..models import Personalizacao
+from ..models import Personalizacao,PDV,Loja
 import json
 from ..utils import Utils
 from django.core.exceptions import ObjectDoesNotExist
-from ..static import UserInfo
-from api import models
+from ..user import UserInfo
 from uuid import UUID
+from api.permissions import permissions
 
 
 class views_personalizacao:
     @csrf_exempt
-    @Utils.verificar_permissoes(0, True)
+    @permissions.isAutorizado(0, True)
     def list_personalizacao(request):
         try:
             id_empresa = UserInfo.get_id_empresa(request)
@@ -31,7 +31,7 @@ class views_personalizacao:
             return JsonResponse({"error": str(e)}, status=500)
 
     @csrf_exempt
-    @Utils.verificar_permissoes(0, True)
+    @permissions.isAutorizado(0, True)
     def create_personalizacao(request, data=None):
         if request.method != "POST":
             return JsonResponse({"error": "Método não permitido"}, status=405)
@@ -59,7 +59,7 @@ class views_personalizacao:
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
-    @Utils.verificar_permissoes(0, True)
+    @permissions.isAutorizado(0, True)
     @csrf_exempt
     def get_personalizacao_for_venda(request):
         """
@@ -70,23 +70,23 @@ class views_personalizacao:
             id_loja = views_personalizacao.get_loja_id(id_usuario)
             id_pdv = views_personalizacao.get_pdv(id_usuario)
 
-            loja = models.Loja.objects.get(id_loja=int(id_loja))
-            pdv = models.PDV.objects.get(id_pdv=UUID(id_pdv))
+            loja = Loja.objects.get(id_loja=int(id_loja))
+            pdv = PDV.objects.get(id_pdv=UUID(id_pdv))
 
             return JsonResponse(
                 {"data": Utils.modelo_para_json(loja, pdv), "success": True},
                 status=201,
             )
-        except models.Loja.DoesNotExist:
+        except Loja.DoesNotExist:
             return JsonResponse({"error": "Loja não encontrada."}, status=404)
-        except models.PDV.DoesNotExist:
+        except PDV.DoesNotExist:
             return JsonResponse({"error": "PDV não encontrado."}, status=404)
         except ValueError as ve:
             return JsonResponse({"error": f"Erro de valor: {str(ve)}"}, status=400)
         except Exception as e:
             return JsonResponse({"error": f"Erro inesperado: {str(e)}"}, status=400)
 
-    @Utils.verificar_permissoes(0, True)
+    @permissions.isAutorizado(0, True)
     @csrf_exempt
     def get_personalizacao(request, id):
 
@@ -105,7 +105,7 @@ class views_personalizacao:
         except ObjectDoesNotExist:
             return JsonResponse({"error": "Personalização não encontrada"}, status=404)
 
-    @Utils.verificar_permissoes(0, True)
+    @permissions.isAutorizado(0, True)
     @csrf_exempt
     def api_get_personalizacao_codigo(request, id_usuario, codigo):
         """
@@ -168,7 +168,7 @@ class views_personalizacao:
         )
         return personalizacao.valor if personalizacao else None
 
-    @Utils.verificar_permissoes(0, True)
+    @permissions.isAutorizado(0, True)
     @csrf_exempt
     def update_personalizacao(request, id, data=None):
         if request.method != "PUT":
@@ -209,7 +209,7 @@ class views_personalizacao:
             return JsonResponse({"error": str(e)}, status=400)
 
     @csrf_exempt
-    @Utils.verificar_permissoes(0, True)
+    @permissions.isAutorizado(0, True)
     def delete_personalizacao(request, id):
         try:
             personalizacao = Personalizacao.objects.get(id_personalizacao=id)

@@ -17,20 +17,20 @@ from ..models import (
     Personalizacao,
     Venda,
 )
-from api.static import Alerta, UserInfo
+from api.user import UserInfo
 from api.utils import Utils
 from ..processos.pdv import processos_pdv
 from .views_personalizacao import views_personalizacao
 from django.db.models import Q
-
+from api.permissions import permissions
 
 class views_pdv:
     @staticmethod
-    @Utils.verificar_permissoes("pdv", True)
+    @permissions.isAutorizado("pdv", True)
     def pdv(request):
         return render(request, "pdv/lista_pdv.html")
 
-    @Utils.verificar_permissoes("pdv", True)
+    @permissions.isAutorizado("pdv", True)
     @csrf_exempt
     def list_pdv(request, id_loja=None, id_empresa=None):
         if request.method == "GET":
@@ -55,7 +55,7 @@ class views_pdv:
             {"success": False, "message": "Método não permitido"}, status=405
         )
 
-    @Utils.verificar_permissoes("pdv", True)
+    @permissions.isAutorizado("pdv", True)
     @csrf_exempt
     def create_pdv(request):
         # Verifica se o método da requisição é POST
@@ -170,7 +170,7 @@ class views_pdv:
                     data["status_acesso"] = False
                     views_associado_pdv.create_associado_pdv(request, data)
 
-    @Utils.verificar_permissoes("pdv", True)
+    @permissions.isAutorizado("pdv", True)
     @csrf_exempt
     def update_pdv(request):
         """
@@ -278,7 +278,7 @@ class views_pdv:
 
 class views_registro_diario_pdv:
 
-    @Utils.verificar_permissoes("RegistroDiarioPDV", True)
+    @permissions.isAutorizado("RegistroDiarioPDV", True)
     @csrf_exempt
     def list_registro_diario_pdv(request, id_pdv):
         if request.method == "GET":
@@ -298,7 +298,7 @@ class views_registro_diario_pdv:
             {"success": False, "message": "Método não permitido"}, status=405
         )
 
-    @Utils.verificar_permissoes("RegistroDiarioPDV", True)
+    @permissions.isAutorizado("RegistroDiarioPDV", True)
     @csrf_exempt
     def create_registro_diario_pdv(request, id=None):
         if request.method != "POST":
@@ -346,7 +346,7 @@ class views_registro_diario_pdv:
             return False, None
         return False, None
 
-    @Utils.verificar_permissoes("RegistroDiarioPDV", True)
+    @permissions.isAutorizado("RegistroDiarioPDV", True)
     @csrf_exempt
     def update_status_registro_diario_pdv(self, request, pdv_id=None):
         if request.method != "PUT":
@@ -412,7 +412,7 @@ class views_registro_diario_pdv:
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
 
-    @Utils.verificar_permissoes("RegistroDiarioPDV", True)
+    @permissions.isAutorizado("RegistroDiarioPDV", True)
     @csrf_exempt
     def update_registro_diario_pdv(request):
         if request.method == "PUT":
@@ -477,7 +477,7 @@ class views_registro_diario_pdv:
 class views_transacao_pdv:
 
     @staticmethod
-    @Utils.verificar_permissoes("transacao", True)
+    @permissions.isAutorizado("transacao", True)
     def lista_transacao(request):
         return render(request, "caixa/transacao/lista_transacao.html")
 
@@ -569,7 +569,7 @@ class views_associado_pdv:
         )
 
     @csrf_exempt
-    @Utils.verificar_permissoes(0, True)
+    @permissions.isAutorizado(0, True)
     def create_associado_pdv(request, data):
         if request.method == "POST":
             try:

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // Import useNavigate
+import { useNavigate,Link } from 'react-router-dom';  // Import useNavigate
 import { request } from 'src/utils/api';  
 import alerta from 'src/utils/alerta';
 import loading from 'src/utils/loading';
-
+  
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -20,9 +20,10 @@ const LoginForm = () => {
     try {
       loading(true, 'form_login');
 
-      const response = await request('setlogin', { email, senha }, 'POST');
+      const response = await request('setlogin',"POST", { email, senha });
+      alerta(response.message, 2);
 
-      if (response.status === 200) {
+      if (response.sucess) {
         navigate('/dashboard');  // Redireciona o usuário
       } else {
         alerta(response.message, 2);
@@ -83,13 +84,13 @@ const LoginForm = () => {
                 <label className="form-check-label" htmlFor="flexCheckDefault">
                   Lembre-me
                 </label>
-                <button
+                <Link
                   type="button"
                   className="link link-secondary link-button small float-end"
-                 
+                 onClick={console.log("link clicadk")}
                 >
                   Recuperar senha
-                </button>
+                </Link>
               </div>
 
               <div className="col-12 mb-4">

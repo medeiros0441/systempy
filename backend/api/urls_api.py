@@ -13,7 +13,11 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
 url_public = [
-    path("check-authentication/", view.views_public.check_authentication, name="check_authentication"),
+    path(
+        "authentication",
+        view.views_public.check_authentication,
+        name="authentication",
+    ),
     path("contato", view.views_public.contato, name="contato"),
     path("status_on", view.views_sessao.status_on, name="status_on"),
     path("status_off", view.views_sessao.status_off, name="status_off"),
@@ -68,54 +72,28 @@ url_erros = [
 ]
 
 
-url_assinante = [
-    path("dashboard", view.views_assinante.dashboard, name="dashboard"),
-    path("desconect", view.views_assinante.desconect, name="desconect"),
-    path("configuracao", view.views_assinante.configuracao, name="configuracao"),
-]
-
-
 url_empresa = [  # empresa
-    path("empresas", view.views_empresa.listar_empresas, name="listar_empresas"),
-    path("empresas/criar", view.views_empresa.criar_empresa, name="criar_empresa"),
+    path("list_empresas", view.views_empresa.list_empresas, name="list_empresas"),
     path(
-        "empresas/<uuid:pk>",
-        view.views_empresa.detalhes_empresa,
-        name="detalhes_empresa",
-    ),
-    path(
-        "empresas/<uuid:pk>/editar",
-        view.views_empresa.editar_empresa,
-        name="editar_empresa",
-    ),
-    path(
-        "empresas/<uuid:pk>/excluir",
-        view.views_empresa.excluir_empresa,
-        name="excluir_empresa",
-    ),
-    path(
-        "api_list_empresas", view.views_empresa.list_empresas, name="api_list_empresas"
-    ),
-    path(
-        "api_create_empresa",
+        "create_empresa",
         view.views_empresa.create_empresa,
-        name="api_create_empresa",
+        name="create_empresa",
     ),
-    path("api_get_empresa", view.views_empresa.get_empresa, name="api_get_empresa"),
+    path("get_empresa", view.views_empresa.get_empresa, name="get_empresa"),
     path(
-        "api_get_empresa/<uuid:id>",
+        "get_empresa/<uuid:id>",
         view.views_empresa.get_empresa,
-        name="api_get_empresa",
+        name="get_empresa",
     ),
     path(
-        "api_update_empresa/<uuid:id>",
+        "update_empresa/<uuid:id>",
         view.views_empresa.update_empresa,
-        name="api_update_empresa",
+        name="update_empresa",
     ),
     path(
-        "api_delete_empresa/<uuid:id>",
+        "delete_empresa/<uuid:id>",
         view.views_empresa.delete_empresa,
-        name="api_delete_empresa",
+        name="delete_empresa",
     ),
 ]
 
@@ -161,27 +139,11 @@ url_pdv = [
 ]
 
 url_usuario = [
-    # URLs de usuários
-    path("usuarios", view.views_usuarios.listar_usuarios, name="listar_usuarios"),
-    path(
-        "api_usuarios",
-        view.views_usuarios.api_listar_usuarios,
-        name="api_listar_usuarios",
-    ),
+    
     path(
         "usuarios/criar",
         view.views_usuarios.cadastrar_usuario,
         name="cadastrar_usuario",
-    ),
-    path(
-        "usuarios/<uuid:id_usuario>",
-        view.views_usuarios.detalhes_usuario,
-        name="detalhes_usuario",
-    ),
-    path(
-        "usuarios/<uuid:id_usuario>/editar",
-        view.views_usuarios.editar_usuario,
-        name="editar_usuario",
     ),
     path(
         "usuarios/excluir/<uuid:id_usuario>",
@@ -240,7 +202,6 @@ ur_personalizacao = [
 url_loja = [
     # lojas
     path("lojas", view.views_loja.lista_lojas, name="lista_lojas"),
-    path("api_lojas", view.views_loja.api_lista_lojas, name="api_lista_lojas"),
     path("lojas/criar", view.views_loja.criar_loja, name="criar_loja"),
     path("lojas/editar/<int:id_loja>", view.views_loja.editar_loja, name="editar_loja"),
     path(
@@ -256,8 +217,7 @@ url_loja = [
 ]
 
 
-url_produto = [  # produtos
-    path("produtos", view.views_produto.lista_produtos, name="lista_produtos"),
+url_produto = [
     path(
         "produtos/editar/<uuid:id_produto>",
         view.views_produto.form_produto,
@@ -283,18 +243,6 @@ url_produto = [  # produtos
 
 
 url_venda = [  # vendas
-    path("vendas", view.views_venda.lista_vendas, name="lista_vendas"),
-    path("vendas/criar", view.views_venda.criar_venda, name="criar_venda"),
-    path(
-        "vendas/editar/<uuid:id_venda>",
-        view.views_venda.editar_venda,
-        name="editar_venda",
-    ),
-    path(
-        "vendas/selecionar/<uuid:id_venda>",
-        view.views_venda.selecionar_venda,
-        name="selecionar_venda",
-    ),
     path(
         "vendas/excluir/<uuid:id_venda>",
         view.views_venda.excluir_venda,
@@ -308,7 +256,7 @@ url_venda = [  # vendas
     path(
         "vendas/dados",
         view.views_venda.obter_dados,
-        name="api_obter_dados_vendas",
+        name="obter_dados_vendas",
     ),
     path(
         "cliente/by/venda/<uuid:id_venda>",
@@ -329,52 +277,36 @@ url_venda = [  # vendas
 
 
 url_cliente = [  # clientes
-    path("clientes", view.views_cliente.lista_clientes, name="lista_clientes"),
-    path("clientes/criar", view.views_cliente.criar_cliente, name="criar_cliente"),
+    path("clientes/criar", view.views_cliente.create_cliente, name="criar_cliente"),
     path(
-        "clientes/editar/<uuid:id_cliente>",
-        view.views_cliente.editar_cliente,
-        name="editar_cliente",
-    ),
-    path(
-        "clientes/selecionar/<uuid:id_cliente>",
-        view.views_cliente.selecionar_cliente,
-        name="selecionar_cliente",
-    ),
-    path(
-        "clientes/excluir/<uuid:id_cliente>",
-        view.views_cliente.excluir_cliente,
-        name="excluir_cliente",
-    ),
-    path(
-        "api_get_vendas_by_cliente/<uuid:id_cliente>",
-        view.views_cliente.api_get_vendas_by_cliente,
+        "get_vendas_by_cliente/<uuid:id_cliente>",
+        view.views_cliente.get_vendas_by_cliente,
         name="vendas_clientes",
     ),
     path(
         "cliente/create",
-        view.views_cliente.api_create_cliente,
-        name="api_create_cliente",
+        view.views_cliente.create_cliente,
+        name="create_cliente",
     ),
     path(
         "cliente/<uuid:cliente_id>",
-        view.views_cliente.api_get_cliente,
-        name="api_get_cliente",
+        view.views_cliente.get_cliente,
+        name="get_cliente",
     ),
     path(
         "cliente/update",
-        view.views_cliente.api_update_cliente,
-        name="api_update_cliente",
+        view.views_cliente.update_cliente,
+        name="update_cliente",
     ),
     path(
         "cliente/<uuid:cliente_id>/delete",
-        view.views_cliente.api_delete_cliente,
-        name="api_delete_cliente",
+        view.views_cliente.delete_cliente,
+        name="delete_cliente",
     ),
     path(
         "cliente/by_empresa",
-        view.views_cliente.api_get_clientes_by_empresa,
-        name="api_get_clientes_by_empresa",
+        view.views_cliente.get_clientes_by_empresa,
+        name="get_clientes_by_empresa",
     ),
 ]
 
@@ -396,47 +328,6 @@ url_galao = [  ##galoes
         view.views_galao.excluir_galao,
         name="excluir_galao",
     ),
-]
-
-
-url_endereco = [
-    path("endereco", view.views_endereco.lista_enderecos, name="lista_enderecos"),
-    path("endereco/criar", view.views_endereco.criar_endereco, name="criar_endereco"),
-    path(
-        "endereco/<int:pk>",
-        view.views_endereco.selecionar_endereco,
-        name="selecionar_endereco",
-    ),
-    path(
-        "endereco/<int:pk>/editar",
-        view.views_endereco.editar_endereco,
-        name="editar_endereco",
-    ),
-    path(
-        "endereco/<int:pk>/excluir",
-        view.views_endereco.delete_endereco,
-        name="delete_endereco",
-    ),
-    path(
-        "endereco/read/<str:endereco_id>",
-        view.views_api.read_endereco,
-        name="read_endereco",
-    ),
-    path(
-        "endereco/update/<str:endereco_id>",
-        view.views_api.update_endereco,
-        name="update_endereco",
-    ),
-    path(
-        "endereco/delete/<str:endereco_id>",
-        view.views_api.delete_endereco,
-        name="delete_endereco",
-    ),
-]
-url_api = [
-    path("buscar_lojas", view.views_api.buscar_lojas, name="buscar_lojas"),
-    path("endereco/create", view.views_api.create_endereco, name="create_endereco"),
-    # Adicione outras URLs conforme necessário
 ]
 
 
@@ -467,15 +358,12 @@ url_motoboy = [
 
 urlpatterns = (
     url_public
-    + url_api
-    + url_assinante
     + url_empresa
     + url_usuario
     + url_venda
     + url_produto
     + url_loja
     + url_cliente
-    + url_endereco
     + url_galao
     + url_motoboy
     + url_erros

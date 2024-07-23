@@ -1,40 +1,24 @@
-import axios from 'axios';
+import { getCookie } from './storage';
 
-// Função para obter o token de acesso
-export const getAccessToken = () => localStorage.getItem('jwt_token');
-
-// Função para obter o token de atualização
-export const getRefreshToken = () => localStorage.getItem('refresh_token');
-
-// Função para atualizar o token de acesso
-export const refreshAccessToken = () => {
-  return new Promise((resolve, reject) => {
-    axios.post('/api/token/refresh/', {
-      refresh: getRefreshToken(),
-    })
-    .then((response) => {
-      const newAccessToken = response.data.access;
-      localStorage.setItem('jwt_token', newAccessToken);
-      resolve(newAccessToken);
-    })
-    .catch((error) => {
-      console.error('Erro ao atualizar o token de acesso:', error);
-      reject(error);
-    });
-  });
-};
-
-// Função para obter o token
-export const getToken = async (username, password) => {
+/**
+ * Função para obter o token do cookie.
+ * @returns {Object} Objeto contendo o status de sucesso e o token ou a mensagem de erro.
+ */
+export const getToken = (name_token) => {
   try {
-    const response = await axios.post('/api/token/', { username, password });
-    if (response.status === 200) {
-      // Armazenar os tokens no localStorage
-      localStorage.setItem('jwt_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
-      return { success: true, token: response.data.access };
+    // Obtém o token do cookie 'token_user'
+    const token_user = getCookie(name_token);
+
+    // Verifica se o token é válido (não nulo, não indefinido e não vazio)
+    if (token_user) {
+      // Retorna um objeto indicando sucesso e o token obtido
+      return { success: true, token: token_user };
+    } else {
+      // Caso o token seja inválido, retorna um objeto indicando falha
+      return { success: false, error: 'Token não encontrado ou inválido' };
     }
   } catch (error) {
+    // Em caso de erro, exibe a mensagem de erro no console e retorna um objeto indicando falha
     console.error('Erro ao obter o token:', error);
     return { success: false, error: error.message };
   }

@@ -12,7 +12,7 @@ const Erro = () => {
   const urlRedirect = queryParams.get('urlRedirect') || '';
 
   return (
-    <div className="container-erro container  mx-2 my-5 text-center">
+    <div className="container-erro container  mx-2 justify-content-between  align-items-center  text-center">
       <h1 className="h1-erro">{title}</h1>
       <p className="p-erro">{descricao}</p>
       {urlRedirect && (

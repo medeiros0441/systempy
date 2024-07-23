@@ -1,9 +1,8 @@
 from builtins import int
 from datetime import date
-from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from api.utils import Utils
-from ..static import Alerta, UserInfo
+from ..user import UserInfo
 from api import models
 from django.db.models import Q
 from datetime import datetime
@@ -14,9 +13,13 @@ from django.core.exceptions import ObjectDoesNotExist
 import traceback
 from django.db.models import F, Sum
 import uuid
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 
 
-class processos:
+class processos(APIView):
+    permission_classes = [AllowAny]
 
     def converter_para_decimal(valor):
         try:

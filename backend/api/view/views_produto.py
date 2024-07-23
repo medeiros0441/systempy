@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from api.utils import Utils
 from django.http import HttpResponse
-from api.static import Alerta, UserInfo
+from api.user import UserInfo
 from ..models import Loja, Produto
 import datetime
 from decimal import Decimal
@@ -9,86 +9,72 @@ from django.utils import timezone
 
 from .views_erro import views_erro
 
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
+from api.permissions import permissions
+
 
 class views_produto:
-    @staticmethod
-    @Utils.verificar_permissoes(6, True)
-    def lista_produtos(request, context=None):
-        id_empresa = UserInfo.get_id_empresa(request, True)
-        if context is None:
-            context = {}
-        alerta = Alerta.get_mensagem()
-        if alerta:
-            context["alerta_js"] = Utils.criar_alerta_js(alerta)
-
-        try:
-            produtos = Produto.objects.filter(
-                loja__empresa__id_empresa=id_empresa, status=True
-            )
-            context["produtos"] = produtos
-        except Produto.DoesNotExist:
-            pass
-        return render(request, "produto/lista_produtos.html", context)
 
     @staticmethod
-    @Utils.verificar_permissoes(6, True)
+    @csrf_exempt
+    @require_http_methods(["POST", "PUT"])
+    @permissions.isAutorizado(6, True)
     def form_produto(request, id_produto=None):
         try:
+            data = json.loads(
+                request.body
+            )  # Carrega e decodifica os dados JSON do corpo da requisição
             produto = None
 
             if id_produto is not None:
-                produto = Produto.objects.get(id_produto=id_produto)
+                produto = get_object_or_404(Produto, id_produto=id_produto)
 
-            if request.method == "POST" or request.method == "PUT":
-                status, mensagem, data = views_produto.validate_form(request.POST)
-                if status:
-                    if id_produto is None:
-                        produto = (
-                            Produto()
-                        )  # Criar um novo produto apenas se id_produto for None
-                    else:
-                        produto = Produto.objects.get(
-                            id_produto=id_produto
-                        )  # Buscar o produto existente
-
-                    # Atribuir os valores aos campos do produto
-                    produto.loja_id = int(data["loja"])
-                    produto.nome = data["nome"]
-                    produto.quantidade_atual_estoque = data["quantidade_atual_estoque"]
-                    produto.quantidade_minima_estoque = data[
-                        "quantidade_minima_estoque"
-                    ]
-                    produto.is_retornavel = bool(int(data["is_retornavel"]))
-                    produto.data_validade = data["data_validade"]
-                    produto.preco_compra = data["preco_compra"]
-                    produto.preco_venda = data["preco_venda"]
-                    produto.fabricante = data["fabricante"]
-                    produto.descricao = data["descricao"]
-
-                    produto.save()  # Salvando o produto no banco de dados
-
-                    if id_produto is None:
-                        Alerta.set_mensagem("Cadastrado com Sucesso.")
-                    else:
-                        Alerta.set_mensagem("Editado com Sucesso.")
-
-                    return redirect("lista_produtos")
+            status, mensagem, data = views_produto.validate_form(data)
+            if status:
+                if id_produto is None:
+                    produto = (
+                        Produto()
+                    )  # Criar um novo produto apenas se id_produto for None
                 else:
-                    Alerta.set_mensagem(mensagem)
-                    return views_produto.lista_produtos(
-                        request, {"open_modal": True, "form_produto": data}
-                    )
-            else:
-                if produto is None:
-                    produto = True
-                return views_produto.lista_produtos(
-                    request,
-                    {"open_modal": True, "form_produto": produto},
+                    produto = get_object_or_404(
+                        Produto, id_produto=id_produto
+                    )  # Buscar o produto existente
+
+                # Atribuir os valores aos campos do produto
+                produto.loja_id = int(data["loja"])
+                produto.nome = data["nome"]
+                produto.quantidade_atual_estoque = data["quantidade_atual_estoque"]
+                produto.quantidade_minima_estoque = data["quantidade_minima_estoque"]
+                produto.is_retornavel = bool(int(data["is_retornavel"]))
+                produto.data_validade = data["data_validade"]
+                produto.preco_compra = data["preco_compra"]
+                produto.preco_venda = data["preco_venda"]
+                produto.fabricante = data["fabricante"]
+                produto.descricao = data["descricao"]
+
+                produto.save()  # Salvando o produto no banco de dados
+
+                mensagem_sucesso = (
+                    "Cadastrado com Sucesso."
+                    if id_produto is None
+                    else "Editado com Sucesso."
                 )
+                return JsonResponse({"message": mensagem_sucesso}, status=200)
+            else:
+                return JsonResponse({"message": mensagem}, status=400)
+
+        except Produto.DoesNotExist:
+            return JsonResponse({"message": "Produto não encontrado."}, status=404)
+
         except Exception as e:
             mensagem_erro = str(e)
-            return views_erro.erro(request, mensagem_erro)
+            return JsonResponse({"message": mensagem_erro}, status=500)
 
+    @staticmethod
     def validate_form(form_data):
         data = {
             "loja": form_data.get("select_loja"),
@@ -155,99 +141,99 @@ class views_produto:
         return True, None, data
 
     @staticmethod
-    @Utils.verificar_permissoes(6, True)
+    @csrf_exempt
+    @require_http_methods(["POST"])
+    @permissions.isAutorizado(6, True)
     def acrescentar_produto(request):
         try:
-
+            data = json.loads(
+                request.body
+            )  # Carrega e decodifica os dados JSON do corpo da requisição
             id_empresa = UserInfo.get_id_empresa(request, True)
             produtos = Produto.objects.filter(
                 loja__empresa__id_empresa=id_empresa, status=True
             )
+
             for produto in produtos:
                 if produto.loja.empresa.id_empresa != id_empresa:
-                    return views_erro.erro(
-                        request,
-                        request,
-                        "Você não tem permissão para acessar este produto",
+                    return JsonResponse(
+                        {"message": "Você não tem permissão para acessar este produto"},
+                        status=403,
                     )
 
-            if request.method == "POST":
-                # Obtém os dados do formulário
-                id_produto = request.POST.get("id_produto")
-                id_loja = request.POST.get("id_loja")
-                quantidade_acrescentar = int(
-                    request.POST.get("id_quantidade_acrescentar")
+            # Obtém os dados do JSON
+            id_produto = data.get("id_produto")
+            id_loja = data.get("id_loja")
+            quantidade_acrescentar = data.get("quantidade_acrescentar", 0)
+
+            # Verifica se os valores são válidos
+            if not id_produto or not id_loja or quantidade_acrescentar < 0:
+                return JsonResponse(
+                    {"message": "Valores inválidos fornecidos"},
+                    status=400,
                 )
 
-                # Verifica se os valores são válidos
-                if not id_produto or not id_loja or quantidade_acrescentar < 0:
-                    Alerta.set_mensagem("Valores inválidos fornecidos no formulário")
-                    loja_list = Loja.objects.filter(empresa__id_empresa=id_empresa)
-                    return views_produto.lista_produtos(
-                        request,
-                        {
-                            "open_modal": True,
-                            "produtos_list": produtos,
-                            "lojas": loja_list,
-                        },
-                    )
-
-                produto = Produto.objects.get(id_produto=id_produto)
-                if produto.loja.empresa.id_empresa != id_empresa:
-                    return views_erro.erro(
-                        request,
-                        request,
-                        "Você não tem permissão para acessar este produto",
-                    )
-                produto.quantidade_atual_estoque += quantidade_acrescentar
-                produto.save()
-                Alerta.set_mensagem("Produto acrescentado com sucesso.")
-                loja_list = Loja.objects.filter(empresa__id_empresa=id_empresa)
-                return redirect("acrescentar_produto")
-            else:
-
-                loja_list = Loja.objects.filter(empresa__id_empresa=id_empresa)
-                return views_produto.lista_produtos(
-                    request,
-                    {"open_modal": True, "produtos_list": produtos, "lojas": loja_list},
+            produto = Produto.objects.get(id_produto=id_produto)
+            if produto.loja.empresa.id_empresa != id_empresa:
+                return JsonResponse(
+                    {"message": "Você não tem permissão para acessar este produto"},
+                    status=403,
                 )
+
+            produto.quantidade_atual_estoque += quantidade_acrescentar
+            produto.save()
+            return JsonResponse(
+                {"message": "Produto acrescentado com sucesso."}, status=200
+            )
+
         except Produto.DoesNotExist:
-            Alerta.set_mensagem("Produtos não encontrado.")
-            return redirect("lista_produtos")
+            return JsonResponse({"message": "Produto não encontrado."}, status=404)
         except Exception as e:
             mensagem_erro = str(e)
-            return views_erro.erro(request, mensagem_erro)
+            return JsonResponse({"message": mensagem_erro}, status=500)
 
     @staticmethod
-    @Utils.verificar_permissoes(6, True)
+    @csrf_exempt
+    @require_http_methods(["GET"])
+    @permissions.isAutorizado(6, True)
     def selecionar_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)
-            if produto:
-                return views_produto.lista_produtos(
-                    request,
-                    {"open_modal": True, "text_produto": produto},
-                )
+            return JsonResponse(
+                {
+                    "produto": {
+                        "id_produto": produto.id_produto,
+                        "nome": produto.nome,
+                        "quantidade_atual_estoque": produto.quantidade_atual_estoque,
+                        "quantidade_minima_estoque": produto.quantidade_minima_estoque,
+                        "preco_compra": produto.preco_compra,
+                        "preco_venda": produto.preco_venda,
+                        "fabricante": produto.fabricante,
+                        "descricao": produto.descricao,
+                    }
+                },
+                status=200,
+            )
         except Produto.DoesNotExist:
-            Alerta.set_mensagem("Produto não encontrado.")
-            return redirect("lista_produtos")
+            return JsonResponse({"message": "Produto não encontrado."}, status=404)
         except Exception as e:
             mensagem_erro = str(e)
-            return views_erro.erro(request, mensagem_erro)
+            return JsonResponse({"message": mensagem_erro}, status=500)
 
     @staticmethod
-    @Utils.verificar_permissoes(6, True)
+    @csrf_exempt
+    @require_http_methods(["DELETE"])
+    @permissions.isAutorizado(6, True)
     def excluir_produto(request, id_produto):
         try:
             produto = Produto.objects.get(id_produto=id_produto)
-            if produto:
-                produto.status = False
-                produto.save()
-                Alerta.set_mensagem("Produto excluído com sucesso.")
-                return redirect("lista_produtos")
+            produto.status = False
+            produto.save()
+            return JsonResponse(
+                {"message": "Produto excluído com sucesso."}, status=200
+            )
         except Produto.DoesNotExist:
-            Alerta.set_mensagem("Produto não encontrado.")
-            return redirect("lista_produtos")
+            return JsonResponse({"message": "Produto não encontrado."}, status=404)
         except Exception as e:
             mensagem_erro = str(e)
-            return views_erro.erro(request, mensagem_erro)
+            return JsonResponse({"message": mensagem_erro}, status=500)

@@ -11,9 +11,7 @@ from .views_endereco import views_endereco
 from .views_motoboy import views_motoboy
 from .views_configuracao import views_configuracao
 from .views_sessao import views_sessao
-from .views_api import views_api
 from .views_empresa import views_empresa
 from .views_erro import views_erro
-from .views_assinante import views_assinante
 from .views_pdv import views_pdv, views_transacao_pdv
 from .views_pdv import views_associado_pdv, views_registro_diario_pdv

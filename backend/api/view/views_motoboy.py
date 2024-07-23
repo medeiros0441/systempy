@@ -1,17 +1,18 @@
 from django.http import JsonResponse
 from django.utils import timezone
 from ..models import Motoboy, Configuracao, Entrega
-from api.static import UserInfo, Alerta
+from api.user import UserInfo
 from api.utils import Utils
 from django.views.decorators.csrf import csrf_exempt
 import json
+from api.permissions import permissions
 
 
 class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(9, True)
+    @permissions.isAutorizado(9, True)
     def listar_motoboys_por_empresa(request):
         if request.method == "GET":
             id_empresa = UserInfo.get_id_empresa(request, True)
@@ -35,7 +36,7 @@ class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(9, True)
+    @permissions.isAutorizado(9, True)
     def create_motoboy(request):
         if request.method == "POST":
             dados = json.loads(request.body)
@@ -62,7 +63,7 @@ class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(9, True)
+    @permissions.isAutorizado(9, True)
     def update_motoboy(request, id_motoboy):
         if request.method == "POST":
             data = request.POST
@@ -95,7 +96,7 @@ class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(9, True)
+    @permissions.isAutorizado(9, True)
     def delete_motoboy(request, id_motoboy):
         if request.method == "DELETE":
             id_empresa = UserInfo.get_id_empresa(request, True)
@@ -120,7 +121,7 @@ class views_motoboy:
 
     @staticmethod
     @csrf_exempt
-    @Utils.verificar_permissoes(9, True)
+    @permissions.isAutorizado(9, True)
     def get_motoboy_by_venda(request, id_venda):
         if request.method == "GET":
             if id_venda:

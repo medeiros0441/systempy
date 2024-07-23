@@ -68,18 +68,18 @@ const Navbar = () => {
           <ul className="text-decoration-none text-center text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center text-sm-end justify-content-center align-items-center">
             {!isCliente && (
               <>
-                <li className="text-sm-end text-center d-inline-flex col-auto">
+                <li className="text-sm-end text-decoration-none text-center d-inline-flex col-auto">
                   <Link className="nav-link text-decoration-underline" to="/">
                     <i className="bi bi-house"></i> Início
                   </Link>
                 </li>
-                <li className="text-center d-inline-flex col-auto">
+                <li className="text-center text-decoration-none d-inline-flex col-auto">
                   <Link className="nav-link text-decoration-underline" to="/sobre">
-                    <i className="bi bi-info-circle"></i> Sobre nós
+                    <i className="bi bi-building-exclamation"></i> Sobre nós
                   </Link>
                 </li>
                 <li className="text-center d-inline-flex col-auto">
-                  <Link className="nav-link text-white nav-link-icon login-btn px-0 align-items-center" to="/login">
+                  <Link className="nav-link  text-decoration-none text-white nav-link-icon login-btn px-0 align-items-center" to="/login">
                     <span className="login-icon">
                       <i className="bi bi-person"></i>
                     </span>

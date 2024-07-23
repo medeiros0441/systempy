@@ -2,10 +2,7 @@ import uuid
 from decimal import Decimal
 from ..models import RegistroDiarioPDV, TransacaoPDV, PDV, AssociadoPDV, Usuario, Venda
 from django.core.exceptions import ObjectDoesNotExist
-from ..static import UserInfo
-from django.db.models import Sum
 from django.db import transaction
-from datetime import datetime
 from ..utils import Utils
 
 
