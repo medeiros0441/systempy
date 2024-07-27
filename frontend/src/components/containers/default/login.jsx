@@ -3,7 +3,7 @@ import { useNavigate,Link } from 'react-router-dom';  // Import useNavigate
 import { request } from 'src/utils/api';  
 import alerta from 'src/utils/alerta';
 import loading from 'src/utils/loading';
-  
+import {openModalFunction,RecuperarSenhaModal} from './update_senha'
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -36,6 +36,9 @@ const LoginForm = () => {
   };
 
   return (
+    <>
+    <RecuperarSenhaModal />
+
     <form id="form_login" className="form-signin container mx-auto">
       <div className="px-sm-2 p-4 my-3 modal modal-signin position-static d-block align-items-center">
         <div className="modal-dialog m-0 m-sm-auto">
@@ -87,7 +90,11 @@ const LoginForm = () => {
                 <Link
                   type="button"
                   className="link link-secondary link-button small float-end"
-                 onClick={console.log("link clicadk")}
+                  onClick={() => {
+                    if (openModalFunction) {
+                      openModalFunction();
+                    }
+                  }}
                 >
                   Recuperar senha
                 </Link>
@@ -111,6 +118,7 @@ const LoginForm = () => {
         </div>
       </div>
     </form>
+  </>
   );
 };
 

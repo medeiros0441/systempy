@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = "/static/"
@@ -76,9 +77,32 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "api.middlewares.Middleware",
 ]
-
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "X-CSRFToken",  # Certifique-se de que o cabeçalho CSRF está incluído
+]
 ROOT_URLCONF = "setup.urls"
 CSRF_COOKIE_NAME = "csrftoken"
+CSRF_HEADER_NAME = "X-CSRFToken"
+CSRF_COOKIE_HTTPONLY = False
+CSRF_USE_SESSIONS = False
+
+# Configuração do SIMPLE_JWT
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "VERIFYING_KEY": None,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "AUTH_TOKEN_CLASSES": ("access",),  # Corrigido para 'access'
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),  # Especificando a classe de token correta
+    "TOKEN_TYPE_CLAIM": "token_type",
+}
 
 
 WEBPACK_LOADER = {
@@ -139,14 +163,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Configurações de localização e fuso horário
-LANGUAGE_CODE = "pt-BR"
+LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
 
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
+
+DATE_FORMAT = "d/m/Y"
+DATETIME_FORMAT = "d/m/Y H:i"
 # Diretórios estáticos
 STATIC_URL = "assets/"
 
@@ -158,11 +183,8 @@ STATICFILES_DIRS = [
 # Configurações de segurança
 if DEBUG:
     SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
 else:
-    CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_HTTPONLY = False
     # Redireciona todas as solicitações HTTP para HTTPS
     # Isso garante que todas as comunicações com o servidor sejam seguras.
     SECURE_SSL_REDIRECT = True

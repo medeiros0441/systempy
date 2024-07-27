@@ -44,19 +44,17 @@ export const getCookie = (name) => {
   // Retorna null se o cookie não for encontrado
   return null;
 };
-
-/**
- * Método para definir um cookie com um nome, valor e opções (opcional).
- * @param {string} name - O nome do cookie.
- * @param {string} value - O valor do cookie.
- * @param {Object} [options] - Opções adicionais para o cookie (path, expires, etc.).
- */
-export const setCookie = (name, value, options = {}) => {
+export const setCookie = (name, value, timeInMinutes = 60, options = {}) => {
   // Define o caminho padrão como '/' e mescla com as opções fornecidas
   options = {
     path: '/',
     ...options
   };
+
+  // Calcula a data de expiração com base no tempo em minutos
+  const expires = new Date();
+  expires.setTime(expires.getTime() + (timeInMinutes * 60 * 1000));
+  options.expires = expires.toUTCString();
 
   // Converte a data de expiração para UTCString se for uma instância de Date
   if (options.expires instanceof Date) {

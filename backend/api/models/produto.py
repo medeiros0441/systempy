@@ -1,4 +1,7 @@
+from .CustomModel import CustomModel
+
 from django.db import models
+
 from .loja import Loja
 from django.utils import timezone
 import uuid
@@ -24,7 +27,7 @@ def formatar_quantidade(quantidade):
         return ""
 
 
-class Produto(models.Model):
+class Produto(CustomModel):
     id_produto = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(
         max_length=255,

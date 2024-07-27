@@ -1,11 +1,14 @@
+from .CustomModel import CustomModel
+
 from django.db import models
+
 from django.utils import timezone
 import uuid
 
 from api.utils import Utils
 
 
-class Endereco(models.Model):
+class Endereco(CustomModel):
     id_endereco = models.AutoField(
         primary_key=True,
     )
@@ -20,7 +23,3 @@ class Endereco(models.Model):
     estado = models.CharField(max_length=50, null=True)
     codigo_postal = models.CharField(max_length=30, null=True)
     descricao = models.TextField(null=True, max_length=500)
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)

@@ -1,4 +1,7 @@
+from .CustomModel import CustomModel
+
 from django.db import models
+
 from .usuario import Usuario
 from .cliente import Cliente
 from .produto import Produto
@@ -9,7 +12,7 @@ from django.utils import timezone
 from api.utils import Utils
 
 
-class Venda(models.Model):
+class Venda(CustomModel):
     id_venda = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     data_venda = models.CharField(
         default=Utils.obter_data_hora_atual, editable=False, max_length=100
@@ -42,10 +45,7 @@ class Venda(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     troco = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
+
     descricao = models.TextField(null=True, blank=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
     loja = models.ForeignKey(Loja, on_delete=models.CASCADE)
@@ -60,12 +60,8 @@ class Venda(models.Model):
             self.tipo_pagamento, "Desconhecido"
         )
 
-    def save(self, *args, **kwargs):
-        self.update = Utils.obter_data_hora_atual()
-        super().save(*args, **kwargs)
 
-
-class ItemCompra(models.Model):
+class ItemCompra(CustomModel):
     id_item_compra = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
@@ -73,32 +69,17 @@ class ItemCompra(models.Model):
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE, null=True)
     quantidade = models.IntegerField()
     valor_unidade = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
-
-    def save(self, *args, **kwargs):
-        self.update = Utils.obter_data_hora_atual()
-        super().save(*args, **kwargs)
 
 
-class Motoboy(models.Model):
+class Motoboy(CustomModel):
     id_motoboy = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255)
     numero = models.CharField(max_length=20)
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
+
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True)
 
-    def save(self, *args, **kwargs):
-        self.update = Utils.obter_data_hora_atual()
-        super().save(*args, **kwargs)
 
-
-class Entrega(models.Model):
+class Entrega(CustomModel):
     id_entrega = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     venda = models.OneToOneField(
         Venda, on_delete=models.CASCADE, related_name="entrega"
@@ -106,15 +87,8 @@ class Entrega(models.Model):
     valor_entrega = models.DecimalField(max_digits=10, decimal_places=2)
     time_pedido = models.TimeField(null=True, blank=True)
     time_finalizacao = models.TimeField(null=True, blank=True)
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
+
     motoboy = models.ForeignKey(
         Motoboy, on_delete=models.SET_NULL, null=True, blank=True
     )
     descricao = models.TextField(null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        self.update = Utils.obter_data_hora_atual()
-        super().save(*args, **kwargs)

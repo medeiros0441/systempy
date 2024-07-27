@@ -11,7 +11,7 @@ from .historico import Historico, HistoricoAlteracoes
 from .log import Log
 from .configuracao import Configuracao
 from .cliente import Cliente
-
+from .CustomModel  import CustomModel
 __all__ = [
     "Usuario",
     "Personalizacao",
@@ -36,4 +36,5 @@ __all__ = [
     "Log",
     "Configuracao",
     "Cliente",
+    "CustomModel"
 ]

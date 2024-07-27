@@ -1,43 +1,42 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
-import { FaTimes } from 'react-icons/fa'; // Importa o ícone X
 
-const CustomModal = ({ title, children, footer }) => {
+const CustomModal = forwardRef(({ title, children, footer }, ref) => {
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  useImperativeHandle(ref, () => ({
+    openModal: handleShow,
+  }));
+
   return (
-    <>
-      <Modal
-        show={show}
-        onHide={handleClose}
-        backdrop="static"
-        keyboard={false}
-        aria-labelledby="staticBackdropLabel"
-      >
-        <Modal.Dialog  className="modal-dialog modal-md modal-dialog-centered">
-          <Modal.Content className="bg-dark">
-            <Modal.Header>
-              <Modal.Title id="staticBackdropLabel" className="fs-5 font-monospace text-white">
-                {title}
-              </Modal.Title>
-              <Button variant="link" onClick={handleClose} style={{ textDecoration: 'none', color: 'white' }}>
-                <FaTimes />
-              </Button>
-            </Modal.Header>
-            <Modal.Body className="text-white">
-              {children}
-            </Modal.Body>
-            <Modal.Footer className="text-white">
-              {footer}
-            </Modal.Footer>
-          </Modal.Content>
+    <Modal
+      show={show}
+      onHide={handleClose}
+      backdrop="static"
+      keyboard={false}
+      contentClassName=" bg-dark "
+      aria-labelledby="staticBackdropLabel" className=" ">
+    <Modal.Dialog className=" modal-md modal-dialog-centered">
+    <Modal.Header  className="modal-header">
+            <h5 id="staticBackdropLabel" className="modal-title fs-5 font-monospace text-white">
+              {title}
+            </h5>
+            <Button variant="link" onClick={handleClose} className="ms-auto mt-0 p-0" style={{ textDecoration: 'none', color: 'white' }} >
+            <i class="bi bi-x fw-bold" style={{fontSize: '25px'}}  />
+            </Button>
+        </Modal.Header>
+          <Modal.Body className="modal-body text-white">
+            {children}
+          </Modal.Body>
+          <Modal.Footer  className="modal-footer text-white">
+            {footer}
+          </Modal.Footer>
         </Modal.Dialog>
-      </Modal>
-    </>
+    </Modal>
   );
-};
+});
 
 export default CustomModal;

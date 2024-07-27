@@ -30,7 +30,6 @@ export default function loading(status, container) {
     // Adiciona estilos inline para garantir tamanho significativo
     loadingContainer.style.minHeight = '200px'; // Defina a altura mínima desejada
     loadingContainer.style.width = '100%'; // Preenche a largura do container pai
-    loadingContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; // Fundo com leve transparência (opcional)
 
     const spinner = document.createElement('div');
     spinner.classList.add('spinner-border');

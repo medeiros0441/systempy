@@ -1,4 +1,7 @@
+from .CustomModel import CustomModel
+
 from django.db import models
+
 from django.utils import timezone
 from .usuario import Usuario
 import uuid
@@ -6,7 +9,7 @@ import uuid
 from api.utils import Utils
 
 
-class Sessao(models.Model):
+class Sessao(CustomModel):
     id_sessao = models.AutoField(
         primary_key=True,
     )
@@ -28,10 +31,6 @@ class Sessao(models.Model):
     status = models.BooleanField(
         default=True,
     )
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
 
     # Novos campos para dados de localização
     cidade = models.CharField(

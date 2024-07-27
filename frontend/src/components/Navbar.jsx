@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { isAuthenticated } from '../utils/auth';
+import { useAuthentication } from '../utils/auth';
 import Cookies from 'js-cookie';
 
 const Navbar = () => {
-  const isCliente = isAuthenticated();
+  const isCliente = useAuthentication();
   const session = {
     isCliente: true,
     configs_ativos: {

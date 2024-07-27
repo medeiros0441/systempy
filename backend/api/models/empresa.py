@@ -1,11 +1,14 @@
+from .CustomModel import CustomModel
+
 from django.db import models
+
 from django.utils import timezone
 import uuid
 
 from api.utils import Utils
 
 
-class Empresa(models.Model):
+class Empresa(CustomModel):
 
     id_empresa = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     nome_empresa = models.TextField()
@@ -17,7 +20,3 @@ class Empresa(models.Model):
     email = models.EmailField()
     nro_cpf = models.TextField()
     telefone = models.TextField()
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)

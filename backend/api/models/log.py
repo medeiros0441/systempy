@@ -1,11 +1,14 @@
 import uuid
+from .CustomModel import CustomModel
+
 from django.db import models
+
 from ..models.usuario import Usuario
 from django.utils import timezone
 from api.utils import Utils
 
 
-class Log(models.Model):
+class Log(CustomModel):
     id_log = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tipo = models.CharField(
         max_length=50
@@ -14,10 +17,7 @@ class Log(models.Model):
         max_length=100
     )  # Origem do log (nome do módulo, função, etc.)
     descricao = models.TextField()  # Descrição do log
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
+
     usuario = models.ForeignKey(
         Usuario,
         on_delete=models.SET_NULL,

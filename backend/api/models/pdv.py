@@ -1,13 +1,16 @@
 import uuid
 from django.utils import timezone
 from api.utils import Utils
+from .CustomModel import CustomModel
+
 from django.db import models
+
 from .usuario import Usuario
 from .loja import Loja
 from .venda import Venda
 
 
-class PDV(models.Model):
+class PDV(CustomModel):
     EXCLUIDO = 0
     ABERTO = 1
     FECHADO = 2
@@ -23,10 +26,7 @@ class PDV(models.Model):
     id_pdv = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255, null=True)
     loja = models.ForeignKey("Loja", on_delete=models.CASCADE)
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
+
     saldo_inicial = models.DecimalField(
         max_digits=10, decimal_places=2, default=0, null=True
     )
@@ -34,12 +34,8 @@ class PDV(models.Model):
         choices=STATUS_OPERACAO_CHOICES, default=FECHADO
     )
 
-    def save(self, *args, **kwargs):
-        self.update = Utils.obter_data_hora_atual()
-        super().save(*args, **kwargs)
 
-
-class RegistroDiarioPDV(models.Model):
+class RegistroDiarioPDV(CustomModel):
     id_registro_diario = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
@@ -50,34 +46,37 @@ class RegistroDiarioPDV(models.Model):
     saldo_inicial_dinheiro = models.DecimalField(
         max_digits=10, decimal_places=2, editable=False, default=0, null=True
     )
-    saldo_final_dinheiro = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    saldo_final_total = models.DecimalField( max_digits=10, decimal_places=2, null=True, blank=True)
+    saldo_final_dinheiro = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    saldo_final_total = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     maquina_tipo = models.CharField(max_length=50, null=True, blank=True)
-    saldo_final_maquina = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    saldo_final_maquina = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
 
-    horario_iniciou = models.CharField(editable=False, default=Utils.obter_data_hora_atual, max_length=50)
+    horario_iniciou = models.CharField(
+        editable=False, default=Utils.obter_data_hora_atual, max_length=50
+    )
     horario_fechamento = models.CharField(max_length=50, null=True, blank=True)
     descricao_interna = models.CharField(max_length=300, null=True, blank=True)
-    insert = models.CharField(default=Utils.obter_data_hora_atual, editable=False, max_length=100)
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
+
     class Meta:
         unique_together = (
             "pdv",
             "dia",
         )  # Garantir que não haja duplicatas de pdv e dia
 
-    def save(self, *args, **kwargs):
-        self.update = Utils.obter_data_hora_atual()
-        super().save(*args, **kwargs)
 
-
-class TransacaoPDV(models.Model):
+class TransacaoPDV(CustomModel):
     id_transacao = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
     registro_diario = models.ForeignKey(
         RegistroDiarioPDV, on_delete=models.CASCADE, blank=True
-    ) 
+    )
     venda = models.ForeignKey(Venda, on_delete=models.SET_NULL, null=True, blank=True)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     descricao = models.CharField(max_length=100)
@@ -110,30 +109,13 @@ class TransacaoPDV(models.Model):
     tipo_pagamento = models.IntegerField(
         choices=TIPO_PAGAMENTO_CHOICES, null=True, blank=True
     )
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
-
-    def save(self, *args, **kwargs):
-        self.update = Utils.obter_data_hora_atual()
-        super().save(*args, **kwargs)
 
 
-
-class AssociadoPDV(models.Model):
+class AssociadoPDV(CustomModel):
     id_associado = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
+
     status_acesso = models.BooleanField(null=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
     pdv = models.ForeignKey(PDV, on_delete=models.CASCADE, null=True)
-
-    def save(self, *args, **kwargs):
-        self.update = Utils.obter_data_hora_atual()
-        super().save(*args, **kwargs)
- 

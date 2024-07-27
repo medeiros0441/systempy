@@ -1,26 +1,26 @@
 import uuid
+from .CustomModel import CustomModel
+
 from django.db import models
+
 from ..models.usuario import Usuario
 from django.utils import timezone
 
 from api.utils import Utils
 
 
-class Historico(models.Model):
+class Historico(CustomModel):
     id_historico = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
     descricao = models.TextField(blank=True, null=True)
-    insert = models.CharField(
-        default=Utils.obter_data_hora_atual, editable=False, max_length=100
-    )
-    update = models.CharField(default=Utils.obter_data_hora_atual, max_length=100)
+
     usuario = models.UUIDField(
         Usuario,
     )
 
 
-class HistoricoAlteracoes(models.Model):
+class HistoricoAlteracoes(CustomModel):
     id_historico = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
@@ -42,7 +42,3 @@ class HistoricoAlteracoes(models.Model):
     data_alteracao = models.DateTimeField(
         default=Utils.obter_data_hora_atual, editable=False
     )
-
-    def save(self, *args, **kwargs):
-        self.update = Utils.obter_data_hora_atual()
-        super().save(*args, **kwargs)

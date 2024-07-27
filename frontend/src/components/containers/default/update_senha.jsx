@@ -1,8 +1,13 @@
 import React, { useState, useRef } from 'react';
+import { Button } from 'react-bootstrap';
+import CustomModal from 'src/components/objetos/modal'; // Certifique-se de ajustar o caminho se necessário
 import img_etapa1 from 'src/assets/img/undraw/undraw_emails_6uqr.svg';
 import img_etapa2 from 'src/assets/img/undraw/undraw_letter_re_8m03.svg';
 import img_etapa3 from 'src/assets/img/undraw/undraw_Security_on_re_e491.svg';
 import img_etapa4 from 'src/assets/img/undraw/undraw_world_re_768g.svg';
+
+let openModalFunction = () => {}; // Inicialize como função vazia
+
 const RecuperarSenhaModal = () => {
   const [step, setStep] = useState(1);
   const [emailSaved, setEmailSaved] = useState('');
@@ -14,6 +19,7 @@ const RecuperarSenhaModal = () => {
   const codigoInputRef = useRef(null);
   const senhaInputRef1 = useRef(null);
   const senhaInputRef2 = useRef(null);
+  const modalRef = useRef(null);
 
   const validarEmail = () => {
     const email = emailInputRef.current.value.trim();
@@ -78,7 +84,7 @@ const RecuperarSenhaModal = () => {
   const Etapa1 = () => (
     <div className="modal-body">
       <div className="row mb-2 text-center">
-        <img src={{img_etapa1}} className="image-fluid mx-auto" height="150" alt="undraw_emails" />
+        <img src={img_etapa1} className="image-fluid mx-auto" height="150" alt="undraw_emails" />
         <div className="fs-3 font-monospace">Confirme seu email</div>
       </div>
       <div className="form-floating mb-2">
@@ -111,7 +117,7 @@ const RecuperarSenhaModal = () => {
   const Etapa2 = () => (
     <div className="modal-body">
       <div className="row mb-2 text-center">
-        <img src={{img_etapa2}}   className="image-fluid mx-auto" height="150" alt="undraw_letter" />
+        <img src={img_etapa2} className="image-fluid mx-auto" height="150" alt="undraw_letter" />
         <div className="fs-3 font-monospace">Confirme seu email com o código que foi enviado</div>
       </div>
       <div className="input-group mb-3">
@@ -142,7 +148,7 @@ const RecuperarSenhaModal = () => {
   const Etapa3 = () => (
     <div className="modal-body">
       <div className="row mb-2 text-center">
-        <img src={{img_etapa3}}  className="image-fluid mx-auto" height="150" alt="undraw_security" />
+        <img src={img_etapa3} className="image-fluid mx-auto" height="150" alt="undraw_security" />
         <div className="fs-3 font-monospace">E-mail Confirmado, Atualize a senha</div>
       </div>
       <div className="form-floating mb-2">
@@ -185,36 +191,116 @@ const RecuperarSenhaModal = () => {
   const Etapa4 = () => (
     <div className="modal-body">
       <div className="row mb-2 text-center">
-        <img src={{img_etapa4}}   className="image-fluid mx-auto" height="150" alt="undraw_world" />
+        <img src={img_etapa4} className="image-fluid mx-auto" height="150" alt="undraw_world" />
         <label htmlFor="senha">Senha Alterada.</label>
       </div>
     </div>
   );
 
+  const renderFooter = () => {
+    switch (step) {
+      case 1:
+        return (
+          <Button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              if (validarEmail()) {
+                reenviarCodigo();
+                setStep(2);
+              }
+            }}
+          >
+            Avançar
+          </Button>
+        );
+      case 2:
+        return (
+          <>
+            <Button
+              type="button"
+              className="btn me-auto btn-sm btn-secondary"
+              onClick={() => setStep(1)}
+            >
+              Voltar
+            </Button>
+            <Button
+              type="button"
+              className="btn ms-auto btn-sm btn-primary"
+              onClick={() => {
+                if (validarCodigo()) {
+                  setStep(3);
+                }
+              }}
+            >
+              Avançar
+            </Button>
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <Button
+              type="button"
+              className="btn me-auto btn-sm btn-secondary"
+              onClick={() => setStep(2)}
+            >
+              Voltar
+            </Button>
+            <Button
+              type="button"
+              className="btn ms-auto btn-sm btn-primary"
+              onClick={() => {
+                if (senhaValida && senhaConfirmada) {
+                  finalizar();
+                  setStep(4);
+                }
+              }}
+            >
+              Avançar
+            </Button>
+          </>
+        );
+      case 4:
+        return (
+          <Button
+            type="button"
+            className="btn ms-auto btn-sm btn-primary"
+            onClick={() => {
+              if (modalRef.current) {
+                modalRef.current.openModal();
+              }
+            }}
+          >
+            Fechar
+          </Button>
+        );
+      default:
+        return null;
+    }
+  };
+
+  openModalFunction = () => {
+    if (modalRef.current) {
+      modalRef.current.openModal();
+    }
+  };
+
   return (
-    <> 
-      <div>
+    <>
       <CustomModal
-        title="Recuperção de Senha"
-        footer={
-          <div>
-            <Button variant="secondary" onClick={() => alert('Close')}>
-              Close
-            </Button>
-            <Button variant="primary" onClick={() => alert('Action!')}>
-              Save Changes
-            </Button>
-          </div>
-        }
+        ref={modalRef}
+        title="Recuperação de Senha"
+        footer={renderFooter()}
       >
-         {step === 1 && <Etapa1 />}
-          {step === 2 && <Etapa2 />}
-          {step === 3 && <Etapa3 />}
-          {step === 4 && <Etapa4 />}
+        {step === 1 && <Etapa1 />}
+        {step === 2 && <Etapa2 />}
+        {step === 3 && <Etapa3 />}
+        {step === 4 && <Etapa4 />}
       </CustomModal>
-    </div>
     </>
   );
 };
 
-export default RecuperarSenhaModal;
+// Exporta a função de abertura do modal junto com o componente
+export { RecuperarSenhaModal, openModalFunction };
