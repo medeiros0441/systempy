@@ -1,16 +1,18 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from ..models import Personalizacao,PDV,Loja
+from ..models import Personalizacao, PDV, Loja
 import json
 from ..utils import Utils
 from django.core.exceptions import ObjectDoesNotExist
 from ..user import UserInfo
-from uuid import UUID
-from api.permissions import permissions
+from uuid import UUID 
+from api.permissions import permissions,CustomPermission
+from rest_framework.views import APIView
+
+class views_personalizacao(APIView):
+    permission_classes = [CustomPermission(codigo_model="personalizacao", auth_required=True)]
 
 
-class views_personalizacao:
-    @csrf_exempt
     @permissions.isAutorizado(0, True)
     def list_personalizacao(request):
         try:
@@ -30,7 +32,6 @@ class views_personalizacao:
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-    @csrf_exempt
     @permissions.isAutorizado(0, True)
     def create_personalizacao(request, data=None):
         if request.method != "POST":
@@ -60,7 +61,6 @@ class views_personalizacao:
             return JsonResponse({"error": str(e)}, status=400)
 
     @permissions.isAutorizado(0, True)
-    @csrf_exempt
     def get_personalizacao_for_venda(request):
         """
         Função para obter a personalização para uma venda.
@@ -87,7 +87,6 @@ class views_personalizacao:
             return JsonResponse({"error": f"Erro inesperado: {str(e)}"}, status=400)
 
     @permissions.isAutorizado(0, True)
-    @csrf_exempt
     def get_personalizacao(request, id):
 
         id_empresa = UserInfo.get_id_empresa(request)
@@ -106,7 +105,6 @@ class views_personalizacao:
             return JsonResponse({"error": "Personalização não encontrada"}, status=404)
 
     @permissions.isAutorizado(0, True)
-    @csrf_exempt
     def api_get_personalizacao_codigo(request, id_usuario, codigo):
         """
         Obtém a personalização com base no ID do usuário e código.
@@ -169,7 +167,6 @@ class views_personalizacao:
         return personalizacao.valor if personalizacao else None
 
     @permissions.isAutorizado(0, True)
-    @csrf_exempt
     def update_personalizacao(request, id, data=None):
         if request.method != "PUT":
             return JsonResponse({"error": "Método não permitido"}, status=405)
@@ -208,7 +205,6 @@ class views_personalizacao:
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
-    @csrf_exempt
     @permissions.isAutorizado(0, True)
     def delete_personalizacao(request, id):
         try:

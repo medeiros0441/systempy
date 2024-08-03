@@ -1,5 +1,5 @@
-import React, { useState } from 'react'; 
-import { request } from 'src/utils/api';
+import React, { useState } from 'react';
+import request from 'src/utils/api';
 import alerta from 'src/utils/alerta';
 import loading from 'src/utils/loading';
 

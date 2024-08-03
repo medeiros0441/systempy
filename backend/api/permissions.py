@@ -7,6 +7,41 @@ from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
 
 
+class CustomPermission(BasePermission):
+    def __init__(self, codigo_model=None, auth_required=False):
+        self.codigo_model = codigo_model
+        self.auth_required = auth_required
+
+    def has_permission(self, request, view):
+        """
+        Verifica as permissões do usuário antes de executar a view.
+        """
+        # Verifica se autenticação é necessária e se o usuário está autenticado
+        status, mensagem = UserInfo.is_authenticated(request)
+        if not status:
+            return False
+
+        # Configurações de modelo, se aplicável
+        id_usuario = UserInfo.get_id_usuario(request)
+        if self.codigo_model:
+            codigo_model_convertido = self.codigo_model
+            if isinstance(self.codigo_model, str):
+                lista = Utils.lista_de_configuracao()
+                codigo_model_lower = self.codigo_model.lower()
+                for item in lista:
+                    if item["nome"].lower() == codigo_model_lower:
+                        codigo_model_convertido = item["codigo"]
+                        break
+
+            status, render = Utils.configuracao_usuario(
+                request, id_usuario, codigo_model_convertido
+            )
+        else:
+            status = True
+
+        return status
+
+
 class permissions:
 
     def isAutorizado(codigo_model=None, auth_required=False):

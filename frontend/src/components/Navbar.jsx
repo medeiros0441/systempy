@@ -69,12 +69,12 @@ const Navbar = () => {
             {!isCliente && (
               <>
                 <li className="text-sm-end text-decoration-none text-center d-inline-flex col-auto">
-                  <Link className="nav-link text-decoration-underline" to="/">
+                  <Link className="nav-link " to="/">
                     <i className="bi bi-house"></i> Início
                   </Link>
                 </li>
                 <li className="text-center text-decoration-none d-inline-flex col-auto">
-                  <Link className="nav-link text-decoration-underline" to="/sobre">
+                  <Link className="nav-link " to="/sobre">
                     <i className="bi bi-building-exclamation"></i> Sobre nós
                   </Link>
                 </li>

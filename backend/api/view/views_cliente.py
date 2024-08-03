@@ -12,10 +12,12 @@ import api.view as view
 from api.permissions import permissions
 
 
-class views_cliente:
+from api.permissions import permissions,CustomPermission
+from rest_framework.views import APIView
+class views_cliente(APIView):
+    permission_classes = [CustomPermission(codigo_model="cliente", auth_required=True)]
 
-    @permissions.isAutorizado(8, True)
-    @csrf_exempt
+
     def create_cliente(request):
         if request.method == "POST":
             try:
@@ -60,7 +62,6 @@ class views_cliente:
 
     @staticmethod
     @permissions.isAutorizado(8, True)
-    @csrf_exempt
     def update_cliente(request):
         if request.method == "PUT":
             try:
@@ -144,7 +145,6 @@ class views_cliente:
             return JsonResponse({"error": str(e)}, status=500)
 
     @permissions.isAutorizado(8, True)
-    @csrf_exempt
     def get_clientes_by_empresa(request):
         empresa_id = UserInfo.get_id_empresa(request)
 

@@ -6,8 +6,13 @@ from django.shortcuts import render
 import requests
 import json
 
+from api.permissions import permissions, CustomPermission
+from rest_framework.views import APIView
 
-class views_sessao:
+
+class views_sessao(APIView):
+    permission_classes = [CustomPermission(codigo_model="sessao", auth_required=True)]
+
     def sessao_usuario_list(request):
         sessoes = Sessao.objects.all()
         return render(request, "sessao_usuario_list.html", {"sessoes": sessoes})
@@ -125,10 +130,10 @@ class views_sessao:
             ip_address = request.META.get("REMOTE_ADDR")
             # Supondo que o IP seja enviado via POST
 
-            # Chave de API do ipinfo.io
+            # Chave de do ipinfo.io
             api_key = "7a622c40229db0"
 
-            # URL da API ipinfo.io
+            # URL da (APIView) ipinfo.io
             ipinfo_url = f"https://ipinfo.io/{ip_address}?token={api_key}"
 
             # Realizar uma solicitação GET para o serviço IPinfo para obter informações de localização

@@ -1,24 +1,20 @@
 from pathlib import Path
-from decouple import config
 import os
+from decouple import config
 from dotenv import load_dotenv
 from datetime import timedelta
 
-
+# Base Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-STATIC_URL = "/static/"
+# Carregar variáveis de ambiente
+ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
+load_dotenv(".env")
 
-# Carregar variáveis de ambiente do arquivo correspondente ao ambiente atual
-ENVIRONMENT = os.getenv("DJANGO_ENV", "")
-load_dotenv(".env")  # Carrega o arquivo .env para todas as variáveis de ambiente
+# Debug
+DEBUG = ENVIRONMENT == "development"
 
-if ENVIRONMENT == "development":
-    DEBUG = True
-else:
-    DEBUG = False
-
-# Defina a lista de origens permitidas
+# Hosts e Origens Permitidas
 ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "https://comercioprime.azurewebsites.net",
@@ -27,15 +23,16 @@ ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = ALLOWED_ORIGINS
 CORS_ALLOWED_ORIGINS = ALLOWED_ORIGINS
-
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "comercioprime.azurewebsites.net",
 ]
 
+# Segurança
 SECRET_KEY = config("SECRET_KEY")
 
+# Aplicações Instaladas
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -53,18 +50,31 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
 ]
 
+# JWT
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "AUTH_TOKEN_CLASSES": ("access",),
 }
 
+# Framework REST
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.AllowAny",
+    ),
 }
 
+# Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -77,42 +87,30 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "api.middlewares.Middleware",
 ]
+
+# CORS
 CORS_ALLOW_HEADERS = [
     "content-type",
-    "X-CSRFToken",  # Certifique-se de que o cabeçalho CSRF está incluído
+    "X-CSRFToken",
 ]
-ROOT_URLCONF = "setup.urls"
+
+# CSRF
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_HEADER_NAME = "X-CSRFToken"
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
-
-# Configuração do SIMPLE_JWT
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-    "VERIFYING_KEY": None,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
-    "AUTH_TOKEN_CLASSES": ("access",),  # Corrigido para 'access'
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),  # Especificando a classe de token correta
-    "TOKEN_TYPE_CLAIM": "token_type",
-}
-
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL=True
+# Webpack
 
 WEBPACK_LOADER = {
     "DEFAULT": {
         "CACHE": not DEBUG,
-        "BUNDLE_DIR_NAME": "build/",  # Diretorio onde os arquivos compilados serão colocados
+        "BUNDLE_DIR_NAME": "build/",
         "STATS_FILE": os.path.join(BASE_DIR, "frontend", "webpack-stats.json"),
     }
 }
-
+# Templates
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -129,12 +127,10 @@ TEMPLATES = [
     },
 ]
 
+# WSGI
 WSGI_APPLICATION = "setup.wsgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-SESSION_COOKIE_AGE = 8 * 60 * 60
-
+# Banco de Dados
 DATABASES = {
     "default": {
         "ENGINE": config("DB_ENGINE"),
@@ -146,68 +142,43 @@ DATABASES = {
     }
 }
 
-# Senhas de validação
+# Senhas de Validação
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# Configurações de localização e fuso horário
+# Localização e Fuso Horário
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
-
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
 DATE_FORMAT = "d/m/Y"
 DATETIME_FORMAT = "d/m/Y H:i"
-# Diretórios estáticos
-STATIC_URL = "assets/"
 
+# Diretórios Estáticos
 STATIC_URL = "/static/"
+
+ROOT_URLCONF = "setup.urls"
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "..", "frontend", "build", "static"),
 ]
-
-# Configurações de segurança
+# Segurança
 if DEBUG:
     SESSION_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
+    CSRF_COOKIE_SECURE = False
 else:
-    # Redireciona todas as solicitações HTTP para HTTPS
-    # Isso garante que todas as comunicações com o servidor sejam seguras.
     SECURE_SSL_REDIRECT = True
-
-    # Configura o cabeçalho HTTP Strict Transport Security (HSTS) com um tempo de validade
-    # HSTS informa aos navegadores para sempre usar HTTPS ao se conectar ao site.
-    # O valor 3600 define o tempo em segundos (1 hora) durante o qual os navegadores devem manter a política HSTS.
     SECURE_HSTS_SECONDS = 3600
-
-    # Inclui subdomínios no cabeçalho HSTS
-    # Garante que todos os subdomínios também sigam a política HSTS.
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-
-    # Adiciona o domínio ao preload list do HSTS
-    # Isso faz com que o navegador trate o site como sempre HTTPS mesmo antes da primeira visita.
     SECURE_HSTS_PRELOAD = True
-
-    # Ativa o filtro XSS (Cross-Site Scripting) no navegador
-    # Protege contra ataques que injetam scripts maliciosos em páginas da web.
     SECURE_BROWSER_XSS_FILTER = True
-
-    # Impede que os navegadores detectem o tipo de conteúdo de maneira insegura
-    # Protege contra ataques de tipo de conteúdo, onde o navegador pode tentar interpretar dados maliciosos.
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    CSRF_COOKIE_SECURE = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

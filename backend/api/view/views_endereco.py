@@ -7,12 +7,14 @@ from django.http import JsonResponse
 import json
 from api.permissions import permissions
 
+from api.permissions import permissions,CustomPermission
+from rest_framework.views import APIView
 
-class views_endereco:
 
-    @staticmethod
-    @csrf_exempt
-    @permissions.isAutorizado(8, True)
+class views_endereco(APIView):
+    permission_classes = [CustomPermission(codigo_model="endereco", auth_required=True)]
+
+
     def api_create_endereco(request):
         if request.method == "POST":
             try:
@@ -32,7 +34,6 @@ class views_endereco:
 
     @staticmethod
     @permissions.isAutorizado(8, True)
-    @csrf_exempt
     def api_update_endereco(request, endereco_id):
         if request.method == "PUT":
             try:

@@ -8,9 +8,15 @@ from django.views.generic import (
 from ..models import Configuracao, Usuario
 from django.urls import reverse_lazy
 from api.utils import Utils
+from api.permissions import permissions, CustomPermission
+from rest_framework.views import APIView
 
 
-class views_configuracao:
+class views_configuracao(APIView):
+    permission_classes = [
+        CustomPermission(codigo_model="configuracao", auth_required=True)
+    ]
+
     def get_configuracoes_usuario(id_usuario):
         try:
 

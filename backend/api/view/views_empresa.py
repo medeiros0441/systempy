@@ -2,15 +2,14 @@
 from ..models.empresa import Empresa
 import json
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from api.utils import Utils
 from api.user import UserInfo
-from api.permissions import permissions
+from api.permissions import permissions,CustomPermission
+from rest_framework.views import APIView
+class views_empresa(APIView):
+    permission_classes = [CustomPermission(codigo_model="empresa", auth_required=True)]
 
 
-class views_empresa:
-
-    @csrf_exempt
     @permissions.isAutorizado(0, True)
     def list_empresas(request):
         try:
@@ -22,7 +21,6 @@ class views_empresa:
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-    @csrf_exempt
     @permissions.isAutorizado(0, True)
     def create_empresa(request):
         if request.method == "POST":
@@ -47,7 +45,6 @@ class views_empresa:
                 return JsonResponse({"error": str(e)}, status=400)
         return JsonResponse({"error": "Método não permitido"}, status=405)
 
-    @csrf_exempt
     @permissions.isAutorizado(0, True)
     def get_empresa(request, id=None):
         try:
@@ -62,7 +59,6 @@ class views_empresa:
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-    @csrf_exempt
     @permissions.isAutorizado(0, True)
     def update_empresa(request, id):
         if request.method == "PUT":
@@ -92,7 +88,6 @@ class views_empresa:
                 return JsonResponse({"error": str(e)}, status=400)
         return JsonResponse({"error": "Método não permitido"}, status=405)
 
-    @csrf_exempt
     @permissions.isAutorizado(0, True)
     def delete_empresa(request, id):
         if request.method == "DELETE":

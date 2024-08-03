@@ -4,45 +4,23 @@ from django.conf.urls.static import static
 from api.utils import Utils
 import api.view as view
 from django.views.generic import TemplateView
-
+from rest_framework.routers import DefaultRouter
+from .view import views_public
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .TokenManager import TokenManager
+router = DefaultRouter()
+router.register(r"public", views_public, basename="public")
 
-urlpatterns = [
+url_public = [
+    path("", include(router.urls)),
+    path("csrfToken/", TokenManager.csrf_token_view, name="csrfToken"),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-]
-url_public = [
-    path(
-        "authentication",
-        view.views_public.check_authentication,
-        name="authentication",
-    ),
-    path("contato", view.views_public.contato, name="contato"),
     path("status_on", view.views_sessao.status_on, name="status_on"),
     path("status_off", view.views_sessao.status_off, name="status_off"),
-    path(
-        "cadastro",
-        view.views_public.cadastro,
-        name="cadastro",
-    ),
-    path("setlogin", view.views_public.SetLogin, name="setlogin"),  # funçoes js
-    path(
-        "enviar-codigo/<str:email>",
-        view.views_public.enviar_codigo,
-        name="enviar_codigo",
-    ),
-    path(
-        "confirmar-codigo/<str:codigo>",
-        view.views_public.confirmar_codigo,
-        name="confirmar_codigo",
-    ),
-    path(
-        "atualizar-senha/<str:nova_senha>",
-        view.views_public.atualizar_senha,
-        name="atualizar_senha",
-    ),
 ]
+
 url_erros = [
     path("erro", view.views_erro.erro, name="erro"),
     path(
@@ -139,7 +117,6 @@ url_pdv = [
 ]
 
 url_usuario = [
-    
     path(
         "usuarios/criar",
         view.views_usuarios.cadastrar_usuario,
@@ -242,38 +219,8 @@ url_produto = [
 ]
 
 
-url_venda = [  # vendas
-    path(
-        "vendas/excluir/<uuid:id_venda>",
-        view.views_venda.excluir_venda,
-        name="excluir_venda",
-    ),
-    path(
-        "vendas/criar/processar_venda",
-        view.views_venda.processar_venda,
-        name="processar_venda",
-    ),
-    path(
-        "vendas/dados",
-        view.views_venda.obter_dados,
-        name="obter_dados_vendas",
-    ),
-    path(
-        "cliente/by/venda/<uuid:id_venda>",
-        view.views_venda.selecionar_cliente_by_venda,
-        name="selecionar_cliente_by_vendas",
-    ),
-    path(
-        "produtos/by/venda/<uuid:id_venda>",
-        view.views_venda.selecionar_produto_by_venda,
-        name="selecionar_produto_by_vendas",
-    ),
-    path(
-        "retornaveis/by/venda/<uuid:id_venda>",
-        view.views_venda.selecionar_retornaveis_by_venda,
-        name="selecionar_produto_by_vendas",
-    ),
-]
+router = DefaultRouter()
+router.register(r"vendas", view.views_venda, basename="venda")
 
 
 url_cliente = [  # clientes
@@ -360,7 +307,6 @@ urlpatterns = (
     url_public
     + url_empresa
     + url_usuario
-    + url_venda
     + url_produto
     + url_loja
     + url_cliente

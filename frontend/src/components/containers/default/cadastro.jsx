@@ -69,7 +69,9 @@ function CadastroForm() {
 
   return (
     <>
-      <Modal className="modal modal-signin position-static d-block align-items-center">
+      <Modal
+      show={true}
+      className="modal modal-signin position-static d-block align-items-center">
         <Modal.Dialog className="align-items-center modal-signin content-">
           <Modal.Header>
             <Modal.Title>Cadastro Empresa</Modal.Title>

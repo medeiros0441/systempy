@@ -4,14 +4,15 @@ from ..models import Motoboy, Configuracao, Entrega
 from api.user import UserInfo
 from api.utils import Utils
 from django.views.decorators.csrf import csrf_exempt
-import json
-from api.permissions import permissions
+import json 
+from api.permissions import permissions,CustomPermission
+from rest_framework.views import APIView
 
+class views_motoboy(APIView):
+    permission_classes = [CustomPermission(codigo_model="motoboy", auth_required=True)]
 
-class views_motoboy:
 
     @staticmethod
-    @csrf_exempt
     @permissions.isAutorizado(9, True)
     def listar_motoboys_por_empresa(request):
         if request.method == "GET":
@@ -35,7 +36,6 @@ class views_motoboy:
             return JsonResponse({"status": "error", "message": "Método não permitido"})
 
     @staticmethod
-    @csrf_exempt
     @permissions.isAutorizado(9, True)
     def create_motoboy(request):
         if request.method == "POST":
@@ -62,7 +62,6 @@ class views_motoboy:
             return JsonResponse({"status": "error", "message": "Método não permitido"})
 
     @staticmethod
-    @csrf_exempt
     @permissions.isAutorizado(9, True)
     def update_motoboy(request, id_motoboy):
         if request.method == "POST":
@@ -95,7 +94,6 @@ class views_motoboy:
             return JsonResponse({"status": "error", "message": "Método não permitido"})
 
     @staticmethod
-    @csrf_exempt
     @permissions.isAutorizado(9, True)
     def delete_motoboy(request, id_motoboy):
         if request.method == "DELETE":
@@ -120,7 +118,6 @@ class views_motoboy:
             return JsonResponse({"status": "error", "message": "Método não permitido"})
 
     @staticmethod
-    @csrf_exempt
     @permissions.isAutorizado(9, True)
     def get_motoboy_by_venda(request, id_venda):
         if request.method == "GET":

@@ -11,9 +11,12 @@ from api.permissions import permissions
 from django.views.decorators.csrf import csrf_exempt
 
 
-class views_loja:
+from api.permissions import permissions,CustomPermission
+from rest_framework.views import APIView
+class views_loja(APIView):
+    permission_classes = [CustomPermission(codigo_model="loja", auth_required=True)]
 
-    @csrf_exempt
+
     @permissions.isAutorizado(5, True)
     def lista_lojas(request):
         try:
@@ -71,7 +74,6 @@ class views_loja:
             return JsonResponse({"error": str(e)}, status=500)
 
     @permissions.isAutorizado(5, True)
-    @csrf_exempt
     def criar_loja(request):
         try:
             data = json.loads(request.body)
@@ -178,7 +180,6 @@ class views_loja:
             return views_erro.erro(request, mensagem_erro)
 
     @permissions.isAutorizado(5, True)
-    @csrf_exempt
     def editar_loja(request, id_loja):
         try:
             loja = get_object_or_404(Loja, pk=id_loja)
@@ -258,7 +259,6 @@ class views_loja:
                 status=500,
             )
 
-    @csrf_exempt
     @permissions.isAutorizado(5, True)
     def excluir_loja(request, id_loja):
         try:

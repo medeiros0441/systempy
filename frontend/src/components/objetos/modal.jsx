@@ -18,8 +18,8 @@ const CustomModal = forwardRef(({ title, children, footer }, ref) => {
       backdrop="static"
       keyboard={false}
       contentClassName=" bg-dark "
+      dialogclassName=" modal-md modal-dialog-centered"
       aria-labelledby="staticBackdropLabel" className=" ">
-    <Modal.Dialog className=" modal-md modal-dialog-centered">
     <Modal.Header  className="modal-header">
             <h5 id="staticBackdropLabel" className="modal-title fs-5 font-monospace text-white">
               {title}
@@ -34,7 +34,6 @@ const CustomModal = forwardRef(({ title, children, footer }, ref) => {
           <Modal.Footer  className="modal-footer text-white">
             {footer}
           </Modal.Footer>
-        </Modal.Dialog>
     </Modal>
   );
 });

@@ -14,13 +14,16 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
-from api.permissions import permissions
 
 
-class views_produto:
+from api.permissions import permissions, CustomPermission
+from rest_framework.views import APIView
+
+
+class views_produto(APIView):
+    permission_classes = [CustomPermission(codigo_model="produto", auth_required=True)]
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["POST", "PUT"])
     @permissions.isAutorizado(6, True)
     def form_produto(request, id_produto=None):
@@ -141,7 +144,6 @@ class views_produto:
         return True, None, data
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["POST"])
     @permissions.isAutorizado(6, True)
     def acrescentar_produto(request):
@@ -193,7 +195,6 @@ class views_produto:
             return JsonResponse({"message": mensagem_erro}, status=500)
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["GET"])
     @permissions.isAutorizado(6, True)
     def selecionar_produto(request, id_produto):
@@ -221,7 +222,6 @@ class views_produto:
             return JsonResponse({"message": mensagem_erro}, status=500)
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["DELETE"])
     @permissions.isAutorizado(6, True)
     def excluir_produto(request, id_produto):

@@ -1,35 +1,88 @@
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework.permissions import AllowAny
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import check_password, make_password
-from django.utils import timezone
-from ..models import Empresa, Usuario
-from ..gerencia_email.config_email import enviar_email
-from api.utils import Utils
 from ..TokenManager import TokenManager
 from ..user import UserInfo
 from .views_configuracao import views_configuracao
 from random import choices
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from django.utils import timezone
+from django.contrib.auth.hashers import check_password, make_password
+from ..models import Usuario, Empresa
+from ..utils import Utils
+from ..gerencia_email.config_email import enviar_email
 
 
-class views_public:
+class views_public(viewsets.ViewSet):
+    permission_classes = [AllowAny]
 
-    
-    @api_view(["GET"])
-    def check_authentication(request):
+    @action(detail=False, methods=["post"], url_path="login")
+    def login(self, request):
+        try:
+            data = request.data
+            email = data.get("email", "").lower().strip()
+            senha = data.get("senha", "")
+
+            user = Usuario.objects.filter(email=email).first()
+            if user:
+                if check_password(senha, user.senha):
+                    if not user.status_acesso:
+                        return Response(
+                            {
+                                "message": "Usuário desativado. Entre em contato com o responsável da assinatura."
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                    user.utimo_login = timezone.now()
+                    user.save()
+
+                    payload = {
+                        "id_usuario": str(user.id_usuario),
+                        "id_empresa": str(user.empresa.id_empresa),
+                        "nivel_usuario": user.nivel_usuario,
+                        "status_acesso": user.status_acesso,
+                    }
+
+                    TokenManager.create_token(
+                        nome_token="token_user", payload=payload, time=6
+                    )
+
+                    return Response(
+                        {"success": True, "message": "Usuário logado com sucesso."},
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    return Response(
+                        {"message": "Credenciais inválidas. Tente novamente."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            else:
+                return Response(
+                    {"message": "O email não está cadastrado."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except Exception as e:
+            return Response(
+                {"message": f"Erro interno durante a autenticação: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(detail=False, methods=["get"], url_path="check-auth")
+    def check_authentication(self, request):
+        print("cheou aqui")
         if UserInfo.is_authenticated(request):
-            return Response({"authenticated": True}, status=200)
+            return Response({"authenticated": True}, status=status.HTTP_200_OK)
         else:
             return Response(
                 {"authenticated": False, "message": "Usuário não autenticado."},
-                status=403,
+                status=status.HTTP_403_FORBIDDEN,
             )
 
-    
-    @api_view(["POST"])
-    def contato(request):
+    @action(detail=False, methods=["post"], url_path="contact")
+    def contact(self, request):
         try:
             data = request.data
             nome = data.get("nome")
@@ -52,73 +105,29 @@ class views_public:
                 TextContainer2=mensagem,
             )
 
-            return Response({"message": "Mensagem Enviada."}, status=200)
+            return Response({"message": "Mensagem Enviada."}, status=status.HTTP_200_OK)
 
-        except Exception as e:
-            return Response({"error": str(e)}, status=500)
-
-    
-    @api_view(["POST"])
-    def SetLogin(request):
-        try:
-            data = request.data
-            email = data.get("email", "").lower().strip()
-            senha = data.get("senha", "")
-
-            usuario = Usuario.objects.filter(email=email).first()
-            if usuario:
-                senha_correta = check_password(senha, usuario.senha)
-                if senha_correta:
-                    if not usuario.status_acesso:
-                        return Response(
-                            {
-                                "message": "Usuário desativado. Entre em contato com o responsável da assinatura"
-                            },
-                            status=400,
-                        )
-                    usuario.utimo_login = timezone.now()
-                    usuario.save()
-
-                    payload = {
-                        "id_usuario": str(usuario.id_usuario),
-                        "id_empresa": str(usuario.empresa.id_empresa),
-                        "nivel_usuario": usuario.nivel_usuario,
-                        "status_acesso": usuario.status_acesso,
-                    }
-
-                    TokenManager.create_token(
-                        nome_token="token_user",
-                        payload=payload,
-                        time=6,
-                    )
-
-                    return Response(
-                        {"success": True, "message": "Usuário logado com sucesso."},
-                        status=200,
-                    )
-                else:
-                    return Response(
-                        {"message": "Credenciais inválidas. Tente novamente."},
-                        status=400,
-                    )
-            else:
-                return Response({"message": "O email não está cadastrado."}, status=400)
         except Exception as e:
             return Response(
-                {"message": f"Erro interno durante a autenticação: {str(e)}"},
-                status=500,
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    
-    @api_view(["POST"])
-    def enviar_codigo(request, email):
+    @action(detail=False, methods=["post"], url_path="code/send")
+    def send_code(self, request):
         try:
+            email = request.data.get("email")
             if not email:
-                return Response({"message": "Email não fornecido."}, status=400)
+                return Response(
+                    {"message": "Email não fornecido."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             usuario = Usuario.objects.filter(email=email).first()
             if not usuario:
-                return Response({"message": "Usuário não encontrado."}, status=404)
+                return Response(
+                    {"message": "Usuário não encontrado."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
             codigo = (
                 "".join(choices("0123456789", k=3))
@@ -139,48 +148,59 @@ class views_public:
 
             return Response(
                 {"message": "Código de recuperação enviado com sucesso."},
-                status=200,
+                status=status.HTTP_200_OK,
             )
 
         except Exception as e:
-            return Response({"message": f"Erro interno: {str(e)}"}, status=500)
+            return Response(
+                {"message": f"Erro interno: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-    
-    @api_view(["POST"])
-    def confirmar_codigo(request, codigo):
+    @action(detail=False, methods=["post"], url_path="code/confirm")
+    def confirm_code(self, request):
         try:
+            codigo = request.data.get("codigo")
             codigo_criptografado = Utils.get_cookie("codigo_autenticacao")
             if check_password(codigo, codigo_criptografado):
                 return Response(
-                    {"message": "Código confirmado com sucesso."}, status=200
+                    {"message": "Código confirmado com sucesso."},
+                    status=status.HTTP_200_OK,
                 )
             else:
                 return Response(
-                    {"message": "Código inválido. Tente novamente."}, status=400
+                    {"message": "Código inválido. Tente novamente."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
         except Exception as e:
             return Response(
                 {"message": f"Erro interno durante a autenticação: {str(e)}"},
-                status=500,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    
-    @api_view(["POST"])
-    def atualizar_senha(request):
+    @action(detail=False, methods=["post"], url_path="password/update")
+    def update_password(self, request):
         try:
-            data = request.data
-            senha_nova = data.get("senha_nova", "")
-
+            senha_nova = request.data.get("senha_nova")
             id_usuario = Utils.get_cookie("id_usuario")
             if not id_usuario:
-                return Response({"message": "Usuário não autenticado."}, status=403)
+                return Response(
+                    {"message": "Usuário não autenticado."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
             usuario = Usuario.objects.filter(id_usuario=id_usuario).first()
             if not usuario:
-                return Response({"message": "Usuário não encontrado."}, status=404)
+                return Response(
+                    {"message": "Usuário não encontrado."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
             if not senha_nova:
-                return Response({"message": "Campo senha está vazio."}, status=400)
+                return Response(
+                    {"message": "Campo senha está vazio."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             senha_hash = make_password(senha_nova)
             usuario.senha = senha_hash
@@ -195,16 +215,19 @@ class views_public:
                 TextIntroducao=mensagem,
             )
 
-            return Response({"message": "Operação concluída com sucesso."}, status=200)
+            return Response(
+                {"message": "Operação concluída com sucesso."},
+                status=status.HTTP_200_OK,
+            )
 
         except Exception as e:
             return Response(
                 {"message": f"Erro durante a recuperação de senha: {str(e)}"},
-                status=500,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    
-    def validacao(campos):
+    @staticmethod
+    def validate_fields(campos):
         mensagens_alerta = []
 
         def verificar_existencia(campo, valor, funcao_verificadora):
@@ -224,9 +247,8 @@ class views_public:
         texto_alerta = "\n".join(mensagens_alerta)
         return texto_alerta.replace("\n", "\\n")
 
-    
-    @api_view(["POST"])
-    def cadastro(request):
+    @action(detail=False, methods=["post"], url_path="register")
+    def register(self, request):
         try:
             data = request.data
 
@@ -250,51 +272,60 @@ class views_public:
                 "CNPJ": dados_formulario.get("nro_cnpj"),
             }
 
-            mensagens_alerta = views_public.validacao(campos)
+            mensagens_alerta = self.validate_fields(campos)
             if mensagens_alerta:
                 return Response(
-                    {"success": False, "message": mensagens_alerta}, status=400
+                    {"success": False, "message": mensagens_alerta},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             senha = data.get("senha")
             if not senha:
                 return Response(
                     {"success": False, "message": ["Campo senha está vazio"]},
-                    status=400,
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             senha_hash = make_password(senha)
-            empresa = views_public.criar_empresa(dados_formulario)
+            empresa = self.create_company(dados_formulario)
             if isinstance(empresa, Empresa):
-                string_value = views_public.criar_user(empresa, senha_hash)
-                if string_value is True:
-                    return Response({"success": True, "redirect": "login"}, status=200)
+                result = self.create_user(empresa, senha_hash)
+                if result is True:
+                    return Response(
+                        {"success": True, "redirect": "login"},
+                        status=status.HTTP_200_OK,
+                    )
                 else:
                     return Response(
-                        {"success": False, "message": [string_value]}, status=400
+                        {"success": False, "message": [result]},
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
             else:
                 return Response(
-                    {"success": False, "message": ["Erro ao criar empresa"]}, status=400
+                    {"success": False, "message": ["Erro ao criar empresa"]},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
         except Exception as e:
-            return Response({"success": False, "message": [str(e)]}, status=500)
+            return Response(
+                {"success": False, "message": [str(e)]},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-    
-    def criar_empresa(dados_empresa):
+    @staticmethod
+    def create_company(dados_empresa):
         try:
             nova_empresa = Empresa.objects.create(**dados_empresa)
             return nova_empresa
         except Exception as e:
             return str(e)
 
-    
-    def criar_user(empresa, senha):
+    @staticmethod
+    def create_user(empresa, senha):
         try:
             numero_aleatorio = Utils.gerar_numero_aleatorio()
             novo_nome_usuario = empresa.nome_responsavel + numero_aleatorio
 
-            novo_usuario = Usuario.objects.create(
+            user_new = Usuario.objects.create(
                 nome_completo=empresa.nome_responsavel,
                 nome_usuario=novo_nome_usuario,
                 senha=senha,
@@ -303,7 +334,7 @@ class views_public:
                 email=empresa.email,
                 empresa=empresa,
             )
-            list = views_configuracao.list_configuracoes_padrao(novo_usuario)
+            list = views_configuracao.list_configuracoes_padrao(user_new)
             views_configuracao.criar_configuracoes_padrao(list)
             return True
         except Exception as e:

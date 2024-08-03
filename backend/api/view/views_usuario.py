@@ -11,10 +11,13 @@ from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from api.permissions import permissions
 
 
-class views_usuarios:
+from api.permissions import permissions,CustomPermission
+from rest_framework.views import APIView
+class views_usuarios(APIView):
+    permission_classes = [CustomPermission(codigo_model="usuarios", auth_required=True)]
+
 
     @permissions.isAutorizado(1, True)
     def api_listar_usuarios(request):
@@ -70,7 +73,6 @@ class views_usuarios:
             return JsonResponse({"message": str(e)}, status=500)
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["GET"])
     @permissions.isAutorizado(1, True)
     def _editar_usuario_get(request, id_usuario):
@@ -113,7 +115,6 @@ class views_usuarios:
             return JsonResponse({"message": str(e)}, status=500)
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["POST"])
     @permissions.isAutorizado(1, True)
     def excluir_usuario(request):
@@ -140,7 +141,6 @@ class views_usuarios:
             return JsonResponse({"message": str(e)}, status=500)
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["POST"])
     @permissions.isAutorizado(1, True)
     def bloquear_usuario(request):
@@ -169,7 +169,6 @@ class views_usuarios:
             return JsonResponse({"message": str(e)}, status=500)
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["POST"])
     @permissions.isAutorizado(1, True)
     def ativar_usuario(request):
@@ -207,7 +206,6 @@ class views_usuarios:
         return None
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["POST"])
     @permissions.isAutorizado(1, True)
     def cadastrar_usuario(request):
@@ -279,7 +277,6 @@ class views_usuarios:
             return JsonResponse({"message": str(e)}, status=500)
 
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["POST"])
     @permissions.isAutorizado(1, True)
     def configuracao_usuario(request, id_usuario):

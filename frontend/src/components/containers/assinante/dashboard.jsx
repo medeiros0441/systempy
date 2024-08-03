@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { request } from 'src/utils/api';
+import request from 'src/utils/api';
 import { setLocalStorageItem } from 'src/utils/storage';
 import alerta from 'src/utils/alerta';
 import loading from 'src/utils/loading';

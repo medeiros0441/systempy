@@ -1,10 +1,8 @@
-from django.http import HttpResponse
-from api.permissions import permissions
+from api.permissions import permissions, CustomPermission
 from api.user import UserInfo
 from django.db.models import Q
 from ..processos.venda import processos
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
 from api.models import (
     Usuario,
@@ -16,96 +14,107 @@ from api.models import (
     Associado,
     GestaoGalao,
 )
-from .views_erro import views_erro
 from .views_pdv import views_pdv, views_transacao_pdv
 from .views_personalizacao import views_personalizacao
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class views_venda(APIView):
+    permission_classes = [CustomPermission(codigo_model=7, auth_required=True)]
 
-    @csrf_exempt
-    def obter_dados(request):
-        if request.method == "GET":
-            try:
-                id_empresa = UserInfo.get_id_empresa(request, True)
-                id_usuario = UserInfo.get_id_usuario(request)
-                context = {}
-                associacao = Associado.objects.filter(
-                    usuario_id=id_usuario, status_acesso=True
-                )
-                ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
-
-                produtos = Produto.objects.filter(
-                    Q(loja_id__in=ids_lojas_associadas),
-                    loja__empresa_id=id_empresa,
-                    status=True,
-                )
-                lojas = Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
-
-                vendas = Venda.objects.filter(
-                    Q(loja_id__in=ids_lojas_associadas),
-                    loja__empresa__id_empresa=id_empresa,
-                ).prefetch_related("loja")
-                context = {
-                    "success": True,
-                    "lojas": list(lojas.values()),
-                    "produtos": list(produtos.values()),
-                    "vendas": list(vendas.values()),
-                }
-
-                return JsonResponse(context)
-            except Associado.DoesNotExist:
-                context["menssage"] = (
-                    "Tivemos um problema para recuperar as lojas. Entre em contato com um administrador da assinatura. Você precisa estar associado a uma loja para realizar uma venda."
-                )
-            except Produto.DoesNotExist:
-                context["menssage"] = (
-                    "Tivemos um problema para recuperar os Produtos. Entre em contato com um administrador da assinatura. Você precisa Ter produto para vender-los."
-                )
-        return JsonResponse(
-            {
-                "error": "erro, ao buscar dados..",
-            },
-            context,
-            status=405,
-        )
-
-    @permissions.isAutorizado(7, True)
-    @csrf_exempt
-    def processar_venda(request):
+    def get(self, request):
         try:
-            if request.method == "POST":
-                # Processa a venda
-                id = UserInfo.get_id_usuario(request)
-                dados = json.loads(request.body.decode("utf-8"))
-                data, mensagem_erro = views_venda.validar_dados_formulario(dados, id)
-                venda, menssagem = processos.criar_ou_atualizar_venda(data)
-                if venda is not None:
+            id_empresa = UserInfo.get_id_empresa(request, True)
+            id_usuario = UserInfo.get_id_usuario(request)
+            context = {}
+            associacao = Associado.objects.filter(
+                usuario_id=id_usuario, status_acesso=True
+            )
+            ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
 
-                    if venda.metodo_entrega == "entrega no local":
-                        id_motoboy = dados.get("motoboy", "").strip()
-                        if id_motoboy != "0":
-                            processos.processo_entrega(
-                                venda=venda, id_motoboy=id_motoboy
-                            )
-                    ##processando transacao
-                    views_transacao_pdv.processar_trasacao_pdv(venda, request)
-                    # Processa o carrinho
-                    carrinho = dados.get("carrinho")
-                    processos._processar_carrinho(carrinho, venda)
-                    # Processa os dados dos galões
-                    galoes_troca = dados.get("galoes_troca")
-                    processos._processar_dados_galoes(galoes_troca, venda)
-                    return JsonResponse({"success": True, "message": menssagem})
-                elif mensagem_erro:
-                    return JsonResponse({"error": mensagem_erro})
+            produtos = Produto.objects.filter(
+                Q(loja_id__in=ids_lojas_associadas),
+                loja__empresa_id=id_empresa,
+                status=True,
+            )
+            lojas = Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
+
+            vendas = Venda.objects.filter(
+                Q(loja_id__in=ids_lojas_associadas),
+                loja__empresa__id_empresa=id_empresa,
+            ).prefetch_related("loja")
+            context = {
+                "success": True,
+                "lojas": list(lojas.values()),
+                "produtos": list(produtos.values()),
+                "vendas": list(vendas.values()),
+            }
+
+            return Response(context, status=status.HTTP_200_OK)
+        except Associado.DoesNotExist:
+            return Response(
+                {
+                    "message": "Tivemos um problema para recuperar as lojas. Entre em contato com um administrador da assinatura. Você precisa estar associado a uma loja para realizar uma venda."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Produto.DoesNotExist:
+            return Response(
+                {
+                    "message": "Tivemos um problema para recuperar os Produtos. Entre em contato com um administrador da assinatura. Você precisa Ter produto para vender-los."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def post(self, request):
+        try:
+            id = UserInfo.get_id_usuario(request)
+            dados = json.loads(request.body.decode("utf-8"))
+            data, mensagem_erro = self._validar_dados_formulario(dados, id)
+            if data is None:
+                return Response(
+                    {"error": mensagem_erro}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            venda, mensagem = processos.criar_ou_atualizar_venda(data)
+            if venda is not None:
+                if venda.metodo_entrega == "entrega no local":
+                    id_motoboy = dados.get("motoboy", "").strip()
+                    if id_motoboy != "0":
+                        processos.processo_entrega(venda=venda, id_motoboy=id_motoboy)
+
+                # Processando transação
+                views_transacao_pdv.processar_trasacao_pdv(venda, request)
+
+                # Processa o carrinho
+                carrinho = dados.get("carrinho")
+                processos._processar_carrinho(carrinho, venda)
+
+                # Processa os dados dos galões
+                galoes_troca = dados.get("galoes_troca")
+                processos._processar_dados_galoes(galoes_troca, venda)
+
+                return Response(
+                    {"success": True, "message": mensagem}, status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    {"error": mensagem_erro}, status=status.HTTP_400_BAD_REQUEST
+                )
 
         except Exception as e:
-            mensagem_erro = str(e)
-            return JsonResponse({"error": mensagem_erro}, status=500)
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-    def validar_dados_formulario(data_formulario, id):
+    def _validar_dados_formulario(self, data_formulario, id):
         dados = {}
 
         try:
@@ -137,9 +146,7 @@ class views_venda(APIView):
             if estado_transacao == "0" or forma_pagamento_str == "0":
                 return None, "Estado da transação ou forma de pagamento inválidos."
 
-            forma_pagamento_int = views_venda.verificar_forma_pagamento(
-                forma_pagamento_str
-            )
+            forma_pagamento_int = self._verificar_forma_pagamento(forma_pagamento_str)
 
             if forma_pagamento_int is None:
                 return None, "Forma de pagamento inválida."
@@ -189,7 +196,7 @@ class views_venda(APIView):
         except Exception as e:
             return None, f"Erro ao validar dados do formulário: {e}"
 
-    def verificar_forma_pagamento(forma_pagamento_str):
+    def _verificar_forma_pagamento(self, forma_pagamento_str):
         FORMA_PAGAMENTO_MAP = {
             "dinheiro": 1,
             "cartao credito": 2,
@@ -200,8 +207,6 @@ class views_venda(APIView):
         }
         return FORMA_PAGAMENTO_MAP.get(forma_pagamento_str)
 
-    @staticmethod
-    @permissions.isAutorizado(7, True)
     def _open_venda(request):
         try:
             id_usuario = UserInfo.get_id_usuario(request)
@@ -254,147 +259,134 @@ class views_venda(APIView):
                 {"message": mensagem_erro, "open_modal": False}, status=500
             )
 
-    @csrf_exempt
-    def selecionar_produto_by_venda(request, id_venda):
+    def GetProdutosVenda(self, request, id_venda):
         try:
-            # Tenta encontrar a venda pelo ID
             itens_compra = ItemCompra.objects.filter(venda_id=id_venda)
-            # Inicializa uma lista para armazenar os detalhes dos produtos
             detalhes_produtos = []
-            # Itera sobre os itens de compra para obter os detalhes dos produtos
+
             for item in itens_compra:
                 detalhes_produto = {
-                    "id_produto": item.produto.id_produto,
+                    "idProduto": item.produto.id_produto,
                     "nome": item.produto.nome,
-                    "preco_venda": item.produto.preco_venda,
+                    "precoVenda": item.produto.preco_venda,
                     "quantidade": item.quantidade,
-                    "quantidade_atual_estoque": item.produto.quantidade_atual_estoque,
+                    "quantidadeAtualEstoque": item.produto.quantidade_atual_estoque,
                     "fabricante": item.produto.fabricante,
                     "descricao": item.produto.descricao,
-                    # Adicione mais campos do produto conforme necessário
                 }
                 detalhes_produtos.append(detalhes_produto)
-            # Retorna os produtos como JSON
-            return JsonResponse(
+
+            return Response(
                 {
                     "success": True,
                     "message": "Venda processada.",
-                    "list_produtos": detalhes_produtos,
-                }
+                    "listProdutos": detalhes_produtos,
+                },
+                status=status.HTTP_200_OK,
             )
         except Venda.DoesNotExist:
-            # Se a venda não for encontrada, retorna uma resposta de erro
-            return JsonResponse({"message": "Venda não encontrada"}, status=404)
+            return Response(
+                {"message": "Venda não encontrada"}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
-            # Se ocorrer qualquer outro erro, retorna uma resposta de erro com a mensagem do erro
-            mensagem_erro = str(e)
-            return JsonResponse({"message": mensagem_erro}, status=500)
+            return Response(
+                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-    @csrf_exempt
-    def selecionar_retornaveis_by_venda(request, id_venda):
+    def GetRetornaveisVenda(self, request, id_venda):
         try:
             gestao_galoes = GestaoGalao.objects.filter(venda__id_venda=id_venda)
-            # Lista para armazenar os objetos obj
             data_list = []
-            # Itera sobre os objetos GestaoGalao
+
             for gestao_galao in gestao_galoes:
                 obj = {}
-
-                # Verifica se é entrada ou saída e preenche as informações correspondentes
                 if gestao_galao.galao_entrando:
                     galao = gestao_galao.galao_entrando
-                    obj["validade_entrada"] = galao.data_validade
-                    obj["fabricacao_entrada"] = galao.data_fabricacao
-                    obj["tipo_entrada"] = galao.titulo
+                    obj.update(
+                        {
+                            "validadeEntrada": galao.data_validade,
+                            "fabricacaoEntrada": galao.data_fabricacao,
+                            "tipoEntrada": galao.titulo,
+                        }
+                    )
 
                 if gestao_galao.galao_saiu:
                     galao = gestao_galao.galao_saiu
-                    obj["validade_saida"] = galao.data_validade
-                    obj["fabricacao_saida"] = galao.data_fabricacao
-                    obj["tipo_saida"] = galao.titulo
+                    obj.update(
+                        {
+                            "validadeSaida": galao.data_validade,
+                            "fabricacaoSaida": galao.data_fabricacao,
+                            "tipoSaida": galao.titulo,
+                        }
+                    )
 
-                # Adiciona a descrição do GestaoGalao
-                obj["descricao_gestao"] = gestao_galao.descricao
-
+                obj["descricaoGestao"] = gestao_galao.descricao
                 data_list.append(obj)
 
-            # Retorna os produtos como JSON
-            return JsonResponse(
+            return Response(
                 {
                     "success": True,
                     "message": "Venda processada.",
-                    "list_retornaveis": data_list,
-                }
+                    "listRetornaveis": data_list,
+                },
+                status=status.HTTP_200_OK,
             )
         except Venda.DoesNotExist:
-            # Se a venda não for encontrada, retorna uma resposta de erro
-            return JsonResponse({"message": "Venda não encontrada"}, status=404)
+            return Response(
+                {"message": "Venda não encontrada"}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
-            # Se ocorrer qualquer outro erro, retorna uma resposta de erro com a mensagem do erro
-            mensagem_erro = str(e)
-            return JsonResponse({"message": mensagem_erro}, status=500)
+            return Response(
+                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-    @csrf_exempt
-    def selecionar_cliente_by_venda(request, id_venda):
+    def GetClienteVenda(self, request, id_venda):
         try:
-            # Obtém a venda junto com o cliente e suas informações de endereço relacionadas
             venda = Venda.objects.select_related("cliente", "cliente__endereco").get(
                 id_venda=id_venda
             )
-
-            # Agora você pode acessar o cliente e seu endereço diretamente sem fazer consultas adicionais
             cliente = venda.cliente
+
             if cliente:
-                # Construir o dicionário de dados do cliente e sua última venda
                 data = {
-                    "id_cliente": cliente.id_cliente,
+                    "idCliente": cliente.id_cliente,
                     "nome": cliente.nome,
                     "telefone": cliente.telefone,
                     "descricao": cliente.descricao,
-                    "tipo_cliente": cliente.tipo_cliente,
+                    "tipoCliente": cliente.tipo_cliente,
                     "rua": cliente.endereco.rua if cliente.endereco else None,
-                    "numero": (cliente.endereco.numero if cliente.endereco else None),
-                    "cep": (
-                        cliente.endereco.codigo_postal if cliente.endereco else None
-                    ),
-                    "estado": (cliente.endereco.estado if cliente.endereco else None),
-                    "bairro": (cliente.endereco.bairro if cliente.endereco else None),
-                    "cidade": (cliente.endereco.cidade if cliente.endereco else None),
-                    "descricao": (
+                    "numero": cliente.endereco.numero if cliente.endereco else None,
+                    "cep": cliente.endereco.codigo_postal if cliente.endereco else None,
+                    "estado": cliente.endereco.estado if cliente.endereco else None,
+                    "bairro": cliente.endereco.bairro if cliente.endereco else None,
+                    "cidade": cliente.endereco.cidade if cliente.endereco else None,
+                    "descricaoEndereco": (
                         cliente.endereco.descricao if cliente.endereco else None
                     ),
                 }
-                return JsonResponse(
-                    {"success": True, "message": "Venda processada.", "cliente": data}
+                return Response(
+                    {"success": True, "message": "Venda processada.", "cliente": data},
+                    status=status.HTTP_200_OK,
                 )
-            return JsonResponse(
+
+            return Response(
                 {
                     "success": False,
-                    "message": "não há cliente associado a essa venda",
+                    "message": "Não há cliente associado a essa venda",
                     "cliente": None,
-                }
+                },
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         except Venda.DoesNotExist:
-            return JsonResponse({"message": "Venda não encontrada"}, status=404)
-
+            return Response(
+                {"message": "Venda não encontrada"}, status=status.HTTP_404_NOT_FOUND
+            )
         except Cliente.DoesNotExist:
-            return JsonResponse({"message": "cliente não encontrada"}, status=404)
+            return Response(
+                {"message": "Cliente não encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
-            mensagem_erro = str(e)
-            return JsonResponse({"message": mensagem_erro}, status=500)
-
-    @staticmethod
-    @permissions.isAutorizado(7, True)
-    def excluir_venda(request, venda_id):
-        if (
-            request.session.get("id_empresa", 0) != 0
-            and request.session.get("id_usuario", 0) != 0
-            and request.session.get("status_acesso", "") == "ativo"
-        ):
-            # Lógica para excluir a venda com id=venda_id
-            return HttpResponse(f"Excluindo a venda {venda_id}")
-        else:
-            return views_erro.erro(
-                request, "Você não está autorizado a fazer esta requisição."
+            return Response(
+                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

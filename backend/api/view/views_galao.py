@@ -6,8 +6,12 @@ from .views_erro import views_erro
 
 from api.permissions import permissions
 
+from api.permissions import permissions, CustomPermission
+from rest_framework.views import APIView
 
-class views_galao:
+
+class views_galao(APIView):
+    permission_classes = [CustomPermission(codigo_model="galao", auth_required=True)]
 
     @staticmethod
     @permissions.isAutorizado(3, True)

@@ -5,15 +5,17 @@ import img_etapa1 from 'src/assets/img/undraw/undraw_emails_6uqr.svg';
 import img_etapa2 from 'src/assets/img/undraw/undraw_letter_re_8m03.svg';
 import img_etapa3 from 'src/assets/img/undraw/undraw_Security_on_re_e491.svg';
 import img_etapa4 from 'src/assets/img/undraw/undraw_world_re_768g.svg';
-
-let openModalFunction = () => {}; // Inicialize como função vazia
+import request from 'src/utils/api';
+import alerta from 'src/utils/alerta';
+import loading from 'src/utils/loading'
+let openModalFunction = () => { }; // Inicialize como função vazia
 
 const RecuperarSenhaModal = () => {
   const [step, setStep] = useState(1);
   const [emailSaved, setEmailSaved] = useState('');
   const [senhaValida, setSenhaValida] = useState(false);
   const [senhaConfirmada, setSenhaConfirmada] = useState(false);
-  const [codigoRecuperacao, setCodigoRecuperacao] = useState('');
+  const id_container_loading = "id_container";
 
   const emailInputRef = useRef(null);
   const codigoInputRef = useRef(null);
@@ -35,10 +37,40 @@ const RecuperarSenhaModal = () => {
     }
   };
 
-  const reenviarCodigo = () => {
-    console.log('Reenviando código para:', emailSaved);
+  const reenviarCodigo = async () => {
+    try {
+      loading(true, id_container_loading);
+      const retorn = await request('public/code/send/', "POST", { email: emailSaved });
+      if (retorn.sucess) {
+        setStep(2);
+      } else {
+        alerta(retorn.mensag, 2, id_container_loading);
+      }
+    } catch {
+      alerta("erro interno", 2, id_container_loading);
+    } finally {
+      loading(false, id_container_loading);
+    }
   };
 
+  const validarCodigoBackend = async () => {
+    try {
+      loading(true, id_container_loading);
+      const retorn = await request('public/code/confirm', "POST", { email: emailSaved });
+      if (retorn.sucess) {
+        setStep(2);
+      } else {
+        alerta(retorn.message, 2, id_container_loading);
+      }
+      return retorn.sucess;
+    } catch {
+      alerta("erro interno", 2, id_container_loading);
+      return false;
+
+    } finally {
+      loading(false, id_container_loading);
+    }
+  };
   const validarCodigo = () => {
     const codigo = codigoInputRef.current.value.trim();
 
@@ -47,14 +79,13 @@ const RecuperarSenhaModal = () => {
       return false;
     } else {
       codigoInputRef.current.classList.remove('is-invalid');
-      setCodigoRecuperacao(codigo);
+      validarCodigoBackend(codigo);
       return true;
     }
   };
 
   const validarSenha = () => {
     const senha = senhaInputRef1.current.value;
-
     if (senha.length < 8 || !/[A-Z]/.test(senha) || !/[a-z]/.test(senha) || !/[0-9]/.test(senha)) {
       senhaInputRef1.current.classList.add('is-invalid');
       setSenhaValida(false);
@@ -94,23 +125,11 @@ const RecuperarSenhaModal = () => {
           autoComplete="off"
           id="email_recuperacao"
           ref={emailInputRef}
-          onChange={validarEmail}
         />
         <label htmlFor="email_recuperacao">E-mail</label>
         <div className="invalid-feedback ms-2">Por favor, insira um Email válido.</div>
       </div>
-      <button
-        type="button"
-        className="btn mx-auto btn-sm btn-primary"
-        onClick={() => {
-          if (validarEmail()) {
-            reenviarCodigo();
-            setStep(2);
-          }
-        }}
-      >
-        Avançar
-      </button>
+
     </div>
   );
 
@@ -130,17 +149,7 @@ const RecuperarSenhaModal = () => {
           placeholder="Confirme seu email..."
         />
         <span className="small ms-3 text-danger d-none">O campo é obrigatório</span>
-        <button
-          type="button"
-          className="btn btn-outline-secondary"
-          onClick={() => {
-            if (validarCodigo()) {
-              setStep(3);
-            }
-          }}
-        >
-          Reenviar
-        </button>
+
       </div>
     </div>
   );
@@ -173,18 +182,7 @@ const RecuperarSenhaModal = () => {
         <label htmlFor="senha_recuperacao2">Senha Confirmar</label>
         <div className="invalid-feedback ms-2"></div>
       </div>
-      <button
-        type="button"
-        className="btn mx-auto btn-sm btn-primary"
-        onClick={() => {
-          if (senhaValida && senhaConfirmada) {
-            finalizar();
-            setStep(4);
-          }
-        }}
-      >
-        Avançar
-      </button>
+
     </div>
   );
 
@@ -207,7 +205,6 @@ const RecuperarSenhaModal = () => {
             onClick={() => {
               if (validarEmail()) {
                 reenviarCodigo();
-                setStep(2);
               }
             }}
           >
@@ -293,10 +290,13 @@ const RecuperarSenhaModal = () => {
         title="Recuperação de Senha"
         footer={renderFooter()}
       >
-        {step === 1 && <Etapa1 />}
-        {step === 2 && <Etapa2 />}
-        {step === 3 && <Etapa3 />}
-        {step === 4 && <Etapa4 />}
+        <div id={id_container_loading}>
+
+          {step === 1 && <Etapa1 />}
+          {step === 2 && <Etapa2 />}
+          {step === 3 && <Etapa3 />}
+          {step === 4 && <Etapa4 />}
+        </div>
       </CustomModal>
     </>
   );

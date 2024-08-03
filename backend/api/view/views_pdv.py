@@ -22,16 +22,18 @@ from api.utils import Utils
 from ..processos.pdv import processos_pdv
 from .views_personalizacao import views_personalizacao
 from django.db.models import Q
-from api.permissions import permissions
+from api.permissions import permissions,CustomPermission
+from rest_framework.views import APIView
 
-class views_pdv:
+class views_pdv(APIView):
+    permission_classes = [CustomPermission(codigo_model="pdv", auth_required=True)]
+
     @staticmethod
     @permissions.isAutorizado("pdv", True)
     def pdv(request):
         return render(request, "pdv/lista_pdv.html")
 
     @permissions.isAutorizado("pdv", True)
-    @csrf_exempt
     def list_pdv(request, id_loja=None, id_empresa=None):
         if request.method == "GET":
             try:
@@ -56,7 +58,6 @@ class views_pdv:
         )
 
     @permissions.isAutorizado("pdv", True)
-    @csrf_exempt
     def create_pdv(request):
         # Verifica se o método da requisição é POST
         if request.method != "POST":
@@ -171,7 +172,6 @@ class views_pdv:
                     views_associado_pdv.create_associado_pdv(request, data)
 
     @permissions.isAutorizado("pdv", True)
-    @csrf_exempt
     def update_pdv(request):
         """
         Atualiza um PDV (Ponto de Venda) existente.
@@ -276,10 +276,11 @@ class views_pdv:
         return True, "", 200
 
 
-class views_registro_diario_pdv:
+class views_registro_diario_pdv(APIView):
+    permission_classes = [CustomPermission(codigo_model="registro_diario_pdv", auth_required=True)]
+
 
     @permissions.isAutorizado("RegistroDiarioPDV", True)
-    @csrf_exempt
     def list_registro_diario_pdv(request, id_pdv):
         if request.method == "GET":
             try:
@@ -299,7 +300,6 @@ class views_registro_diario_pdv:
         )
 
     @permissions.isAutorizado("RegistroDiarioPDV", True)
-    @csrf_exempt
     def create_registro_diario_pdv(request, id=None):
         if request.method != "POST":
             return JsonResponse(
@@ -347,7 +347,6 @@ class views_registro_diario_pdv:
         return False, None
 
     @permissions.isAutorizado("RegistroDiarioPDV", True)
-    @csrf_exempt
     def update_status_registro_diario_pdv(self, request, pdv_id=None):
         if request.method != "PUT":
             return JsonResponse(
@@ -413,7 +412,6 @@ class views_registro_diario_pdv:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
 
     @permissions.isAutorizado("RegistroDiarioPDV", True)
-    @csrf_exempt
     def update_registro_diario_pdv(request):
         if request.method == "PUT":
             try:
@@ -474,7 +472,9 @@ class views_registro_diario_pdv:
         )
 
 
-class views_transacao_pdv:
+class views_transacao_pdv(APIView):
+    permission_classes = [CustomPermission(codigo_model="transacao_pdv", auth_required=True)]
+
 
     @staticmethod
     @permissions.isAutorizado("transacao", True)
@@ -537,9 +537,10 @@ class views_transacao_pdv:
         processos_pdv.processar_transacao_PDV(data)
 
 
-class views_associado_pdv:
+class views_associado_pdv(APIView):
+    permission_classes = [CustomPermission(codigo_model="associado_pdv", auth_required=True)]
 
-    @csrf_exempt
+
     def list_associado_pdv(request):
         if request.method == "GET":
             try:
@@ -568,7 +569,6 @@ class views_associado_pdv:
             {"success": False, "message": "Método não permitido"}, status=405
         )
 
-    @csrf_exempt
     @permissions.isAutorizado(0, True)
     def create_associado_pdv(request, data):
         if request.method == "POST":
@@ -600,7 +600,6 @@ class views_associado_pdv:
             {"success": False, "message": "Método não permitido"}, status=405
         )
 
-    @csrf_exempt
     def update_associado_pdv(request, data):
         if request.method == "PUT":
             try:
