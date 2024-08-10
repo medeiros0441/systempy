@@ -84,16 +84,11 @@ const FormularioContato = () => {
       const data = { ...formulario };
       try {
         loading(true, 'form');
-        const response = await request('contato', data, 'POST');
-
-        if (response.success) {
-          alerta('Mensagem enviada com sucesso!', 1, 'form');
-          limparFormulario();
-        } else {
-          alerta('Erro ao enviar mensagem. Por favor, tente novamente.', 2, 'form');
-        }
+        const response = await request('public/contato', 'POST', data);
+        alerta(response.message, 1, 'form');
+        limparFormulario();
       } catch (error) {
-        alerta('Erro ao enviar mensagem. Por favor, tente novamente.', 2, 'form');
+        alerta(error, 2, 'form');
       } finally {
         loading(false, 'form');
       }

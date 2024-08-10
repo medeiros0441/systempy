@@ -22,7 +22,7 @@ function showAlert(type, text, containerId) {
 
   // Create the alert div
   const alertDiv = document.createElement('div');
-  alertDiv.classList.add('alert', alertClass, 'alert-dismissible', 'fade', 'show', 'my-2');
+  alertDiv.classList.add('alert', alertClass, 'alert-dismissible', 'fade', 'show', 'mt-2', 'bt-2');
   alertDiv.setAttribute('role', 'alert');
 
   // Create and add the close button
@@ -82,7 +82,7 @@ function showCustomAlert(text, containerId, time) {
   toastElement.appendChild(toastBody);
   toastContainer.appendChild(toastElement);
 
-  const toastBootstrap =   Modal.Toast(toastElement);
+  const toastBootstrap = Modal.Toast(toastElement);
   toastBootstrap.show();
 
   setTimeout(() => {

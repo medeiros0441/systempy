@@ -1,20 +1,28 @@
-# middlewares.py
-
 import logging
-from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.exceptions import InvalidToken
+from django.middleware.csrf import get_token
 
-# Configuração do logger para registrar logs de solicitações
-
+# Configure o logger
+logger = logging.getLogger(__name__)
 
 class Middleware(MiddlewareMixin):
-    # Lista de referers permitidos
     def process_request(self, request):
-        referer = request.headers.get("Referer")
-        allowed_referers = [
-            "http://127.0.0.1:8000",
-            "https://comercioprime.azurewebsites.net",
-        ]
-        return referer in allowed_referers
+        # Obtém o token CSRF do cabeçalho
+        csrf_token_from_header = request.headers.get('X-CSRFToken')
+        
+        # Obtém o token CSRF esperado
+        expected_token = get_token(request)
+        
+        # Log dos tokens para depuração
+        logger.warning(f"Token CSRF enviado pelo React: {csrf_token_from_header}")
+        logger.warning(f"Token CSRF esperado pelo Django: {expected_token}")
+        
+        # Verifica se o token CSRF está correto
+        if csrf_token_from_header and csrf_token_from_header != expected_token:
+            logger.warning("Token CSRF enviado não corresponde ao esperado.")
+        elif not csrf_token_from_header:
+            logger.warning("Token CSRF não enviado na requisição.")
+
+        return None  # Continua o processamento normal da view
+
+    

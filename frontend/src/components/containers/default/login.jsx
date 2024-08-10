@@ -20,16 +20,14 @@ const LoginForm = () => {
     try {
       loading(true, 'form_login');
 
-      const response = await request('public/login', "POST", { email, senha });
-      alerta(response.message, 2);
-
+      const response = await request('public/login/', "POST", { email, senha });
       if (response.sucess) {
         navigate('/dashboard');  // Redireciona o usuário
       } else {
-        alerta(response.message, 2);
+        alerta(response.message, 2, "form_login");
       }
     } catch (error) {
-      alerta("Erro interno", 2, 'form');
+      alerta(error, 2, 'form_login');
     } finally {
       loading(false, 'form_login');
     }

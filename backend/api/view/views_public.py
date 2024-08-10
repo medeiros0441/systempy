@@ -13,75 +13,85 @@ from django.contrib.auth.hashers import check_password, make_password
 from ..models import Usuario, Empresa
 from ..utils import Utils
 from ..gerencia_email.config_email import enviar_email
+from django.views.decorators.csrf import csrf_exempt
 
 
-class views_public(viewsets.ViewSet):
+class ViewsPublic(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
     @action(detail=False, methods=["post"], url_path="login")
     def login(self, request):
         try:
+            # Obtém os dados da requisição
             data = request.data
             email = data.get("email", "").lower().strip()
             senha = data.get("senha", "")
 
-            user = Usuario.objects.filter(email=email).first()
-            if user:
-                if check_password(senha, user.senha):
-                    if not user.status_acesso:
-                        return Response(
-                            {
-                                "message": "Usuário desativado. Entre em contato com o responsável da assinatura."
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-
-                    user.utimo_login = timezone.now()
-                    user.save()
-
-                    payload = {
-                        "id_usuario": str(user.id_usuario),
-                        "id_empresa": str(user.empresa.id_empresa),
-                        "nivel_usuario": user.nivel_usuario,
-                        "status_acesso": user.status_acesso,
-                    }
-
-                    TokenManager.create_token(
-                        nome_token="token_user", payload=payload, time=6
-                    )
-
-                    return Response(
-                        {"success": True, "message": "Usuário logado com sucesso."},
-                        status=status.HTTP_200_OK,
-                    )
-                else:
-                    return Response(
-                        {"message": "Credenciais inválidas. Tente novamente."},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-            else:
+            # Valida se os campos obrigatórios estão presentes
+            if not email or not senha:
                 return Response(
-                    {"message": "O email não está cadastrado."},
+                    {"message": "Email e senha são obrigatórios."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-        except Exception as e:
+
+            try:
+                # Busca o usuário pelo email
+                user = Usuario.objects.get(email=email)
+            except Usuario.DoesNotExist:
+                return Response(
+                    {"message": "O email não está cadastrado."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Verifica a senha
+            if not check_password(senha, user.senha):
+                return Response(
+                    {"message": "Credenciais inválidas. Tente novamente."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+            # Verifica o status do usuário
+            if not user.status_acesso:
+                return Response(
+                    {"message": "Usuário desativado. Entre em contato com o responsável da assinatura."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Atualiza o último login e salva
+            user.utimo_login = timezone.now()
+            user.save()
+
+            # Cria o token e o retorna
+            payload = {
+                "id_usuario": str(user.id_usuario),
+                "id_empresa": str(user.empresa.id_empresa),
+                "nivel_usuario": user.nivel_usuario,
+                "status_acesso": user.status_acesso,
+            }
+
+            token = TokenManager.create_token(nome_token="user_token", payload=payload, time=6, httponly=True)
+
             return Response(
-                {"message": f"Erro interno durante a autenticação: {str(e)}"},
+                {"success": True, "message": "Usuário logado com sucesso.", "token": token},
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            # Registro do erro para depuração
+            return Response(
+                {"message": "Erro interno durante a autenticação."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+
     @action(detail=False, methods=["get"], url_path="check-auth")
     def check_authentication(self, request):
-        print("cheou aqui")
-        if UserInfo.is_authenticated(request):
-            return Response({"authenticated": True}, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                {"authenticated": False, "message": "Usuário não autenticado."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        status,message =UserInfo.is_authenticated(request)
+        return Response({"authenticated": status, "message":message},
+            status=200,
+        )
 
-    @action(detail=False, methods=["post"], url_path="contact")
+    @action(detail=False, methods=["post"], url_path="contato")
     def contact(self, request):
         try:
             data = request.data

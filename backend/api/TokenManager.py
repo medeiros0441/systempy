@@ -2,14 +2,16 @@ import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.http import JsonResponse
-from django.middleware.csrf import get_token
-from django.http import JsonResponse
- 
-
+from django.http import HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie 
 class TokenManager:
-
+    
+    
+    @ensure_csrf_cookie
     def csrf_token_view(request):
-         return JsonResponse({'csrfToken': get_token(request)})
+        return JsonResponse({'csrfToken': request.COOKIES.get('csrftoken')})
+    
     @staticmethod
     def create_token(
         nome_token, payload, time, httponly=False, secure=True, samesite="Strict"

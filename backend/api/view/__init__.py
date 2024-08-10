@@ -1,4 +1,4 @@
-from .views_public import views_public
+from .views_public import ViewsPublic
 from .views_empresa import views_empresa
 from .views_usuario import views_usuarios
 from .views_personalizacao import views_personalizacao

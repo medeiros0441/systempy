@@ -22,7 +22,13 @@ ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = ALLOWED_ORIGINS
-CORS_ALLOWED_ORIGINS = ALLOWED_ORIGINS
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "https://comercioprime.azurewebsites.net",
+]
+
+
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
@@ -66,11 +72,17 @@ SIMPLE_JWT = {
 
 # Framework REST
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
+      "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.AllowAny",
+    ),
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+    ),
+    "DEFAULT_PARSER_CLASSES": (
+        "rest_framework.parsers.JSONParser",
     ),
 }
 
@@ -96,11 +108,13 @@ CORS_ALLOW_HEADERS = [
 
 # CSRF
 CSRF_COOKIE_NAME = "csrftoken"
-CSRF_HEADER_NAME = "X-CSRFToken"
+CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_ALLOW_ALL=True
+CORS_ORIGIN_ALLOW_ALL=False
+CSRF_COOKIE_PATH = '/'  # O caminho deve ser '/' para cobrir todo o site
+CSRF_COOKIE_DOMAIN = None  # Defina isso se estiver usando subdomínios, por exemplo, '.example.com'
 # Webpack
 
 WEBPACK_LOADER = {
@@ -168,6 +182,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "..", "frontend", "build", "static"),
 ]
 # Segurança
+# settings.py
+import os
+
 if DEBUG:
     SESSION_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False

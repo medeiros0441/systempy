@@ -5,7 +5,7 @@ import img_comercioprime from 'src/assets/img/logo/5.png'
 const Sobre = () => {
   return (
     <div className="container-fluid p-4" style={{ background: 'var(--tema-blue)', marginTop: '-9px' }}>
-      <h1 className="font-monospace fs-4 fw-bold mnA offcanvas-title" style={{ color: 'var(--white)' }}>Sobre a Comércio Prime Soluções</h1>
+      <h1 className="font-monospace fs-4 fw-bold mnA offcanvas-title text-white" >Sobre a Comércio Prime Soluções</h1>
       <div className="row featurette container mx-auto p-2 text-light">
         <div className="clearfix">
           <p className="font-monospace small font-weight-light text-center" style={{ fontSize: '15px' }}>

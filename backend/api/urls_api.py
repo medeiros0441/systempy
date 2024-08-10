@@ -5,12 +5,12 @@ from api.utils import Utils
 import api.view as view
 from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
-from .view import views_public
+from .view import ViewsPublic
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .TokenManager import TokenManager
 router = DefaultRouter()
-router.register(r"public", views_public, basename="public")
+router.register(r"public", ViewsPublic, basename="public")
 
 url_public = [
     path("", include(router.urls)),

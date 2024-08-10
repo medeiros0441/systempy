@@ -3,6 +3,90 @@ import { Link } from 'react-router-dom';
 import { useAuthentication } from '../utils/auth';
 import Cookies from 'js-cookie';
 
+// Componente para os itens padrão
+const ItensDefault = () => (
+  <>
+    <li className="text-sm-end text-decoration-none text-center d-inline-flex col-auto">
+      <Link className="nav-link" to="/">
+        <i className="bi bi-house"></i> Início
+      </Link>
+    </li>
+    <li className="text-center text-decoration-none d-inline-flex col-auto">
+      <Link className="nav-link" to="/sobre">
+        <i className="bi bi-building-exclamation"></i> Sobre nós
+      </Link>
+    </li>
+    <li className="text-center d-inline-flex col-auto">
+      <Link className="nav-link text-decoration-none text-white nav-link-icon login-btn px-0 align-items-center" to="/login">
+        <span className="login-icon">
+          <i className="bi bi-person"></i>
+        </span>
+        <span className="text-decoration-none">Login</span>
+      </Link>
+    </li>
+  </>
+);
+
+// Componente para os itens de assinante
+const ItensAssinante = ({ configsAtivos }) => (
+  <>
+    {configsAtivos[12] && (
+      <li className="d-inline-flex col-auto">
+        <Link className="nav-link" to="/dashboard">
+          <i className="bi bi-speedometer2"></i> Início
+        </Link>
+      </li>
+    )}
+    {configsAtivos[1] && (
+      <li className="d-inline-flex col-auto">
+        <Link className="nav-link nav-link-icon" to="/listar_usuarios">
+          <i className="bi bi-people"></i> Usuários
+        </Link>
+      </li>
+    )}
+    {configsAtivos[5] && (
+      <li className="d-inline-flex col-auto">
+        <Link className="nav-link nav-link-icon" to="/lista_lojas">
+          <i className="bi bi-shop"></i> Lojas
+        </Link>
+      </li>
+    )}
+    {configsAtivos[3] && (
+      <li className="d-inline-flex col-auto">
+        <Link className="nav-link nav-link-icon" to="/pdv">
+          <i className="bi bi-geo-alt"></i> Ponto De Vendas
+        </Link>
+      </li>
+    )}
+    {configsAtivos[6] && (
+      <li className="d-inline-flex col-auto">
+        <Link className="nav-link nav-link-icon" to="/lista_produtos">
+          <i className="bi bi-cart4"></i> Produtos
+        </Link>
+      </li>
+    )}
+    {configsAtivos[7] && (
+      <li className="d-inline-flex col-auto">
+        <Link className="nav-link nav-link-icon" to="/lista_vendas">
+          <i className="bi bi-cash"></i> Venda
+        </Link>
+      </li>
+    )}
+    {configsAtivos[8] && (
+      <li className="d-inline-flex col-auto">
+        <Link className="nav-link nav-link-icon" to="/lista_clientes">
+          <i className="bi bi-person-check"></i> Clientes
+        </Link>
+      </li>
+    )}
+    <li className="d-inline-flex col-auto">
+      <Link className="nav-link nav-link-icon" to="/configuracao">
+        <i className="bi bi-gear"></i> Configurações
+      </Link>
+    </li>
+  </>
+);
+
 const Navbar = () => {
   const isCliente = useAuthentication();
   const session = {
@@ -66,86 +150,7 @@ const Navbar = () => {
         </div>
         <div className="col-12 d-sm-block d-none" id="navbarNav">
           <ul className="text-decoration-none text-center text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center text-sm-end justify-content-center align-items-center">
-            {!isCliente && (
-              <>
-                <li className="text-sm-end text-decoration-none text-center d-inline-flex col-auto">
-                  <Link className="nav-link " to="/">
-                    <i className="bi bi-house"></i> Início
-                  </Link>
-                </li>
-                <li className="text-center text-decoration-none d-inline-flex col-auto">
-                  <Link className="nav-link " to="/sobre">
-                    <i className="bi bi-building-exclamation"></i> Sobre nós
-                  </Link>
-                </li>
-                <li className="text-center d-inline-flex col-auto">
-                  <Link className="nav-link  text-decoration-none text-white nav-link-icon login-btn px-0 align-items-center" to="/login">
-                    <span className="login-icon">
-                      <i className="bi bi-person"></i>
-                    </span>
-                    <span className="text-decoration-none">Login</span>
-                  </Link>
-                </li>
-              </>
-            )}
-            {isCliente && (
-              <>
-                {session.configs_ativos[12] && (
-                  <li className="d-inline-flex col-auto">
-                    <Link className="nav-link" to="/dashboard">
-                      <i className="bi bi-speedometer2"></i> Início
-                    </Link>
-                  </li>
-                )}
-                {session.configs_ativos[1] && (
-                  <li className="d-inline-flex col-auto">
-                    <Link className="nav-link nav-link-icon" to="/listar_usuarios">
-                      <i className="bi bi-people"></i> Usuários
-                    </Link>
-                  </li>
-                )}
-                {session.configs_ativos[5] && (
-                  <li className="d-inline-flex col-auto">
-                    <Link className="nav-link nav-link-icon" to="/lista_lojas">
-                      <i className="bi bi-shop"></i> Lojas
-                    </Link>
-                  </li>
-                )}
-                {session.configs_ativos[3] && (
-                  <li className="d-inline-flex col-auto">
-                    <Link className="nav-link nav-link-icon" to="/pdv">
-                      <i className="bi bi-geo-alt"></i> Ponto De Vendas
-                    </Link>
-                  </li>
-                )}
-                {session.configs_ativos[6] && (
-                  <li className="d-inline-flex col-auto">
-                    <Link className="nav-link nav-link-icon" to="/lista_produtos">
-                      <i className="bi bi-cart4"></i> Produtos
-                    </Link>
-                  </li>
-                )}
-                {session.configs_ativos[7] && (
-                  <li className="d-inline-flex col-auto">
-                    <Link className="nav-link nav-link-icon" to="/lista_vendas">
-                      <i className="bi bi-cash"></i> Venda
-                    </Link>
-                  </li>
-                )}
-                {session.configs_ativos[8] && (
-                  <li className="d-inline-flex col-auto">
-                    <Link className="nav-link nav-link-icon" to="/lista_clientes">
-                      <i className="bi bi-person-check"></i> Clientes
-                    </Link>
-                  </li>
-                )}
-                <li className="d-inline-flex col-auto">
-                  <Link className="nav-link nav-link-icon" to="/configuracao">
-                    <i className="bi bi-gear"></i> Configurações
-                  </Link>
-                </li>
-              </>
-            )}
+            {isCliente ? <ItensAssinante configsAtivos={session.configs_ativos} /> : <ItensDefault />}
           </ul>
         </div>
       </div>

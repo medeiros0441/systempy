@@ -2,16 +2,10 @@ from django.db import models
 from django.utils import timezone
 import datetime
 
-class CustomMetaModelBase(models.base.ModelBase):
-    def __new__(cls, name, bases, attrs):
-        new_class = super().__new__(cls, name, bases, attrs)
-        if not new_class._meta.abstract:
-            # Define o nome da tabela com base no nome da classe em minúsculas
-            new_class._meta.db_table = name.lower()
-        return new_class
+      
 
 
-class CustomModel(models.Model, metaclass=CustomMetaModelBase):
+class CustomModel(models.Model, metaclass=models.base.ModelBase):
     _insert = models.DateTimeField(auto_now_add=True, editable=False)
     _update = models.DateTimeField(auto_now=True)
 
@@ -25,7 +19,7 @@ class CustomModel(models.Model, metaclass=CustomMetaModelBase):
     @update.setter
     def update(self, value):
         """
-        Define a data de atualização com um valor datetime.
+        Define a data de atualização com um valor datetime. 
         """
         if isinstance(value, datetime.datetime):
             self._update = value
