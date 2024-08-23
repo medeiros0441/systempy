@@ -40,7 +40,6 @@ axios.interceptors.request.use(async config => {
 
   return config;
 }, error => Promise.reject(error));
-
 // Função genérica para fazer requisições API
 export default async function request(url, method = 'GET', data = null) {
   try {
@@ -67,6 +66,7 @@ export default async function request(url, method = 'GET', data = null) {
     return { success: false, message: errorMessage };
   }
 }
+
 
 // Função para gerar a mensagem de erro
 function getErrorMessage(error) {

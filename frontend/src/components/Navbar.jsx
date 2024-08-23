@@ -150,7 +150,7 @@ const Navbar = () => {
         </div>
         <div className="col-12 d-sm-block d-none" id="navbarNav">
           <ul className="text-decoration-none text-center text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center text-sm-end justify-content-center align-items-center">
-            {isCliente ? <ItensAssinante configsAtivos={session.configs_ativos} /> : <ItensDefault />}
+            {isCliente === true ? <ItensAssinante configsAtivos={session.configs_ativos} /> : <ItensDefault />}
           </ul>
         </div>
       </div>

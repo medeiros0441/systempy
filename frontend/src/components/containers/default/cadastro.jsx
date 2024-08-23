@@ -1,34 +1,41 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form, FloatingLabel } from 'react-bootstrap';
+import { Button, Form, FloatingLabel } from 'react-bootstrap';
 import img_cat from 'src/assets/img/undraw/undraw_welcome_cats_thqn.svg';
+import img_email from 'src/assets/img/undraw/undraw_mail_re_duel.svg'
+import alerta from 'src/utils/alerta';
+import request from 'src/utils/api';
+import loading from 'src/utils/loading';
+import InputMask from 'react-input-mask';
 
+import { useNavigate } from 'react-router-dom'; // Para redirecionar
 function CadastroForm() {
   const [step, setStep] = useState(1);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nome_empresa: '',
     nro_cnpj: '',
-    razao_social_empresa: '',
+    razao_social: '',
+    descricao_empresa: '',
     nome_responsavel: '',
     cargo_responsavel: '',
     email_responsavel: '',
     telefone_responsavel: '',
     nro_cpf: '',
     senha: '',
+    codigo: '',
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const validarStep1 = () => {
-    // Validação do Step 1
+  const validateStep1 = () => {
     const { nome_empresa, nro_cnpj, razao_social_empresa } = formData;
     return nome_empresa && nro_cnpj && razao_social_empresa;
   };
 
-  const validarStep2 = () => {
-    // Validação do Step 2
+  const validateStep2 = () => {
     const { nome_responsavel, cargo_responsavel, email_responsavel, telefone_responsavel, nro_cpf, senha } = formData;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return (
@@ -41,168 +48,257 @@ function CadastroForm() {
     );
   };
 
-  const alterarModal = () => {
-    if (step === 1) {
-      if (validarStep1()) {
-        setStep(2);
+
+  const sendCode = async () => {
+    const { email_responsavel, nome_responsavel } = formData;
+
+    try {
+      loading(true, "ContainerFormulario");
+      const response = await request("public/code/send", "POST", { "email": email_responsavel, "nome": nome_responsavel });
+      if (response.success) {
+        alerta(response.message, 1);
+        return true;
       } else {
-        alert('Por favor, preencha todos os campos obrigatórios.');
+        alerta(response.message, 2);
+        return false;
       }
-    } else if (step === 2) {
-      if (validarStep2()) {
-        setStep(3);
-      } else {
-        alert('Por favor, preencha todos os campos obrigatórios e verifique a validade dos dados.');
-      }
+    } catch (error) {
+      alerta('Erro ao enviar o código. Por favor, tente novamente.', 2);
+      return false;
+    } finally {
+      loading(false, "ContainerFormulario");
     }
   };
 
-  const voltarModal = () => {
-    setStep(step - 1);
+  const confirmCode = async () => {
+    const { codigo } = formData;
+    try {
+      loading(true, "ContainerFormulario");
+      const response = await request("public/code/confirm", "POST", { codigo });
+      if (response.success) {
+        alerta(response.message, 1);
+        return true;
+      } else {
+        alerta(response.message, 2);
+        return false;
+      }
+    } catch (error) {
+      alerta('Erro ao confirmar o código. Por favor, tente novamente.', 2);
+      return false;
+    } finally {
+      loading(false, "ContainerFormulario");
+    }
   };
 
-  const submitForm = () => {
-    // Enviar dados do formulário
-    console.log('Dados do formulário:', formData);
-    // Aqui você pode enviar os dados para o backend ou realizar outras ações.
+  const register = async () => {
+    const { nome_empresa, nro_cnpj, razao_social_empresa, nome_responsavel, cargo_responsavel, email_responsavel, telefone_responsavel, nro_cpf, senha } = formData;
+    try {
+      loading(true, "ContainerFormulario");
+      const response = await request("public/register/", "POST", { nome_empresa, nro_cnpj, razao_social_empresa, nome_responsavel, cargo_responsavel, email_responsavel, telefone_responsavel, nro_cpf, senha });
+      if (response.success) {
+        alerta(response.message, 1);
+      } else {
+        alerta(response.message, 2);
+      }
+    } catch (error) {
+      alerta('Erro ao registrar. Por favor, tente novamente.', 2);
+    } finally {
+      loading(false, "ContainerFormulario");
+    }
   };
+
+
+  const handleBack = () => setStep((prevStep) => prevStep - 1);
+
+
+  const renderStepContent = () => {
+    switch (step) {
+      case 1:
+        return (
+          <>
+            <FloatingLabel controlId="nome_empresa" className="mb-2" label="Nome da Empresa">
+              <Form.Control
+                type="text"
+                placeholder="Nome da Empresa"
+                name="nome_empresa"
+                value={formData.nome_empresa}
+                onChange={handleInputChange}
+              />
+            </FloatingLabel>
+            <FloatingLabel controlId="nro_cnpj" className="mb-2" label="Número do CNPJ">
+              <Form.Control
+                type="text"
+                placeholder="Número do CNPJ"
+                name="nro_cnpj"
+                value={formData.nro_cnpj}
+                onChange={handleInputChange}
+              />
+            </FloatingLabel>
+            <FloatingLabel controlId="razao_social_empresa" className="mb-2" label="Razão Social da Empresa">
+              <Form.Control
+                type="text"
+                placeholder="Razão Social da Empresa"
+                name="razao_social_empresa"
+                value={formData.razao_social_empresa}
+                onChange={handleInputChange}
+              />
+            </FloatingLabel>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <FloatingLabel controlId="nome_responsavel" className="mb-2" label="Nome do Responsável">
+              <Form.Control
+                type="text"
+                placeholder="Nome do Responsável"
+                name="nome_responsavel"
+                value={formData.nome_responsavel}
+                onChange={handleInputChange}
+              />
+            </FloatingLabel>
+            <FloatingLabel controlId="cargo_responsavel" className="mb-2" label="Cargo do Responsável">
+              <Form.Control
+                type="text"
+                placeholder="Cargo do Responsável"
+                name="cargo_responsavel"
+                value={formData.cargo_responsavel}
+                onChange={handleInputChange}
+              />
+            </FloatingLabel>
+            <FloatingLabel controlId="email_responsavel" className="mb-2" label="E-mail do Responsável">
+              <Form.Control
+                type="email"
+                placeholder="E-mail do Responsável"
+                name="email_responsavel"
+                value={formData.email_responsavel}
+                onChange={handleInputChange}
+              />
+            </FloatingLabel>
+            <FloatingLabel controlId="telefone_responsavel" className="mb-2" label="Telefone do Responsável">
+              <Form.Control
+                type="text"
+                placeholder="Telefone do Responsável"
+                name="telefone_responsavel"
+                value={formData.telefone_responsavel}
+                onChange={handleInputChange}
+              />
+            </FloatingLabel>
+            <FloatingLabel controlId="nro_cpf" className="mb-2" label="Número do CPF">
+              <Form.Control
+                type="text"
+                placeholder="Número do CPF"
+                name="nro_cpf"
+                value={formData.nro_cpf}
+                onChange={handleInputChange}
+              />
+            </FloatingLabel>
+            <FloatingLabel controlId="senha" className="mb-2" label="Senha">
+              <Form.Control
+                type="password"
+                placeholder="Senha"
+                name="senha"
+                value={formData.senha}
+                onChange={handleInputChange}
+              />
+            </FloatingLabel>
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <img src={img_email} className="img-fluid justify-content-center d-grid d-12 mx-auto" style={{ maxWidth: '300px', maxHeight: '300px' }} alt="Welcome Cats" />
+            <p className="font-monospace fw-bold mb-3">Enviamos um código para seu e-mail. Precisamos que confirme o código.</p>
+            <FloatingLabel controlId="codigo" className="mb-2" label="Código de Confirmação">
+              <InputMask
+                mask="999-999"
+                value={formData.codigo}
+                onChange={handleInputChange}
+              >
+                {(inputProps) => <Form.Control {...inputProps} placeholder="Código de Confirmação" name="codigo" />}
+              </InputMask>
+            </FloatingLabel>
+          </>
+        );
+      case 4:
+        return (
+          <>
+            <img src={img_cat} className="img-fluid justify-content-center d-grid d-12 mx-auto" style={{ maxWidth: '300px', maxHeight: '300px' }} alt="Welcome Cats" />
+            <p>Cadastro concluído com sucesso!</p>;
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Previne o comportamento padrão de envio do formulário
+    if (step === 4) {
+      // Redireciona para a página de login no último passo
+      navigate('/login');
+    } else {
+      // Lógica para enviar o formulário ou concluir o cadastro
+      console.log('Dados do formulário:', formData);
+      // Adicione aqui a lógica para enviar os dados via API, etc.
+    }
+  };
+
+  const handleNext = async (e) => {
+    e.preventDefault(); // Previne o comportamento padrão de envio do formulário
+
+    try {
+      if (step === 1) {
+        if (validateStep1()) {
+          setStep(2);
+        }
+      } else if (step === 2) {
+        if (validateStep2()) {
+          const codeSent = await sendCode();
+          if (codeSent) {
+            setStep(3);
+          } else {
+            console.error('Falha ao enviar o código.');
+          }
+        }
+      } else if (step === 3) {
+        const codeConfirmed = await confirmCode();
+        if (codeConfirmed) {
+          await register();
+          setStep(4);
+        } else {
+          console.error('Código inválido.');
+        }
+      } else if (step === 4) {
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Erro ao processar o próximo passo:', error);
+    }
+  };
+
 
   return (
-    <>
-      <Modal
-        show={true}
-        className="modal modal-signin position-static d-block align-items-center">
-        <Modal.Header>
-          <Modal.Title>Cadastro Empresa</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="modal-body">
-          {step === 1 && (
-            <div id="container_empresa">
-              <FloatingLabel controlId="nome_empresa" className="mb-2" label="Nome da Empresa">
-                <Form.Control
-                  type="text"
-                  placeholder="Nome da Empresa"
-                  name="nome_empresa"
-                  value={formData.nome_empresa}
-                  onChange={handleInputChange}
-                />
-              </FloatingLabel>
-              <FloatingLabel controlId="nro_cnpj" className="mb-2" label="Número do CNPJ">
-                <Form.Control
-                  type="text"
-                  placeholder="Número do CNPJ"
-                  name="nro_cnpj"
-                  value={formData.nro_cnpj}
-                  onChange={handleInputChange}
-                />
-                <div className="invalid-feedback">Por favor, insira um CNPJ válido.</div>
-              </FloatingLabel>
-              <FloatingLabel controlId="razao_social_empresa" className="mb-2" label="Razão Social da Empresa">
-                <Form.Control
-                  type="text"
-                  placeholder="Razão Social da Empresa"
-                  name="razao_social_empresa"
-                  value={formData.razao_social_empresa}
-                  onChange={handleInputChange}
-                />
-              </FloatingLabel>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={voltarModal} className="me-auto d-none" id="btn_voltar">
-                  Voltar
-                </Button>
-                <Button variant="primary" onClick={alterarModal} id="btn_salvar">
-                  Próximo
-                </Button>
-              </Modal.Footer>
-            </div>
+    <div className="container my-5">
+      <div className="card justify-content-center" id="ContainerFormulario">
+        <div className="card-header">
+          <h1 className="fw-bolder mt-2 mb-1 fs-6 font-monospace">
+            <span className="bi bi-building me-2"></span>Cadastro Empresa
+          </h1>
+        </div>
+        <div className="card-body">
+          {renderStepContent()}
+        </div>
+        <div className="d-flex justify-content-between card-footer">
+          {step > 1 && (
+            <Button variant="secondary" onClick={handleBack}>Voltar</Button>
           )}
-
-          {step === 2 && (
-            <div id="container_responsavel">
-              <FloatingLabel controlId="nome_responsavel" className="mb-2" label="Nome do Responsável">
-                <Form.Control
-                  type="text"
-                  placeholder="Nome do Responsável"
-                  name="nome_responsavel"
-                  value={formData.nome_responsavel}
-                  onChange={handleInputChange}
-                />
-              </FloatingLabel>
-              <FloatingLabel controlId="cargo_responsavel" className="mb-2" label="Cargo do Responsável">
-                <Form.Control
-                  type="text"
-                  placeholder="Cargo do Responsável"
-                  name="cargo_responsavel"
-                  value={formData.cargo_responsavel}
-                  onChange={handleInputChange}
-                />
-              </FloatingLabel>
-              <FloatingLabel controlId="email_responsavel" className="mb-2" label="E-mail do Responsável">
-                <Form.Control
-                  type="email"
-                  placeholder="E-mail do Responsável"
-                  name="email_responsavel"
-                  value={formData.email_responsavel}
-                  onChange={handleInputChange}
-                />
-                <div className="invalid-feedback">Por favor, insira um e-mail válido.</div>
-              </FloatingLabel>
-              <FloatingLabel controlId="telefone_responsavel" className="mb-2" label="Telefone do Responsável">
-                <Form.Control
-                  type="text"
-                  placeholder="Telefone do Responsável"
-                  name="telefone_responsavel"
-                  value={formData.telefone_responsavel}
-                  onChange={handleInputChange}
-                />
-              </FloatingLabel>
-              <FloatingLabel controlId="nro_cpf" className="mb-2" label="Número do CPF">
-                <Form.Control
-                  type="text"
-                  placeholder="Número do CPF"
-                  name="nro_cpf"
-                  value={formData.nro_cpf}
-                  onChange={handleInputChange}
-                />
-                <div className="invalid-feedback">Por favor, insira um CPF válido.</div>
-              </FloatingLabel>
-              <FloatingLabel controlId="senha" className="mb-2" label="Senha">
-                <Form.Control
-                  type="password"
-                  placeholder="Senha"
-                  name="senha"
-                  value={formData.senha}
-                  onChange={handleInputChange}
-                />
-                <div className="invalid-feedback" id="senha-feedback"></div>
-              </FloatingLabel>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={voltarModal} className="me-auto" id="btn_voltar">
-                  Voltar
-                </Button>
-                <Button variant="primary" onClick={alterarModal} id="btn_salvar">
-                  Finalizar
-                </Button>
-              </Modal.Footer>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="modal-content mb-2 bg-body rounded-3 border" id="container_conclusao">
-              <div className="modal-body d-flex flex-column align-items-center">
-                <p className="font-monospace fw-bold mb-3">Cadastro concluído com sucesso.</p>
-                <img src={img_cat} className="img-fluid col-10" style={{ maxWidth: '300px', maxHeight: '300px' }} alt="Welcome Cats" />
-              </div>
-              <Modal.Footer>
-                <Button variant="primary" onClick={submitForm}>
-                  Ir para o login
-                </Button>
-              </Modal.Footer>
-            </div>
-          )}
-        </Modal.Body>
-      </Modal>
-    </>
+          <Button variant="primary" type="button" onClick={handleNext}>
+            {step === 4 ? 'Finalizar' : 'Próximo'}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 

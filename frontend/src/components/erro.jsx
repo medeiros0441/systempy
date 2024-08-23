@@ -12,13 +12,15 @@ const Erro = () => {
   const urlRedirect = queryParams.get('urlRedirect') || '';
 
   return (
-    <div className="container-erro container mx-2 d-flex justify-content-between align-items-center text-center">
-      <h1 className="h1-erro">{title}</h1>
-      <p className="p-erro">{descricao}</p>
-      {urlRedirect && (
-        <a href={urlRedirect} className="btn btn-primary">Voltar</a>
-      )}
-      <p>Por favor, tente novamente mais tarde ou entre em contato conosco para obter assistência.</p>
+    <div className="px-3">
+      <div className="container-erro my-4 container  justify-content-between align-items-center text-center mx-0 mx-sm-auto">
+        <h1 className="h1-erro">{title}</h1>
+        <p className="p-erro">{descricao}</p>
+        {urlRedirect && (
+          <a href={urlRedirect} className="btn btn-primary">Voltar</a>
+        )}
+        <p>Por favor, tente novamente mais tarde ou entre em contato conosco para obter assistência.</p>
+      </div>
     </div>
   );
 };

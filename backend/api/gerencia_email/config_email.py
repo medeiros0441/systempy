@@ -3,6 +3,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import re
 from .gerar_html_email import corpo_email
+from django.conf import settings
 
 
 def is_valid_email(email):
@@ -22,9 +23,8 @@ def enviar_email(
 ):
     # Lista de contas de e-mail que você deseja alternar em caso de problemas
     contas_email = [
-        {"username": "medeiros0441@gmail.com", "password": "wrzjbcspuitbnvjb"},
-        {"username": "medeiros0442@gmail.com", "password": "qfahwvhwnewsymkg"},
-        # Adicione mais contas se necessário
+        {"username": settings.username_email_1, "password": settings.password_email_1},
+        {"username":settings.username_email_2, "password": settings.password_email_2},
     ]
 
     email_enviado = False  # Variável de controle para rastrear se o e-mail foi enviado

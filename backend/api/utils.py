@@ -15,22 +15,72 @@ from django.forms.models import model_to_dict
 import uuid
 import logging
 from django.db.models import Model, ForeignKey
-
+import re
 logger = logging.getLogger(__name__)
-
+from datetime import datetime, timedelta
+from django.http import HttpResponse
 
 class Utils:
+    
+    @staticmethod
+    def set_cookie(response: HttpResponse, key: str, value: str, days_expire: int = 7):
+        # Calcula a data de expiração com base em days_expire
+        expires = datetime.utcnow() + timedelta(days=days_expire)
+        
+        # Define o cookie com os parâmetros fornecidos
+        response.set_cookie(
+            key,                        # Nome do cookie
+            value,                      # Valor do cookie
+            max_age=days_expire * 24 * 60 * 60,  # Tempo de expiração em segundos
+            expires=expires,            # Data e hora de expiração
+            path='/',                   # Caminho onde o cookie é válido
+            domain=None,                # Domínio onde o cookie é válido
+            secure=False,               # Se True, o cookie só será enviado via HTTPS
+            httponly=False,             # Se True, o cookie não será acessível via JavaScript
+            samesite='Lax'              # Política de SameSite do cookie (Lax, Strict ou None)
+        )
+        
+        return response
 
-    def set_cookie(response, key, value, days_expire=7):
-        if days_expire is None:
-            max_age = 365 * 24 * 60 * 60  # 1 year
-        else:
-            max_age = days_expire * 24 * 60 * 60
-        response.set_cookie(key, value, max_age=max_age, httponly=True)
-
+    @staticmethod
     def get_cookie(request, key):
         return request.COOKIES.get(key)
+    
+    @staticmethod
+    def is_valid_email(value):
+        """Valida se o email é válido."""
+        from django.core.validators import validate_email
+        from django.core.exceptions import ValidationError
 
+        try:
+            validate_email(value)
+            return True
+        except ValidationError:
+            return False
+
+    @staticmethod
+    def is_valid_cpf(value):
+        """Valida se o CPF é válido."""
+        if re.match(r'^\d{11}$', value):
+            # Lógica básica para validar CPF
+            # Considerar usar uma biblioteca específica para validação de CPF
+            return True
+        return False
+
+    @staticmethod
+    def is_valid_cnpj(value):
+        """Valida se o CNPJ é válido."""
+        if re.match(r'^\d{14}$', value):
+            # Lógica básica para validar CNPJ
+            # Considerar usar uma biblioteca específica para validação de CNPJ
+            return True
+        return False
+
+    @staticmethod
+    def is_valid_phone(value):
+        """Valida se o telefone é válido."""
+        return re.match(r'^\d{10,15}$', value) is not None
+    
     def converter_para_decimal(valor):
         try:
             if valor is None or valor == "":
@@ -103,7 +153,7 @@ class Utils:
             print(f"Erro ao obter dados de localização: {e}")
 
     def configuracao_usuario(request, id_usuario, codigo):
-        from api.view.views_erro import views_erro
+        from api.views.ErroView import ErroView
         from api.models import Configuracao
 
         try:
@@ -114,15 +164,15 @@ class Utils:
                 mensagem = (
                     "Acesso negado: você não tem permissão para executar o método."
                 )
-                return False, views_erro.erro(request, mensagem)
+                return False, ErroView.erro(request, mensagem)
             else:
                 return True, None
         except ObjectDoesNotExist:
             mensagem = "Configuração não encontrada."
-            return False, views_erro.erro(request, mensagem)
+            return False, ErroView.erro(request, mensagem)
         except MultipleObjectsReturned:
             mensagem = "Ocorreu um erro inesperado. Por favor, entre em contato com a equipe de suporte."
-            return False, views_erro.erro(request, mensagem)
+            return False, ErroView.erro(request, mensagem)
 
   
     def lista_de_configuracao():

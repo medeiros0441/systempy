@@ -1,40 +1,41 @@
-from .usuario import Usuario, Personalizacao
-from .empresa import Empresa
-from .endereco import Endereco
-from .galao import Galao, GestaoGalao
-from .loja import Loja, Associado
-from .produto import Produto
-from .sessao import Sessao
-from .venda import Venda, ItemCompra, Motoboy, Entrega
-from .pdv import PDV, TransacaoPDV, AssociadoPDV, RegistroDiarioPDV
-from .historico import Historico, HistoricoAlteracoes
-from .log import Log
-from .configuracao import Configuracao
-from .cliente import Cliente
-from .CustomModel  import CustomModel
+from .UsuarioModel import UsuarioModel, PersonalizacaoModel
+from .EmpresaModel import EmpresaModel
+from .EnderecoModel import EnderecoModel
+from .GalaoModel import GalaoModel, GestaoGalaoModel
+from .LojaModel import LojaModel, AssociadoModel
+from .ProdutoModel import ProdutoModel
+from .SessaoModel import SessaoModel
+from .VendaModel import VendaModel, ItemCompraModel, MotoboyModel, EntregaModel
+from .PdvModel import PdvModel, TransacaoPdvModel, AssociadoPdvModel, RegistroDiarioPdvModel
+from .HistoricoModel import HistoricoModel, HistoricoAlteracoesModel
+from .LogModel import LogModel
+from .ConfiguracaoModel import ConfiguracaoModel
+from .ClienteModel import ClienteModel
+from .CustomModel import CustomModel
+
 __all__ = [
-    "Usuario",
-    "Personalizacao",
-    "Empresa",
-    "Endereco",
-    "Galao",
-    "GestaoGalao",
-    "Loja",
-    "Associado",
-    "Produto",
-    "Sessao",
-    "Venda",
-    "ItemCompra",
-    "Motoboy",
-    "PDV",
-    "HistoricoAlteracoes",
-    "RegistroDiarioPDV",
-    "AssociadoPDV",
-    "TransacaoPDV",
-    "Entrega",
-    "Historico",
-    "Log",
-    "Configuracao",
-    "Cliente",
-    "CustomModel"
+    "UsuarioModel",
+    "PersonalizacaoModel",
+    "EmpresaModel",
+    "EnderecoModel",
+    "GalaoModel",
+    "GestaoGalaoModel",
+    "LojaModel",
+    "AssociadoModel",
+    "ProdutoModel",
+    "SessaoModel",
+    "VendaModel",
+    "ItemCompraModel",
+    "MotoboyModel",
+    "EntregaModel",
+    "PdvModel",
+    "TransacaoPdvModel",
+    "AssociadoPdvModel",
+    "RegistroDiarioPdvModel",
+    "HistoricoModel",
+    "HistoricoAlteracoesModel",
+    "LogModel",
+    "ConfiguracaoModel",
+    "ClienteModel",
+    "CustomModel",
 ]

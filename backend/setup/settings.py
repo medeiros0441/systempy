@@ -37,6 +37,10 @@ ALLOWED_HOSTS = [
 
 # Segurança
 SECRET_KEY = config("SECRET_KEY")
+username_email_1 = config("username_email_1")
+password_email_1 = config("password_email_1")
+username_email_2 = config("username_email_2")
+password_email_2 = config("password_email_2")
 
 # Aplicações Instaladas
 INSTALLED_APPS = [
@@ -54,10 +58,12 @@ INSTALLED_APPS = [
     "webpack_loader",
     "rest_framework",
     "rest_framework_simplejwt",
+    'channels',
 ]
 
 # JWT
 SIMPLE_JWT = {
+    
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
@@ -143,6 +149,7 @@ TEMPLATES = [
 
 # WSGI
 WSGI_APPLICATION = "setup.wsgi.application"
+ASGI_APPLICATION = 'setup.asgi.application'
 
 # Banco de Dados
 DATABASES = {
