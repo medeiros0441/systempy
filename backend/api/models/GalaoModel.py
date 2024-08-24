@@ -1,9 +1,6 @@
-from .CustomModel import CustomModel
 
 from django.db import models
-from models import LojaModel,ClienteModel,VendaModel
-from django.utils import timezone
-from api.utils import Utils
+from api.models import CustomModel,VendaModel,LojaModel
 
 
 class GalaoModel(CustomModel):

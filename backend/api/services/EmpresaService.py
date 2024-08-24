@@ -1,6 +1,6 @@
 # services.py
-from models import EmpresaModel, ConfiguracaoModel
-from utils import Utils
+from api.models import EmpresaModel, ConfiguracaoModel
+from api.utils import Utils
 from django.core.exceptions import ObjectDoesNotExist
 
 class EmpresaService:

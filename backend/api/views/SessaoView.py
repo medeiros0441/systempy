@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from ..models import Sessao, Usuario
+from api.models import SessaoModel, UsuarioModel
 from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import render
@@ -7,22 +7,22 @@ import requests
 import json
 
 from api.permissions import permissions, CustomPermission
-from rest_framework.views import APIView
+from rest_framework import viewsets, status
 
 
-class SessaoView(APIView):
+class SessaoView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="sessao", auth_required=True)]
 
     def sessao_usuario_list(request):
-        sessoes = Sessao.objects.all()
+        sessoes = SessaoModel.objects.all()
         return render(request, "sessao_usuario_list.html", {"sessoes": sessoes})
 
     def sessao_usuario_detail(request, pk):
-        sessao = get_object_or_404(Sessao, pk=pk)
+        sessao = get_object_or_404(SessaoModel, pk=pk)
         return render(request, "sessao_usuario_detail.html", {"sessao": sessao})
 
     def sessao_usuario_delete(request, pk):
-        sessao = get_object_or_404(Sessao, pk=pk)
+        sessao = get_object_or_404(SessaoModel, pk=pk)
         if request.method == "POST":
             sessao.delete()
             return redirect("sessao_usuario_list")
@@ -37,7 +37,7 @@ class SessaoView(APIView):
                     pagina_atual = data.get("pagina_atual")
                     endereco_ip = data.get("endereco_ip")
 
-                    sessao_usuario, created = Sessao.objects.get_or_create(
+                    sessao_usuario, created = SessaoModel.objects.get_or_create(
                         usuario=id_usuario
                     )
                     # Atualiza informações da sessão
@@ -53,7 +53,7 @@ class SessaoView(APIView):
                             "message": "Sessão do usuário atualizada com sucesso",
                         }
                     )
-        except Sessao.DoesNotExist:
+        except SessaoModel.DoesNotExist:
 
             pass
         return JsonResponse(
@@ -70,7 +70,7 @@ class SessaoView(APIView):
     # Retorna informações da sessão de um usuário específico como JSON
     def get_sessao_usuario(request, user_id):
         try:
-            sessao_usuario = Sessao.objects.filter(usuario_id=user_id).first()
+            sessao_usuario = SessaoModel.objects.filter(usuario_id=user_id).first()
             if sessao_usuario:
                 data = {
                     "id_sessao": sessao_usuario.id_sessao,
@@ -94,7 +94,7 @@ class SessaoView(APIView):
                 return JsonResponse(data)
             else:
                 return JsonResponse(
-                    {"message": "Sessao do usuario nao encontrada"}, status=404
+                    {"message": "SessaoModel do usuario nao encontrada"}, status=404
                 )
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
@@ -102,7 +102,7 @@ class SessaoView(APIView):
     # Atualiza informações da sessão de um usuário específico
     def atualizar_sessao_usuario(request, user_id):
         try:
-            sessao_usuario = Sessao.objects.filter(usuario_id=user_id).first()
+            sessao_usuario = SessaoModel.objects.filter(usuario_id=user_id).first()
             if sessao_usuario:
                 # Atualiza informações da sessão, você pode modificar isso de acordo com suas necessidades
                 sessao_usuario.descricao = request.POST.get(
@@ -116,11 +116,11 @@ class SessaoView(APIView):
                 )
                 sessao_usuario.save()
                 return JsonResponse(
-                    {"message": "Sessao do usuario atualizada com sucesso"}
+                    {"message": "SessaoModel do usuario atualizada com sucesso"}
                 )
             else:
                 return JsonResponse(
-                    {"message": "Sessao do usuario nao encontrada"}, status=404
+                    {"message": "SessaoModel do usuario nao encontrada"}, status=404
                 )
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
@@ -151,8 +151,8 @@ class SessaoView(APIView):
 
                 # Obtendo a descrição do usuário (HTTP_USER_AGENT)
                 descricao = request.META.get("HTTP_USER_AGENT", "")
-                # Criar uma nova instância de Sessao com as informações obtidas
-                sessao = Sessao.objects.create(
+                # Criar uma nova instância de SessaoModel com as informações obtidas
+                sessao = SessaoModel.objects.create(
                     ip_sessao=ip_address,
                     descricao=descricao,
                     status=True,

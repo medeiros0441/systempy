@@ -1,11 +1,11 @@
 
-from models import Endereco
-from CustomModelSerializer import CustomModelSerializer
+from api.models import EnderecoModel
+from .CustomModelSerializer import CustomModelSerializer
 
 class EnderecoSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = Endereco
+        model = EnderecoModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_endereco',
             'id',

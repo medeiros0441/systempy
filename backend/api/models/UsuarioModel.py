@@ -2,7 +2,8 @@ from django.db import models
 from django.utils import timezone
 import uuid
 from api.utils import Utils
-from models import EmpresaModel,CustomModel
+from api.models import EmpresaModel
+from .CustomModel import CustomModel  
 
 
 class UsuarioModel(CustomModel):
@@ -16,7 +17,7 @@ class UsuarioModel(CustomModel):
     ultimo_login = models.DateTimeField(null=True)
     empresa = models.ForeignKey(EmpresaModel, on_delete=models.CASCADE)
     class Meta:
-        dt_table="usuario"
+        db_table="usuario"
 
 class PersonalizacaoModel(CustomModel):
     id_personalizacao = models.UUIDField(

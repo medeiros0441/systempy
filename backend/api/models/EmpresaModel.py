@@ -1,9 +1,8 @@
-from .CustomModel import CustomModel
 from django.db import models
 import uuid
 
+from .CustomModel import CustomModel  
 class EmpresaModel(CustomModel):
-
     id_empresa = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     nome_empresa = models.TextField()
     nro_cnpj = models.TextField()

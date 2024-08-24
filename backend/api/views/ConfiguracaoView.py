@@ -1,10 +1,10 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from services import ConfiguracaoService
-from models import ConfiguracaoModel
-from serializers import ConfiguracaoSerializer
-from user import UserInfo
+from api.services import ConfiguracaoService
+from api.models import ConfiguracaoModel
+from api.serializers import ConfiguracaoSerializer
+from api.user import UserInfo
 from api.permissions import permissions,CustomPermission
 
 class ConfiguracaoView(viewsets.ViewSet):

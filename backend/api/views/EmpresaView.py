@@ -2,10 +2,10 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from models import EmpresaModel
-from serializers import EmpresaSerializer
-from services import EmpresaService
-from permissions import CustomPermission
+from api.models import EmpresaModel
+from api.serializers import EmpresaSerializer
+from api.services import  EmpresaService
+from api.permissions import CustomPermission
 
 class EmpresaView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="empresa", auth_required=True)]

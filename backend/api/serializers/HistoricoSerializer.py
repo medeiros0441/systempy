@@ -1,11 +1,10 @@
-from CustomModelSerializer import CustomModelSerializer
-from models import Historico
-from models import HistoricoAlteracoes
+from .CustomModelSerializer import CustomModelSerializer
+from api.models import HistoricoAlteracoesModel,HistoricoModel
 
 class HistoricoSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = Historico
+        model = HistoricoModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_historico',
             'descricao',
@@ -15,7 +14,7 @@ class HistoricoSerializer(CustomModelSerializer):
 class HistoricoAlteracoesSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = HistoricoAlteracoes
+        model = HistoricoAlteracoesModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_historico',
             'entidade',

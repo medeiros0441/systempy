@@ -2,10 +2,7 @@ from django.db import models
 from django.utils import timezone
 import datetime
 
-      
-
-
-class CustomModel(models.Model, metaclass=models.base.ModelBase):
+class CustomModel(models.Model):
     _insert = models.DateTimeField(auto_now_add=True, editable=False)
     _update = models.DateTimeField(auto_now=True)
 
@@ -19,7 +16,7 @@ class CustomModel(models.Model, metaclass=models.base.ModelBase):
     @update.setter
     def update(self, value):
         """
-        Define a data de atualização com um valor datetime. 
+        Define a data de atualização com um valor datetime.
         """
         if isinstance(value, datetime.datetime):
             self._update = value

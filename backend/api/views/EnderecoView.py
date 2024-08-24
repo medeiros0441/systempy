@@ -2,8 +2,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from api.permissions import CustomPermission
-from services import EnderecoService
-from models import EnderecoModel
+from api.services import  EnderecoService
+from api.models import EnderecoModel
 from api.utils import Utils
 
 class EnderecoView(viewsets.ViewSet):

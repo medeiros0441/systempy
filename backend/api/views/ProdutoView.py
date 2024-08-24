@@ -1,26 +1,16 @@
 from django.shortcuts import render, redirect
-from api.utils import Utils
-from django.http import HttpResponse
 from api.user import UserInfo
-from ..models import Loja, Produto
-import datetime
+from api.models import LojaModel, ProdutoModel
 from decimal import Decimal
-from django.utils import timezone
-
-from .ErroView import ErroView
-
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
-
-
 from api.permissions import permissions, CustomPermission
-from rest_framework.views import APIView
+from rest_framework import viewsets, status
 
 
-class ProdutoView(APIView):
+class ProdutoView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="produto", auth_required=True)]
 
     @staticmethod
@@ -34,17 +24,17 @@ class ProdutoView(APIView):
             produto = None
 
             if id_produto is not None:
-                produto = get_object_or_404(Produto, id_produto=id_produto)
+                produto = get_object_or_404(ProdutoModel, id_produto=id_produto)
 
             status, mensagem, data = ProdutoView.validate_form(data)
             if status:
                 if id_produto is None:
                     produto = (
-                        Produto()
+                        ProdutoModel()
                     )  # Criar um novo produto apenas se id_produto for None
                 else:
                     produto = get_object_or_404(
-                        Produto, id_produto=id_produto
+                        ProdutoModel, id_produto=id_produto
                     )  # Buscar o produto existente
 
                 # Atribuir os valores aos campos do produto
@@ -70,8 +60,8 @@ class ProdutoView(APIView):
             else:
                 return JsonResponse({"message": mensagem}, status=400)
 
-        except Produto.DoesNotExist:
-            return JsonResponse({"message": "Produto não encontrado."}, status=404)
+        except ProdutoModel.DoesNotExist:
+            return JsonResponse({"message": "ProdutoModel não encontrado."}, status=404)
 
         except Exception as e:
             mensagem_erro = str(e)
@@ -152,7 +142,7 @@ class ProdutoView(APIView):
                 request.body
             )  # Carrega e decodifica os dados JSON do corpo da requisição
             id_empresa = UserInfo.get_id_empresa(request, True)
-            produtos = Produto.objects.filter(
+            produtos = ProdutoModel.objects.filter(
                 loja__empresa__id_empresa=id_empresa, status=True
             )
 
@@ -175,7 +165,7 @@ class ProdutoView(APIView):
                     status=400,
                 )
 
-            produto = Produto.objects.get(id_produto=id_produto)
+            produto = ProdutoModel.objects.get(id_produto=id_produto)
             if produto.loja.empresa.id_empresa != id_empresa:
                 return JsonResponse(
                     {"message": "Você não tem permissão para acessar este produto"},
@@ -185,11 +175,11 @@ class ProdutoView(APIView):
             produto.quantidade_atual_estoque += quantidade_acrescentar
             produto.save()
             return JsonResponse(
-                {"message": "Produto acrescentado com sucesso."}, status=200
+                {"message": "ProdutoModel acrescentado com sucesso."}, status=200
             )
 
-        except Produto.DoesNotExist:
-            return JsonResponse({"message": "Produto não encontrado."}, status=404)
+        except ProdutoModel.DoesNotExist:
+            return JsonResponse({"message": "ProdutoModel não encontrado."}, status=404)
         except Exception as e:
             mensagem_erro = str(e)
             return JsonResponse({"message": mensagem_erro}, status=500)
@@ -199,7 +189,7 @@ class ProdutoView(APIView):
     @permissions.isAutorizado(6, True)
     def selecionar_produto(request, id_produto):
         try:
-            produto = Produto.objects.get(id_produto=id_produto)
+            produto = ProdutoModel.objects.get(id_produto=id_produto)
             return JsonResponse(
                 {
                     "produto": {
@@ -215,8 +205,8 @@ class ProdutoView(APIView):
                 },
                 status=200,
             )
-        except Produto.DoesNotExist:
-            return JsonResponse({"message": "Produto não encontrado."}, status=404)
+        except ProdutoModel.DoesNotExist:
+            return JsonResponse({"message": "ProdutoModel não encontrado."}, status=404)
         except Exception as e:
             mensagem_erro = str(e)
             return JsonResponse({"message": mensagem_erro}, status=500)
@@ -226,14 +216,14 @@ class ProdutoView(APIView):
     @permissions.isAutorizado(6, True)
     def excluir_produto(request, id_produto):
         try:
-            produto = Produto.objects.get(id_produto=id_produto)
+            produto = ProdutoModel.objects.get(id_produto=id_produto)
             produto.status = False
             produto.save()
             return JsonResponse(
-                {"message": "Produto excluído com sucesso."}, status=200
+                {"message": "ProdutoModel excluído com sucesso."}, status=200
             )
-        except Produto.DoesNotExist:
-            return JsonResponse({"message": "Produto não encontrado."}, status=404)
+        except ProdutoModel.DoesNotExist:
+            return JsonResponse({"message": "ProdutoModel não encontrado."}, status=404)
         except Exception as e:
             mensagem_erro = str(e)
             return JsonResponse({"message": mensagem_erro}, status=500)

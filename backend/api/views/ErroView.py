@@ -3,9 +3,9 @@ from django.http import JsonResponse
 
 
 from api.permissions import permissions,CustomPermission
-from rest_framework.views import APIView
+from rest_framework import viewsets, status
 
-class ErroView(APIView):
+class ErroView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="configuracao", auth_required=True)]
 
     @staticmethod

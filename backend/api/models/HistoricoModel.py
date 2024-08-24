@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
-from models import UsuarioModel,CustomModel
+from .UsuarioModel import UsuarioModel
+from .CustomModel import CustomModel
 from api.utils import Utils
 
 

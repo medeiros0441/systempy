@@ -1,6 +1,6 @@
 import jwt
 from django.conf import settings
-from .models import Usuario, Empresa
+from api.models import UsuarioModel, EmpresaModel
 
 
 class UserInfo:
@@ -49,11 +49,11 @@ class UserInfo:
         # Verifica se o token contém IDs válidos e se o usuário e empresa existem
         if user_id and empresa_id:
             try:
-                usuario = Usuario.objects.get(id_usuario=user_id, empresa_id=empresa_id)
-                empresa = Empresa.objects.get(id_empresa=empresa_id)
+                usuario = UsuarioModel.objects.get(id_usuario=user_id, empresa_id=empresa_id)
+                empresa = EmpresaModel.objects.get(id_empresa=empresa_id)
                 return True, "Usuário autenticado."
-            except Usuario.DoesNotExist:
+            except UsuarioModel.DoesNotExist:
                 return False, "Usuário não encontrado."
-            except Empresa.DoesNotExist:
+            except EmpresaModel.DoesNotExist:
                 return False, "Empresa não encontrada."
         return False, "Não autenticado."

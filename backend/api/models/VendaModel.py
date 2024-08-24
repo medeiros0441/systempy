@@ -1,6 +1,6 @@
-from CustomModel import CustomModel
+from .CustomModel import CustomModel
 from django.db import models
-from models import UsuarioModel,ClienteModel,ProdutoModel,EmpresaModel,LojaModel
+from api.models import UsuarioModel,ClienteModel,ProdutoModel,EmpresaModel,LojaModel
 import uuid
 from api.utils import Utils
 
@@ -16,7 +16,6 @@ class VendaModel(CustomModel):
     PIX = 4
     FIADO = 5
     BOLETO = 6
-
     TIPO_PAGAMENTO_CHOICES = [
         (DINHEIRO, "Dinheiro"),
         (MAQUINA_CREDITO, "Máquina de Crédito"),
@@ -38,7 +37,6 @@ class VendaModel(CustomModel):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     troco = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
     descricao = models.TextField(null=True, blank=True)
     usuario = models.ForeignKey(UsuarioModel, on_delete=models.SET_NULL, null=True)
     loja = models.ForeignKey(LojaModel, on_delete=models.CASCADE)
@@ -47,7 +45,6 @@ class VendaModel(CustomModel):
     nota_fiscal = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-
     def get_tipo_pagamento_display(self):
         return dict(self.TIPO_PAGAMENTO_CHOICES).get(
             self.tipo_pagamento, "Desconhecido"
@@ -64,7 +61,6 @@ class ItemCompraModel(CustomModel):
     produto = models.ForeignKey(ProdutoModel, on_delete=models.CASCADE, null=True)
     quantidade = models.IntegerField()
     valor_unidade = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
-
     class Meta:
         db_table="item_compra"
 
@@ -82,7 +78,7 @@ class EntregaModel(CustomModel):
     valor_entrega = models.DecimalField(max_digits=10, decimal_places=2)
     time_pedido = models.TimeField(null=True, blank=True)
     time_finalizacao = models.TimeField(null=True, blank=True)
-    motoboy = models.ForeignKey(
-        MotoboyModel, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    motoboy = models.ForeignKey(MotoboyModel, on_delete=models.SET_NULL, null=True, blank=True)
     descricao = models.TextField(null=True, blank=True)
+    class Meta:
+        db_table="entraga"

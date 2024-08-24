@@ -2,11 +2,11 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from api.permissions import CustomPermission
-from services import LojaService
+from api.services import  LojaService
 from api.utils import Utils
 from django.shortcuts import get_object_or_404
-from models import LojaModel, EmpresaModel, UsuarioModel
-from user import UserInfo
+from api.models import LojaModel, EmpresaModel, UsuarioModel
+from api.user import UserInfo
 class LojaView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="loja", auth_required=True)]
 

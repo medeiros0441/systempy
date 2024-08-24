@@ -1,10 +1,10 @@
-from CustomModelSerializer import CustomModelSerializer
-from models import Usuario,Personalizacao
+from .CustomModelSerializer import CustomModelSerializer
+from api.models import UsuarioModel,PersonalizacaoModel
 
 class UsuarioSerializer(CustomModelSerializer):
     
     class Meta(CustomModelSerializer.Meta):
-        model = Usuario
+        model = UsuarioModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_usuario',
             'nome_completo',
@@ -20,7 +20,7 @@ class UsuarioSerializer(CustomModelSerializer):
 class PersonalizacaoSerializer(CustomModelSerializer):
     
     class Meta(CustomModelSerializer.Meta):
-        model = Personalizacao
+        model = PersonalizacaoModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_personalizacao',
             'usuario',

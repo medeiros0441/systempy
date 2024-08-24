@@ -1,10 +1,10 @@
 from .CustomModelSerializer import CustomModelSerializer
-from models import Entrega, Venda, Motoboy
+from api.models import EntregaModel, VendaModel, MotoboyModel
 from rest_framework import serializers
 
 class MotoboySerializer(CustomModelSerializer):
     class Meta(CustomModelSerializer.Meta):
-        model = Motoboy
+        model = MotoboyModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_motoboy',
             'nome',
@@ -14,14 +14,14 @@ class MotoboySerializer(CustomModelSerializer):
 
 class EntregaSerializer(CustomModelSerializer):
     venda = serializers.PrimaryKeyRelatedField(
-        queryset=Venda.objects.all()
+        queryset=VendaModel.objects.all()
     )
     motoboy = serializers.PrimaryKeyRelatedField(
-        queryset=Motoboy.objects.all(), allow_null=True
+        queryset=MotoboyModel.objects.all(), allow_null=True
     )
     
     class Meta(CustomModelSerializer.Meta):
-        model = Entrega
+        model = EntregaModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_entrega',
             'venda',

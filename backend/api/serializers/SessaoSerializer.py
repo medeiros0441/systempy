@@ -1,10 +1,10 @@
-from CustomModelSerializer import CustomModelSerializer
-from models import Sessao
+from .CustomModelSerializer import CustomModelSerializer
+from api.models import SessaoModel
 
 class SessaoSerializer(CustomModelSerializer):
     
     class Meta(CustomModelSerializer.Meta):
-        model = Sessao
+        model = SessaoModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_sessao',
             'id',

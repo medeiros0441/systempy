@@ -1,7 +1,7 @@
 # services/configuracao_service.py
-from models import ConfiguracaoModel, UsuarioModel
+from api.models import ConfiguracaoModel, UsuarioModel
 from django.core.exceptions import ObjectDoesNotExist
-from  utils import Utils
+from  api.utils import Utils
 class ConfiguracaoService:
 
     @staticmethod

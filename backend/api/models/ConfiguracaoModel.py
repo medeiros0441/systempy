@@ -1,7 +1,7 @@
 import uuid
 from .CustomModel import CustomModel
 from django.db import models
-from models import UsuarioModel
+from .UsuarioModel import UsuarioModel
 from django.utils import timezone
 from api.utils import Utils
 

@@ -3,7 +3,8 @@ from api.utils import Utils
 from .CustomModel import CustomModel
 
 from django.db import models
-from models import  UsuarioModel,LojaModel,VendaModel
+from .UsuarioModel import  UsuarioModel
+from .VendaModel import  VendaModel
 
 class PdvModel(CustomModel):
     EXCLUIDO = 0

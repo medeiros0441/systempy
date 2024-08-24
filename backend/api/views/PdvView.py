@@ -1,7 +1,6 @@
-from django.shortcuts import render, get_object_or_404, redirect
 import json
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from models import (
+from api.models import (
     UsuarioModel,
     PdvModel,
     LojaModel,
@@ -14,13 +13,13 @@ from models import (
 )
 from api.user import UserInfo
 from api.utils import Utils
-from ..processos.pdv import processos_pdv 
+from api.async_processos.pdv import processos_pdv 
 from django.db.models import Q
 from api.permissions import permissions,CustomPermission
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from services import PdvService,RegistroDiarioPdvService,TransacaoPdvService,AssociadoPdvService
+from api.services import  PdvService,RegistroDiarioPdvService,TransacaoPdvService,AssociadoPdvService
 
 class PdvView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="pdv", auth_required=True)]

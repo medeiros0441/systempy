@@ -1,5 +1,5 @@
 from api.utils import Utils
-from models import LojaModel, EnderecoModel, AssociadoModel, UsuarioModel, EmpresaModel
+from api.models import LojaModel, EnderecoModel, AssociadoModel, UsuarioModel, EmpresaModel
 
 class LojaService:
 

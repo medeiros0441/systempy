@@ -1,10 +1,10 @@
-from models import Empresa
-from CustomModelSerializer import  CustomModelSerializer
+from api.models import EmpresaModel
+from .CustomModelSerializer import  CustomModelSerializer
 
 class EmpresaSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = Empresa
+        model = EmpresaModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_empresa',
             'nome_empresa',

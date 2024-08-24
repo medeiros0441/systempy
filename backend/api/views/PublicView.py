@@ -2,20 +2,15 @@ from django.contrib.auth.hashers import check_password, make_password
 from ..TokenManager import TokenManager
 from ..user import UserInfo
 from .ConfiguracaoView import ConfiguracaoView
-from random import choices
 from rest_framework.permissions import AllowAny
-from rest_framework.views import APIView
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils import timezone
-from django.contrib.auth.hashers import check_password, make_password
-from models import UsuarioModel, EmpresaModel
+from api.models import UsuarioModel, EmpresaModel
 from ..utils import Utils
 from ..gerencia_email.config_email import enviar_email
-
 from django.utils.crypto import get_random_string
-from django.contrib.auth.hashers import make_password
 
 def generate_code():
     """Gera um código de recuperação e o criptografa."""
@@ -29,7 +24,7 @@ def handle_exception(e):
         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
 
-class ViewsPublic(viewsets.ViewSet):
+class PublicView(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
     @action(detail=False, methods=["post"], url_path="login")
@@ -165,7 +160,7 @@ class ViewsPublic(viewsets.ViewSet):
             status=status.HTTP_200_OK,
         )
         
-        ViewsPublic.set_cookies(response, hash, usuario.id_usuario if usuario else None)
+        PublicView.set_cookies(response, hash, usuario.id_usuario if usuario else None)
 
         enviar_email(
             destinatario=email,
@@ -181,13 +176,13 @@ class ViewsPublic(viewsets.ViewSet):
         """Envia um código de recuperação de senha para o email fornecido."""
         try:
             email = request.data.get("email")
-            ViewsPublic.validate_email(email)
+            PublicView.validate_email(email)
 
             usuario = UsuarioModel.objects.filter(email=email).first()
             if not usuario:
-                return ViewsPublic.handle_user_not_found()
+                return PublicView.handle_user_not_found()
 
-            return ViewsPublic.send_recovery_code(email, usuario=usuario)
+            return PublicView.send_recovery_code(email, usuario=usuario)
 
         except ValueError as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -200,9 +195,9 @@ class ViewsPublic(viewsets.ViewSet):
         try:
             email = request.data.get("email")
             nome = request.data.get("nome")
-            ViewsPublic.validate_email(email)
+            PublicView.validate_email(email)
 
-            return ViewsPublic.send_recovery_code(email, nome=nome)
+            return PublicView.send_recovery_code(email, nome=nome)
 
         except ValueError as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,4 +1,4 @@
-from models import AssociadoPdvModel, UsuarioModel, PdvModel
+from api.models import AssociadoPdvModel, UsuarioModel, PdvModel
 class PdvService:
     pass
 class TransacaoPdvService:

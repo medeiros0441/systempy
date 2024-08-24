@@ -1,11 +1,11 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from services import MotoboyService
-from serializers import MotoboySerializer
+from api.services import  MotoboyService
+from api.serializers import MotoboySerializer
 from api.permissions import CustomPermission
 
-class MotoboyViewSet(viewsets.ViewSet):
+class MotoboyView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="motoboy", auth_required=True)]
 
     @action(detail=False, methods=['get'])

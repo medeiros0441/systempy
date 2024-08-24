@@ -1,9 +1,9 @@
 from api.utils import Utils
 from django.http import HttpResponse
-from models import GalaoModel, ConfiguracaoModel
-from ErroView import ErroView
+from api.models import GalaoModel, ConfiguracaoModel
+from .ErroView import ErroView
 from api.permissions import permissions, CustomPermission
-from rest_framework.views import APIView
+from rest_framework import viewsets, status
 from rest_framework import viewsets, status
 
 class GalaoView(viewsets.ViewSet):

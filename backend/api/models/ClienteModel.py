@@ -1,6 +1,7 @@
 from .CustomModel import CustomModel
 from django.db import models
-from models import EnderecoModel,EmpresaModel
+from .EmpresaModel import EmpresaModel
+from .EnderecoModel import EnderecoModel
 from django.utils import timezone
 import uuid
 from api.utils import Utils

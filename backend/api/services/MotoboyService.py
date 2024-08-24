@@ -1,4 +1,4 @@
-from ..models import MotoboyModel, EntregaModel
+from api.models import MotoboyModel, EntregaModel
 from api.user import UserInfo
 
 class MotoboyService:

@@ -1,6 +1,8 @@
 import uuid 
 from django.db import models
-from models import UsuarioModel,CustomModel
+from .UsuarioModel import UsuarioModel
+from .CustomModel import CustomModel
+
 
 class LogModel(CustomModel):
     id_log = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

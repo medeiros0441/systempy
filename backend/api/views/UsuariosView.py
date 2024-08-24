@@ -2,28 +2,22 @@ from django.shortcuts import render, redirect, get_object_or_404
 from api.user import UserInfo
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
-from ..models import Usuario, Configuracao, Loja, Associado
-from .ConfiguracaoView import ConfiguracaoView
+from api.models import UsuarioModel, ConfiguracaoModel, LojaModel, AssociadoModel
 from api.utils import Utils
 import json
 from django.http import JsonResponse
-from django.core.serializers import serialize
-from django.core.serializers.json import DjangoJSONEncoder
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-
-
 from api.permissions import permissions,CustomPermission
-from rest_framework.views import APIView
-class UsuariosView(APIView):
+from rest_framework import viewsets, status
+class UsuariosView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="usuarios", auth_required=True)]
 
 
-    @permissions.isAutorizado(1, True)
+   
     def api_listar_usuarios(request):
         try:
             id_empresa = UserInfo.get_id_empresa(request)
-            usuarios = Usuario.objects.filter(empresa_id=id_empresa)
+            usuarios = UsuarioModel.objects.filter(empresa_id=id_empresa)
             usuarios_json = [
                 {
                     "id_usuario": usuario.id_usuario,
@@ -57,7 +51,7 @@ class UsuariosView(APIView):
             for loja in list_lojas:
                 campo_checkbox = f"status_acesso_{loja.id_loja}"
                 status_acesso = campo_checkbox in data
-                associacao, created = Associado.objects.get_or_create(
+                associacao, created = AssociadoModel.objects.get_or_create(
                     usuario_id=usuario.id_usuario,
                     loja_id=loja.id_loja,
                 )
@@ -74,14 +68,14 @@ class UsuariosView(APIView):
 
     @staticmethod
     @require_http_methods(["GET"])
-    @permissions.isAutorizado(1, True)
+   
     def _editar_usuario_get(request, id_usuario):
         try:
-            usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
-            list_lojas = Loja.objects.filter(
+            usuario = get_object_or_404(UsuarioModel, id_usuario=id_usuario)
+            list_lojas = LojaModel.objects.filter(
                 empresa_id=UserInfo.get_id_empresa(request)
             )
-            associado = Associado.objects.filter(usuario=usuario)
+            associado = AssociadoModel.objects.filter(usuario=usuario)
 
             list_objs = []
             for loja in list_lojas:
@@ -108,7 +102,7 @@ class UsuariosView(APIView):
                 status=200,
             )
 
-        except Usuario.DoesNotExist:
+        except UsuarioModel.DoesNotExist:
             return JsonResponse({"message": "Usuário não encontrado."}, status=404)
 
         except Exception as e:
@@ -116,7 +110,7 @@ class UsuariosView(APIView):
 
     @staticmethod
     @require_http_methods(["POST"])
-    @permissions.isAutorizado(1, True)
+   
     def excluir_usuario(request):
         try:
             data = json.loads(request.body)
@@ -127,14 +121,14 @@ class UsuariosView(APIView):
                     {"message": "ID do usuário não fornecido."}, status=400
                 )
 
-            usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
+            usuario = get_object_or_404(UsuarioModel, id_usuario=id_usuario)
             usuario.delete()
 
             return JsonResponse(
                 {"message": "Usuário excluído com sucesso!"}, status=200
             )
 
-        except Usuario.DoesNotExist:
+        except UsuarioModel.DoesNotExist:
             return JsonResponse({"message": "Usuário não encontrado."}, status=404)
 
         except Exception as e:
@@ -142,7 +136,7 @@ class UsuariosView(APIView):
 
     @staticmethod
     @require_http_methods(["POST"])
-    @permissions.isAutorizado(1, True)
+   
     def bloquear_usuario(request):
         try:
             data = json.loads(request.body)
@@ -153,7 +147,7 @@ class UsuariosView(APIView):
                     {"message": "ID do usuário não fornecido."}, status=400
                 )
 
-            usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
+            usuario = get_object_or_404(UsuarioModel, id_usuario=id_usuario)
             usuario.status_acesso = False
             usuario.update = timezone.now()
             usuario.save()
@@ -162,7 +156,7 @@ class UsuariosView(APIView):
                 {"message": "Usuário bloqueado com sucesso!"}, status=200
             )
 
-        except Usuario.DoesNotExist:
+        except UsuarioModel.DoesNotExist:
             return JsonResponse({"message": "Usuário não encontrado."}, status=404)
 
         except Exception as e:
@@ -170,7 +164,7 @@ class UsuariosView(APIView):
 
     @staticmethod
     @require_http_methods(["POST"])
-    @permissions.isAutorizado(1, True)
+   
     def ativar_usuario(request):
         try:
             data = json.loads(request.body)
@@ -181,38 +175,36 @@ class UsuariosView(APIView):
                     {"message": "ID do usuário não fornecido."}, status=400
                 )
 
-            usuario = get_object_or_404(Usuario, id_usuario=id_usuario)
+            usuario = get_object_or_404(UsuarioModel, id_usuario=id_usuario)
             usuario.status_acesso = True
             usuario.update = timezone.now()
             usuario.save()
 
             return JsonResponse({"message": "Usuário ativado com sucesso!"}, status=200)
 
-        except Usuario.DoesNotExist:
+        except UsuarioModel.DoesNotExist:
             return JsonResponse({"message": "Usuário não encontrado."}, status=404)
 
         except Exception as e:
             return JsonResponse({"message": str(e)}, status=500)
 
     @staticmethod
-    @permissions.isAutorizado(1, True)
     def autenticar_usuario(email, senha):
         try:
-            usuario = Usuario.objects.get(email__iexact=email)
+            usuario = UsuarioModel.objects.get(email__iexact=email)
             if check_password(senha, usuario.senha):
                 return usuario
-        except Usuario.DoesNotExist:
+        except UsuarioModel.DoesNotExist:
             pass
         return None
 
     @staticmethod
     @require_http_methods(["POST"])
-    @permissions.isAutorizado(1, True)
     def cadastrar_usuario(request):
         try:
             # Obtém o ID da empresa do usuário autenticado
             id_empresa = UserInfo.get_id_empresa(request)
-            lojas = Loja.objects.filter(empresa_id=id_empresa)
+            lojas = LojaModel.objects.filter(empresa_id=id_empresa)
 
             # Carrega e decodifica os dados JSON do corpo da requisição
             data = json.loads(request.body)
@@ -243,7 +235,7 @@ class UsuariosView(APIView):
                 nome_usuario += Utils.gerar_numero_aleatorio()
 
             # Cria e salva o usuário
-            usuario = Usuario(
+            usuario = UsuarioModel(
                 nome_completo=nome_completo,
                 email=email_responsavel,
                 senha=make_password(senha),
@@ -255,8 +247,8 @@ class UsuariosView(APIView):
 
             # Associa o usuário às lojas conforme o status de acesso
             for loja_id, acesso in status_acesso.items():
-                loja = get_object_or_404(Loja, id_loja=loja_id)
-                Associado.objects.create(
+                loja = get_object_or_404(LojaModel, id_loja=loja_id)
+                AssociadoModel.objects.create(
                     usuario=usuario,
                     loja=loja,
                     status_acesso=acesso == "on",
@@ -264,7 +256,7 @@ class UsuariosView(APIView):
 
             return JsonResponse({"message": "Usuário ativado com sucesso!"}, status=201)
 
-        except Loja.DoesNotExist:
+        except LojaModel.DoesNotExist:
             return JsonResponse(
                 {
                     "message": "Para associar um usuário a uma loja, é necessário criar uma loja."
@@ -278,7 +270,6 @@ class UsuariosView(APIView):
 
     @staticmethod
     @require_http_methods(["POST"])
-    @permissions.isAutorizado(1, True)
     def configuracao_usuario(request, id_usuario):
         try:
             # Carrega e decodifica os dados JSON do corpo da requisição
@@ -291,7 +282,7 @@ class UsuariosView(APIView):
                         configuracao_id = key.replace("status_acesso_", "")
                         # Atualiza o status de acesso para a configuração correspondente
                         configuracao = get_object_or_404(
-                            Configuracao, id_configuracao=configuracao_id
+                            ConfiguracaoModel, id_configuracao=configuracao_id
                         )
                         configuracao.status_acesso = value == "on"
                         configuracao.update = timezone.now()
@@ -308,7 +299,7 @@ class UsuariosView(APIView):
                     status=400,
                 )
 
-        except Configuracao.DoesNotExist:
+        except ConfiguracaoModel.DoesNotExist:
             return JsonResponse({"message": "Configuração não encontrada."}, status=404)
 
         except Exception as e:
@@ -316,11 +307,11 @@ class UsuariosView(APIView):
             return JsonResponse({"message": str(e)}, status=500)
 
     def email_existe(email):
-        from api.models import Usuario
+        from api.models import UsuarioModel
 
-        return Usuario.objects.filter(email__iexact=email).exists()
+        return UsuarioModel.objects.filter(email__iexact=email).exists()
 
     def usuario_existe(usuario):
-        from api.models import Usuario
+        from api.models import UsuarioModel
 
-        return Usuario.objects.filter(nome_usuario__iexact=usuario).exists()
+        return UsuarioModel.objects.filter(nome_usuario__iexact=usuario).exists()

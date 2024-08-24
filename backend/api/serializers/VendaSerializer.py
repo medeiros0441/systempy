@@ -1,23 +1,23 @@
 from .CustomModelSerializer import CustomModelSerializer
-from models import Venda, ItemCompra, Produto, Cliente, ItemCompra, Venda, Produto,Usuario,Loja
+from api.models import VendaModel, ItemCompraModel, ProdutoModel, ClienteModel, UsuarioModel,LojaModel
 from rest_framework import serializers
 
 class VendaSerializer(CustomModelSerializer):
     produtos = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Produto.objects.all()
+        many=True, queryset=ProdutoModel.objects.all()
     )
     cliente = serializers.PrimaryKeyRelatedField(
-        queryset=Cliente.objects.all(), allow_null=True
+        queryset=ClienteModel.objects.all(), allow_null=True
     )
     usuario = serializers.PrimaryKeyRelatedField(
-        queryset=Usuario.objects.all(), allow_null=True
+        queryset=UsuarioModel.objects.all(), allow_null=True
     )
     loja = serializers.PrimaryKeyRelatedField(
-        queryset=Loja.objects.all()
+        queryset=LojaModel.objects.all()
     )
     
     class Meta(CustomModelSerializer.Meta):
-        model = Venda
+        model = VendaModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_venda',
             'data_venda',
@@ -40,14 +40,14 @@ class VendaSerializer(CustomModelSerializer):
 
 class ItemCompraSerializer(CustomModelSerializer):
     venda = serializers.PrimaryKeyRelatedField(
-        queryset=Venda.objects.all(), allow_null=True
+        queryset=VendaModel.objects.all(), allow_null=True
     )
     produto = serializers.PrimaryKeyRelatedField(
-        queryset=Produto.objects.all(), allow_null=True
+        queryset=ProdutoModel.objects.all(), allow_null=True
     )
     
     class Meta(CustomModelSerializer.Meta):
-        model = ItemCompra
+        model = ItemCompraModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_item_compra',
             'venda',

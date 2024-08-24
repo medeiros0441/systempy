@@ -1,10 +1,10 @@
-from CustomModelSerializer import CustomModelSerializer
-from models import Produto
+from .CustomModelSerializer import CustomModelSerializer
+from api.models import ProdutoModel
 
 class ProdutoSerializer(CustomModelSerializer):
     
     class Meta(CustomModelSerializer.Meta):
-        model = Produto
+        model = ProdutoModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_produto',
             'nome',

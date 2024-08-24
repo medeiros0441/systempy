@@ -1,10 +1,10 @@
-from CustomModelSerializer import CustomModelSerializer
-from models import PDV,RegistroDiarioPDV,TransacaoPDV,AssociadoPDV
+from .CustomModelSerializer import CustomModelSerializer
+from api.models import PdvModel,RegistroDiarioPdvModel,TransacaoPdvModel,AssociadoPdvModel
 
-class PDVSerializer(CustomModelSerializer):
+class PdvSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = PDV
+        model = PdvModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_pdv',
             'nome',
@@ -13,10 +13,10 @@ class PDVSerializer(CustomModelSerializer):
             'status_operacao',
         ]
 
-class RegistroDiarioPDVSerializer(CustomModelSerializer):
+class RegistroDiarioPdvSerializer(CustomModelSerializer):
     
     class Meta(CustomModelSerializer.Meta):
-        model = RegistroDiarioPDV
+        model = RegistroDiarioPdvModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_registro_diario',
             'pdv',
@@ -32,10 +32,10 @@ class RegistroDiarioPDVSerializer(CustomModelSerializer):
         ]
  
 
-class TransacaoPDVSerializer(CustomModelSerializer):
+class TransacaoPdvSerializer(CustomModelSerializer):
     
     class Meta(CustomModelSerializer.Meta):
-        model = TransacaoPDV
+        model = TransacaoPdvModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_transacao',
             'registro_diario',
@@ -47,10 +47,10 @@ class TransacaoPDVSerializer(CustomModelSerializer):
         ]
  
 
-class AssociadoPDVSerializer(CustomModelSerializer):
+class AssociadoPdvSerializer(CustomModelSerializer):
     
     class Meta(CustomModelSerializer.Meta):
-        model = AssociadoPDV
+        model = AssociadoPdvModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_associado',
             'status_acesso',

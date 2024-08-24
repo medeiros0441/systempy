@@ -1,27 +1,25 @@
 from api.permissions import permissions, CustomPermission
 from api.user import UserInfo
 from django.db.models import Q
-from ..processos.venda import processos
+from api.async_processos.venda import processos
 from django.http import JsonResponse
 import json
-from api.models import (
-    Usuario,
-    ItemCompra,
-    Produto,
-    Venda,
-    Loja,
-    Cliente,
-    Associado,
-    GestaoGalao,
-)
-from .PdvView import PdvView, Transacao_pdvView
-from .PersonalizacaoView import PersonalizacaoView
-from rest_framework.views import APIView
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework import status
+from api.models import (
+    UsuarioModel,
+    ItemCompraModel,
+    ProdutoModel,
+    VendaModel,
+    LojaModel,
+    ClienteModel,
+    AssociadoModel,
+    GestaoGalaoModel,
+)
 
 
-class VendaView(APIView):
+class VendaView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model=7, auth_required=True)]
 
     def get(self, request):
@@ -29,19 +27,19 @@ class VendaView(APIView):
             id_empresa = UserInfo.get_id_empresa(request, True)
             id_usuario = UserInfo.get_id_usuario(request)
             context = {}
-            associacao = Associado.objects.filter(
+            associacao = AssociadoModel.objects.filter(
                 usuario_id=id_usuario, status_acesso=True
             )
             ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
 
-            produtos = Produto.objects.filter(
+            produtos = ProdutoModel.objects.filter(
                 Q(loja_id__in=ids_lojas_associadas),
                 loja__empresa_id=id_empresa,
                 status=True,
             )
-            lojas = Loja.objects.filter(Q(id_loja__in=ids_lojas_associadas))
+            lojas = LojaModel.objects.filter(Q(id_loja__in=ids_lojas_associadas))
 
-            vendas = Venda.objects.filter(
+            vendas = VendaModel.objects.filter(
                 Q(loja_id__in=ids_lojas_associadas),
                 loja__empresa__id_empresa=id_empresa,
             ).prefetch_related("loja")
@@ -53,14 +51,14 @@ class VendaView(APIView):
             }
 
             return Response(context, status=status.HTTP_200_OK)
-        except Associado.DoesNotExist:
+        except AssociadoModel.DoesNotExist:
             return Response(
                 {
                     "message": "Tivemos um problema para recuperar as lojas. Entre em contato com um administrador da assinatura. Você precisa estar associado a uma loja para realizar uma venda."
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
-        except Produto.DoesNotExist:
+        except ProdutoModel.DoesNotExist:
             return Response(
                 {
                     "message": "Tivemos um problema para recuperar os Produtos. Entre em contato com um administrador da assinatura. Você precisa Ter produto para vender-los."
@@ -90,8 +88,9 @@ class VendaView(APIView):
                     if id_motoboy != "0":
                         processos.processo_entrega(venda=venda, id_motoboy=id_motoboy)
 
+                from api.views import  TransacaoPdvView
                 # Processando transação
-                Transacao_pdvView.processar_trasacao_pdv(venda, request)
+                TransacaoPdvView.processar_trasacao_pdv(venda, request)
 
                 # Processa o carrinho
                 carrinho = dados.get("carrinho")
@@ -164,14 +163,15 @@ class VendaView(APIView):
 
             id_loja = data_formulario.get("loja")
             if id_loja == "0":
+                from api.views import PersonalizacaoView 
                 id_loja = PersonalizacaoView.get_loja_id(id)
                 if id_loja is None:
-                    return None, "Loja não está selecionada."
-            dados["loja"] = Loja.objects.get(id_loja=id_loja)
+                    return None, "LojaModel não está selecionada."
+            dados["loja"] = LojaModel.objects.get(id_loja=id_loja)
 
             id_cliente = data_formulario.get("id_cliente")
             if id_cliente != "0":
-                dados["cliente"] = Cliente.objects.get(id_cliente=id_cliente)
+                dados["cliente"] = ClienteModel.objects.get(id_cliente=id_cliente)
             else:
                 dados["cliente"] = None
 
@@ -186,7 +186,7 @@ class VendaView(APIView):
                     "valor_pago": valor_pago,
                     "troco": troco,
                     "valor_total": total_apagar,
-                    "user": Usuario.objects.get(id_usuario=id),
+                    "user": UsuarioModel.objects.get(id_usuario=id),
                     "desc_venda": data_formulario.get("descricao_venda"),
                     "id_venda": data_formulario.get("id_venda", None) or None,
                 }
@@ -212,20 +212,20 @@ class VendaView(APIView):
             id_usuario = UserInfo.get_id_usuario(request)
             id_empresa = UserInfo.get_id_empresa(request)
 
-            associacao = Associado.objects.filter(
+            associacao = AssociadoModel.objects.filter(
                 usuario_id=id_usuario, status_acesso=True
             )
             if not associacao.exists():
-                raise Associado.DoesNotExist
+                raise AssociadoModel.DoesNotExist
 
             ids_lojas_associadas = associacao.values_list("loja_id", flat=True)
-            produtos = Produto.objects.filter(
+            produtos = ProdutoModel.objects.filter(
                 Q(loja_id__in=ids_lojas_associadas),
                 loja__empresa_id=id_empresa,
                 status=True,
             )
             if not produtos.exists():
-                raise Produto.DoesNotExist
+                raise ProdutoModel.DoesNotExist
 
             context = {
                 "list_produtos": produtos,
@@ -233,9 +233,9 @@ class VendaView(APIView):
             }
             return JsonResponse(context)
 
-        except Associado.DoesNotExist:
+        except AssociadoModel.DoesNotExist:
             set_mensagem = (
-                "Tivemos um problema para recuperar informações sobre Associado. "
+                "Tivemos um problema para recuperar informações sobre AssociadoModel. "
                 "Entre em contato com um administrador da assinatura. "
                 "Você precisa estar associado a uma loja para realizar uma venda."
             )
@@ -243,7 +243,7 @@ class VendaView(APIView):
                 {"message": set_mensagem, "open_modal": False}, status=404
             )
 
-        except Produto.DoesNotExist:
+        except ProdutoModel.DoesNotExist:
             set_mensagem = (
                 "Tivemos um problema para recuperar os Produtos. "
                 "Entre em contato com um administrador da assinatura. "
@@ -261,7 +261,7 @@ class VendaView(APIView):
 
     def GetProdutosVenda(self, request, id_venda):
         try:
-            itens_compra = ItemCompra.objects.filter(venda_id=id_venda)
+            itens_compra = ItemCompraModel.objects.filter(venda_id=id_venda)
             detalhes_produtos = []
 
             for item in itens_compra:
@@ -279,14 +279,14 @@ class VendaView(APIView):
             return Response(
                 {
                     "success": True,
-                    "message": "Venda processada.",
+                    "message": "VendaModel processada.",
                     "listProdutos": detalhes_produtos,
                 },
                 status=status.HTTP_200_OK,
             )
-        except Venda.DoesNotExist:
+        except VendaModel.DoesNotExist:
             return Response(
-                {"message": "Venda não encontrada"}, status=status.HTTP_404_NOT_FOUND
+                {"message": "VendaModel não encontrada"}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
             return Response(
@@ -295,7 +295,7 @@ class VendaView(APIView):
 
     def GetRetornaveisVenda(self, request, id_venda):
         try:
-            gestao_galoes = GestaoGalao.objects.filter(venda__id_venda=id_venda)
+            gestao_galoes = GestaoGalaoModel.objects.filter(venda__id_venda=id_venda)
             data_list = []
 
             for gestao_galao in gestao_galoes:
@@ -326,14 +326,14 @@ class VendaView(APIView):
             return Response(
                 {
                     "success": True,
-                    "message": "Venda processada.",
+                    "message": "VendaModel processada.",
                     "listRetornaveis": data_list,
                 },
                 status=status.HTTP_200_OK,
             )
-        except Venda.DoesNotExist:
+        except VendaModel.DoesNotExist:
             return Response(
-                {"message": "Venda não encontrada"}, status=status.HTTP_404_NOT_FOUND
+                {"message": "VendaModel não encontrada"}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
             return Response(
@@ -342,7 +342,7 @@ class VendaView(APIView):
 
     def GetClienteVenda(self, request, id_venda):
         try:
-            venda = Venda.objects.select_related("cliente", "cliente__endereco").get(
+            venda = VendaModel.objects.select_related("cliente", "cliente__endereco").get(
                 id_venda=id_venda
             )
             cliente = venda.cliente
@@ -365,7 +365,7 @@ class VendaView(APIView):
                     ),
                 }
                 return Response(
-                    {"success": True, "message": "Venda processada.", "cliente": data},
+                    {"success": True, "message": "VendaModel processada.", "cliente": data},
                     status=status.HTTP_200_OK,
                 )
 
@@ -378,13 +378,13 @@ class VendaView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        except Venda.DoesNotExist:
+        except VendaModel.DoesNotExist:
             return Response(
-                {"message": "Venda não encontrada"}, status=status.HTTP_404_NOT_FOUND
+                {"message": "VendaModel não encontrada"}, status=status.HTTP_404_NOT_FOUND
             )
-        except Cliente.DoesNotExist:
+        except ClienteModel.DoesNotExist:
             return Response(
-                {"message": "Cliente não encontrado"}, status=status.HTTP_404_NOT_FOUND
+                {"message": "ClienteModel não encontrado"}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
             return Response(

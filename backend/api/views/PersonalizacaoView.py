@@ -1,38 +1,37 @@
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from ..models import Personalizacao, PDV, Loja
+from api.models import PersonalizacaoModel, PdvModel, LojaModel
 import json
 from ..utils import Utils
 from django.core.exceptions import ObjectDoesNotExist
 from ..user import UserInfo
 from uuid import UUID 
 from api.permissions import permissions,CustomPermission
-from rest_framework.views import APIView
+from rest_framework import viewsets, status
 
-class PersonalizacaoView(APIView):
+class PersonalizacaoView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="personalizacao", auth_required=True)]
 
 
-    @permissions.isAutorizado(0, True)
+   
     def list_personalizacao(request):
         try:
             id_empresa = UserInfo.get_id_empresa(request)
             id_usuario = UserInfo.get_id_usuario(request)
-            personalizacoes = Personalizacao.objects.filter(
+            personalizacoes = PersonalizacaoModel.objects.filter(
                 usuario__empresa_id=id_empresa, usuario_id=id_usuario
             )
             personalizacoes_lista = Utils.modelos_para_lista_json(personalizacoes)
             return JsonResponse(
                 {"data": personalizacoes_lista, "success": True}, status=200
             )
-        except Personalizacao.DoesNotExist:
+        except PersonalizacaoModel.DoesNotExist:
             return JsonResponse(
                 {"error": "Personalizações não encontradas"}, status=404
             )
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-    @permissions.isAutorizado(0, True)
+   
     def create_personalizacao(request, data=None):
         if request.method != "POST":
             return JsonResponse({"error": "Método não permitido"}, status=405)
@@ -45,7 +44,7 @@ class PersonalizacaoView(APIView):
                 return JsonResponse({"error": "Dados inválidos"}, status=400)
 
         try:
-            personalizacao = Personalizacao.objects.create(
+            personalizacao = PersonalizacaoModel.objects.create(
                 usuario_id=data["id_usuario"],
                 chave=data["chave"],
                 valor=data["valor"],
@@ -60,7 +59,7 @@ class PersonalizacaoView(APIView):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
-    @permissions.isAutorizado(0, True)
+   
     def get_personalizacao_for_venda(request):
         """
         Função para obter a personalização para uma venda.
@@ -70,29 +69,29 @@ class PersonalizacaoView(APIView):
             id_loja = PersonalizacaoView.get_loja_id(id_usuario)
             id_pdv = PersonalizacaoView.get_pdv(id_usuario)
 
-            loja = Loja.objects.get(id_loja=int(id_loja))
-            pdv = PDV.objects.get(id_pdv=UUID(id_pdv))
+            loja = LojaModel.objects.get(id_loja=int(id_loja))
+            pdv = PdvModel.objects.get(id_pdv=UUID(id_pdv))
 
             return JsonResponse(
                 {"data": Utils.modelo_para_json(loja, pdv), "success": True},
                 status=201,
             )
-        except Loja.DoesNotExist:
-            return JsonResponse({"error": "Loja não encontrada."}, status=404)
-        except PDV.DoesNotExist:
-            return JsonResponse({"error": "PDV não encontrado."}, status=404)
+        except LojaModel.DoesNotExist:
+            return JsonResponse({"error": "LojaModel não encontrada."}, status=404)
+        except PdvModel.DoesNotExist:
+            return JsonResponse({"error": "PdvModel não encontrado."}, status=404)
         except ValueError as ve:
             return JsonResponse({"error": f"Erro de valor: {str(ve)}"}, status=400)
         except Exception as e:
             return JsonResponse({"error": f"Erro inesperado: {str(e)}"}, status=400)
 
-    @permissions.isAutorizado(0, True)
+   
     def get_personalizacao(request, id):
 
         id_empresa = UserInfo.get_id_empresa(request)
         id_usuario = UserInfo.get_id_usuario(request)
         try:
-            personalizacao = Personalizacao.objects.get(
+            personalizacao = PersonalizacaoModel.objects.get(
                 id_personalizacao=id,
                 usuario__empresa_id=id_empresa,
                 usuario_id=id_usuario,
@@ -104,7 +103,7 @@ class PersonalizacaoView(APIView):
         except ObjectDoesNotExist:
             return JsonResponse({"error": "Personalização não encontrada"}, status=404)
 
-    @permissions.isAutorizado(0, True)
+   
     def api_get_personalizacao_codigo(request, id_usuario, codigo):
         """
         Obtém a personalização com base no ID do usuário e código.
@@ -129,7 +128,7 @@ class PersonalizacaoView(APIView):
         """
         Obtém a personalização com base no ID do usuário e código.
         """
-        personalizacao = Personalizacao.objects.filter(
+        personalizacao = PersonalizacaoModel.objects.filter(
             codigo=codigo,
             usuario_id=id_usuario,
         ).first()
@@ -166,7 +165,7 @@ class PersonalizacaoView(APIView):
         )
         return personalizacao.valor if personalizacao else None
 
-    @permissions.isAutorizado(0, True)
+   
     def update_personalizacao(request, id, data=None):
         if request.method != "PUT":
             return JsonResponse({"error": "Método não permitido"}, status=405)
@@ -180,7 +179,7 @@ class PersonalizacaoView(APIView):
                 return JsonResponse({"error": "Dados inválidos"}, status=400)
 
         try:
-            personalizacao = Personalizacao.objects.get(
+            personalizacao = PersonalizacaoModel.objects.get(
                 id_personalizacao=id,
                 usuario__empresa_id=data["id_empresa"],
                 usuario_id=data["id_usuario"],
@@ -205,10 +204,10 @@ class PersonalizacaoView(APIView):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
-    @permissions.isAutorizado(0, True)
+   
     def delete_personalizacao(request, id):
         try:
-            personalizacao = Personalizacao.objects.get(id_personalizacao=id)
+            personalizacao = PersonalizacaoModel.objects.get(id_personalizacao=id)
             personalizacao.delete()
             return JsonResponse({"message": "Personalização deletada com sucesso!"})
         except ObjectDoesNotExist:

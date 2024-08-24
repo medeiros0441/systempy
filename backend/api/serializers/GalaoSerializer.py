@@ -1,11 +1,10 @@
-from CustomModelSerializer import CustomModelSerializer
-from models import Galao
-from models import GestaoGalao
+from .CustomModelSerializer import CustomModelSerializer
+from api.models import GestaoGalaoModel,GalaoModel
 
 class GalaoSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = Galao
+        model = GalaoModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_galao',
             'data_validade',
@@ -19,7 +18,7 @@ class GalaoSerializer(CustomModelSerializer):
 class GestaoGalaoSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = GestaoGalao
+        model = GestaoGalaoModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_gestao_galao',
             'galao_saiu',

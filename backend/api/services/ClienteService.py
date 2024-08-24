@@ -1,6 +1,6 @@
-from serializers import ClienteSerializer, EnderecoSerializer
-from models import ClienteModel, VendaModel, EnderecoModel, ItemCompraModel
-from utils import Utils
+from api.serializers import ClienteSerializer, EnderecoSerializer
+from api.models import ClienteModel, VendaModel, EnderecoModel, ItemCompraModel
+from api.utils import Utils
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import  get_object_or_404
 from django.db.models import F

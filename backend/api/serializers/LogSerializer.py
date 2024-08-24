@@ -1,10 +1,10 @@
 from .CustomModelSerializer import CustomModelSerializer
-from models import Log
+from api.models import LogModel
 
 class LogSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = Log
+        model = LogModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_log',
             'tipo',

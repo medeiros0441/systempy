@@ -1,10 +1,10 @@
-from CustomModelSerializer import CustomModelSerializer
-from models import Loja,Associado
+from .CustomModelSerializer import CustomModelSerializer
+from api.models import LojaModel,AssociadoModel
 
 class LojaSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = Loja
+        model = LojaModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_loja',
             'nome',
@@ -25,7 +25,7 @@ class LojaSerializer(CustomModelSerializer):
 class AssociadoSerializer(CustomModelSerializer):
 
     class Meta(CustomModelSerializer.Meta):
-        model = Associado
+        model = AssociadoModel
         fields = CustomModelSerializer.Meta.fields + [
             'id_associado',
             'status_acesso',

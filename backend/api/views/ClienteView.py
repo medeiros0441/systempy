@@ -4,12 +4,11 @@ from api.permissions import permissions,CustomPermission
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action        
-from services import ClienteService, EnderecoService
-from utils import UserInfo
+from api.services import ClienteService, EnderecoService
 import json
  
  
-class ViewCliente(viewsets.ViewSet):
+class ClienteView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="cliente", auth_required=True)]
 
     @action(methods=['post'], detail=False, url_path='create')
