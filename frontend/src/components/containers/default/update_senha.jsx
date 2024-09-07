@@ -1,13 +1,16 @@
+
 import React, { useState, useRef } from 'react';
-import { Button } from 'react-bootstrap';
-import CustomModal from 'src/components/objetos/modal'; // Certifique-se de ajustar o caminho se necessário
+import { Button, Form, FloatingLabel } from 'react-bootstrap';
+import CustomModal from 'src/components/objetos/modal';
 import img_etapa1 from 'src/assets/img/undraw/undraw_emails_6uqr.svg';
 import img_etapa2 from 'src/assets/img/undraw/undraw_letter_re_8m03.svg';
 import img_etapa3 from 'src/assets/img/undraw/undraw_Security_on_re_e491.svg';
 import img_etapa4 from 'src/assets/img/undraw/undraw_world_re_768g.svg';
 import request from 'src/utils/api';
 import alerta from 'src/utils/alerta';
-import loading from 'src/utils/loading'
+import loading from 'src/utils/loading';
+import { isValidEmail } from 'src/utils/validate';
+import InputMask from 'react-input-mask';
 let openModalFunction = () => { }; // Inicialize como função vazia
 
 const RecuperarSenhaModal = () => {
@@ -22,256 +25,238 @@ const RecuperarSenhaModal = () => {
   const senhaInputRef1 = useRef(null);
   const senhaInputRef2 = useRef(null);
   const modalRef = useRef(null);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  const validarEmail = () => {
-    const email = emailInputRef.current.value.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)) {
-      emailInputRef.current.classList.add('is-invalid');
-      return false;
-    } else {
-      emailInputRef.current.classList.remove('is-invalid');
-      setEmailSaved(email);
-      return true;
-    }
-  };
-
-  const reenviarCodigo = async () => {
+  const reenviarCodigo = async (email) => {
     try {
-      loading(true, id_container_loading);
-      const retorn = await request('public/code/send/', "POST", { email: emailSaved });
-      if (retorn.sucess) {
-        setStep(2);
-      } else {
-        alerta(retorn.mensag, 2, id_container_loading);
-      }
-    } catch {
-      alerta("erro interno", 2, id_container_loading);
-    } finally {
-      loading(false, id_container_loading);
-    }
-  };
-
-  const validarCodigoBackend = async () => {
-    try {
-      loading(true, id_container_loading);
-      const retorn = await request('public/code/confirm', "POST", { email: emailSaved });
-      if (retorn.sucess) {
-        setStep(2);
+      const retorn = await request('public/code/send/password', "POST", { email });
+      if (retorn.sucesso) {
+        alerta("E-mail Enviado com sucesso.", 1, id_container_loading);
+        setEmailSaved(email);
+        return true;
       } else {
         alerta(retorn.message, 2, id_container_loading);
+        return false;
       }
-      return retorn.sucess;
     } catch {
-      alerta("erro interno", 2, id_container_loading);
+      alerta("Erro interno", 2, id_container_loading);
       return false;
-
-    } finally {
-      loading(false, id_container_loading);
     }
   };
-  const validarCodigo = () => {
+
+  const validarCodigoBackend = async (codigo) => {
+    try {
+      const retorn = await request('public/code/confirm', "POST", { email: emailSaved, codigo });
+      if (retorn.sucesso) {
+        alerta("código confirmado.", 1, id_container_loading);
+        return true;
+      } else {
+        alerta(retorn.message, 2, id_container_loading);
+        return false;
+      }
+    } catch {
+      alerta("Erro interno", 2, id_container_loading);
+      return false;
+    }
+  };
+  const updatePassword = async (new_password) => {
+    if (!handleValidatePassword()) {
+      return false;
+    }
+
+    try {
+      const response = await request('public/password/update', 'POST', { senha: new_password });
+
+      if (response.sucesso) {
+        alerta("Senha Atualizada com sucesso.", 1, id_container_loading);
+        setStep(4);
+        return true;
+      } else {
+        alerta(response.message, 2, id_container_loading);
+        return false;
+      }
+    } catch {
+      alerta('Erro interno', 2, id_container_loading);
+      return false;
+    }
+  };
+  const handleValidaEmail = () => {
+    const email = emailInputRef.current.value.trim();
+    const isValid = isValidEmail(email);
+    emailInputRef.current.classList.toggle('is-invalid', !isValid);
+    return isValid;
+  };
+
+  const handleValidarCodigo = () => {
     const codigo = codigoInputRef.current.value.trim();
+    const isValid = codigo !== '';
+    codigoInputRef.current.classList.toggle('is-invalid', !isValid);
+    return isValid;
+  };
+  const handleValidatePassword = () => {
+    const senha = senhaInputRef1.current?.value || '';
+    const senhaConfirmada = senhaInputRef2.current?.value || '';
 
-    if (codigo === '') {
-      codigoInputRef.current.classList.add('is-invalid');
+    const isValidSenha =
+      senha.length >= 8 &&
+      /[A-Z]/.test(senha) &&  // Testa se tem ao menos uma letra maiúscula
+      /[a-z]/.test(senha) &&  // Testa se tem ao menos uma letra minúscula
+      /[0-9]/.test(senha);    // Testa se tem ao menos um número
+
+    const isConfirmed = senha === senhaConfirmada;
+
+    setSenhaValida(isValidSenha);
+    setSenhaConfirmada(isConfirmed);
+
+    if (senhaInputRef1.current) {
+      senhaInputRef1.current.classList.toggle('is-invalid', !isValidSenha);
+    }
+
+    if (senhaInputRef2.current) {
+      senhaInputRef2.current.classList.toggle('is-invalid', !isConfirmed);
+    }
+
+    if (!isValidSenha) {
       return false;
-    } else {
-      codigoInputRef.current.classList.remove('is-invalid');
-      validarCodigoBackend(codigo);
-      return true;
     }
-  };
 
-  const validarSenha = () => {
-    const senha = senhaInputRef1.current.value;
-    if (senha.length < 8 || !/[A-Z]/.test(senha) || !/[a-z]/.test(senha) || !/[0-9]/.test(senha)) {
-      senhaInputRef1.current.classList.add('is-invalid');
-      setSenhaValida(false);
-    } else {
-      senhaInputRef1.current.classList.remove('is-invalid');
-      setSenhaValida(true);
+    if (!isConfirmed) {
+      return false;
     }
+
+    return true;
   };
 
-  const validarSenhaConfirmacao = () => {
-    const senha1 = senhaInputRef1.current.value;
-    const senha2 = senhaInputRef2.current.value;
+  async function handleButtonClick() {
+    setIsButtonDisabled(true);  // Desabilita o botão no início do processamento
+    loading(true, id_container_loading);
+    let isValido = false;
 
-    if (senha1 !== senha2) {
-      senhaInputRef2.current.classList.add('is-invalid');
-      setSenhaConfirmada(false);
-    } else {
-      senhaInputRef2.current.classList.remove('is-invalid');
-      setSenhaConfirmada(true);
+    switch (step) {
+      case 1:
+        isValido = handleValidaEmail();
+        if (isValido) {
+          const foiEnviado = await reenviarCodigo(emailInputRef.current.value.trim());
+          if (foiEnviado) setStep(2);
+        }
+        break;
+      case 2:
+        isValido = handleValidarCodigo();
+        if (isValido) {
+          const codigoConfirmado = await validarCodigoBackend(codigoInputRef.current.value.trim());
+          if (codigoConfirmado) setStep(3);
+        }
+        break;
+      case 3:
+        isValido = handleValidatePassword();
+        if (isValido) {
+          const foiAtualizado = await updatePassword(senhaInputRef2.current.value);
+          if (foiAtualizado) setStep(4);
+        }
+        break;
+      default:
+        break;
     }
-  };
 
-  const finalizar = () => {
-    console.log('Nova senha:', senhaInputRef2.current.value);
-  };
+    loading(false, id_container_loading);
+    setIsButtonDisabled(false);
+  }
 
   const Etapa1 = () => (
     <div className="modal-body">
-      <div className="row mb-2 text-center">
-        <img src={img_etapa1} className="image-fluid mx-auto" height="150" alt="undraw_emails" />
-        <div className="fs-3 font-monospace">Confirme seu email</div>
+      <div className="text-center row   mb-4">
+        <img src={img_etapa1} className="img-fluid" style={{ maxHeight: '150px' }} alt="Confirme seu email" />
+        <h3 className="font-monospace">Confirme seu email</h3>
       </div>
-      <div className="form-floating mb-2">
-        <input
+      <FloatingLabel controlId="email_recuperacao" label="E-mail" className="mb-3">
+        <Form.Control
           type="email"
-          className="form-control"
           autoComplete="off"
-          id="email_recuperacao"
           ref={emailInputRef}
         />
-        <label htmlFor="email_recuperacao">E-mail</label>
-        <div className="invalid-feedback ms-2">Por favor, insira um Email válido.</div>
-      </div>
-
+        <Form.Control.Feedback type="invalid">
+          Por favor, insira um Email válido.
+        </Form.Control.Feedback>
+      </FloatingLabel>
     </div>
   );
 
   const Etapa2 = () => (
     <div className="modal-body">
-      <div className="row mb-2 text-center">
-        <img src={img_etapa2} className="image-fluid mx-auto" height="150" alt="undraw_letter" />
-        <div className="fs-3 font-monospace">Confirme seu email com o código que foi enviado</div>
+      <div className="text-center row  mb-4">
+        <img src={img_etapa2} className="img-fluid" style={{ maxHeight: '150px' }} alt="Confirme seu email com o código que foi enviado" />
+        <h3 className="font-monospace">Enviamos um código para seu e-mail. Precisamos que confirme o código.</h3>
       </div>
-      <div className="input-group mb-3">
-        <input
-          maxLength="7"
-          id="codigo_recuperacao"
-          ref={codigoInputRef}
-          className="form-control codigo-mask"
-          type="text"
-          placeholder="Confirme seu email..."
-        />
-        <span className="small ms-3 text-danger d-none">O campo é obrigatório</span>
-
-      </div>
+      <FloatingLabel controlId="codigo" label="Código de Confirmação" className="mb-3">
+        <InputMask mask="999-999"  >
+          {(inputProps) => <Form.Control {...inputProps} ref={codigoInputRef} />}
+        </InputMask>
+        <Form.Control.Feedback type="invalid">
+          O campo é obrigatório.
+        </Form.Control.Feedback>
+      </FloatingLabel>
     </div>
   );
 
   const Etapa3 = () => (
     <div className="modal-body">
-      <div className="row mb-2 text-center">
-        <img src={img_etapa3} className="image-fluid mx-auto" height="150" alt="undraw_security" />
-        <div className="fs-3 font-monospace">E-mail Confirmado, Atualize a senha</div>
+      <div className="text-center  row   mb-4">
+        <img src={img_etapa3} className="img-fluid" style={{ maxHeight: '150px' }} alt="E-mail Confirmado, Atualize a senha" />
+        <h3 className="font-monospace">E-mail Confirmado, Atualize a senha</h3>
       </div>
-      <div className="form-floating mb-2">
-        <input
+      <FloatingLabel controlId="senha_recuperacao1" label="Senha" className="mb-3">
+        <Form.Control
           type="password"
-          className="form-control"
-          id="senha_recuperacao1"
           ref={senhaInputRef1}
-          onChange={validarSenha}
         />
-        <label htmlFor="senha_recuperacao1">Senha</label>
-        <div className="invalid-feedback ms-2"></div>
-      </div>
-      <div className="form-floating mb-2">
-        <input
+        <Form.Control.Feedback type="invalid">
+          Senha deve ter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas e números.
+        </Form.Control.Feedback>
+      </FloatingLabel>
+      <FloatingLabel controlId="senha_recuperacao2" label="Confirmar Senha" className="mb-3">
+        <Form.Control
           type="password"
-          className="form-control"
-          id="senha_recuperacao2"
           ref={senhaInputRef2}
-          onChange={validarSenhaConfirmacao}
         />
-        <label htmlFor="senha_recuperacao2">Senha Confirmar</label>
-        <div className="invalid-feedback ms-2"></div>
-      </div>
-
+        <Form.Control.Feedback type="invalid">
+          As senhas não coincidem.
+        </Form.Control.Feedback>
+      </FloatingLabel>
     </div>
   );
 
   const Etapa4 = () => (
     <div className="modal-body">
       <div className="row mb-2 text-center">
-        <img src={img_etapa4} className="image-fluid mx-auto" height="150" alt="undraw_world" />
-        <label htmlFor="senha">Senha Alterada.</label>
+        <img src={img_etapa4} className="img-fluid mx-auto" style={{ maxHeight: '150px' }} alt="Senha Alterada com sucesso." />
+        <label>Senha Alterada com sucesso.</label>
       </div>
     </div>
   );
-
   const renderFooter = () => {
+    const renderButton = (text, onClick, className = "btn btn-primary") => (
+      <Button type="button" className={className} onClick={onClick} disabled={isButtonDisabled} >
+        {text}
+      </Button>
+    );
+
+    const renderBackAndNextButtons = (backStep) => (
+      <>
+        {renderButton("Voltar", () => setStep(backStep), "btn me-auto btn-sm btn-secondary")}
+        {renderButton("Avançar", handleButtonClick, "btn ms-auto btn-sm btn-primary")}
+      </>
+    );
+
     switch (step) {
       case 1:
-        return (
-          <Button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => {
-              if (validarEmail()) {
-                reenviarCodigo();
-              }
-            }}
-          >
-            Avançar
-          </Button>
-        );
+        return renderButton("Avançar", handleButtonClick);
       case 2:
-        return (
-          <>
-            <Button
-              type="button"
-              className="btn me-auto btn-sm btn-secondary"
-              onClick={() => setStep(1)}
-            >
-              Voltar
-            </Button>
-            <Button
-              type="button"
-              className="btn ms-auto btn-sm btn-primary"
-              onClick={() => {
-                if (validarCodigo()) {
-                  setStep(3);
-                }
-              }}
-            >
-              Avançar
-            </Button>
-          </>
-        );
+        return renderBackAndNextButtons(1);
       case 3:
-        return (
-          <>
-            <Button
-              type="button"
-              className="btn me-auto btn-sm btn-secondary"
-              onClick={() => setStep(2)}
-            >
-              Voltar
-            </Button>
-            <Button
-              type="button"
-              className="btn ms-auto btn-sm btn-primary"
-              onClick={() => {
-                if (senhaValida && senhaConfirmada) {
-                  finalizar();
-                  setStep(4);
-                }
-              }}
-            >
-              Avançar
-            </Button>
-          </>
-        );
+        return renderBackAndNextButtons(2);
       case 4:
-        return (
-          <Button
-            type="button"
-            className="btn ms-auto btn-sm btn-primary"
-            onClick={() => {
-              if (modalRef.current) {
-                modalRef.current.openModal();
-              }
-            }}
-          >
-            Fechar
-          </Button>
-        );
+        return renderButton("Fechar", () => modalRef.current?.closeModal(), "btn ms-auto btn-sm btn-primary");
       default:
         return null;
     }
@@ -301,6 +286,4 @@ const RecuperarSenhaModal = () => {
     </>
   );
 };
-
-// Exporta a função de abertura do modal junto com o componente
 export { RecuperarSenhaModal, openModalFunction };

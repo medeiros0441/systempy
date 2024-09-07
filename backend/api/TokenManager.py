@@ -1,7 +1,7 @@
 import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
-from django.http import JsonResponse
+from rest_framework.response import Response
 from django.http import HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie 
@@ -10,33 +10,20 @@ class TokenManager:
     
     @ensure_csrf_cookie
     def csrf_token_view(request):
-        return JsonResponse({'csrfToken': request.COOKIES.get('csrftoken')})
+        return Response({'csrfToken': request.COOKIES.get('csrftoken')})
     
     @staticmethod
-    def create_token(
-        nome_token, payload, time, httponly=False, secure=True, samesite="Strict"
-    ):
+    def create_token(payload, time):
         # Atualiza o payload com a expiração
         payload.update(
             {
                 "exp": datetime.utcnow() + timedelta(hours=time),  # Expiração do token
             }
         )
-
+        # Gera o token JWT
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-
-        response = JsonResponse({"message": "Usuário logado."})
-
-        # Define o token no cookie
-        response.set_cookie(
-            key=nome_token,
-            value=token,
-            httponly=httponly,  # valor variável
-            secure=secure,  # Use True se estiver usando HTTPS
-            samesite=samesite,  # Adicione mais segurança ao cookie
-        )
-
-        return response
+        # Retorna apenas o token como string
+        return token
 
     @staticmethod
     def read_token(token):

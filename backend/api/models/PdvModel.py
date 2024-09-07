@@ -5,6 +5,7 @@ from .CustomModel import CustomModel
 from django.db import models
 from .UsuarioModel import  UsuarioModel
 from .VendaModel import  VendaModel
+from .LojaModel import LojaModel
 
 class PdvModel(CustomModel):
     EXCLUIDO = 0
@@ -21,7 +22,7 @@ class PdvModel(CustomModel):
 
     id_pdv = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255, null=True)
-    loja = models.ForeignKey("Loja", on_delete=models.CASCADE)
+    loja = models.ForeignKey(LojaModel, on_delete=models.CASCADE)
 
     saldo_inicial = models.DecimalField(
         max_digits=10, decimal_places=2, default=0, null=True

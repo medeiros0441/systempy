@@ -6,7 +6,7 @@ import alerta from 'src/utils/alerta';
 import request from 'src/utils/api';
 import loading from 'src/utils/loading';
 import InputMask from 'react-input-mask';
-
+import { isValidCNPJ, isValidCPF, isValidPhone, isValidEmail } from 'src/utils/validate'
 import { useNavigate } from 'react-router-dom'; // Para redirecionar
 function CadastroForm() {
   const [step, setStep] = useState(1);
@@ -28,24 +28,68 @@ function CadastroForm() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({ ...prevState, [name]: value }));
-  };
-
-  const validateStep1 = () => {
+  }; const validateStep1 = () => {
     const { nome_empresa, nro_cnpj, razao_social_empresa } = formData;
-    return nome_empresa && nro_cnpj && razao_social_empresa;
+
+    if (!nome_empresa) {
+      alerta('Nome da empresa é obrigatório.', 2);
+      return false;
+    }
+
+    if (!isValidCNPJ(nro_cnpj)) {
+      alerta('Número de CNPJ inválido.', 2);
+      return false;
+    }
+
+    if (!razao_social_empresa) {
+      alerta('Razão social da empresa é obrigatória.', 2);
+      return false;
+    }
+
+    return true;
   };
 
   const validateStep2 = () => {
-    const { nome_responsavel, cargo_responsavel, email_responsavel, telefone_responsavel, nro_cpf, senha } = formData;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return (
-      nome_responsavel &&
-      cargo_responsavel &&
-      emailRegex.test(email_responsavel) &&
-      telefone_responsavel &&
-      nro_cpf &&
+    const {
+      nome_responsavel,
+      cargo_responsavel,
+      email_responsavel,
+      telefone_responsavel,
+      nro_cpf,
       senha
-    );
+    } = formData;
+
+    if (!nome_responsavel) {
+      alerta('Nome do responsável é obrigatório.', 2);
+      return false;
+    }
+
+    if (!cargo_responsavel) {
+      alerta('Cargo do responsável é obrigatório.', 2);
+      return false;
+    }
+
+    if (!isValidEmail(email_responsavel)) {
+      alerta('Email do responsável inválido.', 2);
+      return false;
+    }
+
+    if (!isValidPhone(telefone_responsavel)) {
+      alerta('Telefone do responsável inválido.', 2);
+      return false;
+    }
+
+    if (!isValidCPF(nro_cpf)) {
+      alerta('Número de CPF inválido.', 2);
+      return false;
+    }
+
+    if (!senha) {
+      alerta('Senha é obrigatória.', 2);
+      return false;
+    }
+
+    return true;
   };
 
 
@@ -55,7 +99,7 @@ function CadastroForm() {
     try {
       loading(true, "ContainerFormulario");
       const response = await request("public/code/send", "POST", { "email": email_responsavel, "nome": nome_responsavel });
-      if (response.success) {
+      if (response.sucesso == true) {
         alerta(response.message, 1);
         return true;
       } else {
@@ -75,7 +119,7 @@ function CadastroForm() {
     try {
       loading(true, "ContainerFormulario");
       const response = await request("public/code/confirm", "POST", { codigo });
-      if (response.success) {
+      if (response.sucesso === true) {
         alerta(response.message, 1);
         return true;
       } else {
@@ -95,13 +139,16 @@ function CadastroForm() {
     try {
       loading(true, "ContainerFormulario");
       const response = await request("public/register/", "POST", { nome_empresa, nro_cnpj, razao_social_empresa, nome_responsavel, cargo_responsavel, email_responsavel, telefone_responsavel, nro_cpf, senha });
-      if (response.success) {
-        alerta(response.message, 1);
+      if (response.sucesso === true) {
+        return true
       } else {
         alerta(response.message, 2);
+        return false
       }
+
     } catch (error) {
       alerta('Erro ao registrar. Por favor, tente novamente.', 2);
+      return false
     } finally {
       loading(false, "ContainerFormulario");
     }
@@ -126,13 +173,19 @@ function CadastroForm() {
               />
             </FloatingLabel>
             <FloatingLabel controlId="nro_cnpj" className="mb-2" label="Número do CNPJ">
-              <Form.Control
-                type="text"
-                placeholder="Número do CNPJ"
-                name="nro_cnpj"
+              <InputMask
+                mask="99.999.999/9999-99"
                 value={formData.nro_cnpj}
                 onChange={handleInputChange}
-              />
+              >
+                {() => (
+                  <Form.Control
+                    type="text"
+                    placeholder="Número do CNPJ"
+                    name="nro_cnpj"
+                  />
+                )}
+              </InputMask>
             </FloatingLabel>
             <FloatingLabel controlId="razao_social_empresa" className="mb-2" label="Razão Social da Empresa">
               <Form.Control
@@ -176,22 +229,34 @@ function CadastroForm() {
               />
             </FloatingLabel>
             <FloatingLabel controlId="telefone_responsavel" className="mb-2" label="Telefone do Responsável">
-              <Form.Control
-                type="text"
-                placeholder="Telefone do Responsável"
-                name="telefone_responsavel"
+              <InputMask
+                mask="(99) 99999-9999"
                 value={formData.telefone_responsavel}
                 onChange={handleInputChange}
-              />
+              >
+                {() => (
+                  <Form.Control
+                    type="text"
+                    placeholder="Telefone do Responsável"
+                    name="telefone_responsavel"
+                  />
+                )}
+              </InputMask>
             </FloatingLabel>
             <FloatingLabel controlId="nro_cpf" className="mb-2" label="Número do CPF">
-              <Form.Control
-                type="text"
-                placeholder="Número do CPF"
-                name="nro_cpf"
+              <InputMask
+                mask="999.999.999-99"
                 value={formData.nro_cpf}
                 onChange={handleInputChange}
-              />
+              >
+                {() => (
+                  <Form.Control
+                    type="text"
+                    placeholder="Número do CPF"
+                    name="nro_cpf"
+                  />
+                )}
+              </InputMask>
             </FloatingLabel>
             <FloatingLabel controlId="senha" className="mb-2" label="Senha">
               <Form.Control
@@ -224,7 +289,7 @@ function CadastroForm() {
         return (
           <>
             <img src={img_cat} className="img-fluid justify-content-center d-grid d-12 mx-auto" style={{ maxWidth: '300px', maxHeight: '300px' }} alt="Welcome Cats" />
-            <p>Cadastro concluído com sucesso!</p>;
+            <p>Cadastro concluído com sucesso!</p>
           </>
         );
       default:
@@ -232,17 +297,6 @@ function CadastroForm() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Previne o comportamento padrão de envio do formulário
-    if (step === 4) {
-      // Redireciona para a página de login no último passo
-      navigate('/login');
-    } else {
-      // Lógica para enviar o formulário ou concluir o cadastro
-      console.log('Dados do formulário:', formData);
-      // Adicione aqui a lógica para enviar os dados via API, etc.
-    }
-  };
 
   const handleNext = async (e) => {
     e.preventDefault(); // Previne o comportamento padrão de envio do formulário
@@ -264,8 +318,10 @@ function CadastroForm() {
       } else if (step === 3) {
         const codeConfirmed = await confirmCode();
         if (codeConfirmed) {
-          await register();
-          setStep(4);
+          const value = await register();
+          if (value === true) {
+            setStep(4);
+          }
         } else {
           console.error('Código inválido.');
         }
@@ -273,7 +329,7 @@ function CadastroForm() {
         navigate('/login');
       }
     } catch (error) {
-      console.error('Erro ao processar o próximo passo:', error);
+      console.error('Erro ao processar o próximo passo:');
     }
   };
 
@@ -290,11 +346,11 @@ function CadastroForm() {
           {renderStepContent()}
         </div>
         <div className="d-flex justify-content-between card-footer">
-          {step > 1 && (
+          {step > 1 && step !== 4 && (
             <Button variant="secondary" onClick={handleBack}>Voltar</Button>
           )}
           <Button variant="primary" type="button" onClick={handleNext}>
-            {step === 4 ? 'Finalizar' : 'Próximo'}
+            {step === 4 ? "Fazer Login" : "Próximo"}
           </Button>
         </div>
       </div>

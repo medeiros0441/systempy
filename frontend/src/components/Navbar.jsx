@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthentication } from '../utils/auth';
 import Cookies from 'js-cookie';
@@ -88,9 +88,10 @@ const ItensAssinante = ({ configsAtivos }) => (
 );
 
 const Navbar = () => {
-  const isCliente = useAuthentication();
+  // Obtém o estado de autenticação uma única vez
+  const isCliente = !!useAuthentication();
+
   const session = {
-    isCliente: true,
     configs_ativos: {
       1: true,
       3: true,
@@ -102,10 +103,15 @@ const Navbar = () => {
     }
   };
 
+  // Usar useRef para acessar elementos do DOM
+  const menuRef = useRef(null);
+  const iconRef = useRef(null);
+
   useEffect(() => {
     const menuState = Cookies.get('menuState');
-    const menu = document.getElementById('navbarNav');
-    const icon = document.getElementById('menuIcon');
+    const menu = menuRef.current;
+    const icon = iconRef.current;
+
     if (menuState === 'visible') {
       menu.classList.remove('d-none');
       icon.classList.remove('bi-box-arrow-down');
@@ -115,11 +121,12 @@ const Navbar = () => {
       icon.classList.remove('bi-box-arrow-in-up');
       icon.classList.add('bi-box-arrow-down');
     }
-  }, []);
+  }, []); // Executa apenas uma vez quando o componente é montado
 
-  const toggleMenu = () => {
-    const menu = document.getElementById('navbarNav');
-    const icon = document.getElementById('menuIcon');
+  const toggleMenu = useCallback(() => {
+    const menu = menuRef.current;
+    const icon = iconRef.current;
+
     if (menu.classList.contains('d-none')) {
       menu.classList.remove('d-none');
       icon.classList.remove('bi-box-arrow-down');
@@ -131,7 +138,7 @@ const Navbar = () => {
       icon.classList.add('bi-box-arrow-down');
       Cookies.set('menuState', 'hidden');
     }
-  };
+  }, []); // Dependências vazias garantem que a função seja criada apenas uma vez
 
   return (
     <nav className="navbar-expand-md navbar-dark p-2" style={{ background: 'var(--tema-blue)' }}>
@@ -145,12 +152,16 @@ const Navbar = () => {
             </p>
           </Link>
           <button className="btn text-white col-auto d-inline-flex ms-auto d-sm-none" type="button" onClick={toggleMenu}>
-            <span className="bi bi-box-arrow-in-up" id="menuIcon" style={{ fontSize: '20px' }}></span>
+            <span className="bi bi-box-arrow-in-up" ref={iconRef} style={{ fontSize: '20px' }}></span>
           </button>
         </div>
-        <div className="col-12 d-sm-block d-none" id="navbarNav">
+        <div className="col-12 d-sm-block d-none" ref={menuRef}>
           <ul className="text-decoration-none text-center text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center text-sm-end justify-content-center align-items-center">
-            {isCliente === true ? <ItensAssinante configsAtivos={session.configs_ativos} /> : <ItensDefault />}
+            {isCliente === true ? (
+              <ItensAssinante configsAtivos={session.configs_ativos} />
+            ) : (
+              <ItensDefault />
+            )}
           </ul>
         </div>
       </div>

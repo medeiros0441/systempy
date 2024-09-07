@@ -57,13 +57,13 @@ export default async function request(url, method = 'GET', data = null) {
     });
 
     // Retorna sucesso com os dados da resposta dentro do objeto data
-    return { success: true, ...response.data };
+    return { sucesso: true, ...response.data };
   } catch (error) {
     // Lida com diferentes tipos de erro e exibe mensagens apropriadas
     const errorMessage = getErrorMessage(error);
     console.error('Erro na requisição:', errorMessage);
     // Retorna o erro dentro do objeto data com sucesso como false
-    return { success: false, message: errorMessage };
+    return { sucesso: false, message: errorMessage };
   }
 }
 

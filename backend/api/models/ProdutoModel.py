@@ -1,6 +1,7 @@
 from django.db import models
 from .CustomModel import CustomModel
 import uuid 
+from .LojaModel import LojaModel
 
 class ProdutoModel(CustomModel):
     id_produto = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -18,7 +19,7 @@ class ProdutoModel(CustomModel):
     
     # Aqui, referenciando o modelo LojaModel como string
     loja = models.ForeignKey(
-        'api.LojaModel',
+        LojaModel,
         on_delete=models.CASCADE,
     )
 

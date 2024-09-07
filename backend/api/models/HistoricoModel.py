@@ -10,7 +10,7 @@ class HistoricoModel(CustomModel):
         primary_key=True, default=uuid.uuid4, editable=False
     )
     descricao = models.TextField(blank=True, null=True)
-    usuario = models.UUIDField(UsuarioModel)
+    usuario = models.ForeignKey(UsuarioModel, on_delete=models.SET_NULL, null=True, blank=True)
     class Meta:
         db_table = 'historico'
 

@@ -11,8 +11,7 @@ import json
 class ClienteView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="cliente", auth_required=True)]
 
-    @action(methods=['post'], detail=False, url_path='create')
-    def create_cliente(self, request):
+    def create(self, request):
         try:
             data = json.loads(request.body)
             empresa_id = UserInfo.get_id_empresa(request)
@@ -36,8 +35,7 @@ class ClienteView(viewsets.ViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(methods=['put'], detail=False, url_path='update')
-    def update_cliente(self, request):
+    def update(self, request):
         try:
             data = json.loads(request.body)
             cliente_data = data.get("cliente", {})

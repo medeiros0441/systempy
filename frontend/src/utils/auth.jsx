@@ -1,36 +1,51 @@
-import { getCookie, setCookie } from './storage';
-import request from './api';
 import { useState, useEffect } from 'react';
+import request from './api';
+import { getCookie, setCookie } from './storage';
 
+// Função para tentar fazer login com os dados armazenados
+const autoLogin = async (email, senha) => {
+  try {
+    const response = await request('public/login/', 'POST', { email, senha });
+    return response.sucesso;
+  } catch (error) {
+    console.error('Erro ao autenticar:', error);
+    return false;
+  }
+};
 export const useAuthentication = () => {
   const [cookieValue, setCookieValue] = useState(() => getCookie('authentication'));
 
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        const response = await request("public/check-auth/");
+        const response = await request('public/check-auth/');
+        const isAuthenticated = response.sucesso && response.authenticated;
+        console.log(isAuthenticated)
+        setCookie('authentication', isAuthenticated);
+        setCookieValue(isAuthenticated);
 
-        if (response.success) {
-          const isAuthenticated = response.authenticated;
-          setCookie('authentication', isAuthenticated); // Define o cookie com base na resposta
-          setCookieValue(isAuthenticated); // Atualiza o estado com base na resposta
-        } else {
-          console.error('Autenticação falhou:', response.message);
-          setCookie('authentication', false); // Define o cookie como false em caso de falha
-          setCookieValue(false); // Atualiza o estado como false
+        if (!isAuthenticated) {
+          const storedEmail = getCookie('email_LembrarMe');
+          const storedSenha = getCookie('senha_LembrarMe');
+
+          if (storedEmail && storedSenha) {
+            const autoLoginSuccess = await autoLogin(storedEmail, storedSenha);
+            setCookie('authentication', autoLoginSuccess);
+            setCookieValue(autoLoginSuccess);
+          }
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
-        setCookie('authentication', false); // Define o cookie como false em caso de erro
-        setCookieValue(false); // Atualiza o estado como false
+        setCookie('authentication', false);
+        setCookieValue(false);
       }
     };
 
-    // Executa a verificação apenas se o valor do cookie for null (ou seja, não definido)
     if (cookieValue === null) {
       checkAuthentication();
     }
   }, [cookieValue]);
 
-  return cookieValue;
+  // Retorne o valor booleano diretamente
+  return !!cookieValue; // Garante que o retorno é sempre booleano
 };

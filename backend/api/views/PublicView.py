@@ -1,7 +1,6 @@
 from django.contrib.auth.hashers import check_password, make_password
 from ..TokenManager import TokenManager
 from ..user import UserInfo
-from .ConfiguracaoView import ConfiguracaoView
 from rest_framework.permissions import AllowAny
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -10,20 +9,8 @@ from django.utils import timezone
 from api.models import UsuarioModel, EmpresaModel
 from ..utils import Utils
 from ..gerencia_email.config_email import enviar_email
-from django.utils.crypto import get_random_string
-
-def generate_code():
-    """Gera um código de recuperação e o criptografa."""
-    code = f"{get_random_string(length=3, allowed_chars='0123456789')}-{get_random_string(length=3, allowed_chars='0123456789')}"
-    return make_password(code) ,code #
-
-def handle_exception(e):
-    """Retorna uma resposta de erro com uma mensagem interna."""
-    return Response(
-        {"message": f"Erro interno: {str(e)}"},
-        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    )
-
+from api.services import EmpresaService,UsuarioService
+  
 class PublicView(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
@@ -57,37 +44,36 @@ class PublicView(viewsets.ViewSet):
                     {"message": "Credenciais inválidas. Tente novamente."},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
-
-            # Verifica o status do usuário
             if not user.status_acesso:
                 return Response(
                     {"message": "Usuário desativado. Entre em contato com o responsável da assinatura."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
-
-            # Atualiza o último login e salva
             user.utimo_login = timezone.now()
             user.save()
-
-            # Cria o token e o retorna
             payload = {
                 "id_usuario": str(user.id_usuario),
                 "id_empresa": str(user.empresa.id_empresa),
                 "nivel_usuario": user.nivel_usuario,
                 "status_acesso": user.status_acesso,
             }
-
-            token = TokenManager.create_token(nome_token="user_token", payload=payload, time=6, httponly=True)
-
-            return Response(
-                {"success": True, "message": "Usuário logado com sucesso.", "token": token},
+            token = TokenManager.create_token(payload=payload, time=6)
+            response = Response(
+                {"success": True, "message": "Usuário logado com sucesso."},
                 status=status.HTTP_200_OK,
             )
-
+            response.set_cookie(
+                key="user_token",
+                value=token,
+                httponly=True,  # valor variável conforme necessidade
+                secure=True,    # Use True se estiver usando HTTPS
+                samesite="Strict",  # Adicione mais segurança ao cookie
+            )
+            return response
         except Exception as e:
             # Registro do erro para depuração
             return Response(
-                {"message": "Erro interno durante a autenticação."},
+                {"message": f"Erro interno durante a autenticação. {str(e)}" },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -95,6 +81,7 @@ class PublicView(viewsets.ViewSet):
     @action(detail=False, methods=["get"], url_path="check-auth")
     def check_authentication(self, request):
         status,message =UserInfo.is_authenticated(request)
+        print(status)
         return Response({"authenticated": status, "message":message},
             status=200,
         )
@@ -129,46 +116,27 @@ class PublicView(viewsets.ViewSet):
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
     
-    def validate_email(email):
-        if not email:
-            raise ValueError("Email não fornecido.")
+    def send_recovery_code(email, nome, assunto=None, mensagem=None):
+        """
+        Envia um código de recuperação para o e-mail fornecido.
+        """
+        hash, codigo = Utils.generate_code()
+        mensagem_completa = f"{mensagem} {codigo}"
 
-    def handle_user_not_found():
-        return Response(
-            {"message": "Usuário não encontrado."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
-    def set_cookies(response, hash, usuario_id=None):
-        max_age = 3600  # Define o tempo de vida do cookie para 1 hora (3600 segundos)
-        
-        response.set_cookie("codigo_hasher", hash, max_age=max_age)
-        if usuario_id:
-            response.set_cookie("id_usuario", usuario_id, max_age=max_age)
-        
-        return response
-
-    def send_recovery_code(email, nome=None, usuario=None):
-        hash, codigo = generate_code()
-        assunto = "Código de Recuperação de Senha"
-        mensagem = f"Seu código de recuperação de senha é: {codigo}"
-        
         response = Response(
-            {"message": "Código de recuperação enviado com sucesso."},
-            status=status.HTTP_200_OK,
+            {"message": "Código enviado com sucesso."},
+            status=status.HTTP_200_OK
         )
-        
-        PublicView.set_cookies(response, hash, usuario.id_usuario if usuario else None)
+        Utils.set_cookie(response,"codigo_hasher", hash)
 
         enviar_email(
             destinatario=email,
-            assunto=assunto,
-            NomeCliente=nome if nome else usuario.primeiro_nome if usuario else '',
-            TextIntroducao=mensagem,
+            assunto=assunto or "Recuperação de Senha",
+            NomeCliente=nome or '',
+            TextIntroducao=mensagem_completa
         )
-        
+
         return response
 
     @action(detail=False, methods=["post"], url_path="code/send/password")
@@ -176,33 +144,47 @@ class PublicView(viewsets.ViewSet):
         """Envia um código de recuperação de senha para o email fornecido."""
         try:
             email = request.data.get("email")
-            PublicView.validate_email(email)
+            if not email:
+                return Response({"message": "Email não fornecido."}, status=status.HTTP_400_BAD_REQUEST)
 
-            usuario = UsuarioModel.objects.filter(email=email).first()
-            if not usuario:
-                return PublicView.handle_user_not_found()
-
-            return PublicView.send_recovery_code(email, usuario=usuario)
-
+            usuario = UsuarioService.verificar_email(email, True)
+            if not usuario['id_usuario'] and usuario['email']:
+                return Response({"message": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+            
+            nome_completo = usuario.get('nome_completo', 'Usuário')
+            mensagem = f"Olá, {nome_completo}. O seu código para recuperar a senha é:"
+            assunto = "Recuperação de Senha"
+            response = PublicView.send_recovery_code(email, nome_completo, assunto, mensagem)
+            Utils.set_cookie(response, "password_analise", {"id_usuario": usuario['id_usuario'], "email": usuario['email']})
+    
+            return response
         except ValueError as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return handle_exception(e)
+            return Response({"message": f"Erro interno: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=["post"], url_path="code/send")
     def send_code(self, request):
-        """Envia um código de recuperação para o email e nome fornecidos."""
+        """Envia um código de confirmação para o email e nome fornecidos."""
         try:
             email = request.data.get("email")
             nome = request.data.get("nome")
-            PublicView.validate_email(email)
+            if not email:
+                return Response({"message":"Email não fornecido."}, status=status.HTTP_400_BAD_REQUEST)
 
-            return PublicView.send_recovery_code(email, nome=nome)
+            if not nome:
+                    nome = ""
+            assunto = "Confirmação de Email"
+            mensagem = f"Olá, {nome}. Esse é o código para a confirmação de seu email."
+            return PublicView.send_recovery_code(email, nome, assunto, mensagem)
 
         except ValueError as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return handle_exception(e)
+            return Response(
+                {"message": f"Erro interno: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @action(detail=False, methods=["post"], url_path="code/confirm")
     def confirm_code(self, request):
@@ -213,29 +195,38 @@ class PublicView(viewsets.ViewSet):
             
             if not codigo_criptografado:
                 return Response(
-                    {"message": "Código de recuperação não encontrado."},
+                    {"message": "Código de recuperação não encontrado, Tente iniciar o processo novamente."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             if check_password(codigo, codigo_criptografado):
-                return Response(
+                response = Response(
                     {"message": "Código confirmado com sucesso.", "is_valido": True},
                     status=status.HTTP_200_OK,
                 )
+                data = Utils.get_cookie(request,"password_analise")
+                Utils.set_cookie(response,"password_confirmado", {"id_usuario": data['id_usuario'], "email": data['email']})
+                
+                return response
             else:
                 return Response(
                     {"message": "Código inválido. Tente novamente.", "is_valido": False},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         except Exception as e:
-            return handle_exception(e)
+            return Response(
+                {"message": f"Erro interno: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         
     @action(detail=False, methods=["post"], url_path="password/update")
     def update_password(self, request):
         try:
-            senha_nova = request.data.get("senha_nova")
-            id_usuario = Utils.get_cookie("id_usuario")
-            if not id_usuario:
+            senha_nova = request.data.get("senha")
+            data = Utils.get_cookie(request,"password_confirmado")
+            id_usuario = data['id_usuario']
+            email =  data['email']
+            if not id_usuario and email:
                 return Response(
                     {"message": "Usuário não autenticado."},
                     status=status.HTTP_403_FORBIDDEN,
@@ -253,7 +244,6 @@ class PublicView(viewsets.ViewSet):
                     {"message": "Campo senha está vazio."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
             senha_hash = make_password(senha_nova)
             usuario.senha = senha_hash
             usuario.save()
@@ -263,7 +253,7 @@ class PublicView(viewsets.ViewSet):
             enviar_email(
                 destinatario=usuario.email,
                 assunto=assunto,
-                NomeCliente=usuario.primeiro_nome,
+                NomeCliente=usuario.nome_completo,
                 TextIntroducao=mensagem,
             )
 
@@ -304,8 +294,11 @@ class PublicView(viewsets.ViewSet):
                 elif EmpresaModel.objects.filter(nro_cnpj=valor).exists():
                     mensagens_alerta.append(f"CNPJ '{valor}' já cadastrado.")
 
+        # Juntar todas as mensagens com uma quebra de linha adequada
         texto_alerta = "\n".join(mensagens_alerta)
-        return texto_alerta.replace("\n", "\\n")
+        
+        # Retornar o texto com quebras de linha como '\n'
+        return texto_alerta
 
     @action(detail=False, methods=["post"], url_path="register")
     def register(self, request):
@@ -319,11 +312,12 @@ class PublicView(viewsets.ViewSet):
                 "descricao": data.get("descricao_empresa"),
                 "nome_responsavel": data.get("nome_responsavel"),
                 "cargo": data.get("cargo_responsavel"),
-                "email":  data.get("email_responsavel", "").lower().strip(),
+                "email": data.get("email_responsavel", "").lower().strip(),
                 "nro_cpf": data.get("nro_cpf"),
                 "telefone": data.get("telefone_responsavel"),
             }
 
+            # Validação dos campos críticos
             campos = {
                 "E-mail": dados_formulario.get("email"),
                 "Telefone": dados_formulario.get("telefone"),
@@ -345,23 +339,22 @@ class PublicView(viewsets.ViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            senha_hash = make_password(senha)
-            empresa = self.create_company(dados_formulario)
-            if isinstance(empresa, EmpresaModel):
-                result = self.create_user(empresa, senha_hash)
-                if result is True:
-                    return Response(
-                        {"success": True, "redirect": "login"},
-                        status=status.HTTP_200_OK,
-                    )
-                else:
-                    return Response(
-                        {"success": False, "message": [result]},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+            # Processar a criação da empresa e do usuário
+            success, message = EmpresaService.create_company_and_user(dados_formulario, senha)
+            if success:
+                enviar_email(
+                    destinatario=dados_formulario.get("email"),
+                    assunto="Cadastro Concluído com sucesso",
+                    NomeCliente=dados_formulario.get("nome_responsavel"),
+                    TextIntroducao="Olá! Seja bem-vindo. Sua conta já está disponível para uso. :)"
+                )
+                return Response(
+                    {"success": True, "redirect": "login"},
+                    status=status.HTTP_200_OK,
+                )
             else:
                 return Response(
-                    {"success": False, "message": ["Erro ao criar empresa"]},
+                    {"success": False, "message": [message]},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         except Exception as e:
@@ -370,32 +363,4 @@ class PublicView(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @staticmethod
-    def create_company(dados_empresa):
-        try:
-            nova_empresa = EmpresaModel.objects.create(**dados_empresa)
-            return nova_empresa
-        except Exception as e:
-            return str(e)
-
-    @staticmethod
-    def create_user(empresa, senha):
-        try:
-            numero_aleatorio = Utils.gerar_numero_aleatorio()
-            novo_nome_usuario = empresa.nome_responsavel + numero_aleatorio
-
-            user_new = UsuarioModel.objects.create(
-                nome_completo=empresa.nome_responsavel,
-                nome_usuario=novo_nome_usuario,
-                senha=senha,
-                nivel_usuario=1,
-                status_acesso=True,
-                email=empresa.email,
-                empresa=empresa,
-            )
-            list = ConfiguracaoView.list_configuracoes_padrao(user_new)
-            ConfiguracaoView.criar_configuracoes_padrao(list)
-            return True
-        except Exception as e:
-            print(f"Erro ao criar usuário: {str(e)}")
-            return str(e)
+     

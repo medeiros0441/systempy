@@ -41,7 +41,7 @@ class VendaModel(CustomModel):
     usuario = models.ForeignKey(UsuarioModel, on_delete=models.SET_NULL, null=True)
     loja = models.ForeignKey(LojaModel, on_delete=models.CASCADE)
     cliente = models.ForeignKey(ClienteModel, on_delete=models.SET_NULL, null=True)
-    produtos = models.ManyToManyField(ProdutoModel, through="ItemCompra", blank=True)
+    produtos = models.ManyToManyField(ProdutoModel, through="ItemCompraModel", blank=True)
     nota_fiscal = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )

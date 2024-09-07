@@ -1,50 +1,64 @@
-from django.http import JsonResponse
-from functools import wraps
 from django.core.exceptions import (
     ObjectDoesNotExist,
     MultipleObjectsReturned,
-    FieldDoesNotExist,
 )
 from datetime import datetime
 from pytz import timezone
 import random
 import string
 from decimal import Decimal
-import json
 from django.forms.models import model_to_dict
-import uuid
 import logging
 from django.db.models import Model, ForeignKey
 import re
 logger = logging.getLogger(__name__)
 from datetime import datetime, timedelta
 from django.http import HttpResponse
-
+from django.utils.crypto import get_random_string
+from django.contrib.auth.hashers import  make_password
+import json
 class Utils:
     
     @staticmethod
-    def set_cookie(response: HttpResponse, key: str, value: str, days_expire: int = 7):
-        # Calcula a data de expiração com base em days_expire
-        expires = datetime.utcnow() + timedelta(days=days_expire)
-        
+    def set_cookie(response: HttpResponse, key: str, value, days_expire=7, httponly=False):
+        """
+        Define um cookie na resposta HTTP com suporte para valores em formato JSON.
+
+        :param response: A resposta HTTP na qual o cookie será definido.
+        :param key: Nome do cookie.
+        :param value: Valor do cookie (pode ser uma string ou um dicionário).
+        :param days_expire: Número de dias até o cookie expirar.
+        :param httponly: Se True, o cookie não será acessível via JavaScript.
+        :return: A resposta HTTP com o cookie definido.
+        """
+        # Se o valor não for uma string, converte-o para JSON
+        if not isinstance(value, str):
+            value = json.dumps(value)
+
+        # Converte dias de expiração em segundos para max_age
+        max_age = days_expire * 24 * 60 * 60  # tempo de expiração em segundos
+
         # Define o cookie com os parâmetros fornecidos
         response.set_cookie(
             key,                        # Nome do cookie
             value,                      # Valor do cookie
-            max_age=days_expire * 24 * 60 * 60,  # Tempo de expiração em segundos
-            expires=expires,            # Data e hora de expiração
+            max_age=max_age,            # Tempo de expiração em segundos
             path='/',                   # Caminho onde o cookie é válido
             domain=None,                # Domínio onde o cookie é válido
             secure=False,               # Se True, o cookie só será enviado via HTTPS
-            httponly=False,             # Se True, o cookie não será acessível via JavaScript
+            httponly=httponly,          # Se True, o cookie não será acessível via JavaScript
             samesite='Lax'              # Política de SameSite do cookie (Lax, Strict ou None)
         )
         
         return response
-
+    
     @staticmethod
     def get_cookie(request, key):
-        return request.COOKIES.get(key)
+        cookie_value = request.COOKIES.get(key)
+        try:
+            return json.loads(cookie_value)  # Desserializa o valor JSON de volta para um dicionário
+        except (TypeError, json.JSONDecodeError):
+            return cookie_value  # Retorna o valor original se não for JSON
     
     @staticmethod
     def is_valid_email(value):
@@ -57,29 +71,76 @@ class Utils:
             return True
         except ValidationError:
             return False
-
+    
+    
     @staticmethod
     def is_valid_cpf(value):
         """Valida se o CPF é válido."""
-        if re.match(r'^\d{11}$', value):
-            # Lógica básica para validar CPF
-            # Considerar usar uma biblioteca específica para validação de CPF
-            return True
-        return False
+        # Remove qualquer caractere que não seja número
+        value = re.sub(r'\D', '', value)
+
+        if len(value) != 11 or value in [str(i) * 11 for i in range(10)]:
+            return False
+
+        # Validação dos dígitos verificadores
+        def calcular_digito(digitos):
+            soma = sum(int(d) * c for d, c in zip(digitos, range(len(digitos) + 1, 1, -1)))
+            resto = soma % 11
+            return str(11 - resto) if resto > 1 else '0'
+
+        primeiro_digito = calcular_digito(value[:9])
+        segundo_digito = calcular_digito(value[:9] + primeiro_digito)
+
+        return primeiro_digito == value[9] and segundo_digito == value[10]
 
     @staticmethod
     def is_valid_cnpj(value):
         """Valida se o CNPJ é válido."""
-        if re.match(r'^\d{14}$', value):
-            # Lógica básica para validar CNPJ
-            # Considerar usar uma biblioteca específica para validação de CNPJ
-            return True
-        return False
+        # Remove qualquer caractere que não seja número
+        value = re.sub(r'\D', '', value)
 
+        if len(value) != 14 or value in [str(i) * 14 for i in range(10)]:
+            return False
+
+        def calcular_digito(digitos, pesos):
+            soma = sum(int(d) * p for d, p in zip(digitos, pesos))
+            resto = soma % 11
+            return str(11 - resto if resto >= 2 else 0)
+
+        # Pesos para o cálculo dos dígitos verificadores
+        pesos_primeiro = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        pesos_segundo = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+
+        # Primeiro dígito verificador
+        primeiro_digito = calcular_digito(value[:12], pesos_primeiro)
+        # Segundo dígito verificador
+        segundo_digito = calcular_digito(value[:12] + primeiro_digito, pesos_segundo)
+
+        return value[-2:] == primeiro_digito + segundo_digito
+
+    @staticmethod
+    def generate_code():
+        """Gera um código de recuperação e o criptografa."""
+        code = f"{get_random_string(length=3, allowed_chars='0123456789')}-{get_random_string(length=3, allowed_chars='0123456789')}"
+        return make_password(code) ,code #
     @staticmethod
     def is_valid_phone(value):
         """Valida se o telefone é válido."""
-        return re.match(r'^\d{10,15}$', value) is not None
+        value = re.sub(r'\D', '', value)
+
+        # Valida se o telefone tem entre 10 e 11 dígitos (com ou sem código de área)
+        if len(value) not in [10, 11]:
+            return False
+
+        # Valida se o DDD é válido (não começa com 0 ou 1)
+        if value[:2] in ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09']:
+            return False
+
+        # Valida se o telefone celular começa com 9
+        if len(value) == 11 and value[2] != '9':
+            return False
+
+        return True
     
     def converter_para_decimal(valor):
         try:

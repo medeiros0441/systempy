@@ -36,11 +36,7 @@ ALLOWED_HOSTS = [
 ]
 
 # Segurança
-SECRET_KEY = config("SECRET_KEY")
-username_email_1 = config("username_email_1")
-password_email_1 = config("password_email_1")
-username_email_2 = config("username_email_2")
-password_email_2 = config("password_email_2")
+SECRET_KEY = config("SECRET_KEY") 
 
 # Aplicações Instaladas
 INSTALLED_APPS = [
@@ -152,17 +148,27 @@ WSGI_APPLICATION = "setup.wsgi.application"
 ASGI_APPLICATION = 'setup.asgi.application'
 
 # Banco de Dados
-DATABASES = {
-    "default": {
-        "ENGINE": config("DB_ENGINE"),
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": config("DB_PORT", cast=int),
-    }
-}
+# Obtenha o tipo de banco de dados do ambiente
+DATABASE_TYPE = os.getenv('DATABASE_TYPE', 'sqlite')
 
+if DATABASE_TYPE == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+            'NAME': os.getenv('DB_NAME', 'postgres'),
+            'USER': os.getenv('DB_USER', 'user'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'password'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, os.getenv('SQLITE_NAME', 'db.sqlite3')),
+        }
+    }
 # Senhas de Validação
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

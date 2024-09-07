@@ -20,7 +20,7 @@ class UserInfo:
 
     @staticmethod
     def get_id_usuario(request):
-        token = request.COOKIES.get("token_user")
+        token = request.COOKIES.get("user_token")
         if token:
             decoded_token = UserInfo._decode_jwt_token(token)
             if decoded_token:
@@ -29,7 +29,7 @@ class UserInfo:
 
     @staticmethod
     def get_id_empresa(request):
-        token = request.COOKIES.get("token_user")
+        token = request.COOKIES.get("user_token")
         if token:
             decoded_token = UserInfo._decode_jwt_token(token)
             if decoded_token:
@@ -38,7 +38,7 @@ class UserInfo:
 
     @staticmethod
     def clear_user_info(response):
-        response.delete_cookie("token_user")
+        response.delete_cookie("user_token")
         return response
 
     @staticmethod

@@ -3,8 +3,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import re
 from .gerar_html_email import corpo_email
-from django.conf import settings
-
+from decouple import config
 
 def is_valid_email(email):
     # Expressão regular para validar email
@@ -21,10 +20,9 @@ def enviar_email(
     TextContainer3="",
     btn_vermais=False,
 ):
-    # Lista de contas de e-mail que você deseja alternar em caso de problemas
     contas_email = [
-        {"username": settings.username_email_1, "password": settings.password_email_1},
-        {"username":settings.username_email_2, "password": settings.password_email_2},
+        {"username": config("EMAIL_USERNAME_1"), "password": config("EMAIL_PASSWORD_1")},
+        {"username": config("EMAIL_USERNAME_2"), "password": config("EMAIL_PASSWORD_2")},
     ]
 
     email_enviado = False  # Variável de controle para rastrear se o e-mail foi enviado
