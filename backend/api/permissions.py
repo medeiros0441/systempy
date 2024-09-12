@@ -1,11 +1,9 @@
+# api/permissions.py
+
 from functools import wraps
+from rest_framework.permissions import BasePermission
 from .utils import Utils
 from .user import UserInfo
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import BasePermission
-from rest_framework.exceptions import PermissionDenied
-
 
 class CustomPermission(BasePermission):
     def __init__(self, codigo_model=None, auth_required=False):
@@ -41,45 +39,44 @@ class CustomPermission(BasePermission):
 
         return status
 
+# O decorator está fora do escopo atual de uso
+# Remova ou mantenha conforme necessário
 
-class permissions:
+def is_autorizado(codigo_model=None, auth_required=False):
+    """
+    Decorador para verificar as permissões do usuário antes de executar a função.
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            # Verifica se autenticação é necessária e se o usuário está autenticado
+            status, mensage = UserInfo.is_authenticated(request)
+            if not status:
+                return False, mensage
 
-    def isAutorizado(codigo_model=None, auth_required=False):
-        """
-        Decorador para verifiar as permissões do usuário antes de executar a função.
-        """
+            # Configurações de modelo, se aplicável
+            id_usuario = UserInfo.get_id_usuario(request)
+            if codigo_model:
+                codigo_model_convertido = codigo_model
+                if isinstance(codigo_model, str):
+                    lista = Utils.lista_de_configuracao()
+                    codigo_model_lower = codigo_model.lower()
+                    for item in lista:
+                        if item["nome"].lower() == codigo_model_lower:
+                            codigo_model_convertido = item["codigo"]
+                            break
 
-        def decorator(func):
-            @wraps(func)
-            def wrapper(request, *args, **kwargs):
+                status, render = Utils.configuracao_usuario(
+                    request, id_usuario, codigo_model_convertido
+                )
+            else:
+                status = True
 
-                # Verifica se autenticação é necessária e se o usuário está autenticado
-                status, mensage = UserInfo.is_authenticated
-                if not status:
-                    return False, mensage
-                # Configurações de modelo, se aplicável
-                id_usuario = UserInfo.get_id_usuario(request)
-                if codigo_model:
-                    codigo_model_convertido = codigo_model
-                    if isinstance(codigo_model, str):
-                        lista = Utils.lista_de_configuracao()
-                        codigo_model_lower = codigo_model.lower()
-                        for item in lista:
-                            if item["nome"].lower() == codigo_model_lower:
-                                codigo_model_convertido = item["codigo"]
-                                break
+            if status:
+                return func(request, *args, **kwargs)
+            else:
+                return render
 
-                    status, render = Utils.configuracao_usuario(
-                        request, id_usuario, codigo_model_convertido
-                    )
-                else:
-                    status = True
+        return wrapper
 
-                if status:
-                    return func(request, *args, **kwargs)
-                else:
-                    return render
-
-            return wrapper
-
-        return decorator
+    return decorator

@@ -6,7 +6,7 @@ import Dashboard from 'src/components/containers/assinante/dashboard';
 //import PDV from 'src/components/containers/pdv';
 //import ListaProdutos from 'src/components/containers/lista_produtos';
 //import ListaVendas from 'src/components/containers/lista_vendas';
-//import ListaClientes from 'src/components/containers/lista_clientes';
+import ClienteList from 'src/components/containers/cliente/ClienteLista';
 //import Configuracao from 'src/components/container/assinante/configuracao';
 const privateRoutes = [
   {
@@ -42,7 +42,7 @@ const privateRoutes = [
   {
     path: '/lista_clientes',
     exact: true,
-   // component: ListaClientes,
+    component: ClienteList,
   },
   {
     path: '/configuracao',

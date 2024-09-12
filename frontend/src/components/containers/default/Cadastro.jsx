@@ -7,7 +7,10 @@ import request from 'src/utils/api';
 import loading from 'src/utils/loading';
 import InputMask from 'react-input-mask';
 import { isValidCNPJ, isValidCPF, isValidPhone, isValidEmail } from 'src/utils/validate'
-import { useNavigate } from 'react-router-dom'; // Para redirecionar
+import { useNavigate } from 'react-router-dom';
+import { autoLogin, useAuth } from 'src/utils/auth'; // Use o hook useAuth
+import { setCookie } from 'src/utils/storage';
+
 function CadastroForm() {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
@@ -24,6 +27,8 @@ function CadastroForm() {
     senha: '',
     codigo: '',
   });
+
+  const { setIsAuthenticated } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -99,7 +104,7 @@ function CadastroForm() {
     try {
       loading(true, "ContainerFormulario");
       const response = await request("public/code/send", "POST", { "email": email_responsavel, "nome": nome_responsavel });
-      if (response.sucesso == true) {
+      if (response.sucesso === true) {
         alerta(response.message, 1);
         return true;
       } else {
@@ -140,6 +145,11 @@ function CadastroForm() {
       loading(true, "ContainerFormulario");
       const response = await request("public/register/", "POST", { nome_empresa, nro_cnpj, razao_social_empresa, nome_responsavel, cargo_responsavel, email_responsavel, telefone_responsavel, nro_cpf, senha });
       if (response.sucesso === true) {
+        const autoLoginSuccess = await autoLogin(email_responsavel, senha);
+        if (autoLoginSuccess) {
+          setIsAuthenticated(true); // Atualiza o estado de autenticação
+          setCookie('authentication', true);
+        }
         return true
       } else {
         alerta(response.message, 2);
@@ -326,7 +336,7 @@ function CadastroForm() {
           console.error('Código inválido.');
         }
       } else if (step === 4) {
-        navigate('/login');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Erro ao processar o próximo passo:');
@@ -350,7 +360,7 @@ function CadastroForm() {
             <Button variant="secondary" onClick={handleBack}>Voltar</Button>
           )}
           <Button variant="primary" type="button" onClick={handleNext}>
-            {step === 4 ? "Fazer Login" : "Próximo"}
+            {step === 4 ? "ir ao Dashboard" : "Próximo"}
           </Button>
         </div>
       </div>

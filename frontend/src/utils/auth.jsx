@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import request from './api';
 import { getCookie, setCookie } from './storage';
 
-// Função para tentar fazer login com os dados armazenados
-const autoLogin = async (email, senha) => {
+
+export const autoLogin = async (email, senha) => {
   try {
     const response = await request('public/login/', 'POST', { email, senha });
     return response.sucesso;
@@ -12,40 +12,47 @@ const autoLogin = async (email, senha) => {
     return false;
   }
 };
-export const useAuthentication = () => {
-  const [cookieValue, setCookieValue] = useState(() => getCookie('authentication'));
+// Cria o contexto
+const AuthContext = createContext();
+
+// Provedor do contexto de autenticação
+export const AuthProvider = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => getCookie('authentication'));
 
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
         const response = await request('public/check-auth/');
-        const isAuthenticated = response.sucesso && response.authenticated;
-        console.log(isAuthenticated)
-        setCookie('authentication', isAuthenticated);
-        setCookieValue(isAuthenticated);
+        const authenticated = response.sucesso && response.authenticated;
+        setCookie('authentication', authenticated);
+        setIsAuthenticated(authenticated);
 
-        if (!isAuthenticated) {
+        if (!authenticated) {
           const storedEmail = getCookie('email_LembrarMe');
           const storedSenha = getCookie('senha_LembrarMe');
 
           if (storedEmail && storedSenha) {
             const autoLoginSuccess = await autoLogin(storedEmail, storedSenha);
             setCookie('authentication', autoLoginSuccess);
-            setCookieValue(autoLoginSuccess);
+            setIsAuthenticated(autoLoginSuccess);
           }
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
         setCookie('authentication', false);
-        setCookieValue(false);
+        setIsAuthenticated(false);
       }
     };
 
-    if (cookieValue === null) {
-      checkAuthentication();
-    }
-  }, [cookieValue]);
+    checkAuthentication();
+  }, []);
 
-  // Retorne o valor booleano diretamente
-  return !!cookieValue; // Garante que o retorno é sempre booleano
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
+
+// Hook para usar o contexto de autenticação
+export const useAuth = () => useContext(AuthContext);

@@ -2,7 +2,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 
 
-from api.permissions import permissions,CustomPermission
+from api.permissions import CustomPermission
 from rest_framework import viewsets, status
 
 class ErroView(viewsets.ViewSet):

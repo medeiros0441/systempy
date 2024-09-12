@@ -5,7 +5,7 @@ from api.services import ConfiguracaoService
 from api.models import ConfiguracaoModel
 from api.serializers import ConfiguracaoSerializer
 from api.user import UserInfo
-from api.permissions import permissions,CustomPermission
+from api.permissions import CustomPermission
 
 class ConfiguracaoView(viewsets.ViewSet):
     permission_classes = CustomPermission(codigo_model="configuracao", auth_required=True)

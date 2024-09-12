@@ -1,8 +1,8 @@
 // src/routes/publicRoutes.js
-import Home from 'src/components/containers/default/home';
-import Contato from 'src/components/containers/default/contato';
-import Login from 'src/components/containers/default/login';
-import Cadastro from 'src/components/containers/default/cadastro';
+import Home from 'src/components/containers/default/Home';
+import Contato from 'src/components/containers/default/Contato';
+import Login from 'src/components/containers/default/Login';
+import Cadastro from 'src/components/containers/default/Cadastro';
 import Erro from 'src/components/erro';
 import React from 'react';
 

@@ -6,7 +6,7 @@ from django.shortcuts import render
 import requests
 import json
 
-from api.permissions import permissions, CustomPermission
+from api.permissions import CustomPermission
 from rest_framework import viewsets, status
 
 

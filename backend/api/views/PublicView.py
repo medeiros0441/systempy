@@ -78,10 +78,20 @@ class PublicView(viewsets.ViewSet):
             )
 
 
+    @action(detail=False, methods=["post"], url_path="desconect")
+    def desconect(self, request):
+        try:
+            response = Response({"message": "Desconectado com sucesso."}, status=status.HTTP_200_OK)
+            # Limpa o cookie 'user_token'
+            UserInfo.clear_user_info(response)
+            return response
+        except Exception as e:
+            # Tratamento de possíveis erros
+            return Response({"message": f"Erro ao desconectar: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     @action(detail=False, methods=["get"], url_path="check-auth")
     def check_authentication(self, request):
         status,message =UserInfo.is_authenticated(request)
-        print(status)
         return Response({"authenticated": status, "message":message},
             status=200,
         )

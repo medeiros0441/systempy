@@ -5,7 +5,7 @@ from ..utils import Utils
 from django.core.exceptions import ObjectDoesNotExist
 from ..user import UserInfo
 from uuid import UUID 
-from api.permissions import permissions,CustomPermission
+from api.permissions import CustomPermission
 from rest_framework import viewsets, status
 
 class PersonalizacaoView(viewsets.ViewSet):

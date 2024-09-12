@@ -2,11 +2,11 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import publicRoutes from './publicRoutes';
 import privateRoutes from './privateRoutes';
-import { useAuthentication } from '../utils/auth';
 
+import { useAuth } from '../utils/auth';
 const Router = () => {
-  const isAuthenticated = useAuthentication(); // Use o hook no nível superior
 
+  const { isAuthenticated } = useAuth();
   return (
     <Routes>
       {/* Rotas públicas */}

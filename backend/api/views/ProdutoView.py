@@ -6,16 +6,13 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 import json
-from api.permissions import permissions, CustomPermission
+from api.permissions import  CustomPermission
 from rest_framework import viewsets, status
 
 
 class ProdutoView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="produto", auth_required=True)]
 
-    @staticmethod
-    @require_http_methods(["POST", "PUT"])
-    @permissions.isAutorizado(6, True)
     def form_produto(request, id_produto=None):
         try:
             data = json.loads(
@@ -135,7 +132,6 @@ class ProdutoView(viewsets.ViewSet):
 
     @staticmethod
     @require_http_methods(["POST"])
-    @permissions.isAutorizado(6, True)
     def acrescentar_produto(request):
         try:
             data = json.loads(
@@ -184,9 +180,6 @@ class ProdutoView(viewsets.ViewSet):
             mensagem_erro = str(e)
             return JsonResponse({"message": mensagem_erro}, status=500)
 
-    @staticmethod
-    @require_http_methods(["GET"])
-    @permissions.isAutorizado(6, True)
     def selecionar_produto(request, id_produto):
         try:
             produto = ProdutoModel.objects.get(id_produto=id_produto)
@@ -211,9 +204,6 @@ class ProdutoView(viewsets.ViewSet):
             mensagem_erro = str(e)
             return JsonResponse({"message": mensagem_erro}, status=500)
 
-    @staticmethod
-    @require_http_methods(["DELETE"])
-    @permissions.isAutorizado(6, True)
     def excluir_produto(request, id_produto):
         try:
             produto = ProdutoModel.objects.get(id_produto=id_produto)

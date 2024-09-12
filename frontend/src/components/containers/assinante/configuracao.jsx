@@ -166,7 +166,7 @@ const Configuracoes = () => {
         setTabContentVisible(null);
     };
     const Desconect = async () => {
-        retorn = await response("desconect/", "POST");
+        retorn = await response("public/desconect/", "POST");
         if (retorn.success) {
             Redirect("/home")
         }

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Button, Form, FloatingLabel } from 'react-bootstrap';
-import CustomModal from 'src/components/objetos/modal';
+import { useCustomModal } from 'src/components/objetos/Modal';
 import img_etapa1 from 'src/assets/img/undraw/undraw_emails_6uqr.svg';
 import img_etapa2 from 'src/assets/img/undraw/undraw_letter_re_8m03.svg';
 import img_etapa3 from 'src/assets/img/undraw/undraw_Security_on_re_e491.svg';
@@ -11,13 +11,12 @@ import alerta from 'src/utils/alerta';
 import loading from 'src/utils/loading';
 import { isValidEmail } from 'src/utils/validate';
 import InputMask from 'react-input-mask';
-let openModalFunction = () => { }; // Inicialize como função vazia
 
-const RecuperarSenhaModal = () => {
+const useRecuperarSenhaModal = () => {
+
+  const { CustomModal, setShow } = useCustomModal();
   const [step, setStep] = useState(1);
   const [emailSaved, setEmailSaved] = useState('');
-  const [senhaValida, setSenhaValida] = useState(false);
-  const [senhaConfirmada, setSenhaConfirmada] = useState(false);
   const id_container_loading = "id_container";
 
   const emailInputRef = useRef(null);
@@ -64,7 +63,6 @@ const RecuperarSenhaModal = () => {
     if (!handleValidatePassword()) {
       return false;
     }
-
     try {
       const response = await request('public/password/update', 'POST', { senha: new_password });
 
@@ -105,9 +103,6 @@ const RecuperarSenhaModal = () => {
       /[0-9]/.test(senha);    // Testa se tem ao menos um número
 
     const isConfirmed = senha === senhaConfirmada;
-
-    setSenhaValida(isValidSenha);
-    setSenhaConfirmada(isConfirmed);
 
     if (senhaInputRef1.current) {
       senhaInputRef1.current.classList.toggle('is-invalid', !isValidSenha);
@@ -261,29 +256,30 @@ const RecuperarSenhaModal = () => {
         return null;
     }
   };
-
-  openModalFunction = () => {
-    if (modalRef.current) {
-      modalRef.current.openModal();
-    }
+  const RenderModal = () => {
+    return (
+      <>
+        <CustomModal
+          icon="block"
+          title="Recuperação de Senha"
+          footer={renderFooter()}
+        >
+          <div id={id_container_loading}>
+            {step === 1 && <Etapa1 />}
+            {step === 2 && <Etapa2 />}
+            {step === 3 && <Etapa3 />}
+            {step === 4 && <Etapa4 />}
+          </div>
+        </CustomModal>
+      </>
+    );
   };
-
-  return (
-    <>
-      <CustomModal
-        ref={modalRef}
-        title="Recuperação de Senha"
-        footer={renderFooter()}
-      >
-        <div id={id_container_loading}>
-
-          {step === 1 && <Etapa1 />}
-          {step === 2 && <Etapa2 />}
-          {step === 3 && <Etapa3 />}
-          {step === 4 && <Etapa4 />}
-        </div>
-      </CustomModal>
-    </>
-  );
-};
-export { RecuperarSenhaModal, openModalFunction };
+  
+  const openModal = () => {
+    setShow(true);
+  };
+  
+  return { RenderModal, openModal };
+  };
+  
+  export default useRecuperarSenhaModal;

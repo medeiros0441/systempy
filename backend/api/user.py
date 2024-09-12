@@ -46,7 +46,6 @@ class UserInfo:
         user_id = UserInfo.get_id_usuario(request)
         empresa_id = UserInfo.get_id_empresa(request)
 
-        # Verifica se o token contém IDs válidos e se o usuário e empresa existem
         if user_id and empresa_id:
             try:
                 usuario = UsuarioModel.objects.get(id_usuario=user_id, empresa_id=empresa_id)

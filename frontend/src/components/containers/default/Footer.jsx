@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from 'src/utils/auth';
 
-const Footer = ({ isCliente }) => {
+const Footer = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
     <footer className="footer" style={{ background: 'var(--tema-blue)' }}>
       <div className="container">
@@ -11,7 +14,7 @@ const Footer = ({ isCliente }) => {
             <ul className="list-unstyled footer-links m-0">
               <li><Link to="/" className="text-secondary text-decoration-none">Home</Link></li>
               <li><Link to="/sobre" className="text-secondary text-decoration-none">Sobre-nós</Link></li>
-              {!isCliente && (
+              {!isAuthenticated && (
                 <>
                   <li><Link to="/login" className="text-secondary text-decoration-none">Login</Link></li>
                   <li><Link to="/cadastro" className="text-secondary text-decoration-none">Cadastre-se</Link></li>

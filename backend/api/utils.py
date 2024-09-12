@@ -215,10 +215,10 @@ class Utils:
 
     def configuracao_usuario(request, id_usuario, codigo):
         from api.views.ErroView import ErroView
-        from api.models import Configuracao
+        from api.models import ConfiguracaoModel
 
         try:
-            configuracao = Configuracao.objects.get(
+            configuracao = ConfiguracaoModel.objects.get(
                 usuario_id=id_usuario, codigo=codigo
             )
             if not configuracao.status_acesso:

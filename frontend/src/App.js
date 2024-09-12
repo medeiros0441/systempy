@@ -1,15 +1,20 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import Base from './components/Base'; // Importe seu componente Base aqui
-import RouterConfig from './routes/router'; // Importe o componente Router aqui
+import Base from './components/Base';
+import RouterConfig from './routes/router';
+import { AuthProvider } from './utils/auth';
+import ErrorBoundary from './components/ErrorBoundary';
 
-const App = ({ isCliente = false }) => (
-  <Router>
-    <Base isCliente={isCliente}>
-      <RouterConfig />
-    </Base>
-  </Router>
+const App = () => (
+  <AuthProvider>
+    <Router>
+      <ErrorBoundary>
+        <Base>
+          <RouterConfig />
+        </Base>
+      </ErrorBoundary>
+    </Router>
+  </AuthProvider>
 );
 
 export default App;

@@ -1,4 +1,4 @@
-from api.permissions import permissions, CustomPermission
+from api.permissions import CustomPermission
 from api.user import UserInfo
 from django.db.models import Q
 from api.async_processos.venda import processos

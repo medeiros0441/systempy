@@ -61,31 +61,13 @@ class ClienteService:
             clientes = ClienteModel.objects.filter(empresa_id=empresa_id)
 
             if not clientes.exists():
-                return {"message": "Não foram encontrados clientes para esta empresa."}, 404
+                return None   
 
-            clientes_data = []
-            for cliente in clientes:
-                try:
-                    ultima_venda = VendaModel.objects.filter(cliente=cliente).order_by("-insert").first()
-                    endereco = EnderecoModel.objects.filter(id_endereco=cliente.endereco_id).first()
-                    cliente_data = Utils.modelo_para_json(cliente, endereco)
-                    cliente_data.update({
-                        "ultima_venda": {
-                            "descricao": ultima_venda.descricao if ultima_venda else None,
-                            "data_venda": ultima_venda.data_venda if ultima_venda else None,
-                            "forma_pagamento": ultima_venda.forma_pagamento if ultima_venda else None,
-                            "valor_total": str(ultima_venda.valor_total) if ultima_venda else None,
-                            "produtos": [item.produto.nome for item in ultima_venda.itemcompra_set.all()] if ultima_venda else None,
-                        },
-                    })
-                    clientes_data.append(cliente_data)
-                except Exception as e:
-                    print(f"Erro ao processar cliente {cliente.id_cliente}: {e}")
-
-            return {"success": True, "data": clientes_data}, 200
+            serializer = ClienteSerializer(clientes, many=True)
+            return serializer.data  
 
         except Exception as e:
-            return {"error": str(e)}, 500
+            return None   
 
     @staticmethod
     def get_cliente(empresa_id):

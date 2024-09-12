@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import request from 'src/utils/api';
 import alerta from 'src/utils/alerta';
 import loading from 'src/utils/loading';
-import { openModalFunction, RecuperarSenhaModal } from './update_senha';
+import useRecuperarSenhaModal from './RecuperarSenha';
 import { getCookie, setCookie } from 'src/utils/storage';
+import { autoLogin, useAuth } from 'src/utils/auth'; // Use o hook useAuth
 
 const LoginForm = () => {
   const [email, setEmail] = useState(getCookie('email_LembrarMe') || '');
@@ -13,22 +13,10 @@ const LoginForm = () => {
   const [lembrarMe, setLembrarMe] = useState(!!getCookie('email_LembrarMe'));
   const [loadingState, setLoadingState] = useState(false);
   const navigate = useNavigate();
-
+  const { setIsAuthenticated } = useAuth(); // Obtém o setIsAuthenticated do useAuth
+  const { RenderModal, openModal } = useRecuperarSenhaModal();
   // Validação de campos
   const validateForm = useCallback((email, senha) => email.trim() && senha.trim(), []);
-
-  // Função de autenticação
-  const handleLogin = useCallback(async (email, senha) => {
-    if (!validateForm(email, senha)) {
-      return { sucesso: false, message: 'Preencha todos os campos!' };
-    }
-    try {
-      const response = await request('public/login/', 'POST', { email, senha });
-      return response;
-    } catch (error) {
-      return { sucesso: false, message: 'Erro ao autenticar!' };
-    }
-  }, [validateForm]);
 
   // Submissão do formulário
   const handleSubmit = useCallback(async () => {
@@ -40,10 +28,13 @@ const LoginForm = () => {
     loading(true, "form_login");
     setLoadingState(true);
 
-    const response = await handleLogin(email, senha);
+    // Faz login com o autoLogin
+    const autoLoginSuccess = await autoLogin(email, senha);
 
-    if (response.sucesso) {
+    if (autoLoginSuccess) {
+      setIsAuthenticated(true); // Atualiza o estado de autenticação
       setCookie('authentication', true);
+
       if (lembrarMe) {
         setCookie('email_LembrarMe', email);
         setCookie('senha_LembrarMe', senha);
@@ -51,14 +42,15 @@ const LoginForm = () => {
         setCookie('email_LembrarMe', '');
         setCookie('senha_LembrarMe', '');
       }
-      navigate('/dashboard');
+
+      navigate('/dashboard'); // Redireciona para o dashboard
     } else {
-      alerta(response.message, 2, 'form_login');
+      alerta('Falha no login. Verifique suas credenciais.', 2, 'form_login');
     }
 
     loading(false, "form_login");
     setLoadingState(false);
-  }, [email, senha, lembrarMe, handleLogin, navigate, validateForm]);
+  }, [email, senha, lembrarMe, setIsAuthenticated, validateForm, navigate]);
 
   return (
     <>
@@ -113,7 +105,7 @@ const LoginForm = () => {
                   <Link
                     type="button"
                     className="link link-secondary link-button small float-end"
-                    onClick={openModalFunction}
+                    onClick={openModal}
                   >
                     Recuperar senha
                   </Link>
@@ -139,7 +131,7 @@ const LoginForm = () => {
         </div>
       </form>
 
-      <RecuperarSenhaModal />
+      <RenderModal />
     </>
   );
 };

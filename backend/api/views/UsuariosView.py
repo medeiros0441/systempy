@@ -7,7 +7,7 @@ from api.utils import Utils
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from api.permissions import permissions,CustomPermission
+from api.permissions import CustomPermission
 from rest_framework import viewsets, status
 class UsuariosView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="usuarios", auth_required=True)]

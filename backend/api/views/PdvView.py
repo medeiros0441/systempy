@@ -15,7 +15,7 @@ from api.user import UserInfo
 from api.utils import Utils
 from api.async_processos.pdv import processos_pdv 
 from django.db.models import Q
-from api.permissions import permissions,CustomPermission
+from api.permissions import CustomPermission
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -269,7 +269,6 @@ class RegistroDiarioPdvView(viewsets.ViewSet):
     permission_classes = [CustomPermission(codigo_model="registro_diario_pdv", auth_required=True)]
 
 
-    @permissions.isAutorizado("RegistroDiarioPDV", True)
     def list_registro_diario_pdv(request, id_pdv):
         if request.method == "GET":
             try:
@@ -288,7 +287,6 @@ class RegistroDiarioPdvView(viewsets.ViewSet):
             {"success": False, "message": "Método não permitido"}, status=405
         )
 
-    @permissions.isAutorizado("RegistroDiarioPDV", True)
     def create_registro_diario_pdv(request, id=None):
         if request.method != "POST":
             return Response(
@@ -335,7 +333,6 @@ class RegistroDiarioPdvView(viewsets.ViewSet):
             return False, None
         return False, None
 
-    @permissions.isAutorizado("RegistroDiarioPDV", True)
     def update_status_registro_diario_pdv(self, request, pdv_id=None):
         if request.method != "PUT":
             return Response(
@@ -400,7 +397,6 @@ class RegistroDiarioPdvView(viewsets.ViewSet):
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=500)
 
-    @permissions.isAutorizado("RegistroDiarioPDV", True)
     def update_registro_diario_pdv(request):
         if request.method == "PUT":
             try:

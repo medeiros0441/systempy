@@ -2,7 +2,7 @@ from api.utils import Utils
 from django.http import HttpResponse
 from api.models import GalaoModel, ConfiguracaoModel
 from .ErroView import ErroView
-from api.permissions import permissions, CustomPermission
+from api.permissions import  CustomPermission
 from rest_framework import viewsets, status
 from rest_framework import viewsets, status
 

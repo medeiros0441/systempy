@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuthentication } from '../utils/auth';
 import Cookies from 'js-cookie';
-
+import { useAuth } from 'src/utils/auth';
 // Componente para os itens padrão
 const ItensDefault = () => (
   <>
@@ -89,7 +88,7 @@ const ItensAssinante = ({ configsAtivos }) => (
 
 const Navbar = () => {
   // Obtém o estado de autenticação uma única vez
-  const isCliente = !!useAuthentication();
+  const { isAuthenticated } = useAuth();
 
   const session = {
     configs_ativos: {
@@ -157,7 +156,7 @@ const Navbar = () => {
         </div>
         <div className="col-12 d-sm-block d-none" ref={menuRef}>
           <ul className="text-decoration-none text-center text-white my-2 row mx-auto mx-sm-0 col-auto container-xl font-monospace text-center text-sm-end justify-content-center align-items-center">
-            {isCliente === true ? (
+            {isAuthenticated ? (
               <ItensAssinante configsAtivos={session.configs_ativos} />
             ) : (
               <ItensDefault />
