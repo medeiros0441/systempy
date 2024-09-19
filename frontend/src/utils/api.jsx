@@ -61,7 +61,6 @@ export default async function request(url, method = 'GET', data = null) {
   } catch (error) {
     // Lida com diferentes tipos de erro e exibe mensagens apropriadas
     const errorMessage = getErrorMessage(error);
-    console.error('Erro na requisição:', errorMessage);
     // Retorna o erro dentro do objeto data com sucesso como false
     return { sucesso: false, message: errorMessage };
   }

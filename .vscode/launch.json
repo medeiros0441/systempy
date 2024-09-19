@@ -2,15 +2,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Depurador do Python: Arquivo Atual",
+            "name": "Depurador do Django",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
+            "program": "${workspaceFolder}/backend/manage.py",
+            "args": [
+                "runserver",
+                "127.0.0.1:8000"
+            ],
+            "django": true,
+            "console": "integratedTerminal",
+            "justMyCode": true
         },
         {
             "type": "node-terminal",
-            "name": "Executar Script: start",
+            "name": "Executar Script: start (React)",
             "request": "launch",
             "command": "npm run start",
             "cwd": "${workspaceFolder}/frontend"

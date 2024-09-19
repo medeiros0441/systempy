@@ -38,14 +38,14 @@ const ItensAssinante = ({ configsAtivos }) => (
     )}
     {configsAtivos[1] && (
       <li className="d-inline-flex col-auto">
-        <Link className="nav-link nav-link-icon" to="/listar_usuarios">
+        <Link className="nav-link nav-link-icon" to="/usuarios">
           <i className="bi bi-people"></i> Usuários
         </Link>
       </li>
     )}
     {configsAtivos[5] && (
       <li className="d-inline-flex col-auto">
-        <Link className="nav-link nav-link-icon" to="/lista_lojas">
+        <Link className="nav-link nav-link-icon" to="/lojas">
           <i className="bi bi-shop"></i> Lojas
         </Link>
       </li>
@@ -59,21 +59,21 @@ const ItensAssinante = ({ configsAtivos }) => (
     )}
     {configsAtivos[6] && (
       <li className="d-inline-flex col-auto">
-        <Link className="nav-link nav-link-icon" to="/lista_produtos">
+        <Link className="nav-link nav-link-icon" to="/produtos">
           <i className="bi bi-cart4"></i> Produtos
         </Link>
       </li>
     )}
     {configsAtivos[7] && (
       <li className="d-inline-flex col-auto">
-        <Link className="nav-link nav-link-icon" to="/lista_vendas">
+        <Link className="nav-link nav-link-icon" to="/vendas">
           <i className="bi bi-cash"></i> Venda
         </Link>
       </li>
     )}
     {configsAtivos[8] && (
       <li className="d-inline-flex col-auto">
-        <Link className="nav-link nav-link-icon" to="/lista_clientes">
+        <Link className="nav-link nav-link-icon" to="/clientes">
           <i className="bi bi-person-check"></i> Clientes
         </Link>
       </li>

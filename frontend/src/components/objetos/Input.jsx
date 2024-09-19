@@ -1,40 +1,20 @@
-// Input.js
-import React, { forwardRef } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 
-const Input = forwardRef(({ id, name, type = 'text', label, value, onChange, className = '', ...props }, ref) => {
+// Refatorando o Input com React.memo e forwardRef para otimizar a renderização
+const Input = (({ id, name, type = 'text', label, value, onChange }) => {
     return (
-        <div className={`form-floating mb-2 ${className}`}>
+        <div className={`form-floating mb-2 `}>
             <input
                 type={type}
                 className="form-control"
                 id={id}
                 name={name}
                 value={value}
-                onChange={onChange}
-                ref={ref}
-                {...props}
+                onChange={onChange} // Certifique-se de que onChange está sendo usado corretamente
             />
             <label htmlFor={id}>{label}</label>
         </div>
     );
 });
 
-Input.propTypes = {
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    type: PropTypes.string,
-    label: PropTypes.string.isRequired,
-    value: PropTypes.string,
-    onChange: PropTypes.func,
-    className: PropTypes.string,
-};
-
-Input.defaultProps = {
-    type: 'text',
-    value: '',
-    onChange: () => { },
-    className: '',
-};
-
-export default Input;
+export default Input

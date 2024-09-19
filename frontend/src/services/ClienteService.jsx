@@ -15,7 +15,7 @@ const ClienteService = {
         const data = {
             cliente: clienteData
         };
-        const response = await request(`clientes/${id_cliente}`, 'PUT', data);
+        const response = await request(`clientes/${id_cliente}/atualizar`, 'PUT', data);
         return response;
     },
 

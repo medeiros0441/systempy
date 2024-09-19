@@ -1,52 +1,52 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Table from 'src/components/objetos/Table';
-import useClienteModal from './useClienteModal';
+import useUsuarioModal from './useUsuarioModal';
 import useConfirmationModal from 'src/components/objetos/useConfirmationModal';
-import ClienteService from 'src/services/ClienteService';
-import ClienteInterface from 'src/interface/ClienteInterface';
+import UsuarioService from 'src/services/UsuarioService';
+import UsuarioInterface from 'src/interface/UsuarioInterface';
 import Alerta from 'src/utils/alerta';
 
-const ClienteList = () => {
-    const [clientes, setClientes] = useState([]);
+const UsuarioList = () => {
+    const [usuarios, setUsuarios] = useState([]);
     const navigate = useNavigate(); // Usando useNavigate para navegação
 
-    const { openModal: openClienteModal, ClienteModalComponent } = useClienteModal();
+    const { openModal: openUsuarioModal, UsuarioModalComponent } = useUsuarioModal();
     const { openModal: openConfirmationModal, ConfirmationModalComponent } = useConfirmationModal();
 
-    const fetchClientes = useCallback(async () => {
+    const fetchUsuarios = useCallback(async () => {
         try {
-            const response = await ClienteService.getClientesByEmpresa();
+            const response = await UsuarioService.getUsuariosByEmpresa();
             if (response.sucesso) {
-                const clientes = response.data.map(clienteData => ClienteInterface.fromApiResponse(clienteData));
-                setClientes(clientes);
+                const usuarios = response.data.map(usuarioData => UsuarioInterface.fromApiResponse(usuarioData));
+                setUsuarios(usuarios);
             } else {
                 Alerta(response.message);
             }
         } catch (error) {
-            Alerta('Erro ao buscar clientes', error);
+            Alerta('Erro ao buscar usuarios', error);
         }
     }, []);
 
     useEffect(() => {
-        fetchClientes();
-    }, [fetchClientes]);
+        fetchUsuarios();
+    }, [fetchUsuarios]);
 
-    const handleDelete = async (id_cliente) => {
+    const handleDelete = async (id_usuario) => {
         openConfirmationModal(
             'Confirmar Exclusão',
-            'Você tem certeza que deseja excluir este cliente?',
+            'Você tem certeza que deseja excluir este usuario?',
             async () => {
                 try {
-                    const response = await ClienteService.deleteCliente(id_cliente);
+                    const response = await UsuarioService.deleteUsuario(id_usuario);
                     if (response.sucesso) {
-                        setClientes(prevClientes => prevClientes.filter(cliente => cliente.id_cliente !== id_cliente));
+                        setUsuarios(prevUsuarios => prevUsuarios.filter(usuario => usuario.id_usuario !== id_usuario));
                         Alerta(response.message);
                     } else {
                         Alerta(response.message, 2, 'id_msg');
                     }
                 } catch (error) {
-                    Alerta('Erro ao excluir cliente', error, 2, 'id_msg');
+                    Alerta('Erro ao excluir usuario', error, 2, 'id_msg');
                 }
             }
         );
@@ -54,39 +54,39 @@ const ClienteList = () => {
 
     const columns = ['Nome', 'Telefone', 'Ações'];
 
-    const rows = clientes.map(cliente => ({
+    const rows = usuarios.map(usuario => ({
         data: [
-            cliente.nome,
-            cliente.telefone
+            usuario.nome,
+            usuario.telefone
         ],
         actions: [
             {
                 name: 'Editar',
                 icon: 'bi-pencil',
                 type: 'primary',
-                onClick: () => navigate(`/clientes/editar/id=${cliente.id_cliente}`)
+                onClick: () => navigate(`/usuarios/editar/${usuario.id_usuario}`)
             },
             {
                 name: 'Visualizar',
                 icon: 'bi-eye',
                 type: 'success',
-                onClick: () => openClienteModal(cliente.id_cliente)
+                onClick: () => openUsuarioModal(usuario.id_usuario)
             },
             {
                 name: 'Excluir',
                 icon: 'bi-trash',
                 type: 'danger',
-                onClick: () => handleDelete(cliente.id_cliente)
+                onClick: () => handleDelete(usuario.id_usuario)
             }
         ]
     }));
 
     const dataHeader = {
         icon: 'people',
-        title: 'Lista de Clientes',
+        title: 'Lista de Usuário',
         iconBtn: 'plus',
-        buttonText: 'Criar Novo Cliente',
-        onClickBtn: () => navigate('/clientes/cadastrar')
+        buttonText: 'Criar Novo Usuário',
+        onClickBtn: () => navigate('/usuarios/cadastrar')
     };
 
     return (
@@ -96,10 +96,10 @@ const ClienteList = () => {
                 columns={columns}
                 rows={rows}
             />
-            <ClienteModalComponent />
+            <UsuarioModalComponent />
             <ConfirmationModalComponent />
         </div>
     );
 };
 
-export default ClienteList;
+export default UsuarioList;

@@ -163,11 +163,11 @@ if DATABASE_TYPE == 'postgres':
             'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
-else:
+else: 
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, os.getenv('SQLITE_NAME', 'db.sqlite3')),
+              'NAME': os.path.join(BASE_DIR, 'data', os.getenv('SQLITE_NAME', 'db.sqlite3')),  # Agora aponta para a pasta "data"
         }
     }
 # Senhas de Validação

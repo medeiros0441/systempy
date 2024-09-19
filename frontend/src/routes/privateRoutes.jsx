@@ -2,10 +2,12 @@
 import Dashboard from 'src/components/containers/assinante/dashboard';
 
 //import ListarUsuarios from 'src/components/containers/listar_usuarios';
-//import ListaLojas from 'src/components/containers/lista_lojas';
+//import ListaLojas from 'src/components/containers/lojas';
 //import PDV from 'src/components/containers/pdv';
-//import ListaProdutos from 'src/components/containers/lista_produtos';
-//import ListaVendas from 'src/components/containers/lista_vendas';
+//import ListaProdutos from 'src/components/containers/produtos';
+//import ListaVendas from 'src/components/containers/vendas';
+import ClienteCreate from 'src/components/containers/cliente/ClienteCreate';
+import ClienteEdit from 'src/components/containers/cliente/ClienteEdit';
 import ClienteList from 'src/components/containers/cliente/ClienteLista';
 //import Configuracao from 'src/components/container/assinante/configuracao';
 const privateRoutes = [
@@ -15,39 +17,49 @@ const privateRoutes = [
     component: Dashboard,
   },
   {
-    path: '/listar_usuarios',
+    path: '/usuarios',
     exact: true,
- //   component: ListarUsuarios,
+    //   component: ListarUsuarios,
   },
   {
-    path: '/lista_lojas',
+    path: '/lojas',
     exact: true,
-//    component: ListaLojas,
+    //    component: ListaLojas,
   },
   {
-    path: '/pdv',
+    path: '/pdvs',
     exact: true,
-  //  component: PDV,
+    //  component: PDV,
   },
   {
-    path: '/lista_produtos',
+    path: '/produtos',
     exact: true,
-  //  component: ListaProdutos,
+    //  component: ListaProdutos,
   },
   {
-    path: '/lista_vendas',
+    path: '/vendas',
     exact: true,
-  //  component: ListaVendas,
+    //  component: ListaVendas,
   },
   {
-    path: '/lista_clientes',
+    path: '/clientes',
     exact: true,
     component: ClienteList,
   },
   {
+    path: '/clientes/cadastrar',   // Rota para cadastro de cliente
+    exact: true,
+    component: ClienteCreate,      // Componente que lida com o cadastro de clientes
+  },
+  {
+    path: '/clientes/editar/:id',  // Rota para editar cliente, usando o ID do cliente
+    exact: true,
+    component: ClienteEdit,        // Componente para editar cliente
+  },
+  {
     path: '/configuracao',
     exact: true,
-   // component: Configuracao,
+    // component: Configuracao,
   },
 ];
 

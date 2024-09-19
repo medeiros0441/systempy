@@ -41,7 +41,7 @@ const Table = ({ dataHeader, columns, rows }) => {
                     </td>
                   ))}
                   <td className="text-end">
-                    <div className="btn-group" role="group" aria-label="Ações">
+                    <div className="btn-group-sm btn-group" role="group" aria-label="Ações">
                       {row.actions.map((action, actionIndex) => (
                         <button
                           key={actionIndex}

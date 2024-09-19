@@ -11,10 +11,10 @@ export const useCustomModal = () => {
       backdrop="static"
       keyboard={false}
       contentClassName="bg-light"
-      dialogClassName="modal-md modal-dialog-centered"
+      dialogClassName="modal-md modal-dialog-centered  modal-dialog-scrollable  "
       aria-labelledby="staticBackdropLabel"
     >
-      <Modal.Header className="text-dark">
+      <Modal.Header className="text-dark py-2">
         <h5 id="staticBackdropLabel" className="modal-title fs-5 font-monospace text-black fw-bolder">
           <i className={`me-2 bi bi-${icon}`}></i>
           {title}
@@ -31,7 +31,7 @@ export const useCustomModal = () => {
       <Modal.Body className="text-dark">
         {children}
       </Modal.Body>
-      <Modal.Footer className="text-dark">
+      <Modal.Footer className="text-dark py-2 d-flex  justify-content-between">
         {footer}
       </Modal.Footer>
     </Modal>

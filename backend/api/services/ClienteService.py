@@ -7,35 +7,42 @@ from django.db.models import F
 
 class ClienteService:
     @staticmethod
-    def create_cliente(cliente_data, endereco_id):
+    def create_cliente(cliente_data):
         try:
-            cliente_data["endereco_id"] = endereco_id
             cliente_serializer = ClienteSerializer(data=cliente_data)
             if cliente_serializer.is_valid():
                 cliente = cliente_serializer.save()
                 return cliente, True, "Cliente criado com sucesso."
-            return None, False, cliente_serializer.errors
+            else:
+                # Retorna erros de validação como uma string para facilitar o tratamento
+                error_messages = ', '.join([f"{k}: {', '.join(v)}" for k, v in cliente_serializer.errors.items()])
+                return None, False, f"Erro de validação: {error_messages}"
         except Exception as e:
             return None, False, str(e)
 
-    @staticmethod
+    @staticmethod 
     def update_cliente(cliente_id, cliente_data):
         try:
             cliente = ClienteModel.objects.get(pk=cliente_id)
+            if cliente_data.get('ultima_compra') == '':
+                cliente_data['ultima_compra'] = None
             cliente_serializer = ClienteSerializer(cliente, data=cliente_data, partial=True)
             if cliente_serializer.is_valid():
                 cliente = cliente_serializer.save()
                 return cliente, True, "Cliente atualizado com sucesso."
-            return None, False, cliente_serializer.errors
+
+            error_messages = []
+            for field, errors in cliente_serializer.errors.items():
+                error_messages.append(f"{field}: {'; '.join(errors)}")
+            error_message = " | ".join(error_messages)
+            return None, False, error_message
+
         except ClienteModel.DoesNotExist:
             return None, False, "Cliente não encontrado."
-        except Exception as e:
-            return None, False, str(e)
 
-    @staticmethod
-    def get_cliente(cliente_id):
-        cliente = get_object_or_404(ClienteModel, pk=cliente_id)
-        return Utils.modelo_para_json(cliente)
+        except Exception as e:
+            return None, False, f"Erro ao atualizar cliente: {str(e)}"
+
 
     @staticmethod
     def delete_cliente(cliente_id, empresa_id):
@@ -44,15 +51,16 @@ class ClienteService:
 
             if cliente:
                 cliente.delete()
-                return {"success": True, "message": "Cliente excluído com sucesso"}
+                return True, "Cliente excluído com sucesso"
             else:
-                return {"error": "Cliente não encontrado"}, 404
+                return False, "Cliente não encontrado"
 
         except ClienteModel.DoesNotExist:
-            return {"error": "Cliente não encontrado"}, 404
+            return False, "Cliente não encontrado"
 
         except Exception as e:
-            return {"error": str(e)}, 500
+            return False, f"Erro ao excluir cliente: {str(e)}"
+
 
     
     @staticmethod
@@ -70,17 +78,13 @@ class ClienteService:
             return None   
 
     @staticmethod
-    def get_cliente(empresa_id):
+    def get_cliente(id_cliente):
         try:
-            clientes = ClienteModel.objects.filter(empresa_id=empresa_id).select_related("endereco")
-
-            if not clientes:
-                return {"message": "Não foram encontrados clientes para esta empresa."}, 404
-
-            clientes_data = [Utils.modelo_para_json(cliente) for cliente in clientes]
-            return {"data": clientes_data, "success": True}, 200
+            cliente = get_object_or_404(ClienteModel.objects.select_related("endereco"), id_cliente=id_cliente)
+            cliente_data = ClienteSerializer(cliente).data
+            return {"success": True, "data": cliente_data}
         except Exception as e:
-            return {"message": f"Ocorreu um erro ao processar a solicitação: {e}"}, 500
+            return {"success": False, "message": f"Ocorreu um erro ao processar a solicitação: {e}", "status": 500}
 
     @staticmethod
     def get_vendas_by_cliente(id_cliente):
