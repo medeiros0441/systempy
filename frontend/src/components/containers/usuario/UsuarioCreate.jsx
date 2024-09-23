@@ -1,24 +1,28 @@
 import React, { useState } from 'react';
-import GenericForm from 'src/components/objetos/GenericForm';
-import Input from 'src/components/objetos/Input';
-import Select from 'src/components/objetos/Select';
-import ClienteService from 'src/services/ClienteService';
-import alerta from 'src/utils/alerta';
-import { useNavigate } from 'react-router-dom'; // Importa useParams e useNavigate
+import Formulario from '@objetos/Formulario';
+import Input from '@objetos/Input';
+import Select from '@objetos/Select';
+import UsuarioService from '@services/UsuarioService';
+import alerta from '@utils/alerta';
+import { useNavigate } from 'react-router-dom';
+import { isValidEmail } from 'src/utils/validate';
 
-const ClienteCreate = () => {
+const UsuarioCreate = () => {
     const [formValues, setFormValues] = useState({
-        nome: '',
-        telefone: '',
-        tipo_cliente: '',
-        descricao: '',
+        nome_completo: '',
+        email: '',
+        senha: '',
+        senhaConfirm: '',
+        nivel_usuario: '0', // Alterado para string
+        status_acesso: false,
     });
-    const navigate = useNavigate(); // Inicializa o hook useNavigate
+    const navigate = useNavigate();
 
-    const tipoClienteOptions = [
-        { value: '', label: 'Selecionar' },
-        { value: 'fisica', label: 'Pessoa Física' },
-        { value: 'juridica', label: 'Pessoa Jurídica' },
+    const nivelUsuarioOptions = [
+        { value: '0', label: 'Selecionar Nível' },
+        { value: '1', label: 'Administrador' },
+        { value: '2', label: 'Gerente' },
+        { value: '3', label: 'Colaborador' },
     ];
 
     const handleChange = ({ target: { name, value } }) => {
@@ -28,12 +32,23 @@ const ClienteCreate = () => {
         }));
     };
 
-    const validatePayload = ({ nome, telefone, tipo_cliente }) => {
+    const validatePayload = ({ nome_completo, email, senha }) => {
         const errors = [];
-        if (!nome.trim()) errors.push('Nome do cliente é obrigatório.');
-        if (!telefone.trim()) errors.push('Telefone é obrigatório.');
-        if (!tipo_cliente.trim()) errors.push('Tipo de cliente é obrigatório.');
+        if (!nome_completo.trim()) errors.push('Nome completo é obrigatório.');
+        if (!isValidEmail(email)) errors.push('E-mail inválido.');
+        if (!senha.trim()) errors.push('Senha é obrigatória.');
         return errors;
+    };
+
+    const handleValidatePassword = () => {
+        const { senha, senhaConfirm } = formValues;
+        const isValidSenha =
+            senha.length >= 8 &&
+            /[A-Z]/.test(senha) && // Pelo menos uma letra maiúscula
+            /[a-z]/.test(senha) && // Pelo menos uma letra minúscula
+            /[0-9]/.test(senha);   // Pelo menos um número
+
+        return isValidSenha && senha === senhaConfirm;
     };
 
     const handleSubmit = async () => {
@@ -43,69 +58,85 @@ const ClienteCreate = () => {
             return;
         }
 
+        if (!handleValidatePassword()) {
+            alerta('Erro: Senha inválida ou não coincide.');
+            return;
+        }
+
         try {
-            const response = await ClienteService.createCliente(formValues);
+            const response = await UsuarioService.createUsuario(formValues);
             if (response.sucesso) {
-                navigate('/clientes');
-                alerta('Cliente criado com sucesso!');
+                navigate('/usuarios');
+                alerta('Usuário criado com sucesso!');
             } else {
                 alerta(response.message);
             }
         } catch {
-            navigate('/clientes');
-            alerta('Erro ao criar cliente');
+            navigate('/usuarios');
+            alerta('Erro ao criar usuário');
         }
     };
 
     const handleClear = () => {
         setFormValues({
-            nome: '',
-            telefone: '',
-            tipo_cliente: '',
-            descricao: '',
+            nome_completo: '',
+            email: '',
+            senha: '',
+            senhaConfirm: '',
+            nivel_usuario: '0', // Alterado para string
+            status_acesso: false,
         });
     };
 
     const headerIcon = 'person'; // Ícone do header
-    const headerTitle = 'Criar Novo Cliente'; // Título do header
+    const headerTitle = 'Criar Novo Usuário'; // Título do header
 
     const formBody = (
         <>
             <Input
-                id="nome"
-                name="nome"
-                value={formValues.nome}
-                label="Nome do Cliente"
+                id="nome_completo"
+                name="nome_completo"
+                value={formValues.nome_completo}
+                label="Nome Completo"
                 onChange={handleChange}
-            />
-            <Input
-                id="telefone"
-                name="telefone"
-                value={formValues.telefone}
-                label="Telefone"
-                onChange={handleChange}
-                type="tel"
             />
             <Select
-                id="tipo_cliente"
-                name="tipo_cliente"
-                value={formValues.tipo_cliente}
-                label="Tipo de Cliente"
-                options={tipoClienteOptions}
+                id="nivel_usuario"
+                name="nivel_usuario"
+                value={formValues.nivel_usuario}
+                label="Nível de Usuário"
+                options={nivelUsuarioOptions}
                 onChange={handleChange}
             />
             <Input
-                id="descricao"
-                name="descricao"
-                value={formValues.descricao}
-                label="Descrição"
+                id="email"
+                name="email"
+                value={formValues.email}
+                label="E-mail"
                 onChange={handleChange}
+                type="email"
+            />
+            <Input
+                id="senha"
+                name="senha"
+                value={formValues.senha}
+                label="Senha"
+                onChange={handleChange}
+                type="password"
+            />
+            <Input
+                id="senhaConfirm"
+                name="senhaConfirm"
+                value={formValues.senhaConfirm}
+                label="Confirmação da Senha"
+                onChange={handleChange}
+                type="password"
             />
         </>
     );
 
     return (
-        <GenericForm
+        <Formulario
             headerIcon={headerIcon}
             headerTitle={headerTitle}
             formBody={formBody}
@@ -117,4 +148,4 @@ const ClienteCreate = () => {
     );
 };
 
-export default ClienteCreate;
+export default UsuarioCreate;

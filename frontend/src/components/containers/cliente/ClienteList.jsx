@@ -64,13 +64,13 @@ const ClienteList = () => {
                 name: 'Editar',
                 icon: 'bi-pencil',
                 type: 'primary',
-                onClick: () => navigate(`/clientes/editar/id=${cliente.id_cliente}`)
+                onClick: () => navigate(`/clientes/editar/${cliente.id_cliente}`)
             },
             {
                 name: 'Visualizar',
                 icon: 'bi-eye',
                 type: 'success',
-                onClick: () => openClienteModal(cliente.id_cliente)
+                onClick: () => openClienteModal(cliente.id_cliente, true)
             },
             {
                 name: 'Excluir',

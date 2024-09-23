@@ -17,8 +17,8 @@ const ClienteCreate = () => {
 
     const tipoClienteOptions = [
         { value: '', label: 'Selecionar' },
-        { value: 'fisica', label: 'Pessoa Física' },
-        { value: 'juridica', label: 'Pessoa Jurídica' },
+        { value: 'Pessoa Física', label: 'Pessoa Física' },
+        { value: 'Pessoa Jurídica', label: 'Pessoa Jurídica' },
     ];
 
     const handleChange = ({ target: { name, value } }) => {

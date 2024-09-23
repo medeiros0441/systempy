@@ -16,15 +16,17 @@ const UsuarioList = () => {
 
     const fetchUsuarios = useCallback(async () => {
         try {
-            const response = await UsuarioService.getUsuariosByEmpresa();
+            const response = await UsuarioService.getUsuariosByEmpresa(); // Chama o serviço sem passar id_empresa
             if (response.sucesso) {
-                const usuarios = response.data.map(usuarioData => UsuarioInterface.fromApiResponse(usuarioData));
+                const usuarios = response.data.map(usuarioData =>
+                    UsuarioInterface.fromApiResponse(usuarioData)
+                );
                 setUsuarios(usuarios);
             } else {
-                Alerta(response.message);
+                Alerta(response.message, 2);
             }
         } catch (error) {
-            Alerta('Erro ao buscar usuarios', error);
+            Alerta('Erro ao buscar usuários: ' + error, 2);
         }
     }, []);
 
@@ -35,7 +37,7 @@ const UsuarioList = () => {
     const handleDelete = async (id_usuario) => {
         openConfirmationModal(
             'Confirmar Exclusão',
-            'Você tem certeza que deseja excluir este usuario?',
+            'Você tem certeza que deseja excluir este usuário?',
             async () => {
                 try {
                     const response = await UsuarioService.deleteUsuario(id_usuario);
@@ -46,20 +48,15 @@ const UsuarioList = () => {
                         Alerta(response.message, 2, 'id_msg');
                     }
                 } catch (error) {
-                    Alerta('Erro ao excluir usuario', error, 2, 'id_msg');
+                    Alerta('Erro ao excluir usuário', error, 2, 'id_msg');
                 }
             }
         );
     };
 
-    const columns = ['Nome', 'Telefone', 'Ações'];
-
-    const rows = usuarios.map(usuario => ({
-        data: [
-            usuario.nome,
-            usuario.telefone
-        ],
-        actions: [
+    const columns = ['Nome', 'Email', 'Ações'];
+    const rows = usuarios.map(usuario => {
+        const actions = [
             {
                 name: 'Editar',
                 icon: 'bi-pencil',
@@ -70,20 +67,33 @@ const UsuarioList = () => {
                 name: 'Visualizar',
                 icon: 'bi-eye',
                 type: 'success',
-                onClick: () => openUsuarioModal(usuario.id_usuario)
-            },
-            {
+                onClick: () => openUsuarioModal(usuario.id_usuario, true)
+            }
+        ];
+
+        // Adiciona a ação de exclusão apenas se o nível do usuário for maior que 1
+        if (usuario.nivel_usuario > 1) {
+            actions.push({
                 name: 'Excluir',
                 icon: 'bi-trash',
                 type: 'danger',
                 onClick: () => handleDelete(usuario.id_usuario)
-            }
-        ]
-    }));
+            });
+        }
+
+        return {
+            data: [
+                usuario.nome_completo,
+                usuario.email
+            ],
+            actions
+        };
+    });
+
 
     const dataHeader = {
         icon: 'people',
-        title: 'Lista de Usuário',
+        title: 'Lista de Usuários',
         iconBtn: 'plus',
         buttonText: 'Criar Novo Usuário',
         onClickBtn: () => navigate('/usuarios/cadastrar')

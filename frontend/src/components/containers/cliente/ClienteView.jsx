@@ -1,19 +1,19 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Formulario from '@objetos/Formulario';
-import useUsuarioForm from './useUsuarioForm'; // Usa o hook para o formulário de usuário
+import useClienteForm from './useClienteForm';
 
-const UsuarioView = () => {
+const ClienteView = () => {
     const navigate = useNavigate();
-    const { id } = useParams(); // Pega o id do usuário a ser visualizado
+    const { id } = useParams();
 
-    const { renderForm } = useUsuarioForm(id, false); // `false` indica que é apenas visualização
+    const { renderForm } = useClienteForm(id, false);
 
     const headerIcon = 'person';
-    const headerTitle = 'Visualizar Usuário';
+    const headerTitle = 'Visualizar Cliente';
 
     const handleBack = () => {
-        navigate('/usuarios'); // Redireciona para a lista de usuários
+        navigate('/clientes'); // Redireciona para a lista de clientes
     };
 
     return (
@@ -24,10 +24,10 @@ const UsuarioView = () => {
             footerLeftButtonText="Voltar"
             footerLeftButtonAction={handleBack}
             footerRightButtonText="Salvar"
-            footerRightButtonAction={null} // Não há ação de salvar neste caso, pois é apenas visualização
+            footerRightButtonAction={null}
             isDark={true}
         />
     );
 };
 
-export default UsuarioView;
+export default ClienteView;

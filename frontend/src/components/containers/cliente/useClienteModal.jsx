@@ -1,75 +1,29 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useCustomModal } from 'src/components/objetos/Modal';
-import ClienteInterface from 'src/interface/ClienteInterface';
-import ClienteService from 'src/services/ClienteService';
 import alerta from 'src/utils/alerta';
-import Label from 'src/components/objetos/Label';
-import loading from 'src/utils/loading';
+import useClienteForm from './useClienteForm';
 
-const useClienteModal = (id) => {
+const useUsuarioModal = (id) => {
     const { CustomModal, setShow } = useCustomModal();
-    const [cliente, setCliente] = useState({});
-    const refForm = useRef(null);
+    const [clienteId, setClienteId] = useState(null);
+    const { renderForm } = useClienteForm(clienteId, false); // Chama o hook aqui
 
-    const setLoadingState = (valor) => {
-        loading(valor, refForm.current?.id);
-    };
-
-    const fetchCliente = useCallback(async () => {
-        if (!id) {
+    const openModal = (id_cliente = false, view = false) => {
+        if (!id_cliente) {
             alerta('ID do cliente não fornecido');
-            setShow(false); // Fechar modal se o ID não for fornecido
-            return;
+            return setShow(false);
         }
 
-        try {
-            setLoadingState(true);
-            const response = await ClienteService.getCliente(id);
-            if (response.sucesso) {
-                const clienteData = ClienteInterface.fromApiResponse(response.data);
-                setCliente(clienteData);
-            } else {
-                alerta(response.message);
-                setShow(false); // Fechar modal se o cliente não for encontrado
-            }
-        } catch (error) {
-            alerta('Erro ao buscar cliente');
-            setShow(false); // Fechar modal em caso de erro
-        } finally {
-            setLoadingState(false);
-        }
-    }, [id, setShow]);
-
-    useEffect(() => {
-        if (id) {
-            fetchCliente();
-        }
-    }, [id, fetchCliente]);
-
-    const openModal = (view = false) => {
+        setClienteId(id_cliente); // Armazena o ID do cliente
         setShow(view);
-        if (view) {
-            fetchCliente();
-        }
     };
-
-    const renderChild = () => (
-        <div ref={refForm}>
-            <Label htmlFor="nome" title="Nome do Cliente:" value={cliente.nome || 'N/A'} iconClass="person" />
-            <Label htmlFor="telefone" title="Telefone:" value={cliente.telefone || 'N/A'} iconClass="telephone" />
-            <Label htmlFor="tipo_cliente" title="Tipo de Cliente:" value={cliente.tipo_cliente || 'N/A'} iconClass="tag" />
-            <Label htmlFor="descricao" title="Descrição:" value={cliente.descricao || 'N/A'} iconClass="info-circle" />
-            <Label htmlFor="endereco" title="Endereço:" value={cliente.endereco || 'N/A'} iconClass="house" />
-        </div>
-    );
 
     const renderFooter = () => (
         <button
             type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => {
-                setShow(false); // Fechar modal ao clicar no botão
-            }}>
+            className="btn btn-secondary btn-sm mx-auto"
+            onClick={() => setShow(false)}
+        >
             Fechar
         </button>
     );
@@ -78,7 +32,7 @@ const useClienteModal = (id) => {
         <CustomModal
             icon="person"
             title="Visualizar Cliente"
-            children={renderChild()}
+            children={renderForm()}
             footer={renderFooter()}
         />
     );
@@ -86,4 +40,4 @@ const useClienteModal = (id) => {
     return { openModal, ClienteModalComponent };
 };
 
-export default useClienteModal;
+export default useUsuarioModal;

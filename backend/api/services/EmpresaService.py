@@ -13,6 +13,29 @@ class EmpresaService:
     def get_empresa_by_id(id):
         return EmpresaModel.objects.get(pk=id)
     
+    @staticmethod
+    def get_exist_empresa(id_empresa, return_data=False):
+        """
+        Verifica se uma empresa já existe com base no ID.
+        
+        Args:
+            id_empresa (int): ID da empresa.
+            return_data (bool): Se True, retorna os dados da empresa; se False, retorna apenas um valor booleano.
+        
+        Returns:
+            EmpresaModel | bool: Dados da empresa ou um valor booleano indicando a existência.
+        """
+        try:
+            # Busca a empresa pelo ID
+            empresa = EmpresaModel.objects.filter(pk=id_empresa).first()
+
+            if empresa and return_data:
+                return empresa  # Retorna a empresa se encontrada e 'return_data' for True
+            return bool(empresa)  # Retorna True/False se a empresa foi encontrada ou não
+
+        except Exception as e:
+            # Em caso de erro, logue a exceção se necessário e retorne False
+            return False
  
     @staticmethod
     def create_empresa(data):

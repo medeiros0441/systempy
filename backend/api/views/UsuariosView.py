@@ -1,4 +1,3 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from api.user import UserInfo
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
@@ -9,184 +8,173 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from api.permissions import CustomPermission
 from rest_framework import viewsets, status
+from rest_framework.response import Response
+from api.services import UsuarioService,LojaService,EmpresaService
+from api.models import UsuarioModel
+from api.serializers import UsuarioSerializer
+from api.permissions import CustomPermission
+from django.shortcuts import get_object_or_404
+
+from rest_framework.decorators import action
+import uuid
+
+
 class UsuariosView(viewsets.ViewSet):
-    permission_classes = [CustomPermission(codigo_model="usuarios", auth_required=True)]
+    permission_classes = [CustomPermission]
+
+    def get_permissions(self):
+        permissions = [permission() for permission in self.permission_classes]
+        for permission in permissions:
+            if isinstance(permission, CustomPermission):
+                permission.codigo_model = "usuario"
+                permission.auth_required = True
+        return permissions
+    
+    def create(self, request):
+        """
+        Cria um novo usuário.
+        """
+        data = request.data.get('usuario', {})
+
+        # Obtém o ID da empresa associada ao usuário
+        id_empresa = UserInfo.get_id_empresa(request)
+        # Criptografa a senha
+        data['senha'] = make_password(data['senha'])
+        # Gera um nome de usuário único
+        nome_usuario = data['nome_completo'].replace(" ", "").lower()
+        while UsuarioService.exist_nome_usuario(nome_usuario):
+            nome_usuario = f"{nome_usuario}{Utils.gerar_numero_aleatorio()}"
+
+        data['nome_usuario'] = nome_usuario
+
+        # Verifica se a empresa existe
+        empresa = EmpresaService.get_exist_empresa(id_empresa, return_data=True)
+        if not empresa:
+            return Response({"message": "Empresa não encontrada."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        data['empresa'] = empresa.pk
+
+        # Valida e cria o usuário
+        serializer = UsuarioSerializer(data=data)
+        if serializer.is_valid():
+            usuario = UsuarioService.create_usuario(serializer.data)
+
+            # Associa o usuário às lojas conforme o status de acesso
+            status_acesso = data.get("status_acesso", {})
+            for loja_id, acesso in status_acesso.items():
+                LojaService.associate_usuario_loja(loja_id=loja_id, id_usuario=usuario.id, id_status_acesso=acesso)
+
+            return Response(UsuarioSerializer(usuario).data, status=status.HTTP_201_CREATED)
+
+        # Usa a função format_errors para tratar os erros do serializer
+        formatted_errors = serializer.format_errors(serializer.errors)
+        return Response({"message": formatted_errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-   
-    def api_listar_usuarios(request):
-        try:
+
+        
+
+    def list(self, request):
+        """
+        Retorna todos os usuários se o usuário for um administrador.
+        """
+        if not request.user.is_superuser:  # Verifica se o usuário é um administrador
+            return Response({'detail': 'Você não tem permissão para acessar esta informação.'}, status=403)
+
+        usuarios = UsuarioService.get_all_usuarios()
+        serializer = UsuarioSerializer(usuarios, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='empresa(?:/(?P<id_empresa>[^/.]+))?')
+    def get_usuarios_by_empresa(self, request, id_empresa=None):
+        if not id_empresa:
             id_empresa = UserInfo.get_id_empresa(request)
-            usuarios = UsuarioModel.objects.filter(empresa_id=id_empresa)
-            usuarios_json = [
-                {
-                    "id_usuario": usuario.id_usuario,
-                    "nome_completo": usuario.nome_completo,
-                    "nome_usuario": usuario.nome_usuario,
-                    "email": usuario.email,
-                    "ultimo_login": (
-                        usuario.ultimo_login.strftime("%Y-%m-%d %H:%M:%S")
-                        if usuario.ultimo_login
-                        else None
-                    ),
-                    "nivel_usuario": usuario.nivel_usuario,
-                    "status_acesso": usuario.status_acesso,
-                    "insert": usuario.insert,
-                    "update": usuario.update,
-                    "empresa": usuario.empresa.id_empresa,
-                }
-                for usuario in usuarios
-            ]
-            return JsonResponse({"usuarios": usuarios_json, "success": True})
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
 
-    @staticmethod
-    def _atualizar_associados(request, usuario, list_lojas):
+        # Aqui você pode querer validar se id_empresa é um UUID válido
         try:
-            # Carrega e decodifica os dados JSON do corpo da requisição
-            data = json.loads(request.body)
+            # Validação de UUID
+            uuid.UUID(id_empresa)  # Verifica se é um UUID válido
+        except ValueError:
+            return Response({'detail': 'O valor fornecido não é um UUID válido.'}, status=400)
 
-            # Atualiza o status de acesso para cada loja
-            for loja in list_lojas:
-                campo_checkbox = f"status_acesso_{loja.id_loja}"
-                status_acesso = campo_checkbox in data
-                associacao, created = AssociadoModel.objects.get_or_create(
-                    usuario_id=usuario.id_usuario,
-                    loja_id=loja.id_loja,
-                )
-                associacao.status_acesso = status_acesso
-                associacao.update = Utils.obter_data_hora_atual()
-                associacao.save()
+        usuarios = UsuarioService.get_usuarios_by_empresa(id_empresa)
+        if not usuarios:
+            return Response({'detail': 'Nenhum usuário encontrado para esta empresa.'}, status=404)
 
-            return JsonResponse(
-                {"message": "Associações atualizadas com sucesso!"}, status=200
-            )
+        serializer = UsuarioSerializer(usuarios, many=True)
+        return Response({'data': serializer.data, 'sucesso': True})
 
-        except Exception as e:
-            return JsonResponse({"message": str(e)}, status=500)
 
-    @staticmethod
-    @require_http_methods(["GET"])
-   
-    def _editar_usuario_get(request, id_usuario):
+    @action(detail=False, methods=['get'], url_path='usuario/(?P<usuario_id>[^/.]+)')
+    def get_usuario_by_id(self, request, usuario_id):
+        """
+        Retorna um único usuário baseado no ID fornecido.
+        """
         try:
-            usuario = get_object_or_404(UsuarioModel, id_usuario=id_usuario)
-            list_lojas = LojaModel.objects.filter(
-                empresa_id=UserInfo.get_id_empresa(request)
-            )
-            associado = AssociadoModel.objects.filter(usuario=usuario)
-
-            list_objs = []
-            for loja in list_lojas:
-                loja_info = {
-                    "id_loja": loja.id_loja,
-                    "nome": loja.nome,
-                    "status_acesso": False,
-                }
-                associado_loja = associado.filter(
-                    loja_id=loja.id_loja, usuario=usuario
-                ).first()
-                if associado_loja:
-                    loja_info["status_acesso"] = associado_loja.status_acesso
-
-                list_objs.append(loja_info)
-
-            return JsonResponse(
-                {
-                    "form_usuario": {},
-                    "list_lojas": list_objs,
-                    "open_modal": True,
-                    "isEditar": True,
-                },
-                status=200,
-            )
-
+            usuario = UsuarioService.get_usuario_by_id(usuario_id)
+            serializer = UsuarioSerializer(usuario)
+            return Response(serializer.data)
         except UsuarioModel.DoesNotExist:
-            return JsonResponse({"message": "Usuário não encontrado."}, status=404)
+            return Response({'detail': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+ 
 
-        except Exception as e:
-            return JsonResponse({"message": str(e)}, status=500)
+    def retrieve(self, request, pk=None):
+        """
+        Retorna um usuário específico.
+        """
+        usuario = UsuarioService.get_usuario_by_id(pk)
+        if usuario:
+            return Response(UsuarioSerializer(usuario).data)
+        return Response({'detail': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
-    @staticmethod
-    @require_http_methods(["POST"])
-   
-    def excluir_usuario(request):
+    def update(self, request, pk=None):
+        """
+        Atualiza um usuário específico.
+        """
+        serializer = UsuarioSerializer(data=request.data)
+        if serializer.is_valid():
+            usuario = UsuarioService.update_usuario(pk, serializer.validated_data)
+            if usuario:
+                return Response(UsuarioSerializer(usuario).data)
+            return Response({'detail': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        """
+        Deleta um usuário específico.
+        """
+        success = UsuarioService.delete_usuario(pk)
+        if success:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'detail': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=False, methods=['post'], url_path='bloquear')
+    def bloquear_usuario(self, request):
+        id_usuario = request.data.get("id_usuario")
+        if not id_usuario:
+            return Response({"message": "ID do usuário não fornecido."}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            data = json.loads(request.body)
-            id_usuario = data.get("id_usuario")
-
-            if not id_usuario:
-                return JsonResponse(
-                    {"message": "ID do usuário não fornecido."}, status=400
-                )
-
-            usuario = get_object_or_404(UsuarioModel, id_usuario=id_usuario)
-            usuario.delete()
-
-            return JsonResponse(
-                {"message": "Usuário excluído com sucesso!"}, status=200
-            )
-
+            usuario = UsuarioService.bloquear_usuario(id_usuario)
+            return Response(UsuarioSerializer(usuario).data, status=status.HTTP_200_OK)
         except UsuarioModel.DoesNotExist:
-            return JsonResponse({"message": "Usuário não encontrado."}, status=404)
-
+            return Response({"message": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return JsonResponse({"message": str(e)}, status=500)
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @staticmethod
-    @require_http_methods(["POST"])
-   
-    def bloquear_usuario(request):
+    @action(detail=False, methods=['post'], url_path='ativar')
+    def ativar_usuario(self, request):
+        id_usuario = request.data.get("id_usuario")
+        if not id_usuario:
+            return Response({"message": "ID do usuário não fornecido."}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            data = json.loads(request.body)
-            id_usuario = data.get("id_usuario")
-
-            if not id_usuario:
-                return JsonResponse(
-                    {"message": "ID do usuário não fornecido."}, status=400
-                )
-
-            usuario = get_object_or_404(UsuarioModel, id_usuario=id_usuario)
-            usuario.status_acesso = False
-            usuario.update = timezone.now()
-            usuario.save()
-
-            return JsonResponse(
-                {"message": "Usuário bloqueado com sucesso!"}, status=200
-            )
-
+            usuario = UsuarioService.ativar_usuario(id_usuario)
+            return Response(UsuarioSerializer(usuario).data, status=status.HTTP_200_OK)
         except UsuarioModel.DoesNotExist:
-            return JsonResponse({"message": "Usuário não encontrado."}, status=404)
-
+            return Response({"message": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return JsonResponse({"message": str(e)}, status=500)
-
-    @staticmethod
-    @require_http_methods(["POST"])
-   
-    def ativar_usuario(request):
-        try:
-            data = json.loads(request.body)
-            id_usuario = data.get("id_usuario")
-
-            if not id_usuario:
-                return JsonResponse(
-                    {"message": "ID do usuário não fornecido."}, status=400
-                )
-
-            usuario = get_object_or_404(UsuarioModel, id_usuario=id_usuario)
-            usuario.status_acesso = True
-            usuario.update = timezone.now()
-            usuario.save()
-
-            return JsonResponse({"message": "Usuário ativado com sucesso!"}, status=200)
-
-        except UsuarioModel.DoesNotExist:
-            return JsonResponse({"message": "Usuário não encontrado."}, status=404)
-
-        except Exception as e:
-            return JsonResponse({"message": str(e)}, status=500)
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @staticmethod
     def autenticar_usuario(email, senha):
@@ -198,75 +186,7 @@ class UsuariosView(viewsets.ViewSet):
             pass
         return None
 
-    @staticmethod
-    @require_http_methods(["POST"])
-    def cadastrar_usuario(request):
-        try:
-            # Obtém o ID da empresa do usuário autenticado
-            id_empresa = UserInfo.get_id_empresa(request)
-            lojas = LojaModel.objects.filter(empresa_id=id_empresa)
-
-            # Carrega e decodifica os dados JSON do corpo da requisição
-            data = json.loads(request.body)
-
-            # Extrai os dados do JSON
-            nome_completo = data.get("nome_completo")
-            email_responsavel = data.get("email_responsavel")
-            senha = data.get("senha")
-            status_acesso = data.get("status_acesso", {})
-
-            if not nome_completo or not email_responsavel or not senha:
-                return JsonResponse(
-                    {"message": "Campos obrigatórios faltando."}, status=400
-                )
-
-            # Verifica se o email já está cadastrado
-            if Utils.email_existe(email_responsavel):
-                return JsonResponse(
-                    {
-                        "message": "O email já está cadastrado em nossa base de dados, escolha outro."
-                    },
-                    status=400,
-                )
-
-            # Gera um nome de usuário único
-            nome_usuario = nome_completo.replace(" ", "").lower()
-            while Utils.usuario_existe(nome_usuario):
-                nome_usuario += Utils.gerar_numero_aleatorio()
-
-            # Cria e salva o usuário
-            usuario = UsuarioModel(
-                nome_completo=nome_completo,
-                email=email_responsavel,
-                senha=make_password(senha),
-                empresa_id=id_empresa,
-                nome_usuario=nome_usuario,
-                status_acesso=True,
-            )
-            usuario.save()
-
-            # Associa o usuário às lojas conforme o status de acesso
-            for loja_id, acesso in status_acesso.items():
-                loja = get_object_or_404(LojaModel, id_loja=loja_id)
-                AssociadoModel.objects.create(
-                    usuario=usuario,
-                    loja=loja,
-                    status_acesso=acesso == "on",
-                )
-
-            return JsonResponse({"message": "Usuário ativado com sucesso!"}, status=201)
-
-        except LojaModel.DoesNotExist:
-            return JsonResponse(
-                {
-                    "message": "Para associar um usuário a uma loja, é necessário criar uma loja."
-                },
-                status=404,
-            )
-
-        except Exception as e:
-            # Captura e retorna qualquer outro erro inesperado
-            return JsonResponse({"message": str(e)}, status=500)
+ 
 
     @staticmethod
     @require_http_methods(["POST"])
@@ -305,13 +225,4 @@ class UsuariosView(viewsets.ViewSet):
         except Exception as e:
             # Captura e retorna qualquer outro erro inesperado
             return JsonResponse({"message": str(e)}, status=500)
-
-    def email_existe(email):
-        from api.models import UsuarioModel
-
-        return UsuarioModel.objects.filter(email__iexact=email).exists()
-
-    def usuario_existe(usuario):
-        from api.models import UsuarioModel
-
-        return UsuarioModel.objects.filter(nome_usuario__iexact=usuario).exists()
+ 

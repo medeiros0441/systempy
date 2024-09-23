@@ -69,7 +69,7 @@ class ClienteView(viewsets.ViewSet):
             cliente, status_cliente, msg_cliente = ClienteService.update_cliente(cliente_data["id_cliente"], cliente_data)
 
             if status_cliente:
-                return Response({"success": True, "data": Utils.modelo_para_json(cliente), "message": msg_cliente}, status=status.HTTP_200_OK)
+                return Response({ "data": Utils.modelo_para_json(cliente), "message": msg_cliente}, status=status.HTTP_200_OK)
             else:
                 return Response({"success": False, "message": msg_cliente}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -96,7 +96,7 @@ class ClienteView(viewsets.ViewSet):
         
         # Define o status HTTP baseado no sucesso da operação
         if success:
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            return Response({ "message": message}, status=status.HTTP_200_OK)
         else:
             return Response({"success": False, "message": message}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -108,7 +108,7 @@ class ClienteView(viewsets.ViewSet):
             
             # Verifica se há dados retornados e determina o status
             if clientes_data:
-                return Response({"success": True, "data": clientes_data}, status=status.HTTP_200_OK)
+                return Response({ "data": clientes_data}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Não foram encontrados clientes para esta empresa."}, status=status.HTTP_404_NOT_FOUND)
 

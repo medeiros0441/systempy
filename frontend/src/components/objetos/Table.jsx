@@ -24,9 +24,9 @@ const Table = ({ dataHeader, columns, rows }) => {
         <div className="table-responsive">
           <table className="table table-hover table-sm table-dark">
             <thead>
-              <tr className="font-monospace text-start" style={{ fontSize: '0.8rem' }}>
+              <tr className="font-monospace" style={{ fontSize: '0.8rem' }}>
                 {columns.map((colTitle, index) => (
-                  <th key={index} scope="col" className="mx-auto text-center">
+                  <th key={index} scope="col" className={`${index === 0 ? 'text-start' : index === columns.length - 1 ? 'text-end' : 'text-center'}`}>
                     {colTitle}
                   </th>
                 ))}
@@ -34,13 +34,13 @@ const Table = ({ dataHeader, columns, rows }) => {
             </thead>
             <tbody className="table-group-divider">
               {rows.map((row, rowIndex) => (
-                <tr key={rowIndex} className="font-monospace text-start" style={{ fontSize: '0.8rem' }}>
+                <tr key={rowIndex} className="font-monospace" style={{ fontSize: '0.8rem' }}>
                   {row.data.map((cell, cellIndex) => (
-                    <td key={cellIndex} className="mx-auto text-center">
+                    <td key={cellIndex} className={`${cellIndex === 0 ? 'text-start' : 'text-center'} align-middle`}>
                       {cell}
                     </td>
                   ))}
-                  <td className="text-end">
+                  <td className="text-end align-middle">
                     <div className="btn-group-sm btn-group" role="group" aria-label="Ações">
                       {row.actions.map((action, actionIndex) => (
                         <button
@@ -58,10 +58,13 @@ const Table = ({ dataHeader, columns, rows }) => {
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
       </div>
     </div>
+
+
   );
 };
 
