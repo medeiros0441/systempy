@@ -1,4 +1,5 @@
 Comércio Prime Soluções
+
 Comércio Prime Soluções é um software web desenvolvido para ajudar assinantes a gerenciar seus comércios de forma eficiente. A aplicação permite o controle de uma ou mais lojas, pontos de venda (PDVs), usuários com diferentes tipos de acesso, vendas, produtos e muito mais. Nosso objetivo é agregar valor ao negócio e oferecer aos usuários uma visão completa e controle total de seus comércios.
 
 Tecnologias Utilizadas
